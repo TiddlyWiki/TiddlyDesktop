@@ -1,0 +1,12 @@
+{
+    "name": "TiddlyWiki",
+    "main": "./html/index.html",
+	"window": {
+		"icon": "images/app_icon.png",
+		"toolbar": false,
+		"width": 800,
+		"height": 600,
+		"min_width": 700,
+		"min_height": 500
+	}
+}
