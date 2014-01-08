@@ -28,7 +28,10 @@ cp -R node-webkit/node-webkit-v0.8.4-win-ia32/* output/win
 # Copy our source into it
 cp -R source/* output/win
 
-# Zip the files into the output directory
-#pushd ./source
-#zip -r ../output/win/package.nw *
-#popd
+# Zip them up
+pushd ./output/win
+zip -r ../tiddlydesktop-win-0.0.1.zip *
+popd
+pushd ./output/mac
+zip -r ../tiddlydesktop-mac-0.0.1.zip *
+popd
