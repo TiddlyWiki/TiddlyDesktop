@@ -6,7 +6,15 @@ It is based on node-webkit, a project created and developed in the Intel Open So
 
 https://github.com/rogerwang/node-webkit
 
-# Setting up
+# Download and Install
+
+Download the Windows or Mac binary .zip files from:
+
+https://github.com/Jermolene/TiddlyDesktop/releases
+
+Unzip into a folder and run `TiddlyWiki.app` or `nw.exe`.
+
+# Building
 
 1. Download **node-webkit-v0.8.4-osx-ia32** and **node-webkit-v0.8.4-win-ia32** from the GitHub repo and unpack them into `/node-webkit`
 2. Run `bld.sh`
