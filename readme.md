@@ -16,7 +16,7 @@ Unzip into a folder and run `TiddlyWiki.app` or `nw.exe`.
 
 # Building
 
-1. Download **node-webkit-v0.8.4-osx-ia32** and **node-webkit-v0.8.4-win-ia32** from the GitHub repo and unpack them into `/node-webkit`
+1. Download **node-webkit-v0.8.4-osx-ia32** and **node-webkit-v0.8.4-win-ia32** from the <a href="https://github.com/rogerwang/node-webkit#downloads">node-webkit GitHub repo</a> and unpack them into `/node-webkit`
 2. Run `bld.sh`
 3. Execute `output/mac/TiddlyWiki.app` or `output/win/nw.exe`
 
