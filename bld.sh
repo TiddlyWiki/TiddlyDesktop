@@ -7,6 +7,8 @@ mkdir -p source/bin
 mkdir -p output
 mkdir -p output/mac
 mkdir -p output/win
+mkdir -p output/linux32
+mkdir -p output/linux64
 
 # Build the app wiki
 tiddlywiki ./app-wiki \
@@ -33,3 +35,15 @@ cp -R node-webkit/node-webkit-v0.8.4-win-ia32/* output/win
 
 # Copy our source into it
 cp -R source/* output/win
+
+# Copy the Linux32 App
+cp -R node-webkit/node-webkit-v0.8.4-linux-ia32/* output/linux32
+
+# Copy our source into Linux32
+cp -R source/* output/linux32
+
+# Copy the Linux64 App
+cp -R node-webkit/node-webkit-v0.8.4-linux-x64/* output/linux64
+
+# Copy our source into Linux64
+cp -R source/* output/linux64
