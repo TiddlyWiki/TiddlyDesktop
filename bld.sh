@@ -3,9 +3,15 @@
 # build TiddlyDesktop
 
 # Create the output directory
+mkdir -p source/bin
 mkdir -p output
 mkdir -p output/mac
 mkdir -p output/win
+
+# Build the app wiki
+tiddlywiki ./app-wiki \
+	--rendertiddler SaveTemplate ./source/bin/app-wiki.html text/plain \
+	|| exit 1
 
 # Remove any old build
 rm -R output/mac/TiddlyWiki.app
@@ -27,11 +33,3 @@ cp -R node-webkit/node-webkit-v0.8.4-win-ia32/* output/win
 
 # Copy our source into it
 cp -R source/* output/win
-
-# Zip them up
-pushd ./output/win
-zip -r ../tiddlydesktop-win-0.0.1.zip *
-popd
-pushd ./output/mac
-zip -r ../tiddlydesktop-mac-0.0.1.zip *
-popd

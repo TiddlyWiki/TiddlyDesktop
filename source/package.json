@@ -1,6 +1,6 @@
 {
     "name": "TiddlyWiki",
-    "main": "./html/index.html",
+    "main": "./html/main.html",
 	"window": {
 		"icon": "images/app_icon.png",
 		"toolbar": false,

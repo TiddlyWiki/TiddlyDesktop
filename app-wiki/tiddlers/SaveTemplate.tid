@@ -1,0 +1,48 @@
+title: SaveTemplate
+
+\rules only macrodef filteredtranscludeinline transcludeinline
+\define saveTiddlerFilter()
+[is[tiddler]] -[type[text/css]] -[type[application/javascript]has[module-type]] -[type[application/javascript]library[yes]] -SaveTemplate -[[$:/boot/boot.js]] -[[$:/boot/bootprefix.js]] +[sort[title]]
+\end
+<!doctype html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="application-name" content="TiddlyDesktop" />
+<meta name="generator" content="TiddlyWiki" />
+<meta name="tiddlywiki-version" content="{{$:/core/templates/version}}" />
+<meta name="copyright" content="{{$:/core/copyright.txt}}" />
+<title>Loading...</title>
+</head>
+<body class="tw-body">
+<!--~~ Ordinary tiddlers ~~-->
+{{$:/core/templates/store.area.template.html}}
+<!--~~ Boot kernel prologue ~~-->
+<div id="bootKernelPrefix" style="display:none;">
+{{ $:/boot/bootprefix.js ||$:/core/templates/javascript-tiddler}}
+</div>
+<!--~~ Static modules ~~-->
+<div id="modules" style="display:none;">
+{{{ [is[system]type[application/javascript]has[module-type]] ||$:/core/templates/module-tiddler}}}
+</div>
+<!--~~ Define "exports" so that the boot kernel doesn't actually call _boot() ~~-->
+<script>
+window.old_exports = window.exports;
+window.exports = {};
+</script>
+<!--~~ Boot kernel ~~-->
+<div id="bootKernel" style="display:none;">
+{{ $:/boot/boot.js ||$:/core/templates/javascript-tiddler}}
+</div>
+<!--~~ Retrieve the TW boot function ~~-->
+<script>
+// Save the TiddlyWiki boot function and restore the old exports
+window.TiddlyWiki = exports.TiddlyWiki;
+window.exports = window.old_exports;
+// Suppress the normal boot process
+$tw.boot = $tw.boot || {};
+$tw.boot.suppressBoot = true;
+// Boot up TiddlyWiki
+TiddlyWiki($tw);
+</script>
+</body>
+</html>

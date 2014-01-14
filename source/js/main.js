@@ -3,7 +3,8 @@
 /*jslint browser: true */
 "use strict";
 
-var gui = require("nw.gui");
+var gui = require("nw.gui"),
+	fs = require("fs");
 
 // Information about each wiki we're tracking. Each entry is a hashmap with these fields:
 // url: full file:// URI of the wiki
@@ -15,7 +16,7 @@ var wikiList = [];
 
 // Get the main window
 var mainWindow = gui.Window.get();
-// mainWindow.showDevTools();
+mainWindow.showDevTools();
 
 // Current window
 var currentWindow = null;
@@ -24,7 +25,7 @@ var currentWindow = null;
 var shuttingDown = false;
 
 // Get the current wikiList
-loadWikiList();
+//loadWikiList();
 
 // Close all windows when the current window is closed
 mainWindow.on("close",function() {
@@ -64,29 +65,52 @@ btnChooseWiki.addEventListener("click",function(event) {
 	chooseWiki.click();
 },false);
 
-function openWikiIfNotOpen(wikiPath) {
-console.log("In openWikiIfNotOpen",wikiPath)
-	var wikiInfo = findwikiInfo(wikiPath);
+// Event handlers for browsing for a new wiki folder
+var chooseWikiFolder = document.getElementById("chooseWikiFolder");
+chooseWikiFolder.addEventListener("change",function(event) {
+	openWikiIfNotOpen("file://" + chooseWikiFolder.value);
+},false);
+var btnChooseWikiFolder = document.getElementById("btnChooseWikiFolder");
+btnChooseWikiFolder.addEventListener("click",function(event) {
+	chooseWikiFolder.click();
+},false);
+
+function openWikiIfNotOpen(wikiUrl) {
+	var wikiInfo = findwikiInfo(wikiUrl);
 	if(!wikiInfo || !wikiInfo.isOpen) {
 		console.log("Now opening wiki")
-		openWiki(wikiPath);
+		openWiki(wikiUrl);
 	}
 }
 
 // Helper to open a TiddlyWiki in a new window
-function openWiki(wikiPath) {
+function openWiki(wikiUrl) {
 	// Add the path to the wikiList if not already there
-	var wikiInfo = findwikiInfo(wikiPath);
+	var wikiInfo = findwikiInfo(wikiUrl);
 	if(wikiInfo === null) {
-		wikiInfo = wikiList[wikiList.length] = {url: wikiPath};
+		wikiInfo = {url: wikiUrl};
+	}
+	// If we're opening a wiki folder then the wikiUrl should point to our custom app
+	var isWikiFolder = false;
+	if(wikiUrl.substr(0,7) === "file://") {
+		var wikiPath = wikiUrl.substr(7),
+			stat = fs.statSync(wikiPath);
+		if(stat.isDirectory()) {
+			if(!fs.existsSync(wikiPath + "/tiddlywiki.info")) {
+				return;
+			}
+			isWikiFolder = true;
+			wikiUrl = "../bin/app-wiki.html";
+		}
 	}
 	// Save the wiki list and update it in the DOM
+	wikiList[wikiList.length] = wikiInfo;
 	wikiInfo.isOpen = true;
 	saveWikiList();
 	renderWikiList();
 	// Open the window
-	var newWindow = gui.Window.open(wikiPath,{
-		toolbar: false,
+	var newWindow = gui.Window.open(wikiUrl,{
+		toolbar: true,
 		focus: true,
 		width: 1024,
 		height: 768,
@@ -103,7 +127,15 @@ function openWiki(wikiPath) {
 	});
 	// Set up the new window when loaded
 	newWindow.on("loaded",function() {
-		// newWindow.showDevTools();
+		newWindow.showDevTools();
+		if(isWikiFolder) {
+			// Boot up the wiki folder
+			var code = "$tw.boot.startup();",
+				doc = newWindow.window.document,
+				script = doc.createElement("script");
+			script.appendChild(doc.createTextNode(code));
+			doc.documentElement.appendChild(script);
+		}
 		trackCurrentWindow(newWindow);
 		trapLinks(newWindow.window.document);
 		newWindow.capturePage(function(imgDataUri) {
