@@ -12,13 +12,13 @@ Download the Windows or Mac binary .zip files from:
 
 https://github.com/Jermolene/TiddlyDesktop/releases
 
-Unzip into a folder and run `TiddlyWiki.app` or `nw.exe`.
+Unzip into a folder and run `TiddlyWiki.app` or `nw.exe` and for linux `nw`
 
 # Building
 
-1. Download **node-webkit-v0.8.4-osx-ia32** and **node-webkit-v0.8.4-win-ia32** from the <a href="https://github.com/rogerwang/node-webkit#downloads">node-webkit GitHub repo</a> and unpack them into `/node-webkit`
+1. Download **node-webkit-v0.8.4-osx-ia32** , **node-webkit-v0.8.4-win-ia32** , **node-webkit-v0.8.4-linux-x64** **node-webkit-v0.8.4-linux-ia32** from the <a href="https://github.com/rogerwang/node-webkit#downloads">node-webkit GitHub repo</a> and unpack them into `/node-webkit`
 2. Run `bld.sh`
-3. Execute `output/mac/TiddlyWiki.app` or `output/win/nw.exe`
+3. Execute `output/mac/TiddlyWiki.app` or `output/win/nw.exe` or `output/linux32/nw` or `output/linux64/nw`
 
 # Creating inter-wiki links
 
