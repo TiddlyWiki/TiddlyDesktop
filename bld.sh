@@ -2,21 +2,15 @@
 
 # build TiddlyDesktop
 
+# Remove any old build
+rm -Rf output
+
 # Create the output directory
-mkdir -p source/bin
 mkdir -p output
 mkdir -p output/mac
 mkdir -p output/win
 mkdir -p output/linux32
 mkdir -p output/linux64
-
-# Build the app wiki
-tiddlywiki ./app-wiki \
-	--rendertiddler SaveTemplate ./source/bin/app-wiki.html text/plain \
-	|| exit 1
-
-# Remove any old build
-rm -R output/mac/TiddlyWiki.app
 
 # Copy the OS X App
 cp -R node-webkit/node-webkit-v0.8.4-osx-ia32/node-webkit.app output/mac/TiddlyWiki.app

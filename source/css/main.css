@@ -16,7 +16,7 @@ body {
 	vertical-align: middle;
 }
 
-#chooseWiki, #chooseWikiFolder {
+#chooseWiki {
 	display: none;
 }
 

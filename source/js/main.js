@@ -65,16 +65,6 @@ btnChooseWiki.addEventListener("click",function(event) {
 	chooseWiki.click();
 },false);
 
-// Event handlers for browsing for a new wiki folder
-var chooseWikiFolder = document.getElementById("chooseWikiFolder");
-chooseWikiFolder.addEventListener("change",function(event) {
-	openWikiIfNotOpen("file://" + chooseWikiFolder.value);
-},false);
-var btnChooseWikiFolder = document.getElementById("btnChooseWikiFolder");
-btnChooseWikiFolder.addEventListener("click",function(event) {
-	chooseWikiFolder.click();
-},false);
-
 function openWikiIfNotOpen(wikiUrl) {
 	var wikiInfo = findwikiInfo(wikiUrl);
 	if(!wikiInfo || !wikiInfo.isOpen) {
@@ -89,19 +79,6 @@ function openWiki(wikiUrl) {
 	var wikiInfo = findwikiInfo(wikiUrl);
 	if(wikiInfo === null) {
 		wikiInfo = {url: wikiUrl};
-	}
-	// If we're opening a wiki folder then the wikiUrl should point to our custom app
-	var isWikiFolder = false;
-	if(wikiUrl.substr(0,7) === "file://") {
-		var wikiPath = wikiUrl.substr(7),
-			stat = fs.statSync(wikiPath);
-		if(stat.isDirectory()) {
-			if(!fs.existsSync(wikiPath + "/tiddlywiki.info")) {
-				return;
-			}
-			isWikiFolder = true;
-			wikiUrl = "../bin/app-wiki.html";
-		}
 	}
 	// Save the wiki list and update it in the DOM
 	wikiList[wikiList.length] = wikiInfo;
@@ -128,14 +105,6 @@ function openWiki(wikiUrl) {
 	// Set up the new window when loaded
 	newWindow.on("loaded",function() {
 		newWindow.showDevTools();
-		if(isWikiFolder) {
-			// Boot up the wiki folder
-			var code = "$tw.boot.startup();",
-				doc = newWindow.window.document,
-				script = doc.createElement("script");
-			script.appendChild(doc.createTextNode(code));
-			doc.documentElement.appendChild(script);
-		}
 		trackCurrentWindow(newWindow);
 		trapLinks(newWindow.window.document);
 		newWindow.capturePage(function(imgDataUri) {
