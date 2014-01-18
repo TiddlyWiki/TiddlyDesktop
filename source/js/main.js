@@ -122,20 +122,22 @@ console.log("Opening wiki",wikiUrl)
 		var hostIframe = newWindow.window.document.getElementById("twFrame");
 		if(hostIframe.src !== wikiUrl) {
 			hostIframe.addEventListener("load",function(event) {
+				setTimeout(function() {
+					newWindow.capturePage(function(imgDataUri) {
+						wikiInfo.img = imgDataUri;
+						var title = hostIframe.contentWindow.document.title;
+						newWindow.window.document.title = title;
+						wikiInfo.title = title;
+						saveWikiList();
+						renderWikiList();
+					},"png");
+				},500);
 				enableSaving(hostIframe.contentWindow,wikiUrl);
 				trapLinks(hostIframe.contentWindow.document);
 				newWindow.window.document.title = title;
 				wikiInfo.title = title;
 				saveWikiList();
 				renderWikiList();
-				newWindow.capturePage(function(imgDataUri) {
-					wikiInfo.img = imgDataUri;
-					var title = hostIframe.contentWindow.document.title;
-					newWindow.window.document.title = title;
-					wikiInfo.title = title;
-					saveWikiList();
-					renderWikiList();
-				},"png");
 				event.stopPropagation();
 				event.preventDefault();
 				return false;
