@@ -304,12 +304,12 @@ function renderWikiList(doc) {
 			event.preventDefault();
 			return false;
 		}));
-		toolbar.appendChild(createButton("clone",function(event) {
-			alert("Not yet implemented");
-			event.stopPropagation();
-			event.preventDefault();
-			return false;
-		}));
+		// toolbar.appendChild(createButton("clone",function(event) {
+		// 	alert("Not yet implemented");
+		// 	event.stopPropagation();
+		// 	event.preventDefault();
+		// 	return false;
+		// }));
 		toolbar.appendChild(createButton("remove",function(event) {
 			if(!wikiInfo.isOpen) {
 				var index = wikiList.indexOf(wikiInfo);
