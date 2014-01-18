@@ -154,6 +154,10 @@ function enableSaving(win,wikiUrl) {
 		messageBox = doc.createElement("div");
 	messageBox.id = "tiddlyfox-message-box";
 	doc.body.appendChild(messageBox);
+	// Inject saving code into TiddlyWiki classic
+	if(isTiddlyWikiClassic(doc)) {
+		injectClassicOverrides(doc);
+	}
 	// Listen for save events
 	messageBox.addEventListener("tiddlyfox-save-file",function(event) {
 		// Get the details from the message
@@ -172,6 +176,26 @@ function enableSaving(win,wikiUrl) {
 		return false;
 	},false);
 }
+
+// Helper to detect whether a document is a TiddlyWiki Classic
+function isTiddlyWikiClassic(doc) {
+	var versionArea = doc.getElementById("versionArea");
+	return doc.getElementById("storeArea") &&
+		(versionArea && /TiddlyWiki/.test(versionArea.text));
+}
+
+// Helper to inject overrides into TiddlyWiki Classic
+function injectClassicOverrides(doc) {
+	// Read inject.js
+	var xhReq = new XMLHttpRequest();
+	xhReq.open("GET","../js/inject.js",false);
+	xhReq.send(null);
+	// Inject it in a script tag
+	var script = doc.createElement("script");
+	script.appendChild(doc.createTextNode(xhReq.responseText));
+	doc.getElementsByTagName("head")[0].appendChild(script);
+}
+
 
 // Helper function to save a file
 function saveFile(path,content) {
