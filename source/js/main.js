@@ -114,9 +114,9 @@ console.log("Opening wiki",wikiUrl)
 	});
 	// Set up the new window when loaded
 	newWindow.on("loaded",function() {
-		// if(process.platform !== "darwin") {
-		// 	addMenuBar(newWindow);
-		// }
+		if(process.platform !== "darwin") {
+			addMenuBar(newWindow);
+		}
 		trackCurrentWindow(newWindow);
 		// newWindow.showDevTools();
 		var hostIframe = newWindow.window.document.getElementById("twFrame");
@@ -198,32 +198,12 @@ function trackCurrentWindow(win) {
 
 // Helper to add a menubar to a window
 function addMenuBar(win) {
-	win.menu = new gui.Menu({ type: "menubar" });
-	// var fileMenu = new gui.MenuItem({
-	//     label: "File",
-	//     submenu: new gui.Menu()
-	// });
-	// win.menu.insert(fileMenu,1);
-	// fileMenu.submenu.append(new gui.MenuItem({
-	//     label: "New",
-	//     click: function () {
-	//     	alert("New!!!!")
-	//     }
-	// }));
-	// fileMenu.submenu.append(new gui.MenuItem({
-	//     type: "separator"
-	// }));
-	// fileMenu.submenu.append(new gui.MenuItem({
-	//     label: "Close",
-	//     click: function () {
-	//         win.close();
-	//     }
-	// }));
-	var developerMenu = new gui.MenuItem({
+	var menu = new gui.Menu({ type: "menubar" }),
+		developerMenu = new gui.MenuItem({
 	    label: "Developer",
 	    submenu: new gui.Menu()
 	});
-	win.menu.append(developerMenu);
+	menu.append(developerMenu);
 	developerMenu.submenu.append(new gui.MenuItem({
 	    label: "Developer Tools",
 	    click: function () {
@@ -232,6 +212,7 @@ function addMenuBar(win) {
 	    	}
 	    }
 	}));
+	win.menu = menu;
 }
 
 // Helper to trap wikilinks within a window
