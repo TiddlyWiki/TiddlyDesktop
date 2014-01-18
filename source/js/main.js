@@ -114,17 +114,14 @@ console.log("Opening wiki",wikiUrl)
 	});
 	// Set up the new window when loaded
 	newWindow.on("loaded",function() {
-console.log("newWindow is loaded")
 		// if(process.platform !== "darwin") {
 		// 	addMenuBar(newWindow);
 		// }
 		trackCurrentWindow(newWindow);
 		// newWindow.showDevTools();
 		var hostIframe = newWindow.window.document.getElementById("twFrame");
-console.log(hostIframe.src,wikiUrl)
 		if(hostIframe.src !== wikiUrl) {
 			hostIframe.addEventListener("load",function(event) {
-console.log("hostIframe is loaded")
 				enableSaving(hostIframe.contentWindow,wikiUrl);
 				trapLinks(hostIframe.contentWindow.document);
 				newWindow.window.document.title = title;
@@ -132,7 +129,6 @@ console.log("hostIframe is loaded")
 				saveWikiList();
 				renderWikiList();
 				newWindow.capturePage(function(imgDataUri) {
-console.log("window is captured")
 					wikiInfo.img = imgDataUri;
 					var title = hostIframe.contentWindow.document.title;
 					newWindow.window.document.title = title;
