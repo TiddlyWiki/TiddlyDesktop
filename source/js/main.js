@@ -127,6 +127,10 @@ console.log(hostIframe.src,wikiUrl)
 console.log("hostIframe is loaded")
 				enableSaving(hostIframe.contentWindow,wikiUrl);
 				trapLinks(hostIframe.contentWindow.document);
+				newWindow.window.document.title = title;
+				wikiInfo.title = title;
+				saveWikiList();
+				renderWikiList();
 				newWindow.capturePage(function(imgDataUri) {
 console.log("window is captured")
 					wikiInfo.img = imgDataUri;
