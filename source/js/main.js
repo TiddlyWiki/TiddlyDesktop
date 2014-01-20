@@ -120,7 +120,7 @@ console.log("Opening wiki",wikiUrl)
 		trackCurrentWindow(newWindow);
 		// newWindow.showDevTools();
 		var hostIframe = newWindow.window.document.getElementById("twFrame");
-		if(hostIframe.src !== wikiUrl) {
+		if(hostIframe.src !== encodeURI(wikiUrl)) {
 			hostIframe.addEventListener("load",function(event) {
 				setTimeout(function() {
 					newWindow.capturePage(function(imgDataUri) {
