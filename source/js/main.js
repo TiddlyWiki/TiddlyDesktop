@@ -40,6 +40,9 @@ trackCurrentWindow(mainWindow);
 // Add a menubar
 addMenuBar(mainWindow);
 
+// Show dev tools on F12
+trapDevTools(mainWindow,document);
+
 // Trap clicks on wikilinks
 trapLinks(document);
 
@@ -133,9 +136,8 @@ console.log("Opening wiki",wikiUrl)
 					},"png");
 				},500);
 				enableSaving(hostIframe.contentWindow,wikiUrl);
+				trapDevTools(newWindow,hostIframe.contentWindow.document)
 				trapLinks(hostIframe.contentWindow.document);
-				newWindow.window.document.title = title;
-				wikiInfo.title = title;
 				saveWikiList();
 				renderWikiList();
 				event.stopPropagation();
@@ -239,6 +241,19 @@ function addMenuBar(win) {
 	    }
 	}));
 	win.menu = menu;
+}
+
+// Helper to trap dev tools opening within a window
+function trapDevTools(window,document) {
+	document.addEventListener("keyup",function(event) {
+		if(event.keyCode === 123) {
+			window.showDevTools();
+			event.preventDefault();
+			event.stopPropagation();
+			return false;
+		}
+		return true;
+	});
 }
 
 // Helper to trap wikilinks within a window
