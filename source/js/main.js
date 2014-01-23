@@ -18,9 +18,6 @@ var wikiList = [];
 var mainWindow = gui.Window.get();
 // mainWindow.showDevTools();
 
-// Current window
-var currentWindow = null;
-
 // Hacky flag for when we're shutting down
 var shuttingDown = false;
 
@@ -33,12 +30,6 @@ mainWindow.on("close",function() {
 	gui.App.closeAllWindows();
 	gui.App.quit();
 });
-
-// Track the current window
-trackCurrentWindow(mainWindow);
-
-// Add a menubar
-addMenuBar(mainWindow);
 
 // Show dev tools on F12
 trapDevTools(mainWindow,document);
@@ -117,10 +108,6 @@ console.log("Opening wiki",wikiUrl)
 	});
 	// Set up the new window when loaded
 	newWindow.on("loaded",function() {
-		if(process.platform !== "darwin") {
-			addMenuBar(newWindow);
-		}
-		trackCurrentWindow(newWindow);
 		// newWindow.showDevTools();
 		var hostIframe = newWindow.window.document.getElementById("twFrame");
 		if(hostIframe.src !== encodeURI(wikiUrl)) {
@@ -214,33 +201,6 @@ function findwikiInfo(url) {
 		}
 	});
 	return wikiInfo;
-}
-
-// Helper to add current window tracking to a window
-function trackCurrentWindow(win) {
-	currentWindow = win;
-	win.on("focus",function() {
-		currentWindow = win;
-	});
-}
-
-// Helper to add a menubar to a window
-function addMenuBar(win) {
-	var menu = new gui.Menu({ type: "menubar" }),
-		developerMenu = new gui.MenuItem({
-	    label: "Developer",
-	    submenu: new gui.Menu()
-	});
-	menu.append(developerMenu);
-	developerMenu.submenu.append(new gui.MenuItem({
-	    label: "Developer Tools",
-	    click: function () {
-	    	if(currentWindow) {
-		    	currentWindow.showDevTools();
-	    	}
-	    }
-	}));
-	win.menu = menu;
 }
 
 // Helper to trap dev tools opening within a window
