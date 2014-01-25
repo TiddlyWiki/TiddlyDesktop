@@ -14,6 +14,12 @@ https://github.com/Jermolene/TiddlyDesktop/releases
 
 Unzip into a folder and run `TiddlyWiki.app` or `nw.exe` and for linux `nw`
 
+# Usage
+
+## Developer Tools
+
+The F12 key opens the Chromium developer tools for the current window.
+
 # Building
 
 1. Download **node-webkit-v0.8.4-osx-ia32** , **node-webkit-v0.8.4-win-ia32** , **node-webkit-v0.8.4-linux-x64** **node-webkit-v0.8.4-linux-ia32** from the <a href="https://github.com/rogerwang/node-webkit#downloads">node-webkit GitHub repo</a> and unpack them into `/node-webkit`
