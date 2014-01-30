@@ -35,6 +35,12 @@ DAMAGE.
 " />
 <style type="text/css">
 
+#twError {
+	position: fixed;
+	top: 1em;
+	left: 1em;
+}
+
 #twFrame {
 	position: fixed;
 	left: 0;
@@ -45,9 +51,19 @@ DAMAGE.
 }
 
 </style>
+<script type="text/javascript">
+
+window.showError = function(error) {
+	var errorMsg = document.getElementById("twError");
+	errorMsg.innerHTML = error;
+};
+
+</script>
 <title>TiddlyDesktopHost</title>
 </head>
 <body>
+<div id="twError">
+</div>
 <iframe id="twFrame" nwdisable nwfaketop/>
 </body>
 </html>

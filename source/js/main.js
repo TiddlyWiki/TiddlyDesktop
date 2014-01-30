@@ -107,6 +107,8 @@ console.log("Opening wiki",wikiUrl)
 		this.close(true);
 	});
 	// Set up the new window when loaded
+	var haveSetSrc = false,
+		haveDisplayedError = false;
 	newWindow.on("loaded",function() {
 		// newWindow.showDevTools();
 		var hostIframe = newWindow.window.document.getElementById("twFrame");
@@ -131,7 +133,16 @@ console.log("Opening wiki",wikiUrl)
 				event.preventDefault();
 				return false;
 			},false);
-			hostIframe.src = wikiUrl;
+			if(!haveSetSrc) {
+				hostIframe.src = wikiUrl;
+				haveSetSrc = true;
+			} else {
+				if(!haveDisplayedError) {
+					mainWindow.window.console.log("Filenotfound")
+					newWindow.window.showError("File not found: " + wikiUrl)
+					haveDisplayedError = true;
+				}
+			}
 		}
 	});
 }
