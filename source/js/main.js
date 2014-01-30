@@ -233,7 +233,7 @@ function trapLinks(doc) {
 		// See if we're in an interwiki link
 		var interwikiLink = findParentWithClass(event.target,"tw-interwiki-link");
 		if(interwikiLink) {
-			openWikiIfNotOpen(interwikiLink.getAttribute("href"));
+			openWikiIfNotOpen(interwikiLink.href);
 			event.preventDefault();
 			event.stopPropagation();
 			return false;
