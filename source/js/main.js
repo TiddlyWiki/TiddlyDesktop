@@ -239,9 +239,10 @@ function trapLinks(doc) {
 			return false;
 		}
 		// See if we're in an external link
-		var externalLink = findParentWithClass(event.target,"tw-tiddlylink-external");
+		// "tw-tiddlylink-external" is for TW5, "externallink" for TWC
+		var externalLink = findParentWithClass(event.target,"tw-tiddlylink-external externalLink");
 		if(externalLink) {
-			gui.Shell.openExternal(externalLink.getAttribute("href"));
+			gui.Shell.openExternal(externalLink.href);
 			event.preventDefault();
 			event.stopPropagation();
 			return false;
@@ -332,10 +333,15 @@ function loadWikiList() {
 	wikiList = JSON.parse(localStorage.wikiList || "[]");
 }
 
-function findParentWithClass(node,className) {
+function findParentWithClass(node,classNames) {
+	classNames = classNames.split(" ");
 	while(node) {
-		if(node.classList && node.classList.contains(className)) {
-			return node;
+		if(node.classList) {
+			for(var t=0; t<classNames.length; t++) {
+				if(node.classList.contains(classNames[t])) {
+					return node;
+				}
+			}
 		}
 		node = node.parentNode;
 	}
