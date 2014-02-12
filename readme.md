@@ -14,7 +14,8 @@ https://github.com/Jermolene/TiddlyDesktop/releases
 
 Unzip into a folder and run `TiddlyWiki.app` or `nw.exe` and for linux `nw`
 
-#Known issue - "nothing happens"
+## Known issue - "nothing happens"
+
 This has been seen in Ubuntu 13.10 (see Issue #14)
 
 This is a known issue with node-webkit. Until this is fixed, here is one solution which involves making a tiny but significant change to the executable file nw.  
