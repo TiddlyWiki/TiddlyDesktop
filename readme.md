@@ -2,6 +2,10 @@
 
 TiddlyDesktop is a special purpose web browser for working with locally stored TiddlyWikis. See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
+See this video tutorial for an overview of installing and using TiddlyDesktop on Windows and OS X:
+
+https://www.youtube.com/watch?v=i3Bggkm7paA
+
 It is based on node-webkit, a project created and developed in the Intel Open Source Technology Center:
 
 https://github.com/rogerwang/node-webkit
