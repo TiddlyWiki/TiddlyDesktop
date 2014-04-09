@@ -22,39 +22,25 @@ Unzip into a folder and run `TiddlyWiki.app` or `nw.exe` and for linux `nw`
 
 This has been seen in Ubuntu 13.10 (see Issue #14)
 
-This is a known issue with node-webkit. Until this is fixed, here is one solution which involves making a tiny but significant change to the executable file nw.  
- 
-Download ghex:  (ghex is a hexidecimal editor)
-    
-    sudo apt-get install ghex        
+This is a known issue with node-webkit. Until this is fixed, here is one solution:
 
-Change to the folder containing TiddlyDesktop files and then make a copy of nw
+1. Install the package ''bless'' -- with the package manager, synaptic or from the terminal
 
-    cp nw nw_orig
+```
+sudo apt-get install bless
+```
 
-Open nw executable for editing: 
-    ghex nw
+2. Load bless
 
-Now find and replace string udev.so.0 and change the 0 to a 1. Detailed steps (based on ghex) are as follows:
+3. Open the ''nw'' binary (file tab)
 
-    1. Ctrl-F to bring up the search pane
-    2. type udev.so.0  in the right hand side of the search pane
-    3. Press <Enter> to search
-    
-    Note that udev.so.0 will be highlighted in red when found.  
-    
-    4. Click on the red text and move cursor to 0
-    5. Press '1' on your keyboard
-    6. Check that the text now reads udev.so.1
-    
-    7. Now cancel search box and save the resulting file
-    
-Now launch nw
+4. Select find and replace (search tab)
 
-    ./nw
+5. Search for "udev.so.0" and replace with "udev.so.1" -- set both fields to text 
+
+6. Save the edited ''nw'' binary
 
 Other possible solutions: https://github.com/rogerwang/node-webkit/wiki/The-solution-of-lacking-libudev.so.0
-
 
 # Usage
 
