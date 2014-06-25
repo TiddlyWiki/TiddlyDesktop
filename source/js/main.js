@@ -13,6 +13,7 @@ var gui = require("nw.gui"),
 // isOpen: true if these wiki is currently open
 // 
 var wikiList = [];
+var openedWindows = [];
 
 // Get the main window
 var mainWindow = gui.Window.get();
@@ -71,16 +72,18 @@ function convertPathToFileUrl(path) {
 function openWikiIfNotOpen(wikiUrl) {
 	var wikiInfo = findwikiInfo(wikiUrl);
 	if(!wikiInfo || !wikiInfo.isOpen) {
-		console.log("Now opening wiki")
+		console.log("Now opening wiki");
 		openWiki(wikiUrl);
-	}
+	} else if (wikiInfo.isOpen) {
+        openedWindows[wikiUrl].focus();
+    }
 }
 
 // Helper to open a TiddlyWiki in a new window
 function openWiki(wikiUrl) {
-console.log("Opening wiki",wikiUrl)
+    console.log("Opening wiki",wikiUrl);
 	// Add the path to the wikiList if not already there
-	var wikiInfo = findwikiInfo(wikiUrl);
+    var wikiInfo = findwikiInfo(wikiUrl);
 	if(wikiInfo === null) {
 		wikiInfo = {url: wikiUrl};
 		wikiList[wikiList.length] = wikiInfo;
@@ -98,11 +101,14 @@ console.log("Opening wiki",wikiUrl)
 		"min_width": 400,
 		"min_height": 200
 	});
+    openedWindows[wikiUrl] = newWindow;
 	// Trap close event
 	newWindow.on("close",function() {
 		if(!shuttingDown) {
 			wikiInfo.isOpen = false;
+            delete openedWindows[wikiInfo.url];
 			saveWikiList();
+            renderWikiList();
 		}
 		this.close(true);
 	});
@@ -261,9 +267,14 @@ function renderWikiList(doc) {
 	}
 	// Add the current entries
 	wikiList.forEach(function(wikiInfo,index) {
-		var createButton = function(caption,handler) {
+		var createButton = function(id, caption,handler) {
+            if (typeof caption === 'function') {
+                handler = caption;
+                caption = id;
+            }
 			var button = doc.createElement("button");
-			button.className = "td-" + caption;
+            button.id = "td-" + id + "-" + index;
+			button.className = "td-" + id;
 			button.appendChild(doc.createTextNode(caption));
 			button.addEventListener("click",handler,false);
 			return button
@@ -283,10 +294,12 @@ function renderWikiList(doc) {
 		title.className = "td-title";
 		url.appendChild(doc.createTextNode(wikiInfo.url));
 		url.className = "td-url";
-		toolbar.appendChild(createButton("open",function(event) {
+		toolbar.appendChild(createButton("open", wikiInfo.isOpen ? 'activate' : 'open' ,function(event) {
 			if(!wikiInfo.isOpen) {
 				openWiki(wikiInfo.url);
-			}
+			} else if (openedWindows[wikiInfo.url]) {
+                openedWindows[wikiInfo.url].focus()
+            }
 			event.stopPropagation();
 			event.preventDefault();
 			return false;
