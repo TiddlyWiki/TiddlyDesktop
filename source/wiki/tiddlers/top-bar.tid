@@ -1,0 +1,19 @@
+title: top-bar
+
+<div id="td-instructions">
+
+	<$image source="Motovun Jack.svg" class="td-logo"/>
+
+	<div class="td-file-input-wrapper">
+
+	<$button tooltip="open in TiddlyDeskTop">
+
+	<$text text="Browse for a TiddlyWiki file"/>
+
+	</$button>
+
+	<$browsewiki/> 
+
+	</div>
+
+</div>

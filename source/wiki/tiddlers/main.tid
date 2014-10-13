@@ -1,0 +1,5 @@
+title: main
+
+<$transclude tiddler="top-bar" mode="block"/>
+
+<$transclude tiddler="wikiList" mode="block"/>
