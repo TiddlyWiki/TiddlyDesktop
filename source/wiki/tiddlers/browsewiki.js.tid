@@ -43,14 +43,10 @@ BrowseWidget.prototype.render = function(parent,nextSibling) {
 	if(this.browseMultiple) {
 		domNode.setAttribute("multiple","multiple");
 	}
-	if(this.message) {
-		domNode.setAttribute("message",this.message);
-	}
 	// Add a click event handler
 	domNode.addEventListener("change",function (event) {
-    	var message = this.getAttribute("message");
-		if (message) {
-			self.dispatchEvent({type: message, param: event.target.files});
+		if (self.message) {
+			self.dispatchEvent({type: self.message, param: event.target.files});
 			return false;
 		} else {
 			self.wiki.readFiles(event.target.files,function(tiddlerFieldsArray) {
