@@ -82,7 +82,7 @@ mainWindow.on("loaded",function() {
 	});
 });
 
-// ==== nodeStatus and tiddler section ====
+// ==== tiddler section ====
 function removeWikiInfoTW(title) {
 	if (!title)
 		return;
@@ -132,7 +132,7 @@ function trapUI(dom) {
 	},false);
 }
 
-// ==== end of nodeStatus and tiddler section ====
+// ==== end of tiddler section ====
 
 function convertPathToFileUrl(path) {
 	// File prefix depends on platform

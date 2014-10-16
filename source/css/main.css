@@ -2,9 +2,9 @@ body {
 }
 
 .td-btn-invisible {
-background: none 0% 0% transparent;
-border: none;
-text-align: left;
+	background: none 0% 0% transparent;
+	border: none;
+	text-align: left;
 }
 
 #td-instructions {
