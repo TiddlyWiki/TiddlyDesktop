@@ -237,7 +237,7 @@ function trapDevTools(window,document) {
 function trapLinks(doc) {
 	doc.addEventListener("click",function(event) {
 		// See if we're in an interwiki link
-		var interwikiLink = findParentWithClass(event.target,"tw-interwiki-link");
+		var interwikiLink = findParentWithClass(event.target,"tc-interwiki-link") || findParentWithClass(event.target,"tw-interwiki-link");
 		if(interwikiLink) {
 			openWikiIfNotOpen(interwikiLink.href);
 			event.preventDefault();
@@ -246,7 +246,7 @@ function trapLinks(doc) {
 		}
 		// See if we're in an external link
 		// "tw-tiddlylink-external" is for TW5, "externallink" for TWC
-		var externalLink = findParentWithClass(event.target,"tw-tiddlylink-external externalLink");
+		var externalLink = findParentWithClass(event.target,"tc-tiddlylink-external externalLink") || findParentWithClass(event.target,"tw-tiddlylink-external externalLink") || findParentWithClass(event.target,"externallink");
 		if(externalLink) {
 			gui.Shell.openExternal(externalLink.href);
 			event.preventDefault();
@@ -286,7 +286,7 @@ function renderWikiList(doc) {
 			title = doc.createElement("div"),
 			url = doc.createElement("div"),
 			toolbar = doc.createElement("div");
-		link.className = "tw-interwiki-link";
+		link.className = "tw-interwiki-link tc-interwiki-link";
 		link.href = wikiInfo.url;
 		img.src = wikiInfo.img;
 		info.className = "td-info";

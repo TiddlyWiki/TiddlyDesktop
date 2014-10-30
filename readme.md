@@ -59,7 +59,7 @@ The F12 key opens the Chromium developer tools for the current window.
 You can create links that open a TiddlyWiki in a new window:
 
 ```
-<a href="/Users/jack/MyTiddlyWiki.html" class="tw-interwiki-link">Open my wiki</a>
+<a href="/Users/jack/MyTiddlyWiki.html" class="tc-interwiki-link">Open my wiki</a>
 ```
 
 These links only work within TiddlyDesktop.
