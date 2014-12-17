@@ -7,8 +7,8 @@ var gui = require("nw.gui"),
 	fs = require("fs");
 
 // Information about each wiki we're tracking. Each entry is a hashmap with these fields:
-// url: full file:// URI of the wiki
-// title: last recorded title string for the wiki
+// url: full file:// URI of the wiki				=> as "url" and "title" in tiddler
+// title: last recorded title string for the wiki	=> as "wikiTitle" in tiddler
 // img: URI of thumbnail (usually a data URI)
 // isOpen: true if these wiki is currently open
 // 
@@ -42,30 +42,104 @@ mainWindow.on("close",function() {
 // Show dev tools on F12
 trapDevTools(mainWindow,document);
 
-// Trap clicks on wikilinks
-trapLinks(document);
+// ==== Begin of TiddlyWiki Section ====
+// Load TiddlyWiki
+var $tw = {};
 
+console.log("working direcory",process.cwd())
+// First part of boot process
+require("../../../../../../../../TiddlyWiki5/boot/bootprefix.js").bootprefix($tw);
+
+// Set command line
+$tw.boot = $tw.boot || {};
+$tw.boot.argv = ["./wiki"];
+
+// Disable rendering
+$tw.boot.disabledStartupModules = ["render"];
+
+// Main part of boot process
+require("../../../../../../../../TiddlyWiki5/boot/boot.js").TiddlyWiki($tw);
+
+var PAGE_TEMPLATE_TITLE = "main";
+
+var pageWidgetNode = $tw.wiki.makeTranscludeWidget(PAGE_TEMPLATE_TITLE,{document: document});
+	
+var pageContainer = document.getElementById("mainwidget");
+
+pageWidgetNode.render(pageContainer,null);
+
+$tw.wiki.addEventListener("change",function(changes) {
+	pageWidgetNode.refresh(changes,pageContainer,null);
+});
+
+// Trap UI actions
+trapUI(pageWidgetNode);
+
+// ==== End of TiddlyWiki Section ====
 // Render the wiki list
-renderWikiList(document);
+//renderWikiList(document);		// old implementation, about to delete
 
 // Open any windows that should be open
 mainWindow.on("loaded",function() {
 	wikiList.forEach(function(wikiInfo,index) {
+		updateWikiInfoTW(wikiInfo);
 		if(wikiInfo.isOpen) {
 			openWiki(wikiInfo.url);
 		}
 	});
 });
 
-// Event handlers for browsing for a new wiki
-var chooseWiki = document.getElementById("chooseWiki");
-chooseWiki.addEventListener("change",function(event) {
-	openWikiIfNotOpen(convertPathToFileUrl(chooseWiki.value));
-},false);
-var btnChooseWiki = document.getElementById("btnChooseWiki");
-btnChooseWiki.addEventListener("click",function(event) {
-	chooseWiki.click();
-},false);
+// ==== tiddler section ====
+function removeWikiInfoTW(title) {
+	if (!title)
+		return;
+	$tw.wiki.deleteTiddler(title)
+	return;
+}
+
+function updateWikiInfoTW(wikiInfo) {
+	if (!wikiInfo.url)
+		return;
+	$tw.wiki.addTiddler(new $tw.Tiddler(wikiInfo, 
+		{title: wikiInfo.url, tags: "wikilist", wikiTitle: wikiInfo.title, 
+		isOpen: (wikiInfo.isOpen ? "true" : null), img: null}));
+	if (wikiInfo.img)
+		$tw.wiki.addTiddler(new $tw.Tiddler({title: "img of " + wikiInfo.url, 
+			tags: "[[" + wikiInfo.url + "]]", type: "image/png", _canonical_uri: wikiInfo.img}));
+	return;
+}
+
+function trapUI(dom) {
+	dom.addEventListener("dm-open-wiki",function(event) {
+		openWikiIfNotOpen(event.param);
+		return false;
+	},false);
+	dom.addEventListener("dm-open-wiki-file",function(event) {
+		for(var i=0;i<event.param.length;i++)
+		{
+			var target=event.param[i];
+			openWikiIfNotOpen(convertPathToFileUrl(target.path));
+		}
+		return false;
+	},false);
+	dom.addEventListener("dm-remove-wiki",function(event) {
+		var wikiInfo=findwikiInfo(event.param);
+		if(!wikiInfo.isOpen) {
+			var index = wikiList.indexOf(wikiInfo);
+			if(index !== -1) {
+				wikiList.splice(index,1);
+			} else {
+				throw "Cannot find item in wikiList";
+			}
+			saveWikiList();
+			removeWikiInfoTW(event.param);
+		} else
+			alert("wiki still open !!");
+		return false;
+	},false);
+}
+
+// ==== end of tiddler section ====
 
 function convertPathToFileUrl(path) {
 	// File prefix depends on platform
@@ -82,8 +156,8 @@ function openWikiIfNotOpen(wikiUrl) {
 		console.log("Now opening wiki");
 		openWiki(wikiUrl);
 	} else if (wikiInfo.isOpen) {
-        openedWindows[wikiUrl].focus();
-    }
+		openedWindows[wikiUrl].focus();
+	}
 }
 
 // Helper to open a TiddlyWiki in a new window
@@ -98,7 +172,8 @@ function openWiki(wikiUrl) {
 	// Save the wiki list and update it in the DOM
 	wikiInfo.isOpen = true;
 	saveWikiList();
-	renderWikiList();
+//	renderWikiList();
+	updateWikiInfoTW(wikiInfo);
 	// Open the window
 	var newWindow = gui.Window.open("./host.html",{
 		toolbar: false,
@@ -113,9 +188,10 @@ function openWiki(wikiUrl) {
 	newWindow.on("close",function() {
 		if(!shuttingDown) {
 			wikiInfo.isOpen = false;
-            delete openedWindows[wikiInfo.url];
+			delete openedWindows[wikiInfo.url];
 			saveWikiList();
-            renderWikiList();
+//			renderWikiList();
+			updateWikiInfoTW(wikiInfo);
 		}
 		this.close(true);
 	});
@@ -134,14 +210,16 @@ function openWiki(wikiUrl) {
 						newWindow.window.document.title = title;
 						wikiInfo.title = title;
 						saveWikiList();
-						renderWikiList();
-					},"png");
+//						renderWikiList();
+						updateWikiInfoTW(wikiInfo);
+						},"png");
 				},500);
 				enableSaving(hostIframe.contentWindow,wikiUrl);
 				trapDevTools(newWindow,hostIframe.contentWindow.document)
 				trapLinks(hostIframe.contentWindow.document);
 				saveWikiList();
-				renderWikiList();
+				updateWikiInfoTW(wikiInfo);
+//				renderWikiList();
 				event.stopPropagation();
 				event.preventDefault();
 				return false;
@@ -264,8 +342,9 @@ function trapLinks(doc) {
 	},false);
 }
 
-// Helper to re-render the wiki list
+// Helper to re-render the wiki list	// retired !!
 function renderWikiList(doc) {
+	return;
 	doc = doc || document;
 	var wikiListContainer = doc.getElementById("wikiList");
 	// Remove any existing entries
