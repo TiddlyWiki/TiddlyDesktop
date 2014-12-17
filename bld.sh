@@ -2,6 +2,10 @@
 
 # build TiddlyDesktop
 
+# Get the correct version of TiddlyWiki and copy to source/tiddlywiki
+npm install
+cp -R node_modules/tiddlywiki source/tiddlywiki
+
 # Remove any old build
 rm -Rf output
 

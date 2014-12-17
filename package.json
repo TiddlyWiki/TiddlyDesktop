@@ -1,0 +1,27 @@
+{
+	"name": "tiddlydesktop",
+	"version": "0.0.4-prerelease",
+	"author": "Jeremy Ruston <jeremy@jermolene.com>",
+	"description": "a desktop application for TiddlyWiki",
+	"contributors": [
+		{
+			"name": "Jeremy Ruston",
+			"email": "jeremy@jermolene.com"
+		}
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Jermolene/TiddlyDesktop.git"
+	},
+	"keywords": [
+		"tiddlywiki",
+		"tiddlywiki5",
+		"wiki"
+	],
+	"dependencies": {
+		"tiddlywiki": "5.1.5"
+	},
+	"devDependencies": {},
+	"bundleDependencies": [],
+	"license": "BSD"
+}

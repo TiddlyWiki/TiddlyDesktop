@@ -48,7 +48,7 @@ var $tw = {};
 
 console.log("working direcory",process.cwd())
 // First part of boot process
-require("../../../../../../../../TiddlyWiki5/boot/bootprefix.js").bootprefix($tw);
+require("tiddlywiki/boot/bootprefix.js").bootprefix($tw);
 
 // Set command line
 $tw.boot = $tw.boot || {};
@@ -58,7 +58,7 @@ $tw.boot.argv = ["./wiki"];
 $tw.boot.disabledStartupModules = ["render"];
 
 // Main part of boot process
-require("../../../../../../../../TiddlyWiki5/boot/boot.js").TiddlyWiki($tw);
+require("tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 
 var PAGE_TEMPLATE_TITLE = "main";
 
