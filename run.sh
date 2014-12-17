@@ -5,7 +5,7 @@
 
 pushd ../TiddlyWiki5
 
-./qbld.sh
+../build.jermolene.github.io/quick-bld.sh
 
 popd
 
