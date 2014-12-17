@@ -19,6 +19,13 @@ var openedWindows = [];
 var mainWindow = gui.Window.get();
 // mainWindow.showDevTools();
 
+// Set up the menu bar
+var menuBar = new gui.Menu({type:"menubar"});
+if (process.platform === "darwin") {
+	menuBar.createMacBuiltin("TiddlyDesktop");
+}
+mainWindow.menu = menuBar;
+
 // Hacky flag for when we're shutting down
 var shuttingDown = false;
 
@@ -119,7 +126,7 @@ function openWiki(wikiUrl) {
 		// newWindow.showDevTools();
 		var hostIframe = newWindow.window.document.getElementById("twFrame");
 		if(hostIframe.src !== encodeURI(wikiUrl)) {
-			hostIframe.addEventListener("load",function(event) {
+			hostIframe.onload = function(event) {
 				setTimeout(function() {
 					newWindow.capturePage(function(imgDataUri) {
 						wikiInfo.img = imgDataUri;
@@ -138,7 +145,7 @@ function openWiki(wikiUrl) {
 				event.stopPropagation();
 				event.preventDefault();
 				return false;
-			},false);
+			};
 			if(!haveSetSrc) {
 				hostIframe.src = wikiUrl;
 				haveSetSrc = true;
