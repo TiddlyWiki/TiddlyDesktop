@@ -92,7 +92,7 @@ PAGE_TEMPLATE_TITLE = "$:/core/ui/PageTemplate";
 
 var pageWidgetNode = $tw.wiki.makeTranscludeWidget(PAGE_TEMPLATE_TITLE,{document: document});
 	
-var pageContainer = document.getElementById("mainwidget");
+var pageContainer = document.getElementById("twMain");
 
 pageWidgetNode.render(pageContainer,null);
 
