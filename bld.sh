@@ -2,12 +2,14 @@
 
 # build TiddlyDesktop
 
-# Get the correct version of TiddlyWiki and copy to source/tiddlywiki
-npm install
-cp -R node_modules/tiddlywiki source/tiddlywiki
-
 # Remove any old build
 rm -Rf output
+rm -Rf source/tiddlywiki
+
+# Get the correct version of TiddlyWiki and copy to source/tiddlywiki
+# npm install
+npm install ../TiddlyWiki5
+cp -R node_modules/tiddlywiki source/tiddlywiki
 
 # Create the output directory
 mkdir -p output
