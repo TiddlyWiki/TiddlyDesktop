@@ -74,30 +74,8 @@ require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
 $tw.boot = $tw.boot || {};
 $tw.boot.argv = [wikiFolder];
 
-// Disable rendering
-$tw.boot.disabledStartupModules = ["render"];
-
 // Main part of boot process
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
-
-// Render the main window
-
-var PAGE_TEMPLATE_TITLE = "main";
-
-PAGE_TEMPLATE_TITLE = "$:/core/ui/PageTemplate";
-
-var pageWidgetNode = $tw.wiki.makeTranscludeWidget(PAGE_TEMPLATE_TITLE,{document: document});
-	
-var pageContainer = document.getElementById("twMain");
-
-pageWidgetNode.render(pageContainer,null);
-
-$tw.wiki.addEventListener("change",function(changes) {
-	pageWidgetNode.refresh(changes,pageContainer,null);
-});
-
-// Trap UI actions
-trapUI(pageWidgetNode);
 
 // Open any windows that should be open
 mainWindow.on("loaded",function() {
@@ -118,14 +96,17 @@ function removeWikiInfoTW(title) {
 }
 
 function updateWikiInfoTW(wikiInfo) {
-	if (!wikiInfo.url)
+	if(!wikiInfo.url) {
 		return;
-	$tw.wiki.addTiddler(new $tw.Tiddler(wikiInfo, 
+	}
+	$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),$tw.wiki.getModificationFields(),
 		{title: wikiInfo.url, tags: "wikilist", wikiTitle: wikiInfo.title, 
 		isOpen: (wikiInfo.isOpen ? "true" : null), img: null}));
-	if (wikiInfo.img)
-		$tw.wiki.addTiddler(new $tw.Tiddler({title: "img of " + wikiInfo.url, 
+	if(wikiInfo.img) {
+		$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),$tw.wiki.getModificationFields(),
+			{title: "img of " + wikiInfo.url, 
 			tags: "[[" + wikiInfo.url + "]]", type: "image/png", _canonical_uri: wikiInfo.img}));
+	}
 	return;
 }
 
