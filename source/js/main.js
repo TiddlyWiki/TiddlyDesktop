@@ -4,7 +4,8 @@
 "use strict";
 
 var gui = require("nw.gui"),
-	fs = require("fs");
+	fs = require("fs"),
+	path = require("path");
 
 // Information about each wiki we're tracking. Each entry is a hashmap with these fields:
 // url: full file:// URI of the wiki				=> as "url" and "title" in tiddler
@@ -17,11 +18,11 @@ var openedWindows = [];
 
 // Get the main window
 var mainWindow = gui.Window.get();
-// mainWindow.showDevTools();
+mainWindow.showDevTools();
 
 // Set up the menu bar
 var menuBar = new gui.Menu({type:"menubar"});
-if (process.platform === "darwin") {
+if(process.platform === "darwin") {
 	menuBar.createMacBuiltin("TiddlyDesktop");
 }
 mainWindow.menu = menuBar;
@@ -42,25 +43,52 @@ mainWindow.on("close",function() {
 // Show dev tools on F12
 trapDevTools(mainWindow,document);
 
-// ==== Begin of TiddlyWiki Section ====
+// Check to see if the wiki folder exists
+
+var wikiFolder = path.resolve(gui.App.dataPath,"user-config-tiddlywiki");
+
+if(!fs.existsSync(wikiFolder)) {
+	var packageFilename = path.resolve(wikiFolder,"tiddlywiki.info"),
+		packageJson = {
+			"description": "TiddlyDesktop user configuration wiki",
+			"plugins": [
+				"tiddlywiki/filesystem"
+			],
+			"themes": [
+				"tiddlywiki/vanilla",
+				"tiddlywiki/snowwhite"
+			],
+			"includeWikis": [
+				path.resolve(process.cwd(),"base-config-tiddlywiki")
+			]
+		};
+	fs.mkdirSync(wikiFolder);
+	fs.writeFileSync(packageFilename,JSON.stringify(packageJson,null,4));
+}
+
 // Load TiddlyWiki
 var $tw = {};
 
-console.log("working direcory",process.cwd())
 // First part of boot process
-require("tiddlywiki/boot/bootprefix.js").bootprefix($tw);
+require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
 
 // Set command line
 $tw.boot = $tw.boot || {};
-$tw.boot.argv = ["./wiki"];
+$tw.boot.argv = [wikiFolder];
 
 // Disable rendering
 $tw.boot.disabledStartupModules = ["render"];
 
 // Main part of boot process
-require("tiddlywiki/boot/boot.js").TiddlyWiki($tw);
+require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
+
+console.log("$tw.boot.wikiInfo",$tw.boot.wikiInfo)
+
+// Render the main window
 
 var PAGE_TEMPLATE_TITLE = "main";
+
+PAGE_TEMPLATE_TITLE = "$:/core/ui/PageTemplate";
 
 var pageWidgetNode = $tw.wiki.makeTranscludeWidget(PAGE_TEMPLATE_TITLE,{document: document});
 	
@@ -229,7 +257,7 @@ function openWiki(wikiUrl) {
 				haveSetSrc = true;
 			} else {
 				if(!haveDisplayedError) {
-					mainWindow.window.console.log("Filenotfound")
+					mainWindow.window.console.log("File not found")
 					newWindow.window.showError("File not found: " + wikiUrl)
 					haveDisplayedError = true;
 				}
