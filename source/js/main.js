@@ -33,7 +33,7 @@ var shuttingDown = false;
 // Get the current wikiList
 loadWikiList();
 
-// Close all windows when the current window is closed
+// Close all windows when the main window is closed
 mainWindow.on("close",function() {
 	shuttingDown = true;
 	gui.App.closeAllWindows();
@@ -43,10 +43,8 @@ mainWindow.on("close",function() {
 // Show dev tools on F12
 trapDevTools(mainWindow,document);
 
-// Check to see if the wiki folder exists
-
+// Create a user configuration wiki folder if it doesn't exist
 var wikiFolder = path.resolve(gui.App.dataPath,"user-config-tiddlywiki");
-
 if(!fs.existsSync(wikiFolder)) {
 	var packageFilename = path.resolve(wikiFolder,"tiddlywiki.info"),
 		packageJson = {
@@ -82,8 +80,6 @@ $tw.boot.disabledStartupModules = ["render"];
 // Main part of boot process
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 
-console.log("$tw.boot.wikiInfo",$tw.boot.wikiInfo)
-
 // Render the main window
 
 var PAGE_TEMPLATE_TITLE = "main";
@@ -102,10 +98,6 @@ $tw.wiki.addEventListener("change",function(changes) {
 
 // Trap UI actions
 trapUI(pageWidgetNode);
-
-// ==== End of TiddlyWiki Section ====
-// Render the wiki list
-//renderWikiList(document);		// old implementation, about to delete
 
 // Open any windows that should be open
 mainWindow.on("loaded",function() {
@@ -200,7 +192,6 @@ function openWiki(wikiUrl) {
 	// Save the wiki list and update it in the DOM
 	wikiInfo.isOpen = true;
 	saveWikiList();
-//	renderWikiList();
 	updateWikiInfoTW(wikiInfo);
 	// Open the window
 	var newWindow = gui.Window.open("./host.html",{
@@ -218,7 +209,6 @@ function openWiki(wikiUrl) {
 			wikiInfo.isOpen = false;
 			delete openedWindows[wikiInfo.url];
 			saveWikiList();
-//			renderWikiList();
 			updateWikiInfoTW(wikiInfo);
 		}
 		this.close(true);
@@ -238,7 +228,6 @@ function openWiki(wikiUrl) {
 						newWindow.window.document.title = title;
 						wikiInfo.title = title;
 						saveWikiList();
-//						renderWikiList();
 						updateWikiInfoTW(wikiInfo);
 						},"png");
 				},500);
@@ -247,7 +236,6 @@ function openWiki(wikiUrl) {
 				trapLinks(hostIframe.contentWindow.document);
 				saveWikiList();
 				updateWikiInfoTW(wikiInfo);
-//				renderWikiList();
 				event.stopPropagation();
 				event.preventDefault();
 				return false;
@@ -368,86 +356,6 @@ function trapLinks(doc) {
 		}
 		return true;
 	},false);
-}
-
-// Helper to re-render the wiki list	// retired !!
-function renderWikiList(doc) {
-	return;
-	doc = doc || document;
-	var wikiListContainer = doc.getElementById("wikiList");
-	// Remove any existing entries
-	while(wikiListContainer.hasChildNodes()) {
-		wikiListContainer.removeChild(wikiListContainer.firstChild);
-	}
-	// Add the current entries
-	wikiList.forEach(function(wikiInfo,index) {
-		var createButton = function(id, caption,handler) {
-            if (typeof caption === 'function') {
-                handler = caption;
-                caption = id;
-            }
-			var button = doc.createElement("button");
-            button.id = "td-" + id + "-" + index;
-			button.className = "td-" + id;
-			button.appendChild(doc.createTextNode(caption));
-			button.addEventListener("click",handler,false);
-			return button
-		};
-		var li = doc.createElement("li"),
-			link = doc.createElement("a"),
-			img = doc.createElement("img"),
-			info = doc.createElement("div"),
-			title = doc.createElement("div"),
-			url = doc.createElement("div"),
-			toolbar = doc.createElement("div");
-		link.className = "tw-interwiki-link tc-interwiki-link";
-		link.href = wikiInfo.url;
-		img.src = wikiInfo.img;
-		info.className = "td-info";
-		title.appendChild(doc.createTextNode(wikiInfo.title));
-		title.className = "td-title";
-		url.appendChild(doc.createTextNode(wikiInfo.url));
-		url.className = "td-url";
-		toolbar.appendChild(createButton("open", wikiInfo.isOpen ? 'activate' : 'open' ,function(event) {
-			if(!wikiInfo.isOpen) {
-				openWiki(wikiInfo.url);
-			} else if (openedWindows[wikiInfo.url]) {
-                openedWindows[wikiInfo.url].focus()
-            }
-			event.stopPropagation();
-			event.preventDefault();
-			return false;
-		}));
-		// toolbar.appendChild(createButton("clone",function(event) {
-		// 	alert("Not yet implemented");
-		// 	event.stopPropagation();
-		// 	event.preventDefault();
-		// 	return false;
-		// }));
-		toolbar.appendChild(createButton("remove",function(event) {
-			if(!wikiInfo.isOpen) {
-				var index = wikiList.indexOf(wikiInfo);
-				if(index !== -1) {
-					wikiList.splice(index,1);
-				} else {
-					throw "Cannot find item in wikiList";
-				}
-				saveWikiList();
-				renderWikiList();
-			}
-			event.stopPropagation();
-			event.preventDefault();
-			return false;
-		}));
-		toolbar.className = "td-toolbar";
-		wikiListContainer.appendChild(li);
-		li.appendChild(link);
-		link.appendChild(img);
-		info.appendChild(title);
-		info.appendChild(url);
-		info.appendChild(toolbar);
-		link.appendChild(info);
-	});
 }
 
 // Helper to save the wikiList structure to localStorage
