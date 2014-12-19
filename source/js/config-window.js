@@ -6,14 +6,39 @@
 var devTools = require("../js/dev-tools.js")
 
 /*
+A hashmap of ConfigWindow objects for open windows. The key is the tiddler title and the values of all specified variables, concatenated with a vertical bar. For example:
+"TiddlerTitle|variable:value|variable:value"
+Note that the variable names must be sorted
+*/
+var configWindows = {};
+
+/*
+Make a key for the configWindows hashmap
+*/
+function makeWindowIdentifier(tiddler,variables) {
+	var result = [tiddler],
+		variableNames = Object.keys(variables).sort(),
+		name;
+	for(var t=0; t<variableNames.length; t++) {
+		name = variablesNames[t];
+		result.push(name + ":" + variables[name]);
+	}
+	return result.join("|");
+}
+
+/*
 Open a window showing a specified tiddler. Options include:
 html: filename of html file to use as a template (defaults to "html/config-window.html")
 tiddler: title of tiddler to be displayed
+gui: reference to node-webkit gui object (ie require("nw.gui"))
+callback: optional callback to be invoked when the window has loaded
+variables: optional hashmap of variables to be passed to the widget trees
 */
 function ConfigWindow(options) {
 	var self = this;
 	// Check parameters
-	var html = options.html || "html/config-window.html";
+	var html = options.html || "html/config-window.html",
+		variables = options.variables || {};
 	// Create the window
 	this.window = options.gui.Window.open(html,{
 		toolbar: false
@@ -23,7 +48,7 @@ function ConfigWindow(options) {
 		// Trap developer tools on F12
 		devTools.trapDevTools(self.window,self.window.window.document);
 		// Set up the styles
-		self.styleWidgetNode = $tw.wiki.makeTranscludeWidget("$:/core/ui/PageStylesheet",{document: $tw.fakeDocument});
+		self.styleWidgetNode = $tw.wiki.makeTranscludeWidget("$:/core/ui/PageStylesheet",{document: $tw.fakeDocument, variables: variables});
 		self.styleContainer = $tw.fakeDocument.createElement("style");
 		self.styleWidgetNode.render(self.styleContainer,null);
 		self.styleElement = doc.createElement("style");
@@ -35,7 +60,7 @@ function ConfigWindow(options) {
 			}
 		}));
 		// Render the tiddler
-		self.widgetNode = $tw.wiki.makeTranscludeWidget(options.tiddler,{document: doc, parentWidget: $tw.rootWidget});
+		self.widgetNode = $tw.wiki.makeTranscludeWidget(options.tiddler,{document: doc, parentWidget: $tw.rootWidget, variables: variables});
 		self.pageContainer = doc.createElement("div");
 		$tw.utils.addClass(self.pageContainer,"tc-page-container-wrapper");
 		doc.body.insertBefore(self.pageContainer,doc.body.firstChild);
@@ -52,7 +77,23 @@ function ConfigWindow(options) {
 }
 
 exports.open = function(options) {
-	return new ConfigWindow(options);
+	// Check if the window already exists
+	var configWindowIdentifier = makeWindowIdentifier(options.tiddler,options.variables || {}),
+		configWindow;
+	if($tw.utils.hop(configWindows,configWindowIdentifier)) {
+		// If so, activate it and return it
+		configWindow = configWindows[configWindowIdentifier];
+		try {
+			configWindow.window.focus();
+		} catch(e) {
+			console.log("WARNING: Focusing existing config window failed '" + options.tiddler + "'")
+		}
+	} else {
+		// Otherwise create the new window
+		configWindow = new ConfigWindow(options);
+		configWindows[configWindowIdentifier] = configWindow;
+	}
+	return configWindow;
 };
 
 })();
