@@ -15,7 +15,9 @@ function ConfigWindow(options) {
 	// Check parameters
 	var html = options.html || "html/config-window.html";
 	// Create the window
-	this.window = options.gui.Window.get(window.open(html));
+	this.window = options.gui.Window.open(html,{
+		toolbar: false
+	});
 	this.window.on("loaded",function() {
 		var doc = self.window.window.document;
 		// Trap developer tools on F12
@@ -42,6 +44,10 @@ function ConfigWindow(options) {
 		$tw.wiki.addEventListener("change",function(changes) {
 			self.widgetNode.refresh(changes,self.pageContainer,null);
 		});
+		// Invoke the callback if provided
+		if(options.callback) {
+			options.callback();
+		}
 	});
 }
 

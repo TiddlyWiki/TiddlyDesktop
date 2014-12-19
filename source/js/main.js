@@ -84,7 +84,11 @@ require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 // Open the wiki list window
 var wikilistWindow = configWindow.open({
 	tiddler: "main",
-	gui: gui
+	gui: gui,
+	callback: function() {
+		trapUI(wikilistWindow.widgetNode);
+		// trapLinks(wikilistWindow.window.window.document);
+	}
 });
 
 // Open any windows that should be open
