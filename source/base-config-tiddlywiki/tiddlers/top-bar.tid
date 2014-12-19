@@ -12,7 +12,7 @@ title: top-bar
 
 	</$button>
 
-	<$browsewiki message="dm-open-wiki-file"/> 
+	<$browse message="dm-open-wiki-file"/> 
 
 	</div>
 
