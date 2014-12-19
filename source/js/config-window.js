@@ -37,7 +37,7 @@ variables: optional hashmap of variables to be passed to the widget trees
 function ConfigWindow(options) {
 	var self = this;
 	// Check parameters
-	var html = options.html || "html/config-window.html",
+	var html = options.html || "../html/config-window.html",
 		variables = options.variables || {};
 	// Create the window
 	this.window = options.gui.Window.open(html,{
