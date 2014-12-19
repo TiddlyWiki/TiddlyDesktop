@@ -81,6 +81,8 @@ $tw.boot.argv = [wikiFolder];
 // Main part of boot process
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 
+trapUI($tw.rootWidget);
+
 // Open the wiki list window
 var wikilistWindow = configWindow.open({
 	tiddler: "main",
