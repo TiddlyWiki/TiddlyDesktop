@@ -85,7 +85,7 @@ trapUI($tw.rootWidget);
 
 // Open the wiki list window
 var wikilistWindow = configWindow.open({
-	tiddler: "main",
+	tiddler: "WikiListWindow",
 	gui: gui,
 	callback: function() {
 		trapUI(wikilistWindow.widgetNode);
