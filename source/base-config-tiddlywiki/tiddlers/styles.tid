@@ -3,9 +3,6 @@ tags: $:/tags/Stylesheet
 
 \rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
 
-body {
-}
-
 .td-btn-invisible {
 	background: none 0% 0% transparent;
 	border: none;
