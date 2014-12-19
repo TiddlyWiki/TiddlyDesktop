@@ -1,3 +1,8 @@
+title: $:/TiddlyDesktop/styles
+tags: $:/tags/Stylesheet
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
 body {
 }
 

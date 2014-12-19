@@ -5,7 +5,9 @@
 
 var gui = require("nw.gui"),
 	fs = require("fs"),
-	path = require("path");
+	path = require("path"),
+	configWindow = require("../js/config-window.js"),
+	devTools = require("../js/dev-tools.js");
 
 // Information about each wiki we're tracking. Each entry is a hashmap with these fields:
 // url: full file:// URI of the wiki				=> as "url" and "title" in tiddler
@@ -18,7 +20,7 @@ var openedWindows = [];
 
 // Get the main window
 var mainWindow = gui.Window.get();
-mainWindow.showDevTools();
+// mainWindow.showDevTools();
 
 // Set up the menu bar
 var menuBar = new gui.Menu({type:"menubar"});
@@ -41,7 +43,7 @@ mainWindow.on("close",function() {
 });
 
 // Show dev tools on F12
-trapDevTools(mainWindow,document);
+devTools.trapDevTools(mainWindow,document);
 
 // Create a user configuration wiki folder if it doesn't exist
 var wikiFolder = path.resolve(gui.App.dataPath,"user-config-tiddlywiki");
@@ -67,6 +69,8 @@ if(!fs.existsSync(wikiFolder)) {
 // Load TiddlyWiki
 var $tw = {};
 
+global.$tw = $tw;
+
 // First part of boot process
 require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
 
@@ -76,6 +80,12 @@ $tw.boot.argv = [wikiFolder];
 
 // Main part of boot process
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
+
+// Open the wiki list window
+var wikilistWindow = configWindow.open({
+	tiddler: "main",
+	gui: gui
+});
 
 // Open any windows that should be open
 mainWindow.on("loaded",function() {
@@ -213,7 +223,7 @@ function openWiki(wikiUrl) {
 						},"png");
 				},500);
 				enableSaving(hostIframe.contentWindow,wikiUrl);
-				trapDevTools(newWindow,hostIframe.contentWindow.document)
+				devTools.trapDevTools(newWindow,hostIframe.contentWindow.document)
 				trapLinks(hostIframe.contentWindow.document);
 				saveWikiList();
 				updateWikiInfoTW(wikiInfo);
@@ -300,19 +310,6 @@ function findwikiInfo(url) {
 		}
 	});
 	return wikiInfo;
-}
-
-// Helper to trap dev tools opening within a window
-function trapDevTools(window,document) {
-	document.addEventListener("keyup",function(event) {
-		if(event.keyCode === 123) {
-			window.showDevTools();
-			event.preventDefault();
-			event.stopPropagation();
-			return false;
-		}
-		return true;
-	});
 }
 
 // Helper to trap wikilinks within a window
