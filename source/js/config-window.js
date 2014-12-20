@@ -108,7 +108,6 @@ function open(options) {
 
 /*
 Opens a host window for the specified URL
-The url is normalised; it may be relative, or a file path
 */
 function openHostWindowByUrl(url) {
 	var hostWindow = open({
@@ -121,7 +120,6 @@ function openHostWindowByUrl(url) {
 
 /*
 Opens a host window for the specified path
-The url is normalised; it may be relative, or a file path
 */
 function openHostWindowByPath(pathname) {
 	openHostWindowByUrl(convertPathToFileUrl(pathname));
