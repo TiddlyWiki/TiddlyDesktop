@@ -1,4 +1,4 @@
-title: TiddlyWikiWindow
+title: HostWindow
 page-title: {{!!page-title}}
 
 <$wikiframe class="td-wiki-frame" url=<<currentTiddler>> pagetitle="!!page-title"/>

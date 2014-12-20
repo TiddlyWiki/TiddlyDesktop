@@ -34,7 +34,7 @@ exports.startup = function() {
 
 function openWindow(url) {
 	var tiddlywikiWindow = $tw.desktop.configWindow.open({
-		tiddler: "TiddlyWikiWindow",
+		tiddler: "HostWindow",
 		variables: {
 			"currentTiddler": url
 		}
