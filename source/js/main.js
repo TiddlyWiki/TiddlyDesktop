@@ -71,9 +71,8 @@ if(!fs.existsSync(wikiFolder)) {
 var $tw = {desktop: {
 	configWindow: configWindow,
 	savingSupport: savingSupport,
-	gui: gui,
-	trapUI: trapUI,
-	trapLinks: trapLinks
+	trapLinks: trapLinks,
+	gui: gui
 }};
 
 global.$tw = $tw;
@@ -88,27 +87,21 @@ $tw.boot.argv = [wikiFolder];
 // Main part of boot process
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 
-trapUI($tw.rootWidget);
-
 // Open the wiki list window
 var wikilistWindow = configWindow.open({
 	tiddler: "WikiListWindow",
-	gui: gui,
-	callback: function() {
-		trapUI(wikilistWindow.widgetNode);
-		// trapLinks(wikilistWindow.window.window.document);
-	}
+	gui: gui
 });
 
 // Open any windows that should be open
-mainWindow.on("loaded",function() {
-	wikiList.forEach(function(wikiInfo,index) {
-		updateWikiInfoTW(wikiInfo);
-		if(wikiInfo.isOpen) {
-			openWiki(wikiInfo.url);
-		}
-	});
-});
+// mainWindow.on("loaded",function() {
+// 	wikiList.forEach(function(wikiInfo,index) {
+// 		updateWikiInfoTW(wikiInfo);
+// 		if(wikiInfo.isOpen) {
+// 			openWiki(wikiInfo.url);
+// 		}
+// 	});
+// });
 
 // ==== tiddler section ====
 function removeWikiInfoTW(title) {
@@ -131,36 +124,6 @@ function updateWikiInfoTW(wikiInfo) {
 			tags: "[[" + wikiInfo.url + "]]", type: "image/png", _canonical_uri: wikiInfo.img}));
 	}
 	return;
-}
-
-function trapUI(dom) {
-	dom.addEventListener("dm-open-wiki",function(event) {
-		openWikiIfNotOpen(event.param);
-		return false;
-	},false);
-	dom.addEventListener("dm-open-wiki-file",function(event) {
-		for(var i=0;i<event.param.length;i++)
-		{
-			var target=event.param[i];
-			openWikiIfNotOpen(convertPathToFileUrl(target.path));
-		}
-		return false;
-	},false);
-	dom.addEventListener("dm-remove-wiki",function(event) {
-		var wikiInfo=findwikiInfo(event.param);
-		if(!wikiInfo.isOpen) {
-			var index = wikiList.indexOf(wikiInfo);
-			if(index !== -1) {
-				wikiList.splice(index,1);
-			} else {
-				throw "Cannot find item in wikiList";
-			}
-			saveWikiList();
-			removeWikiInfoTW(event.param);
-		} else
-			alert("wiki still open !!");
-		return false;
-	},false);
 }
 
 // ==== end of tiddler section ====
