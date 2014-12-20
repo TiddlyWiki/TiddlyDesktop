@@ -41,9 +41,11 @@ WikiFrameWidget.prototype.render = function(parent,nextSibling) {
 	}
 	domNode.setAttribute("nwdisable","nwdisable");
 	domNode.setAttribute("nwfaketop","nwfaketop");
-	// Trap links when the iframe is loaded
+	// Set up the frame when it has loaded
 	domNode.onload = function() {
-		$tw.desktop.trapLinks(domNode.contentWindow.document);
+		var doc = domNode.contentWindow.document;
+		$tw.desktop.savingSupport.enableSaving(doc);
+		$tw.desktop.trapLinks(doc);
 		domNode.onload = function() {};
 	};
 	// Insert element

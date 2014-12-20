@@ -7,6 +7,7 @@ var gui = require("nw.gui"),
 	fs = require("fs"),
 	path = require("path"),
 	configWindow = require("../js/config-window.js"),
+	savingSupport = require("../js/saving-support.js"),
 	devTools = require("../js/dev-tools.js");
 
 // Information about each wiki we're tracking. Each entry is a hashmap with these fields:
@@ -69,6 +70,7 @@ if(!fs.existsSync(wikiFolder)) {
 // Set up the $tw global
 var $tw = {desktop: {
 	configWindow: configWindow,
+	savingSupport: savingSupport,
 	gui: gui,
 	trapUI: trapUI,
 	trapLinks: trapLinks
@@ -297,7 +299,7 @@ function isTiddlyWikiClassic(doc) {
 function injectClassicOverrides(doc) {
 	// Read inject.js
 	var xhReq = new XMLHttpRequest();
-	xhReq.open("GET","../js/inject.js",false);
+	xhReq.open("GET","../js/classic-inject.js",false);
 	xhReq.send(null);
 	// Inject it in a script tag
 	var script = doc.createElement("script");
