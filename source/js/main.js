@@ -76,12 +76,7 @@ function trapLinks(doc) {
 		// See if we're in an interwiki link
 		var interwikiLink = findParentWithClass(event.target,"tc-interwiki-link") || findParentWithClass(event.target,"tw-interwiki-link");
 		if(interwikiLink) {
-			configWindow.open({
-				tiddler: "HostWindow",
-				variables: {
-					"currentTiddler": interwikiLink.href
-				}
-			});
+			config.window.openHostWindow(interwikiLink.href);
 			event.preventDefault();
 			event.stopPropagation();
 			return false;

@@ -86,7 +86,7 @@ self.window.showDevTools();
 	});
 }
 
-exports.open = function(options) {
+function open(options) {
 	// Check if the window already exists
 	var configWindowIdentifier = makeWindowIdentifier(options.tiddler,options.variables || {}),
 		configWindow;
@@ -104,6 +104,40 @@ exports.open = function(options) {
 		configWindows[configWindowIdentifier] = configWindow;
 	}
 	return configWindow;
-};
+}
+
+/*
+Opens a host window for the specified URL
+The url is normalised; it may be relative, or a file path
+*/
+function openHostWindowByUrl(url) {
+	var hostWindow = open({
+		tiddler: "HostWindow",
+		variables: {
+			"currentTiddler": url
+		}
+	});
+}
+
+/*
+Opens a host window for the specified path
+The url is normalised; it may be relative, or a file path
+*/
+function openHostWindowByPath(pathname) {
+	openHostWindowByUrl(convertPathToFileUrl(pathname));
+}
+
+function convertPathToFileUrl(path) {
+	// File prefix depends on platform
+	var fileUriPrefix = "file://";
+	if(process.platform.substr(0,3) === "win") {
+		fileUriPrefix = fileUriPrefix + "/";
+	}
+	return fileUriPrefix + path.replace(/\\/g,"/");
+}
+
+exports.open = open;
+exports.openHostWindowByUrl = openHostWindowByUrl;
+exports.openHostWindowByPath = openHostWindowByPath;
 
 })();
