@@ -24,10 +24,6 @@ exports.startup = function() {
 			tiddler: "TiddlyWikiWindow",
 			variables: {
 				"wiki-url": event.param
-			},
-			callback: function() {
-				$tw.desktop.trapUI(tiddlywikiWindow.widgetNode);
-				$tw.desktop.trapLinks(tiddlywikiWindow.window.window.document);
 			}
 		});
 

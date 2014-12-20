@@ -41,6 +41,11 @@ WikiFrameWidget.prototype.render = function(parent,nextSibling) {
 	}
 	domNode.setAttribute("nwdisable","nwdisable");
 	domNode.setAttribute("nwfaketop","nwfaketop");
+	// Trap links when the iframe is loaded
+	domNode.onload = function() {
+		$tw.desktop.trapLinks(domNode.contentWindow.document);
+		domNode.onload = function() {};
+	};
 	// Insert element
 	parent.insertBefore(domNode,nextSibling);
 	this.renderChildren(domNode,null);
