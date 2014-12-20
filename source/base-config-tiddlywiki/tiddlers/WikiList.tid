@@ -33,7 +33,7 @@ title: WikiList
 
 	<div class="td-title"><$view field="wikiTitle"><$view field="title"/></$view></div>
 	<div class="td-url"><$view field="url"/></div>
-	<div class="td-toolbar"><$list filter="[<currentTiddler>!has[isOpen]]" emptyMessage='<$button message="dm-open-wiki" param=<<currentTiddler>> class="td-open">activate</$button>'><$button message="dm-open-wiki" param=<<currentTiddler>> class="td-open">open</$button><$button message="dm-remove-wiki" param=<<currentTiddler>> class="td-remove">remove</$button></$list></div>
+	<div class="td-toolbar"><$list filter="[<currentTiddler>!has[isOpen]]" emptyMessage='<$button message="tiddlydesktop-open-wiki" param=<<currentTiddler>> class="td-open">activate</$button>'><$button message="tiddlydesktop-open-wiki" param=<<currentTiddler>> class="td-open">open</$button><$button message="dm-remove-wiki" param=<<currentTiddler>> class="td-remove">remove</$button></$list></div>
 
 </div>
 

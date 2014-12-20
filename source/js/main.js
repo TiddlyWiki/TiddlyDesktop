@@ -66,8 +66,13 @@ if(!fs.existsSync(wikiFolder)) {
 	fs.writeFileSync(packageFilename,JSON.stringify(packageJson,null,4));
 }
 
-// Load TiddlyWiki
-var $tw = {};
+// Set up the $tw global
+var $tw = {desktop: {
+	configWindow: configWindow,
+	gui: gui,
+	trapUI: trapUI,
+	trapLinks: trapLinks
+}};
 
 global.$tw = $tw;
 

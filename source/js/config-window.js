@@ -3,7 +3,7 @@
 /*jslint browser: true */
 "use strict";
 
-var devTools = require("../js/dev-tools.js")
+var devTools = require("../js/dev-tools.js");
 
 /*
 A hashmap of ConfigWindow objects for open windows. The key is the tiddler title and the values of all specified variables, concatenated with a vertical bar. For example:
@@ -20,8 +20,8 @@ function makeWindowIdentifier(tiddler,variables) {
 		variableNames = Object.keys(variables).sort(),
 		name;
 	for(var t=0; t<variableNames.length; t++) {
-		name = variablesNames[t];
-		result.push(name + ":" + variables[name]);
+		name = variableNames[t];
+		result.push(encodeURIComponent(name + ":" + variables[name]));
 	}
 	return result.join("|");
 }
@@ -30,7 +30,6 @@ function makeWindowIdentifier(tiddler,variables) {
 Open a window showing a specified tiddler. Options include:
 html: filename of html file to use as a template (defaults to "html/config-window.html")
 tiddler: title of tiddler to be displayed
-gui: reference to node-webkit gui object (ie require("nw.gui"))
 callback: optional callback to be invoked when the window has loaded
 variables: optional hashmap of variables to be passed to the widget trees
 */
@@ -40,10 +39,10 @@ function ConfigWindow(options) {
 	var html = options.html || "../html/config-window.html",
 		variables = options.variables || {};
 	// Create the window
-	this.window = options.gui.Window.open(html,{
+	this.window = $tw.desktop.gui.Window.open(html,{
 		toolbar: false
 	});
-	this.window.on("loaded",function() {
+	this.window.once("loaded",function() {
 		var doc = self.window.window.document;
 		// Trap developer tools on F12
 		devTools.trapDevTools(self.window,self.window.window.document);
@@ -86,7 +85,7 @@ exports.open = function(options) {
 		try {
 			configWindow.window.focus();
 		} catch(e) {
-			console.log("WARNING: Focusing existing config window failed '" + options.tiddler + "'")
+			console.log("WARNING: Focusing existing config window failed '" + options.tiddler + "'");
 		}
 	} else {
 		// Otherwise create the new window
