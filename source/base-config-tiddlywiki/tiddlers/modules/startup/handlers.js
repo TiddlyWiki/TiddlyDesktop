@@ -36,7 +36,7 @@ function openWindow(url) {
 	var tiddlywikiWindow = $tw.desktop.configWindow.open({
 		tiddler: "TiddlyWikiWindow",
 		variables: {
-			"wiki-url": url
+			"currentTiddler": url
 		}
 	});
 }

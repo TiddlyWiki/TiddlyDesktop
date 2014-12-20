@@ -1,3 +1,4 @@
 title: TiddlyWikiWindow
+page-title: {{!!page-title}}
 
-<$wikiframe class="td-wiki-frame" url=<<wiki-url>>/>
+<$wikiframe class="td-wiki-frame" url=<<currentTiddler>> pagetitle="!!page-title"/>

@@ -46,6 +46,17 @@ function ConfigWindow(options) {
 		var doc = self.window.window.document;
 		// Trap developer tools on F12
 		devTools.trapDevTools(self.window,self.window.window.document);
+self.window.showDevTools();
+		// Set up the title
+		self.titleWidgetNode = $tw.wiki.makeTranscludeWidget(options.tiddler,{field: "page-title", document: $tw.fakeDocument, parseAsInline: true, variables: variables});
+		self.titleContainer = $tw.fakeDocument.createElement("div");
+		self.titleWidgetNode.render(self.titleContainer,null);
+		doc.title = self.titleContainer.textContent;
+		$tw.wiki.addEventListener("change",function(changes) {
+			if(self.titleWidgetNode.refresh(changes,self.titleContainer,null)) {
+				doc.title = self.titleContainer.textContent;
+			}
+		});
 		// Set up the styles
 		self.styleWidgetNode = $tw.wiki.makeTranscludeWidget("$:/core/ui/PageStylesheet",{document: $tw.fakeDocument, variables: variables});
 		self.styleContainer = $tw.fakeDocument.createElement("style");

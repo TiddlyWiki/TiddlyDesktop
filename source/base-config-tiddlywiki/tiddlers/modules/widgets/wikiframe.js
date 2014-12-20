@@ -46,12 +46,23 @@ WikiFrameWidget.prototype.render = function(parent,nextSibling) {
 	domNode.onload = function() {
 		if(!loaded) {
 			loaded = true;
+			// Enable saving and trap links
 			var doc = domNode.contentWindow.document;
 			$tw.desktop.savingSupport.enableSaving(doc);
 			$tw.desktop.trapLinks(doc);			
+			// If there's a page title specified then save the iframe title to it when it changes
+			if(self.framePageTitle) {
+				var currentTitle = self.wiki.getTextReference(self.framePageTitle,"",self.getVariable("currentTiddler"));
+				setInterval(function() {
+					if(doc.title !== currentTitle) {
+						currentTitle = doc.title;
+						self.wiki.setTextReference(self.framePageTitle,doc.title,self.getVariable("currentTiddler"));
+					}
+				},1000);
+			}
 		}
 	};
-	// Insert element
+	// Insert frame into DOM
 	parent.insertBefore(domNode,nextSibling);
 	this.renderChildren(domNode,null);
 	this.domNodes.push(domNode);
@@ -63,6 +74,7 @@ Compute the internal state of the widget
 WikiFrameWidget.prototype.execute = function() {
 	// Get attributes
 	this.frameUrl = this.getAttribute("url");
+	this.framePageTitle = this.getAttribute("pagetitle");
 	this.frameClass = this.getAttribute("class");
 };
 
