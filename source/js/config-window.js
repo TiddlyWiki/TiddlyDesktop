@@ -110,6 +110,9 @@ function open(options) {
 Opens a host window for the specified URL
 */
 function openHostWindowByUrl(url) {
+	// Create or update the corresponding wikilist tiddler
+	$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),$tw.wiki.getModificationFields(),{title: url, tags: ["wikilist"]}));
+	// Open the window
 	var hostWindow = open({
 		tiddler: "HostWindow",
 		variables: {
