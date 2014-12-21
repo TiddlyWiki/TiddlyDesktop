@@ -12,7 +12,7 @@ title: WikiListToolbar
 
 	</$button>
 
-	<$browse message="tiddlydesktop-open-wiki-files"/> 
+	<$browse message="tiddlydesktop-open-wiki-path"/> 
 
 	</div>
 
