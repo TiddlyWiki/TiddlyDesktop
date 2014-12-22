@@ -33,11 +33,14 @@ tiddler: title of tiddler to be displayed
 callback: optional callback to be invoked when the window has loaded
 variables: optional hashmap of variables to be passed to the widget trees
 */
-function ConfigWindow(options) {
+function ConfigWindow(options,configWindowIdentifier) {
 	var self = this;
 	// Check parameters
 	var html = options.html || "../html/config-window.html",
 		variables = options.variables || {};
+	// Copy options
+	this.configWindowIdentifier = configWindowIdentifier;
+	this.captureWindowToTiddler = options.captureWindowToTiddler;
 	// Create the window
 	this.window = $tw.desktop.gui.Window.open(html,{
 		toolbar: false
@@ -46,7 +49,7 @@ function ConfigWindow(options) {
 		var doc = self.window.window.document;
 		// Trap developer tools on F12
 		devTools.trapDevTools(self.window,self.window.window.document);
-self.window.showDevTools();
+// self.window.showDevTools();
 		// Set up the title
 		self.titleWidgetNode = $tw.wiki.makeTranscludeWidget(options.tiddler,{field: "page-title", document: $tw.fakeDocument, parseAsInline: true, variables: variables});
 		self.titleContainer = $tw.fakeDocument.createElement("div");
@@ -83,8 +86,44 @@ self.window.showDevTools();
 		if(options.callback) {
 			options.callback();
 		}
+		// Capture the window in 1000ms
+		setTimeout(function() {self.captureWindow();},1000);
+	});
+	// Trap closing the window
+	this.window.on("close",function(event) {
+		// Capture the window
+		self.captureWindow(function() {
+			// Remove this window from the open list
+			if($tw.utils.hop(configWindows,self.configWindowIdentifier)) {
+				delete configWindows[self.configWindowIdentifier];
+			}
+			// Close it
+			self.window.close(true);
+		});
 	});
 }
+
+ConfigWindow.prototype.captureWindow = function(callback) {
+	var self = this;
+	if(this.captureWindowToTiddler) {
+		this.window.capturePage(function(imgDataUri) {
+			var imgPrefix = "data:image/png;base64,",
+				imgData = "";
+			if(imgDataUri.substr(0,imgPrefix.length) == imgPrefix) {
+				imgData = imgDataUri.substr(imgPrefix.length);
+			}
+			$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),$tw.wiki.getModificationFields(),
+				{title: self.captureWindowToTiddler, type: "image/png", text: imgData}));
+			if(callback) {
+				callback();				
+			}
+		},"png");
+	} else {
+		if(callback) {
+			callback();				
+		}
+	}
+};
 
 function open(options) {
 	// Check if the window already exists
@@ -100,7 +139,7 @@ function open(options) {
 		}
 	} else {
 		// Otherwise create the new window
-		configWindow = new ConfigWindow(options);
+		configWindow = new ConfigWindow(options,configWindowIdentifier);
 		configWindows[configWindowIdentifier] = configWindow;
 	}
 	return configWindow;
@@ -117,7 +156,8 @@ function openHostWindowByUrl(url) {
 		tiddler: "HostWindow",
 		variables: {
 			"currentTiddler": url
-		}
+		},
+		captureWindowToTiddler: "img of " + url
 	});
 }
 
