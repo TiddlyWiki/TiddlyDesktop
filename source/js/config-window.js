@@ -45,6 +45,21 @@ function ConfigWindow(options,configWindowIdentifier) {
 	this.window = $tw.desktop.gui.Window.open(html,{
 		toolbar: false
 	});
+	// Handler for wiki change events
+	function changeHandler(changes) {
+		var doc = self.window.window.document;
+		// Title changes
+		if(self.titleWidgetNode.refresh(changes,self.titleContainer,null)) {
+			doc.title = self.titleContainer.textContent;
+		}
+		// Style changes
+		if(self.styleWidgetNode.refresh(changes,self.styleContainer,null)) {
+			self.styleElement.innerHTML = self.styleContainer.textContent;
+		}
+		// Body changes
+		self.widgetNode.refresh(changes,self.pageContainer,null);
+	}
+	// When the window is loaded
 	this.window.once("loaded",function() {
 		var doc = self.window.window.document;
 		// Trap developer tools on F12
@@ -55,11 +70,6 @@ function ConfigWindow(options,configWindowIdentifier) {
 		self.titleContainer = $tw.fakeDocument.createElement("div");
 		self.titleWidgetNode.render(self.titleContainer,null);
 		doc.title = self.titleContainer.textContent;
-		$tw.wiki.addEventListener("change",function(changes) {
-			if(self.titleWidgetNode.refresh(changes,self.titleContainer,null)) {
-				doc.title = self.titleContainer.textContent;
-			}
-		});
 		// Set up the styles
 		self.styleWidgetNode = $tw.wiki.makeTranscludeWidget("$:/core/ui/PageStylesheet",{document: $tw.fakeDocument, variables: variables});
 		self.styleContainer = $tw.fakeDocument.createElement("style");
@@ -67,11 +77,6 @@ function ConfigWindow(options,configWindowIdentifier) {
 		self.styleElement = doc.createElement("style");
 		self.styleElement.innerHTML = self.styleContainer.textContent;
 		doc.head.insertBefore(self.styleElement,doc.head.firstChild);
-		$tw.wiki.addEventListener("change",$tw.perf.report("styleRefresh",function(changes) {
-			if(self.styleWidgetNode.refresh(changes,self.styleContainer,null)) {
-				self.styleElement.innerHTML = self.styleContainer.textContent;
-			}
-		}));
 		// Render the tiddler
 		self.widgetNode = $tw.wiki.makeTranscludeWidget(options.tiddler,{document: doc, parentWidget: $tw.rootWidget, variables: variables});
 		self.pageContainer = doc.createElement("div");
@@ -79,9 +84,7 @@ function ConfigWindow(options,configWindowIdentifier) {
 		doc.body.insertBefore(self.pageContainer,doc.body.firstChild);
 		self.widgetNode.render(self.pageContainer,null);
 		// Add the change event handler
-		$tw.wiki.addEventListener("change",function(changes) {
-			self.widgetNode.refresh(changes,self.pageContainer,null);
-		});
+		$tw.wiki.addEventListener("change",changeHandler);
 		// Invoke the callback if provided
 		if(options.callback) {
 			options.callback();
@@ -97,7 +100,9 @@ function ConfigWindow(options,configWindowIdentifier) {
 			if($tw.utils.hop(configWindows,self.configWindowIdentifier)) {
 				delete configWindows[self.configWindowIdentifier];
 			}
-			// Close it
+			// Remove our wiki change event handler
+			$tw.wiki.removeEventListener("change",changeHandler);
+			// Close the window
 			self.window.close(true);
 		});
 	});
