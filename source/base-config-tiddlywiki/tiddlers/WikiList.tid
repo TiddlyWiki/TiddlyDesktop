@@ -4,7 +4,7 @@ title: WikiList
 
 <table class="td-info-table">
 
-<$list filter="[tag[wikilist]]" emptyMessage="Loading ..." storyview="pop">
+<$list filter="[tag[wikilist]!has[draft.of]]" emptyMessage="Loading ..." storyview="pop">
 
 <<wiki-list-row>>
 
@@ -19,7 +19,7 @@ title: WikiList
 
 <td align="center">
 
-	<$button message="dm-open-wiki" param=<<currentTiddler>> class="td-btn-invisible">
+	<$button message="dm-open-wiki" param=<<currentTiddler>> class="tc-btn-invisible">
 	<$list filter="[[img of $(currentTiddler)$]!is[missing]]" emptyMessage="no image">
 	<$image source="""img of $(currentTiddler)$""" width="120"/>
 	</$list>
@@ -42,7 +42,7 @@ title: WikiList
 </tr>
 
 \end
-<div id="wikiList">
+<div class="wikiList">
 
 <<wiki-list>>
 

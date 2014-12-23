@@ -1,6 +1,6 @@
 title: WikiListToolbar
 
-<div id="td-instructions">
+<div class="td-instructions">
 
 	<$image source="Motovun Jack.svg" class="td-logo"/>
 
