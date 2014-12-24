@@ -43,7 +43,8 @@ function ConfigWindow(options,configWindowIdentifier) {
 	this.captureWindowToTiddler = options.captureWindowToTiddler;
 	// Create the window
 	this.window = $tw.desktop.gui.Window.open(html,{
-		toolbar: false
+		toolbar: false,
+		show: false
 	});
 	// Handler for wiki change events
 	function changeHandler(changes) {
@@ -62,6 +63,10 @@ function ConfigWindow(options,configWindowIdentifier) {
 	// When the window is loaded
 	this.window.once("loaded",function() {
 		var doc = self.window.window.document;
+		// Position and show the window
+		self.moveAndResizeWindow();
+		self.window.show();
+		self.window.focus();
 		// Trap developer tools on F12
 		devTools.trapDevTools(self.window,self.window.window.document);
 // self.window.showDevTools();
@@ -106,7 +111,42 @@ function ConfigWindow(options,configWindowIdentifier) {
 			self.window.close(true);
 		});
 	});
+	// Trap moving or resizing the window
+	function moveHandler() {
+		var data = self.getWindowConfigData();
+		data.x = self.window.x;
+		data.y = self.window.y;
+		data.width = self.window.width;
+		data.height = self.window.height;
+		self.saveWindowConfigData(data);
+	}
+	this.window.on("move",moveHandler);
+	this.window.on("resize",moveHandler);
 }
+
+ConfigWindow.prototype.getWindowConfigData = function() {
+	return $tw.wiki.getTiddlerData("config of " + this.configWindowIdentifier,{});
+};
+
+ConfigWindow.prototype.saveWindowConfigData = function(data) {
+	$tw.wiki.setTiddlerData("config of " + this.configWindowIdentifier,data);
+};
+
+ConfigWindow.prototype.moveAndResizeWindow = function() {
+	var data = this.getWindowConfigData();
+	if(data.x) {
+		this.window.x = data.x;
+	}
+	if(data.y) {
+		this.window.y = data.y;
+	}
+	if(data.width) {
+		this.window.width = data.width;
+	}
+	if(data.height) {
+		this.window.height = data.height;
+	}
+};
 
 ConfigWindow.prototype.captureWindow = function(callback) {
 	var self = this;
