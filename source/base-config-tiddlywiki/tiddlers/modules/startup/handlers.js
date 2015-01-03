@@ -35,7 +35,7 @@ exports.startup = function() {
 			$tw.desktop.configWindow.openHostWindowByPath(file.path);
 		}
 		return false;
-	},false);
+	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-open-path-in-shell",function(event) {
 		var itemPath;
 		switch(event.param) {
@@ -50,19 +50,19 @@ exports.startup = function() {
 			$tw.desktop.gui.Shell.openItem(itemPath);
 		}
 		return false;
-	},false);
+	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-path-in-shell",function(event) {
 		if(event.param) {
 			$tw.desktop.gui.Shell.showItemInFolder(event.param);
 		}
 		return false;
-	},false);
+	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-url-in-shell",function(event) {
 		if(event.param) {
 			$tw.desktop.gui.Shell.showItemInFolder(convertFileUrlToPath(event.param));
 		}
 		return false;
-	},false);
+	});
 };
 
 function convertFileUrlToPath(pathname) {
