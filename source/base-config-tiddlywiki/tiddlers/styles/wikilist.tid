@@ -13,7 +13,7 @@ tags: $:/tags/Stylesheet
 .td-wikilist .td-wikilist-item {
 	border-top: 1px solid #f4f4f4;
 	border-bottom: 1px solid #d4d4d4;
-	transition: background-color 100ms ease-in-out;	
+	transition: background-color 300ms ease-in-out;	
 }
 
 .td-wikilist .td-wikilist-item:nth-child(odd) {
@@ -28,86 +28,97 @@ tags: $:/tags/Stylesheet
 	background: #fff;
 }
 
-.td-wikilist .td-wikilist-thumbnail {
+.td-wikilist .td-wikilist-item .td-wikilist-thumbnail {
+	display: inline-block;
 	text-align: center;
-	width: 120px;
-	height: 120px;
+	padding: 5px;
 }
 
-.td-wikilist tr .td-wikilist-thumbnail img {
+.td-wikilist .td-wikilist-item .td-wikilist-thumbnail button {
 	display: inline-block;
-	vertical-align: top;
+	width: 110px;
+	height: 110px;
+}
+
+.td-wikilist .td-wikilist-item .td-wikilist-thumbnail button img {
+	display: inline-block;
 	width: auto;
 	height: auto;
 	max-width: 100px;
 	max-height: 100px;
 	border: 1px solid #ccc;
 	box-shadow: 0px 2px 5px 0px rgba(0, 0, 0, 0.5);
-	transition: opacity 100ms ease-in-out;
+	transition: opacity 300ms ease-in-out;
+	opacity: 0.5;
 }
 
-.td-wikilist .td-info {
-	display: inline-block;
-	margin-left: 12px;
-	color: #000;
-}
-
-.td-wikilist .td-title {
-	font-weight: bold;
-}
-
-.td-wikilist .td-url {
-	font-size: 0.8em;
-	color: #888;
-}
-
-.td-wikilist tr .td-toolbar {
-	font-size: 0.8em;
-	opacity: 0;
-	margin-top: 0.5em;
-	transition: opacity 100ms ease-in-out;
-}
-
-.td-wikilist tr:hover .td-toolbar {
+.td-wikilist .td-wikilist-item:hover .td-wikilist-thumbnail button img {
 	opacity: 1;
 }
 
-.td-wikilist .td-toolbar button {
-	margin-right: 1em;
-	border-radius: 3px;
-	border: none;
-	color: #fff;
-	transition: -webkit-transform 100ms ease-in-out;
+.td-wikilist .td-wikilist-info {
+	display: inline-block;
+	margin: 12px;
+	color: #000;
 }
 
-.td-wikilist .td-toolbar button:hover {
+.td-wikilist .td-wiki-title {
+	font-weight: bold;
+}
+
+.td-wikilist .td-wikilist-item .td-wiki-toolbar {
+	font-size: 0.8em;
+	opacity: 0;
+	margin-top: 0.5em;
+	transition: opacity 300ms ease-in-out;
+}
+
+.td-wikilist .td-wikilist-item:hover .td-wiki-toolbar {
+	opacity: 1;
+}
+
+.td-wikilist .td-wiki-toolbar-item {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.td-wikilist .td-wikilist-button:hover {
 	-webkit-transform: scale(1.2,1.2);
 }
 
-.td-wikilist .td-toolbar button:active {
+.td-wikilist .td-wikilist-button {
+	background: #acacac;
+	border-radius: 3px;
+	border: none;
+	padding: 3px 7px;
+	color: #fff;
+	transition: -webkit-transform 300ms ease-in-out;
+}
+
+.td-wikilist .td-wikilist-button:active {
 	-webkit-transform: scale(0.9,0.9);
 	color: #444;
 }
 
-.td-wikilist .td-toolbar button.td-open {
+.td-wikilist .td-wikilist-button-open {
 	background-color: #4fb82b;
 }
 
-.td-wikilist .td-toolbar button.td-open:hover {
+.td-wikilist .td-wikilist-button-open:hover {
 	background-color: green;
 }
 
-.td-wikilist .td-toolbar button.td-clone {
+.td-wikilist .td-wikilist-button-clone {
 	background-color: #5778d8;
 }
 
-.td-wikilist .td-toolbar button.td-clone:hover {
+.td-wikilist .td-wikilist-button-clone:hover {
 	background-color: blue;
 }
 
-.td-wikilist .td-toolbar button.td-remove {
+.td-wikilist .td-wikilist-button-remove {
 	background-color: #d85778;
 }
-.td-wikilist .td-toolbar button.td-remove:hover {
+.td-wikilist .td-wikilist-button-remove:hover {
 	background-color: red;
 }

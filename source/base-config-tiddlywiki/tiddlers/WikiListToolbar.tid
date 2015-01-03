@@ -1,26 +1,21 @@
 title: WikiListToolbar
 
-<div class="td-instructions">
-
+<div class="td-wikilist-toolbar">
+<div class="td-wikilist-toolbar-item">
 <$image source="Motovun Jack.svg" class="td-logo"/>
-
-<div class="td-file-input-wrapper">
-
-<$button tooltip="open in TiddlyDeskTop">
-
-<$text text="Add a TiddlyWiki file"/>
-
-</$button>
-
-<$browse message="tiddlydesktop-open-wiki-path"/> 
-
 </div>
-
-<div class="td-instructions-item">
+<div class="td-wikilist-toolbar-item">
+<div class="td-file-input-wrapper">
+<$button tooltip="open in TiddlyDeskTop">
+<$text text="Add a TiddlyWiki file"/>
+</$button>
+<$browse message="tiddlydesktop-open-wiki-path"/>
+</div>
+</div>
+<div class="td-wikilist-toolbar-item">
 <$button>
 <$action-sendmessage $message="tiddlydesktop-open-config-window" tiddler="$:/TiddlyDesktop/ControlPanel"/>
 Control Panel
 </$button>
 </div>
-
 </div>

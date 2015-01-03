@@ -3,11 +3,9 @@ tags: $:/tags/Stylesheet
 
 \rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
 
-.td-instructions {
+.td-wikilist-toolbar {
 	color: #888;
-	background-color: #ededed;
-	border-top: 1px solid #f4f4f4;
-	border-bottom: 1px solid #d4d4d4;
+	background-color: #d3d3d3;
 	font-size: 0.9em;
 	padding: 1em 2em 1em 2em;
 	position: sticky;
@@ -15,6 +13,10 @@ tags: $:/tags/Stylesheet
 	left: 0;
 	right: 0;
 	z-index: 10;
+}
+
+.td-wikilist-toolbar-item {
+    display: inline-block;
 }
 
 .td-logo {
