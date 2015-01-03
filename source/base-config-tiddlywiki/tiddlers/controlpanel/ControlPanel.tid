@@ -1,0 +1,12 @@
+title: $:/TiddlyDesktop/ControlPanel
+tags: $:/tags/ControlPanel
+list-before: $:/core/ui/ControlPanel/Info
+caption: ~TiddlyDesktop
+page-title: TiddlyDesktop Control Panel
+
+This is the control panel
+
+<$button>
+<$action-sendmessage $message="tiddlydesktop-open-path" $param="USER_CONFIG_FOLDER"/>
+Open user config folder
+</$button>

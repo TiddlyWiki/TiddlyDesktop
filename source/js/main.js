@@ -70,6 +70,10 @@ var wikilistWindow = configWindow.open({
 	tiddler: "WikiListWindow"
 });
 
+var controlPanelWindow = configWindow.open({
+	tiddler: "$:/TiddlyDesktop/ControlPanel"
+});
+
 // Helper to trap wikilinks within a window
 function trapLinks(doc) {
 	doc.addEventListener("click",function(event) {
