@@ -1,59 +1,45 @@
 title: WikiList
 
-\define wiki-list()
-
-<table class="td-info-table">
-
-<$list filter="[tag[wikilist]!has[draft.of]]" emptyMessage="Loading ..." storyview="pop">
-
-<<wiki-list-row>>
-
+\define wikilist-row()
+<div class="td-wikilist-item">
+<div class="td-wikilist-thumbnail">
+<$button message="tiddlydesktop-open-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible">
+<$list filter="[[img of $(currentTiddler)$]!is[missing]]" emptyMessage="no image">
+<$image source="""img of $(currentTiddler)$""" width="120"/>
 </$list>
-
-</table>
-
-\end
-\define wiki-list-row()
-
-<tr>
-
-<td class="td-thumbnail">
-
-	<$button message="dm-open-wiki" param=<<currentTiddler>> class="tc-btn-invisible">
-	<$list filter="[[img of $(currentTiddler)$]!is[missing]]" emptyMessage="no image">
-	<$image source="""img of $(currentTiddler)$""" width="120"/>
-	</$list>
-	</$button>
-
-</td>
-
-<td>
-
-<div class="td-info">
-
-	<div class="td-title"><$view field="page-title"><$view field="title"/></$view></div>
-	<div class="td-url"><$view field="url"/></div>
-	<div class="td-toolbar">
-	<$button message="tiddlydesktop-open-wiki-url" param=<<currentTiddler>> class="td-open">
-	open
-	</$button>
-	<$button message="tiddlydesktop-reveal-url" param=<<currentTiddler>> class="td-reveal">
-	reveal
-	</$button>
-	<$button message="dm-remove-wiki" param=<<currentTiddler>> class="td-remove">
-	remove
-	</$button>
-	</div>
-
+</$button>
 </div>
-
-</td>
-
-</tr>
-
-\end
-<div class="wikiList">
-
-<<wiki-list>>
-
+<div class="td-wikilist-info">
+<div class="td-wiki-title">
+<$view field="page-title"><$view field="title"/></$view>
 </div>
+<div class="td-wiki-toolbar">
+<div class="td-wiki-toolbar-item">
+<$button message="tiddlydesktop-open-wiki-url" param=<<currentTiddler>> class="td-wikilist-button td-wikilist-button-open">
+open
+</$button>
+</div>
+<div class="td-wiki-toolbar-item">
+<$button message="tiddlydesktop-reveal-url" param=<<currentTiddler>> class="td-wikilist-button td-wikilist-button-reveal">
+reveal
+</$button>
+</div>
+<div class="td-wiki-toolbar-item">
+<$button message="dm-remove-wiki" param=<<currentTiddler>> class="td-wikilist-button td-wikilist-button-remove">
+remove
+</$button>
+</div>
+</div>
+</div>
+</div>
+\end
+
+\define wikilist()
+<div class="td-wikilist">
+<$list filter="[tag[wikilist]!sort[modified]!has[draft.of]]" emptyMessage="Create or add a wiki to get started" storyview="pop">
+<<wikilist-row>>
+</$list>
+</div>
+\end
+
+<<wikilist>>

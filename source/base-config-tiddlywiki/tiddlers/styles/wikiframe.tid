@@ -1,0 +1,13 @@
+title: $:/TiddlyDesktop/styles/wikiframe
+tags: $:/tags/Stylesheet
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+.td-wiki-frame {
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	border: none;
+}

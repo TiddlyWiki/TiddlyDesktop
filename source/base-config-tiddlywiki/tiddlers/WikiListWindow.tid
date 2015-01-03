@@ -1,6 +1,6 @@
 title: WikiListWindow
 page-title: TiddlyDesktop -- Main 
 
-{{WikiListToolbar}}
+<$transclude tiddler="WikiListToolbar" mode="inline"/>
 
-{{WikiList}}
+<$transclude tiddler="WikiList" mode="inline"/>
