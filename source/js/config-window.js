@@ -53,7 +53,6 @@ function ConfigWindow(options,configWindowIdentifier) {
 		show: false,
 		title: pageTitle
 	});
-console.log("Setting title to ",pageTitle)
 	// Handler for wiki change events
 	function changeHandler(changes) {
 		var doc = self.window.window.document;
