@@ -3,7 +3,7 @@ title: WikiList
 \define wikilist-row()
 <div class="td-wikilist-item">
 <div class="td-wikilist-thumbnail">
-<$button message="tiddlydesktop-open-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible">
+<$button message="tiddlydesktop-add-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible">
 <$list filter="[[img of $(currentTiddler)$]!is[missing]]" emptyMessage="no image">
 <$image source="""img of $(currentTiddler)$""" width="120"/>
 </$list>
@@ -15,12 +15,12 @@ title: WikiList
 </div>
 <div class="td-wiki-toolbar">
 <div class="td-wiki-toolbar-item">
-<$button message="tiddlydesktop-open-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-wikilist-button td-wikilist-button-open">
+<$button message="tiddlydesktop-add-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-wikilist-button td-wikilist-button-open">
 open
 </$button>
 </div>
 <div class="td-wiki-toolbar-item">
-<$button message="tiddlydesktop-reveal-url" param=<<currentTiddler>> class="tc-btn-invisible td-wikilist-button td-wikilist-button-reveal">
+<$button message="tiddlydesktop-reveal-url-in-shell" param=<<currentTiddler>> class="tc-btn-invisible td-wikilist-button td-wikilist-button-reveal">
 reveal
 </$button>
 </div>

@@ -7,6 +7,6 @@ page-title: TiddlyDesktop Control Panel
 This is the control panel
 
 <$button>
-<$action-sendmessage $message="tiddlydesktop-open-path" $param="USER_CONFIG_FOLDER"/>
+<$action-sendmessage $message="tiddlydesktop-open-path-in-shell" $param="USER_CONFIG_FOLDER"/>
 Open user config folder
 </$button>

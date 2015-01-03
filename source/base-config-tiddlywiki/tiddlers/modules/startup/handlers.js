@@ -24,19 +24,19 @@ exports.startup = function() {
 		}
 		return false;
 	});
-	$tw.rootWidget.addEventListener("tiddlydesktop-open-wiki-url",function(event) {
+	$tw.rootWidget.addEventListener("tiddlydesktop-add-wiki-url",function(event) {
 		// Open the TiddlyWiki window
 		$tw.desktop.configWindow.openHostWindowByUrl(event.param);
 		return false;
 	});
-	$tw.rootWidget.addEventListener("tiddlydesktop-open-wiki-path",function(event) {
+	$tw.rootWidget.addEventListener("tiddlydesktop-add-wiki-path",function(event) {
 		for(var t=0; t<event.param.length; t++) {
 			var file = event.param[t];
 			$tw.desktop.configWindow.openHostWindowByPath(file.path);
 		}
 		return false;
 	},false);
-	$tw.rootWidget.addEventListener("tiddlydesktop-open-path",function(event) {
+	$tw.rootWidget.addEventListener("tiddlydesktop-open-path-in-shell",function(event) {
 		var itemPath;
 		switch(event.param) {
 			case "USER_CONFIG_FOLDER":
@@ -51,13 +51,13 @@ exports.startup = function() {
 		}
 		return false;
 	},false);
-	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-path",function(event) {
+	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-path-in-shell",function(event) {
 		if(event.param) {
 			$tw.desktop.gui.Shell.showItemInFolder(event.param);
 		}
 		return false;
 	},false);
-	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-url",function(event) {
+	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-url-in-shell",function(event) {
 		if(event.param) {
 			$tw.desktop.gui.Shell.showItemInFolder(convertFileUrlToPath(event.param));
 		}
