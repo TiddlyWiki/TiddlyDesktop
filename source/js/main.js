@@ -38,7 +38,8 @@ if(!fs.existsSync(wikiFolder)) {
 				"tiddlywiki/snowwhite"
 			],
 			"includeWikis": [
-				path.resolve(process.cwd(),"base-config-tiddlywiki")
+				{"path": path.resolve(process.cwd(),"base-config-tiddlywiki"),
+				"read-only": true}
 			]
 		};
 	fs.mkdirSync(wikiFolder);
