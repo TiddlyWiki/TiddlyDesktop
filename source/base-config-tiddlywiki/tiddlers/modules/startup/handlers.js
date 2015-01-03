@@ -18,6 +18,12 @@ exports.after = ["startup"];
 exports.synchronous = true;
 
 exports.startup = function() {
+	$tw.rootWidget.addEventListener("tiddlydesktop-open-config-window",function(event) {
+		if(typeof event.paramObject === "object") {
+			$tw.desktop.configWindow.open(event.paramObject);
+		}
+		return false;
+	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-open-wiki-url",function(event) {
 		// Open the TiddlyWiki window
 		$tw.desktop.configWindow.openHostWindowByUrl(event.param);
