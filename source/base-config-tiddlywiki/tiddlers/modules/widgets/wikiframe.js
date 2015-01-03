@@ -54,7 +54,7 @@ WikiFrameWidget.prototype.render = function(parent,nextSibling) {
 			if(self.framePageTitle) {
 				var currentTitle = self.wiki.getTextReference(self.framePageTitle,"",self.getVariable("currentTiddler"));
 				setInterval(function() {
-					if(doc.title !== currentTitle) {
+					if(doc.title && doc.title !== currentTitle) {
 						currentTitle = doc.title;
 						self.wiki.setTextReference(self.framePageTitle,doc.title,self.getVariable("currentTiddler"));
 					}

@@ -41,11 +41,19 @@ function ConfigWindow(options,configWindowIdentifier) {
 	// Copy options
 	this.configWindowIdentifier = configWindowIdentifier;
 	this.captureWindowToTiddler = options.captureWindowToTiddler;
+	this.tiddler = options.tiddler;
+	// Set up the title
+	this.titleWidgetNode = $tw.wiki.makeTranscludeWidget(options.tiddler,{field: "page-title", document: $tw.fakeDocument, parseAsInline: true, variables: variables});
+	this.titleContainer = $tw.fakeDocument.createElement("div");
+	this.titleWidgetNode.render(this.titleContainer,null);
+	var pageTitle = this.titleContainer.textContent;
 	// Create the window
 	this.window = $tw.desktop.gui.Window.open(html,{
 		toolbar: false,
-		show: false
+		show: false,
+		title: pageTitle
 	});
+console.log("Setting title to ",pageTitle)
 	// Handler for wiki change events
 	function changeHandler(changes) {
 		var doc = self.window.window.document;
@@ -71,10 +79,7 @@ function ConfigWindow(options,configWindowIdentifier) {
 		devTools.trapDevTools(self.window,self.window.window.document);
 // self.window.showDevTools();
 		// Set up the title
-		self.titleWidgetNode = $tw.wiki.makeTranscludeWidget(options.tiddler,{field: "page-title", document: $tw.fakeDocument, parseAsInline: true, variables: variables});
-		self.titleContainer = $tw.fakeDocument.createElement("div");
-		self.titleWidgetNode.render(self.titleContainer,null);
-		doc.title = self.titleContainer.textContent;
+		doc.title = pageTitle;
 		// Set up the styles
 		self.styleWidgetNode = $tw.wiki.makeTranscludeWidget("$:/core/ui/PageStylesheet",{document: $tw.fakeDocument, variables: variables});
 		self.styleContainer = $tw.fakeDocument.createElement("style");
@@ -195,7 +200,7 @@ Opens a host window for the specified URL
 */
 function openHostWindowByUrl(url) {
 	// Create or update the corresponding wikilist tiddler
-	$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),$tw.wiki.getModificationFields(),{title: url, tags: ["wikilist"]}));
+	$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),$tw.wiki.getTiddler(url),$tw.wiki.getModificationFields(),{title: url, tags: ["wikilist"]}));
 	// Open the window
 	var hostWindow = open({
 		tiddler: "HostWindow",
