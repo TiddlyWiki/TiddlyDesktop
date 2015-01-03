@@ -5,3 +5,6 @@ Welcome to the internal configuration wiki of ~TiddlyDesktop.
 Interesting things to look at include:
 
 * WikiListWindow
+** WikiListToolbar
+** WikiList
+* [[$:/TiddlyDesktop/ControlPanel]]
