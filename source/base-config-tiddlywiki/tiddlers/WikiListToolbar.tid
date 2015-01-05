@@ -18,4 +18,10 @@ title: WikiListToolbar
 Control Panel
 </$button>
 </div>
+<div class="td-wikilist-toolbar-item">
+<$button>
+<$action-sendmessage $message="tiddlydesktop-show-backstage-wiki"/>
+Backstage
+</$button>
+</div>
 </div>

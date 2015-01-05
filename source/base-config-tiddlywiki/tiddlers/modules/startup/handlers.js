@@ -24,6 +24,10 @@ exports.startup = function() {
 		}
 		return false;
 	});
+	$tw.rootWidget.addEventListener("tiddlydesktop-show-backstage-wiki",function(event) {
+		$tw.desktop.backstageWindow.show();
+		return false;
+	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-add-wiki-url",function(event) {
 		$tw.desktop.configWindow.openHostWindowByUrl(event.param);
 		return false;

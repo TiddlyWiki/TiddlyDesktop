@@ -10,19 +10,33 @@ var gui = require("nw.gui"),
 	savingSupport = require("../js/saving-support.js"),
 	devTools = require("../js/dev-tools.js");
 
-// Get the main window
-var mainWindow = gui.Window.get();
-// mainWindow.showDevTools();
+// Use the main window as the backstage window
+var backstageWindow = gui.Window.get();
+// backstageWindow.showDevTools();
+
+// Hide the backstage window when it is closed
+backstageWindow.hide();
+backstageWindow.on("close",function(isQuitting) {
+	if(isQuitting) {
+		gui.App.quit();
+	} else {
+		backstageWindow.hide();
+	}
+});
+
+function showBackstageWindow() {
+	backstageWindow.show();
+}
 
 // Set up the menu bar
 var menuBar = new gui.Menu({type:"menubar"});
 if(process.platform === "darwin") {
 	menuBar.createMacBuiltin("TiddlyDesktop");
 }
-mainWindow.menu = menuBar;
+backstageWindow.menu = menuBar;
 
 // Show dev tools on F12
-devTools.trapDevTools(mainWindow,document);
+devTools.trapDevTools(backstageWindow,document);
 
 // Create a user configuration wiki folder if it doesn't exist
 var wikiFolder = path.resolve(gui.App.dataPath,"user-config-tiddlywiki");
@@ -49,6 +63,9 @@ if(!fs.existsSync(wikiFolder)) {
 // Set up the $tw global
 var $tw = {desktop: {
 	configWindow: configWindow,
+	backstageWindow: {
+		show: showBackstageWindow
+	},
 	savingSupport: savingSupport,
 	trapLinks: trapLinks,
 	gui: gui
