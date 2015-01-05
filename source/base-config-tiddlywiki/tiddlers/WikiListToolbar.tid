@@ -20,7 +20,7 @@ Control Panel
 </div>
 <div class="td-wikilist-toolbar-item">
 <$button>
-<$action-sendmessage $message="tiddlydesktop-show-backstage-wiki"/>
+<$action-sendmessage $message="tiddlydesktop-open-backstage-wiki"/>
 Backstage
 </$button>
 </div>

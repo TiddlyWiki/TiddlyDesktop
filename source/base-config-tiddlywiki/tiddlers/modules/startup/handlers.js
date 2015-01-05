@@ -24,7 +24,7 @@ exports.startup = function() {
 		}
 		return false;
 	});
-	$tw.rootWidget.addEventListener("tiddlydesktop-show-backstage-wiki",function(event) {
+	$tw.rootWidget.addEventListener("tiddlydesktop-open-backstage-wiki",function(event) {
 		$tw.desktop.backstageWindow.show();
 		return false;
 	});
