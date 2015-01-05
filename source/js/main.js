@@ -6,7 +6,7 @@
 var gui = require("nw.gui"),
 	fs = require("fs"),
 	path = require("path"),
-	configWindow = require("../js/config-window.js"),
+	tiddlerWindows = require("../js/tiddler-windows.js"),
 	savingSupport = require("../js/saving-support.js"),
 	devTools = require("../js/dev-tools.js");
 
@@ -43,7 +43,7 @@ var wikiFolder = path.resolve(gui.App.dataPath,"user-config-tiddlywiki");
 if(!fs.existsSync(wikiFolder)) {
 	var packageFilename = path.resolve(wikiFolder,"tiddlywiki.info"),
 		packageJson = {
-			"description": "TiddlyDesktop user configuration wiki",
+			"description": "TiddlyDesktop backstage user configuration wiki",
 			"plugins": [
 				"tiddlywiki/filesystem"
 			],
@@ -62,7 +62,7 @@ if(!fs.existsSync(wikiFolder)) {
 
 // Set up the $tw global
 var $tw = {desktop: {
-	configWindow: configWindow,
+	tiddlerWindows: tiddlerWindows,
 	backstageWindow: {
 		show: showBackstageWindow
 	},
@@ -84,7 +84,7 @@ $tw.boot.argv = [wikiFolder];
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 
 // Open the wiki list window
-var wikilistWindow = configWindow.open({
+var wikilistWindow = tiddlerWindows.open({
 	tiddler: "WikiListWindow"
 });
 

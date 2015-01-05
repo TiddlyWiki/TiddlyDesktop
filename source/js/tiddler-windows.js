@@ -6,14 +6,14 @@
 var devTools = require("../js/dev-tools.js");
 
 /*
-A hashmap of ConfigWindow objects for open windows. The key is the tiddler title and the values of all specified variables, concatenated with a vertical bar. For example:
+A hashmap of TiddlerWindow objects for open windows. The key is the tiddler title and the values of all specified variables, concatenated with a vertical bar. For example:
 "TiddlerTitle|variable:value|variable:value"
 Note that the variable names must be sorted
 */
-var configWindows = {};
+var tiddlerWindows = {};
 
 /*
-Make a key for the configWindows hashmap
+Make a key for the tiddlerWindows hashmap
 */
 function makeWindowIdentifier(tiddler,variables) {
 	var result = [tiddler],
@@ -28,22 +28,22 @@ function makeWindowIdentifier(tiddler,variables) {
 
 /*
 Open a window showing a specified tiddler. Options include:
-html: filename of html file to use as a template (defaults to "html/config-window.html")
+html: filename of html file to use as a template (defaults to "html/tiddler-window.html")
 tiddler: title of tiddler to be displayed
 callback: optional callback to be invoked when the window has loaded
 variables: optional hashmap of variables to be passed to the widget trees
 */
-function ConfigWindow(options,configWindowIdentifier) {
+function TiddlerWindow(options,tiddlerWindowIdentifier) {
 	var self = this;
 	// Check parameters
-	var html = options.html || "../html/config-window.html",
+	var html = options.html || "../html/tiddler-window.html",
 		variables = options.variables || {};
 	// Copy options
-	this.configWindowIdentifier = configWindowIdentifier;
+	this.tiddlerWindowIdentifier = tiddlerWindowIdentifier;
 	this.captureWindowToTiddler = options.captureWindowToTiddler;
 	this.tiddler = options.tiddler;
 	// Initialisation
-	this.removeOnClose = false; // Flag for removing a window from the config wiki when closing it
+	this.removeOnClose = false; // Flag for removing a window from the list when closing it
 	// Set up the title
 	this.titleWidgetNode = $tw.wiki.makeTranscludeWidget(options.tiddler,{field: "page-title", document: $tw.fakeDocument, parseAsInline: true, variables: variables});
 	this.titleContainer = $tw.fakeDocument.createElement("div");
@@ -106,8 +106,8 @@ function ConfigWindow(options,configWindowIdentifier) {
 	// Trap closing the window
 	var closeHandler = function(event) {
 		// Remove this window from the open list
-		if($tw.utils.hop(configWindows,self.configWindowIdentifier)) {
-			delete configWindows[self.configWindowIdentifier];
+		if($tw.utils.hop(tiddlerWindows,self.tiddlerWindowIdentifier)) {
+			delete tiddlerWindows[self.tiddlerWindowIdentifier];
 		}
 		// Remove our wiki change event handler
 		$tw.wiki.removeEventListener("change",changeHandler);
@@ -141,15 +141,15 @@ function ConfigWindow(options,configWindowIdentifier) {
 	});
 }
 
-ConfigWindow.prototype.getWindowConfigData = function() {
-	return $tw.wiki.getTiddlerData("config of " + this.configWindowIdentifier,{});
+TiddlerWindow.prototype.getWindowConfigData = function() {
+	return $tw.wiki.getTiddlerData("config of " + this.tiddlerWindowIdentifier,{});
 };
 
-ConfigWindow.prototype.saveWindowConfigData = function(data) {
-	$tw.wiki.setTiddlerData("config of " + this.configWindowIdentifier,data);
+TiddlerWindow.prototype.saveWindowConfigData = function(data) {
+	$tw.wiki.setTiddlerData("config of " + this.tiddlerWindowIdentifier,data);
 };
 
-ConfigWindow.prototype.moveAndResizeWindow = function() {
+TiddlerWindow.prototype.moveAndResizeWindow = function() {
 	var data = this.getWindowConfigData();
 	if(data.x) {
 		this.window.x = data.x;
@@ -165,7 +165,7 @@ ConfigWindow.prototype.moveAndResizeWindow = function() {
 	}
 };
 
-ConfigWindow.prototype.captureWindow = function(callback) {
+TiddlerWindow.prototype.captureWindow = function(callback) {
 	var self = this;
 	if(this.captureWindowToTiddler) {
 		this.window.capturePage(function(imgDataUri) {
@@ -189,26 +189,26 @@ ConfigWindow.prototype.captureWindow = function(callback) {
 
 function open(options) {
 	// Check if the window already exists
-	var configWindowIdentifier = makeWindowIdentifier(options.tiddler,options.variables || {}),
-		configWindow = findConfigWindow(configWindowIdentifier);
-	if(configWindow) {
+	var tiddlerWindowIdentifier = makeWindowIdentifier(options.tiddler,options.variables || {}),
+		tiddlerWindow = findTiddlerWindow(tiddlerWindowIdentifier);
+	if(tiddlerWindow) {
 		// If so, activate it and return it
 		try {
-			configWindow.window.focus();
+			tiddlerWindow.window.focus();
 		} catch(e) {
-			console.log("WARNING: Focusing existing config window failed '" + options.tiddler + "'");
+			console.log("WARNING: Focusing existing tiddler window failed '" + options.tiddler + "'");
 		}
 	} else {
 		// Otherwise create the new window
-		configWindow = new ConfigWindow(options,configWindowIdentifier);
-		configWindows[configWindowIdentifier] = configWindow;
+		tiddlerWindow = new TiddlerWindow(options,tiddlerWindowIdentifier);
+		tiddlerWindows[tiddlerWindowIdentifier] = tiddlerWindow;
 	}
-	return configWindow;
+	return tiddlerWindow;
 }
 
-function findConfigWindow(configWindowIdentifier) {
-	if($tw.utils.hop(configWindows,configWindowIdentifier)) {
-		return configWindows[configWindowIdentifier];
+function findTiddlerWindow(tiddlerWindowIdentifier) {
+	if($tw.utils.hop(tiddlerWindows,tiddlerWindowIdentifier)) {
+		return tiddlerWindows[tiddlerWindowIdentifier];
 	} else {
 		return null;
 	}
@@ -242,11 +242,11 @@ Removes host window for the specified URL
 */
 function removeHostWindowByUrl(url) {
 	debugger;
-	var configWindowIdentifier = makeWindowIdentifier("HostWindow",{"currentTiddler": url}),
-		configWindow = findConfigWindow(configWindowIdentifier);
-	if(configWindow) {
-		configWindow.removeOnClose = true;
-		configWindow.window.close();
+	var tiddlerWindowIdentifier = makeWindowIdentifier("HostWindow",{"currentTiddler": url}),
+		tiddlerWindow = findTiddlerWindow(tiddlerWindowIdentifier);
+	if(tiddlerWindow) {
+		tiddlerWindow.removeOnClose = true;
+		tiddlerWindow.window.close();
 	}
 	// Delete the tiddlers for this window
 	$tw.wiki.deleteTiddler(url);
