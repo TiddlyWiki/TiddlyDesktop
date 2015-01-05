@@ -11,7 +11,10 @@ title: WikiList
 </div>
 <div class="td-wikilist-info">
 <div class="td-wiki-title">
-<$view field="page-title"><$view field="title"/></$view>
+<$view field="page-title">Untitled</$view>
+</div>
+<div class="td-wiki-url">
+<$view field="title"/>
 </div>
 <div class="td-wiki-toolbar">
 <div class="td-wiki-toolbar-item">
@@ -36,7 +39,7 @@ remove
 
 \define wikilist()
 <div class="td-wikilist">
-<$list filter="[tag[wikilist]!sort[modified]!has[draft.of]]" emptyMessage="Create or add a wiki to get started" storyview="pop">
+<$list filter="[tag[wikilist]sort[page-title]!has[draft.of]]" emptyMessage="Create or add a wiki to get started" storyview="pop">
 <<wikilist-row>>
 </$list>
 </div>

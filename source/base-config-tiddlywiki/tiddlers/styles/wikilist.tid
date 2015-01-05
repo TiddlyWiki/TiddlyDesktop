@@ -66,6 +66,10 @@ tags: $:/tags/Stylesheet
 	font-weight: bold;
 }
 
+.td-wikilist .td-wiki-url {
+	color: #aaa;
+}
+
 .td-wikilist .td-wikilist-item .td-wiki-toolbar {
 	font-size: 0.8em;
 	opacity: 0;
