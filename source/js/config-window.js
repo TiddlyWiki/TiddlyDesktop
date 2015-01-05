@@ -135,7 +135,10 @@ function ConfigWindow(options,configWindowIdentifier) {
 		self.saveWindowConfigData(data);
 	}
 	this.window.on("move",moveHandler);
-	this.window.on("resize",moveHandler);
+	this.window.on("resize",function() {
+		moveHandler();
+		self.captureWindow();
+	});
 }
 
 ConfigWindow.prototype.getWindowConfigData = function() {
