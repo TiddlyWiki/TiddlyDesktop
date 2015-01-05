@@ -72,6 +72,7 @@ function convertFileUrlToPath(pathname) {
 	var fileUriPrefix = "file://";
 	if(pathname.substr(0,fileUriPrefix.length) === fileUriPrefix) {
 		pathname = pathname.substr(fileUriPrefix.length);
+		pathname = (process.platform.substr(0,3) === "win") ? pathname.replace(/^\//,"").replace(/\//g,"\\") : pathname;
 	}
 	return pathname;
 }
