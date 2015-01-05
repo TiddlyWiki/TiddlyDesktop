@@ -4,6 +4,9 @@ tags: $:/tags/Stylesheet
 \rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
 
 .td-wikilist-toolbar {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
 	color: #888;
 	background-color: #d3d3d3;
 	font-size: 0.9em;
