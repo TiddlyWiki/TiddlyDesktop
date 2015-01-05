@@ -241,7 +241,6 @@ function openHostWindowByPath(pathname) {
 Removes host window for the specified URL
 */
 function removeHostWindowByUrl(url) {
-	debugger;
 	var tiddlerWindowIdentifier = makeWindowIdentifier("HostWindow",{"currentTiddler": url}),
 		tiddlerWindow = findTiddlerWindow(tiddlerWindowIdentifier);
 	if(tiddlerWindow) {
