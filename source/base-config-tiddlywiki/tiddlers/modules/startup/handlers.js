@@ -25,7 +25,6 @@ exports.startup = function() {
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-add-wiki-url",function(event) {
-		// Open the TiddlyWiki window
 		$tw.desktop.configWindow.openHostWindowByUrl(event.param);
 		return false;
 	});
@@ -34,6 +33,10 @@ exports.startup = function() {
 			var file = event.param[t];
 			$tw.desktop.configWindow.openHostWindowByPath(file.path);
 		}
+		return false;
+	});
+	$tw.rootWidget.addEventListener("tiddlydesktop-remove-wiki-url",function(event) {
+		$tw.desktop.configWindow.removeHostWindowByUrl(event.param);
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-open-path-in-shell",function(event) {

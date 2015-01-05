@@ -9,7 +9,7 @@ title: WikiListToolbar
 <$button tooltip="open in TiddlyDeskTop">
 <$text text="Add a TiddlyWiki file"/>
 </$button>
-<$browse message="tiddlydesktop-open-wiki-path"/>
+<$browse message="tiddlydesktop-add-wiki-path"/>
 </div>
 </div>
 <div class="td-wikilist-toolbar-item">

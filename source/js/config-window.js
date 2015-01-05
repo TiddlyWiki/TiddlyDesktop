@@ -42,6 +42,8 @@ function ConfigWindow(options,configWindowIdentifier) {
 	this.configWindowIdentifier = configWindowIdentifier;
 	this.captureWindowToTiddler = options.captureWindowToTiddler;
 	this.tiddler = options.tiddler;
+	// Initialisation
+	this.removeOnClose = false; // Flag for removing a window from the config wiki when closing it
 	// Set up the title
 	this.titleWidgetNode = $tw.wiki.makeTranscludeWidget(options.tiddler,{field: "page-title", document: $tw.fakeDocument, parseAsInline: true, variables: variables});
 	this.titleContainer = $tw.fakeDocument.createElement("div");
@@ -102,18 +104,26 @@ function ConfigWindow(options,configWindowIdentifier) {
 		setTimeout(function() {self.captureWindow();},1000);
 	});
 	// Trap closing the window
+	var closeHandler = function(event) {
+		// Remove this window from the open list
+		if($tw.utils.hop(configWindows,self.configWindowIdentifier)) {
+			delete configWindows[self.configWindowIdentifier];
+		}
+		// Remove our wiki change event handler
+		$tw.wiki.removeEventListener("change",changeHandler);
+		// Close the window
+		self.window.close(true);
+	};
 	this.window.on("close",function(event) {
-		// Capture the window
-		self.captureWindow(function() {
-			// Remove this window from the open list
-			if($tw.utils.hop(configWindows,self.configWindowIdentifier)) {
-				delete configWindows[self.configWindowIdentifier];
-			}
-			// Remove our wiki change event handler
-			$tw.wiki.removeEventListener("change",changeHandler);
-			// Close the window
-			self.window.close(true);
-		});
+		// Delete tiddlers if the window should be removed
+		if(self.removeOnClose) {
+			closeHandler(event);
+		} else {
+			// Capture the window
+			self.captureWindow(function() {
+				closeHandler(event)
+			});
+		}
 	});
 	// Trap moving or resizing the window
 	function moveHandler() {
@@ -177,10 +187,9 @@ ConfigWindow.prototype.captureWindow = function(callback) {
 function open(options) {
 	// Check if the window already exists
 	var configWindowIdentifier = makeWindowIdentifier(options.tiddler,options.variables || {}),
-		configWindow;
-	if($tw.utils.hop(configWindows,configWindowIdentifier)) {
+		configWindow = findConfigWindow(configWindowIdentifier);
+	if(configWindow) {
 		// If so, activate it and return it
-		configWindow = configWindows[configWindowIdentifier];
 		try {
 			configWindow.window.focus();
 		} catch(e) {
@@ -192,6 +201,14 @@ function open(options) {
 		configWindows[configWindowIdentifier] = configWindow;
 	}
 	return configWindow;
+}
+
+function findConfigWindow(configWindowIdentifier) {
+	if($tw.utils.hop(configWindows,configWindowIdentifier)) {
+		return configWindows[configWindowIdentifier];
+	} else {
+		return null;
+	}
 }
 
 /*
@@ -206,7 +223,7 @@ function openHostWindowByUrl(url) {
 		variables: {
 			"currentTiddler": url
 		},
-		captureWindowToTiddler: "img of " + url
+		captureWindowToTiddler: "thumbnail of " + url
 	});
 }
 
@@ -215,6 +232,23 @@ Opens a host window for the specified path
 */
 function openHostWindowByPath(pathname) {
 	openHostWindowByUrl(convertPathToFileUrl(pathname));
+}
+
+/*
+Removes host window for the specified URL
+*/
+function removeHostWindowByUrl(url) {
+	debugger;
+	var configWindowIdentifier = makeWindowIdentifier("HostWindow",{"currentTiddler": url}),
+		configWindow = findConfigWindow(configWindowIdentifier);
+	if(configWindow) {
+		configWindow.removeOnClose = true;
+		configWindow.window.close();
+	}
+	// Delete the tiddlers for this window
+	$tw.wiki.deleteTiddler(url);
+	$tw.wiki.deleteTiddler("config of " + url);
+	$tw.wiki.deleteTiddler("thumbnail of " + url);
 }
 
 function convertPathToFileUrl(path) {
@@ -229,5 +263,6 @@ function convertPathToFileUrl(path) {
 exports.open = open;
 exports.openHostWindowByUrl = openHostWindowByUrl;
 exports.openHostWindowByPath = openHostWindowByPath;
+exports.removeHostWindowByUrl = removeHostWindowByUrl;
 
 })();
