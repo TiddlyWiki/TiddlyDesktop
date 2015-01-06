@@ -142,11 +142,11 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 }
 
 TiddlerWindow.prototype.getWindowConfigData = function() {
-	return $tw.wiki.getTiddlerData("config of " + this.tiddlerWindowIdentifier,{});
+	return $tw.wiki.getTiddlerData("$:/TiddlyDesktop/Config/" + this.tiddlerWindowIdentifier,{});
 };
 
 TiddlerWindow.prototype.saveWindowConfigData = function(data) {
-	$tw.wiki.setTiddlerData("config of " + this.tiddlerWindowIdentifier,data);
+	$tw.wiki.setTiddlerData("$:/TiddlyDesktop/Config/" + this.tiddlerWindowIdentifier,data);
 };
 
 TiddlerWindow.prototype.moveAndResizeWindow = function() {
@@ -226,7 +226,7 @@ function openHostWindowByUrl(url) {
 		variables: {
 			"currentTiddler": url
 		},
-		captureWindowToTiddler: "thumbnail of " + url
+		captureWindowToTiddler: "$:/TiddlyDesktop/Thumbnail/" + url
 	});
 }
 
@@ -249,8 +249,8 @@ function removeHostWindowByUrl(url) {
 	}
 	// Delete the tiddlers for this window
 	$tw.wiki.deleteTiddler(url);
-	$tw.wiki.deleteTiddler("config of " + url);
-	$tw.wiki.deleteTiddler("thumbnail of " + url);
+	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/" + url);
+	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Thumbnail/" + url);
 }
 
 function convertPathToFileUrl(path) {

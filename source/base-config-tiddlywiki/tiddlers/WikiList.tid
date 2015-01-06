@@ -4,8 +4,8 @@ title: WikiList
 <div class="td-wikilist-item">
 <div class="td-wikilist-thumbnail">
 <$button message="tiddlydesktop-add-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible">
-<$list filter="[[thumbnail of $(currentTiddler)$]!is[missing]]" emptyMessage="no image">
-<$image source="""thumbnail of $(currentTiddler)$""" width="120"/>
+<$list filter="[[$:/TiddlyDesktop/Thumbnail/$(currentTiddler)$]!is[missing]]" emptyMessage="no image">
+<$image source="""$:/TiddlyDesktop/Thumbnail/$(currentTiddler)$""" width="120"/>
 </$list>
 </$button>
 </div>
