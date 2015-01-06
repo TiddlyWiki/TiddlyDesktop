@@ -12,6 +12,8 @@ Event handlers for the root widget
 /*global $tw: false */
 "use strict";
 
+var path = require("path");
+
 // Export name and synchronous status
 exports.name = "tiddlydesktop-handlers";
 exports.after = ["startup"];
@@ -75,7 +77,7 @@ exports.startup = function() {
 function convertFileUrlToPath(pathname) {
 	var fileUriPrefix = "file://";
 	if(pathname.substr(0,fileUriPrefix.length) === fileUriPrefix) {
-		pathname = pathname.substr(fileUriPrefix.length);
+		pathname = pathname.substr(fileUriPrefix.length).replace(/\//g,path.sep).replace(/^\\/,"");
 	}
 	return pathname;
 }
