@@ -48,12 +48,17 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 	this.titleWidgetNode = $tw.wiki.makeTranscludeWidget(options.tiddler,{field: "page-title", document: $tw.fakeDocument, parseAsInline: true, variables: variables});
 	this.titleContainer = $tw.fakeDocument.createElement("div");
 	this.titleWidgetNode.render(this.titleContainer,null);
-	var pageTitle = this.titleContainer.textContent;
+	var pageTitle = this.titleContainer.textContent,
+		configData = this.getWindowConfigData();
 	// Create the window
 	this.window = $tw.desktop.gui.Window.open(html,{
 		toolbar: false,
 		show: false,
-		title: pageTitle
+		title: pageTitle,
+		x: "x" in configData ? configData.x : undefined,
+		y: "y" in configData ? configData.y : undefined,
+		width: "width" in configData ? configData.width : undefined,
+		height: "height" in configData ? configData.height : undefined,
 	});
 	// Handler for wiki change events
 	function changeHandler(changes) {
@@ -72,8 +77,7 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 	// When the window is loaded
 	this.window.once("loaded",function() {
 		var doc = self.window.window.document;
-		// Position and show the window
-		self.moveAndResizeWindow();
+		// Show the window
 		self.window.show();
 		self.window.focus();
 		// Trap developer tools on F12
