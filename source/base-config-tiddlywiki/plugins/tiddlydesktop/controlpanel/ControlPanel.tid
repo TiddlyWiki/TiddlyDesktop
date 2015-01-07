@@ -6,16 +6,18 @@ page-title: TiddlyDesktop Control Panel
 
 <div class="td-tiddler-window-padded">
 
-! Advanced
+! ~TiddlyDesktop Settings
 
-!! Backup Path
+!! Backups
 
-//The backup path is relative to the directory containing the ~TiddlyWiki file. The backup path can contain the following special tokens://
+Backups are automatically made every time saving changes results in a file being overwritten. The previous content of the file is copied to a backup file with a filename such as `\MyData\index.html_backup\index.20150107172517000.html`
 
-* //`$filename$` to stand for the filename portion of the URL of the ~TiddlyWiki file//
-* //`$filepath$` to stand for the entire filepath of the URL of the ~TiddlyWiki file//
+The backup path is relative to the directory containing the ~TiddlyWiki file. The backup path can contain the following special tokens:
 
-<$edit-text tiddler="$:/TiddlyDesktop/BackupPath" class="td-big-textarea"/>
+* `$filename$` to stand for the filename portion of the URL of the ~TiddlyWiki file
+* `$filepath$` to stand for the entire filepath of the URL of the ~TiddlyWiki file
+
+<$edit-text tiddler="$:/TiddlyDesktop/BackupPath" class="td-big-textarea" tag="input"/>
 
 <$button>
 <$action-deletetiddler $tiddler="$:/TiddlyDesktop/BackupPath"/>
@@ -24,7 +26,7 @@ Reset to default
 
 !! User Configuration Folder
 
-//This is the folder in which ~TiddlyDesktop stores internal configuration. Notably, the subfolder `user-config-tiddlywiki` contains the backstage wiki folder. If you are experiencing problems with ~TiddlyDesktop you can delete the entire configuration folder to reset TiddlyDesktop to default settings.//
+This is the folder in which ~TiddlyDesktop stores internal configuration. Notably, the subfolder `user-config-tiddlywiki` contains the backstage wiki folder. If you are experiencing problems with ~TiddlyDesktop you can delete the entire configuration folder to reset TiddlyDesktop to default settings.
 
 <$button>
 <$action-sendmessage $message="tiddlydesktop-open-path-in-shell" $param="USER_CONFIG_FOLDER"/>
