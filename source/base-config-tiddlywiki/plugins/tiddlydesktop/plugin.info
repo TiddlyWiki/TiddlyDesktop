@@ -1,0 +1,6 @@
+{
+	"title": "$:/plugins/tiddlywiki/tiddlydesktop",
+	"description": "TiddlyDesktop components for TiddlyWiki",
+	"author": "JeremyRuston",
+	"core-version": ">=5.0.0"
+}
