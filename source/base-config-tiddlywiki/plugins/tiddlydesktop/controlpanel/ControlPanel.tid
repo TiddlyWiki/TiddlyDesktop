@@ -10,9 +10,17 @@ page-title: TiddlyDesktop Control Panel
 
 !! Backup Path
 
-//The backup path is relative to the directory containing the ~TiddlyWiki file. The backup path can contain the special token `$filename$` to stand for the filename portion of the URL of the ~TiddlyWiki file.//
+//The backup path is relative to the directory containing the ~TiddlyWiki file. The backup path can contain the following special tokens://
+
+* //`$filename$` to stand for the filename portion of the URL of the ~TiddlyWiki file//
+* //`$filepath$` to stand for the entire filepath of the URL of the ~TiddlyWiki file//
 
 <$edit-text tiddler="$:/TiddlyDesktop/BackupPath" class="td-big-textarea"/>
+
+<$button>
+<$action-deletetiddler $tiddler="$:/TiddlyDesktop/BackupPath"/>
+Reset to default
+</$button>
 
 !! User Configuration Folder
 
