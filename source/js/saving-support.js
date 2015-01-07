@@ -68,27 +68,26 @@ function backupFile(filepath) {
 	if(fs.existsSync(filepath)) {
 		// Get the timestamp
 		var timestamp = $tw.utils.stringifyDate(fs.statSync(filepath).mtime || (new Date())),
-			backupSubPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath",""),
-			filename = path.basename(filepath);
+			backupSubPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath","");
 		// Replace $filename$ with the filename portion of the filepath and $filepath$ with the entire filepath 
 		backupSubPath = backupSubPath
-			.replace(/\$filename\$/mgi,filename)
+			.replace(/\$filename\$/mgi,path.basename(filepath))
 			.replace(/\$filepath\$/mgi,filepath);
 		// Compose and uniquify the backup pathname
 		var count = 0,
 			backupPath,
-			uniquifier;
+			uniquifier,
+			ext = path.extname(filepath);
 		do {
 			uniquifier = count ? " " + count : "";
 			backupPath = path.resolve(
 				path.dirname(filepath),
 				backupSubPath,
-				filename + "." + timestamp + uniquifier + path.extname(filepath)
+				path.basename(filepath,ext) + "." + timestamp + uniquifier + ext
 			);
 			count = count + 1;
 		} while(fs.existsSync(backupPath));
 		// Copy the existing file to the backup
-console.log("Backing up",filepath,backupPath);
 		$tw.utils.createDirectory(path.dirname(backupPath));
 		fs.writeFileSync(backupPath,fs.readFileSync(filepath)); // For some reason $tw.utils.copyFile() doesn't work here
 	}
