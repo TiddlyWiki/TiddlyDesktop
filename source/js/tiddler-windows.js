@@ -51,14 +51,15 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 	var pageTitle = this.titleContainer.textContent,
 		configData = this.getWindowConfigData();
 	// Create the window
+	var packageJson = require("../package.json");
 	this.window = $tw.desktop.gui.Window.open(html,{
 		toolbar: false,
 		show: false,
 		title: pageTitle,
 		x: "x" in configData ? configData.x : undefined,
 		y: "y" in configData ? configData.y : undefined,
-		width: "width" in configData ? configData.width : undefined,
-		height: "height" in configData ? configData.height : undefined,
+		width: "width" in configData ? configData.width : packageJson.window.width,
+		height: "height" in configData ? configData.height : packageJson.window.height,
 	});
 	// Handler for wiki change events
 	function changeHandler(changes) {
