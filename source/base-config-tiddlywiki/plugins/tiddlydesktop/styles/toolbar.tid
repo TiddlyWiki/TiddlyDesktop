@@ -3,7 +3,7 @@ tags: $:/tags/Stylesheet
 
 \rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
 
-.td-wikilist-toolbar {
+.td-toolbar {
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
@@ -11,14 +11,9 @@ tags: $:/tags/Stylesheet
 	background-color: #d3d3d3;
 	font-size: 0.9em;
 	padding: 1em 2em 1em 2em;
-	position: sticky;
-	top: 0;
-	left: 0;
-	right: 0;
-	z-index: 10;
 }
 
-.td-wikilist-toolbar-item {
+.td-toolbar-item {
     display: inline-block;
 }
 

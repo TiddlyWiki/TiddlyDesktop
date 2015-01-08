@@ -1,0 +1,10 @@
+title: HostWindowToolbar
+
+<div class="td-toolbar">
+<div class="td-toolbar-item">
+<$button>
+<$action-sendmessage $message="tiddlydesktop-reveal-backups-wiki-url" $param=<<currentTiddler>>/>
+Reveal backup folder
+</$button>
+</div>
+</div>

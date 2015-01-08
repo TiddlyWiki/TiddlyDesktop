@@ -68,6 +68,7 @@ var $tw = {desktop: {
 	},
 	savingSupport: savingSupport,
 	trapLinks: trapLinks,
+	backupPathByPath: backupPathByPath,
 	gui: gui
 }};
 
@@ -87,6 +88,17 @@ require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 var wikilistWindow = tiddlerWindows.open({
 	tiddler: "WikiListWindow"
 });
+
+// Helper to get the backup folder for a given filepath
+function backupPathByPath(pathname) {
+	var backupPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath","");
+
+	// Replace $filename$ with the filename portion of the filepath and $filepath$ with the entire filepath 
+	backupPath = backupPath.replace(/\$filename\$/mgi,path.basename(pathname))
+		.replace(/\$filepath\$/mgi,pathname);
+	backupPath = path.resolve(path.dirname(pathname),backupPath)
+	return backupPath;
+}
 
 // Helper to trap wikilinks within a window
 function trapLinks(doc) {

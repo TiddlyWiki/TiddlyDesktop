@@ -83,7 +83,7 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 		self.window.focus();
 		// Trap developer tools on F12
 		devTools.trapDevTools(self.window,self.window.window.document);
-// self.window.showDevTools();
+self.window.showDevTools();
 		// Set up the title
 		doc.title = pageTitle;
 		// Set up the styles

@@ -18,6 +18,8 @@ exports.after = ["startup"];
 exports.synchronous = true;
 
 exports.startup = function() {
+	var fs = require("fs"),
+		path = require("path");
 	$tw.rootWidget.addEventListener("tiddlydesktop-open-config-window",function(event) {
 		if(typeof event.paramObject === "object") {
 			$tw.desktop.tiddlerWindows.open(event.paramObject);
@@ -43,19 +45,16 @@ exports.startup = function() {
 		$tw.desktop.tiddlerWindows.removeHostWindowByUrl(event.param);
 		return false;
 	});
-	$tw.rootWidget.addEventListener("tiddlydesktop-open-path-in-shell",function(event) {
-		var itemPath;
-		switch(event.param) {
-			case "USER_CONFIG_FOLDER":
-				itemPath = $tw.desktop.gui.App.dataPath;
-				break;
-			default:
-				itemPath = event.param;
-				break;
+	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-backups-wiki-url",function(event) {
+		var backupPath = $tw.desktop.backupPathByPath(convertFileUrlToPath(event.param));
+		if(!fs.existsSync(backupPath)) {
+			$tw.utils.createDirectory(backupPath);
 		}
-		if(itemPath) {
-			$tw.desktop.gui.Shell.openItem(itemPath);
-		}
+		$tw.desktop.gui.Shell.openItem(backupPath);
+		return false;
+	});
+	$tw.rootWidget.addEventListener("tiddlydesktop-open-config-folder",function(event) {
+		$tw.desktop.gui.Shell.openItem($tw.desktop.gui.App.dataPath);
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-path-in-shell",function(event) {

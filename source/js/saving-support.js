@@ -68,11 +68,7 @@ function backupFile(filepath) {
 	if(fs.existsSync(filepath)) {
 		// Get the timestamp
 		var timestamp = $tw.utils.stringifyDate(fs.statSync(filepath).mtime || (new Date())),
-			backupSubPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath","");
-		// Replace $filename$ with the filename portion of the filepath and $filepath$ with the entire filepath 
-		backupSubPath = backupSubPath
-			.replace(/\$filename\$/mgi,path.basename(filepath))
-			.replace(/\$filepath\$/mgi,filepath);
+			backupSubPath = $tw.desktop.backupPathByPath(filepath);
 		// Compose and uniquify the backup pathname
 		var count = 0,
 			backupPath,
@@ -81,7 +77,6 @@ function backupFile(filepath) {
 		do {
 			uniquifier = count ? " " + count : "";
 			backupPath = path.resolve(
-				path.dirname(filepath),
 				backupSubPath,
 				path.basename(filepath,ext) + "." + timestamp + uniquifier + ext
 			);
