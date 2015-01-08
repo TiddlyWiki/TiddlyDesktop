@@ -3,11 +3,25 @@ tags: $:/tags/Stylesheet
 
 \rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
 
-.td-wiki-frame {
+.td-hostwindow-wrapper {
 	position: fixed;
-	left: 0;
 	top: 0;
-	width: 100%;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+.td-hostwindow {
+	display: -webkit-flex;
+	-webkit-flex-direction: column;
 	height: 100%;
+}
+
+.td-toolbar {
+	-webkit-flex: 0 0 auto;
+}
+
+.td-wiki-frame {
+	-webkit-flex: 0 1 100%;
 	border: none;
 }

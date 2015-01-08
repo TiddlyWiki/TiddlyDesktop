@@ -1,10 +1,14 @@
 title: HostWindow
 page-title: {{!!page-title}}
 
+<div class="td-hostwindow-wrapper">
+
 <div class="td-hostwindow">
 
 <$transclude tiddler="HostWindowToolbar" mode="inline"/>
 
 <$wikiframe class="td-wiki-frame" url=<<currentTiddler>> pagetitle="!!page-title"/>
+
+</div>
 
 </div>
