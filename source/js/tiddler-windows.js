@@ -258,6 +258,20 @@ function removeHostWindowByUrl(url) {
 	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Thumbnail/" + url);
 }
 
+/*
+Show devtools for the host window for the specified URL
+*/
+function showDevToolsForHostWindowByUrl(url) {
+	var tiddlerWindowIdentifier = makeWindowIdentifier("HostWindow",{"currentTiddler": url}),
+		tiddlerWindow = findTiddlerWindow(tiddlerWindowIdentifier);
+	if(tiddlerWindow) {
+		var iframes = tiddlerWindow.window.window.document.getElementsByClassName("td-wiki-frame");
+		if(iframes.length > 0) {
+			tiddlerWindow.window.showDevTools(iframes[0]);			
+		}
+	}
+}
+
 function convertPathToFileUrl(path) {
 	// File prefix depends on platform
 	var fileUriPrefix = "file://";
@@ -271,5 +285,6 @@ exports.open = open;
 exports.openHostWindowByUrl = openHostWindowByUrl;
 exports.openHostWindowByPath = openHostWindowByPath;
 exports.removeHostWindowByUrl = removeHostWindowByUrl;
+exports.showDevToolsForHostWindowByUrl = showDevToolsForHostWindowByUrl;
 
 })();
