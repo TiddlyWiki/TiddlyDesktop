@@ -259,15 +259,40 @@ function removeHostWindowByUrl(url) {
 }
 
 /*
+Navigate backwards for the host window for the specified URL
+*/
+function navigateBackForHostWindowByUrl(url) {
+	findHostWindowIframe(url,function(tiddlerWindow,iframe) {
+console.log("Going back",iframe.contentWindow)
+		iframe.contentWindow.history.back()
+	});
+}
+
+/*
+Navigate forwards for the host window for the specified URL
+*/
+function navigateForwardForHostWindowByUrl(url) {
+	findHostWindowIframe(url,function(tiddlerWindow,iframe) {
+		iframe.contentWindow.history.forward()
+	});
+}
+
+/*
 Show devtools for the host window for the specified URL
 */
 function showDevToolsForHostWindowByUrl(url) {
+	findHostWindowIframe(url,function(tiddlerWindow,iframe) {
+		tiddlerWindow.window.showDevTools(iframe);
+	});
+}
+
+function findHostWindowIframe(url,callback) {
 	var tiddlerWindowIdentifier = makeWindowIdentifier("HostWindow",{"currentTiddler": url}),
 		tiddlerWindow = findTiddlerWindow(tiddlerWindowIdentifier);
 	if(tiddlerWindow) {
 		var iframes = tiddlerWindow.window.window.document.getElementsByClassName("td-wiki-frame");
 		if(iframes.length > 0) {
-			tiddlerWindow.window.showDevTools(iframes[0]);			
+			callback(tiddlerWindow,iframes[0]);		
 		}
 	}
 }
@@ -286,5 +311,7 @@ exports.openHostWindowByUrl = openHostWindowByUrl;
 exports.openHostWindowByPath = openHostWindowByPath;
 exports.removeHostWindowByUrl = removeHostWindowByUrl;
 exports.showDevToolsForHostWindowByUrl = showDevToolsForHostWindowByUrl;
+exports.navigateBackForHostWindowByUrl = navigateBackForHostWindowByUrl;
+exports.navigateForwardForHostWindowByUrl = navigateForwardForHostWindowByUrl;
 
 })();

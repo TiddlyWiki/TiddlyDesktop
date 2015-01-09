@@ -53,6 +53,14 @@ exports.startup = function() {
 		$tw.desktop.gui.Shell.openItem(backupPath);
 		return false;
 	});
+	$tw.rootWidget.addEventListener("tiddlydesktop-navigate-back-wiki-url",function(event) {
+		$tw.desktop.tiddlerWindows.navigateBackForHostWindowByUrl(event.param);
+		return false;
+	});
+	$tw.rootWidget.addEventListener("tiddlydesktop-navigate-forward-wiki-url",function(event) {
+		$tw.desktop.tiddlerWindows.navigateForwardForHostWindowByUrl(event.param);
+		return false;
+	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-show-devtools-wiki-url",function(event) {
 		$tw.desktop.tiddlerWindows.showDevToolsForHostWindowByUrl(event.param);
 		return false;
