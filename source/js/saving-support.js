@@ -10,7 +10,8 @@ exports.enableSaving = function(doc) {
 	messageBox.id = "tiddlyfox-message-box";
 	doc.body.appendChild(messageBox);
 	// Inject saving code into TiddlyWiki classic
-	if(isTiddlyWikiClassic(doc)) {
+	var isClassic = isTiddlyWikiClassic(doc);
+	if(isClassic) {
 		injectClassicOverrides(doc);
 	}
 	// Listen for save events
@@ -22,7 +23,9 @@ exports.enableSaving = function(doc) {
 		// Convert filepath from UTF8 binary to a real string
 		filepath = (new Buffer(filepath,"binary")).toString();
 		// Backup the existing file (if any)
-		backupFile(filepath);
+		if(!isClassic) {
+			backupFile(filepath);
+		}
 		// Save the file
 		saveFile(filepath,content);
 		// Remove the message element from the message box
@@ -46,12 +49,12 @@ function isTiddlyWikiClassic(doc) {
 // Helper to inject overrides into TiddlyWiki Classic
 function injectClassicOverrides(doc) {
 	// Read classic-inject.js
-	var xhReq = new XMLHttpRequest();
-	xhReq.open("GET","../js/classic-inject.js",false);
-	xhReq.send(null);
+	var fs = require("fs"),
+		path = require("path"),
+		text = fs.readFileSync(path.resolve(path.dirname(module.filename),"classic-inject.js"));
 	// Inject it in a script tag
 	var script = doc.createElement("script");
-	script.appendChild(doc.createTextNode(xhReq.responseText));
+	script.appendChild(doc.createTextNode(text));
 	doc.getElementsByTagName("head")[0].appendChild(script);
 }
 
