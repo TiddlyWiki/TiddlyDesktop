@@ -4,7 +4,8 @@ Welcome to the internal configuration wiki of ~TiddlyDesktop.
 
 Interesting things to look at include:
 
-* WikiListWindow
+* WikiListWindow, which is made up of
 ** WikiListToolbar
 ** WikiList
 * [[$:/TiddlyDesktop/ControlPanel]]
+* [[$:/TiddlyDesktop/Help]]

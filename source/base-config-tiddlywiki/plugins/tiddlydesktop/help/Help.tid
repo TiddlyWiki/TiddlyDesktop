@@ -1,0 +1,6 @@
+title: $:/TiddlyDesktop/Help
+page-title: TiddlyDesktop Help
+
+<$importvariables filter="[[$:/core/macros/toc]]">
+<$macrocall $name="toc-tabbed-internal-nav" tag="$:/TiddlyDesktop/Help" selectedTiddler="$:/temp/toc/selectedTiddler" unselectedText="<p>Select a topic in the table of contents. Click the arrow to expand a topic.</p>" missingText="<p>Missing tiddler.</p>"/>
+</$importvariables>
