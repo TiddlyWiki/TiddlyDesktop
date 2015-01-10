@@ -122,6 +122,17 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 		self.window.close(true);
 	};
 	this.window.on("close",function(event) {
+		// Check the window is happy to close (only works for TiddlyWiki Classic)
+		var iframes = self.window.window.document.getElementsByTagName("iframe");
+		for(var t=0; t<iframes.length; t++) {
+			var onbeforeunload = iframes[t].contentWindow.onbeforeunload;
+			if(onbeforeunload) {
+				var msg = onbeforeunload() + "\nAre you sure you wish to leave this page?";
+				if(msg && !self.window.window.confirm(msg)) {
+					return false;
+				}				
+			}
+		}
 		// Delete tiddlers if the window should be removed
 		if(self.removeOnClose) {
 			closeHandler(event);
