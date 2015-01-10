@@ -127,8 +127,8 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 		for(var t=0; t<iframes.length; t++) {
 			var onbeforeunload = iframes[t].contentWindow.onbeforeunload;
 			if(onbeforeunload) {
-				var msg = onbeforeunload() + "\nAre you sure you wish to leave this page?";
-				if(msg && !self.window.window.confirm(msg)) {
+				var msg = onbeforeunload({});
+				if(msg && !self.window.window.confirm(msg + "\nAre you sure you wish to leave this page?")) {
 					return false;
 				}				
 			}
