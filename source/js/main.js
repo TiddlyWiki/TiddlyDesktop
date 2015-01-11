@@ -73,6 +73,7 @@ var $tw = {desktop: {
 }};
 
 global.$tw = $tw;
+window.$tw = $tw;
 
 // First part of boot process
 require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
