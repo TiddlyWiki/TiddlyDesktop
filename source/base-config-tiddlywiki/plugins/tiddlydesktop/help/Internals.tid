@@ -1,0 +1,12 @@
+title: $:/TiddlyDesktop/Help/Internals
+caption: Internals
+tags: $:/TiddlyDesktop/Help
+
+~TiddlyDesktop is itself an instance of ~TiddlyWiki, configured to run as a hybrid of the Node.js configuration and the browser-based configuration. It uses the Node.js file APIs to synchronise individual tiddler files to the file system while also rendering a user interface in the "backstage" window.
+
+~TiddlyDesktop is capable of opening any individual tiddler from the backstage wiki as an independent window (a so-called "tiddler window"). The control panel and this help window are both tiddler windows, targetting [[$:/TiddlyDesktop/ControlPanel]] and [[$:/TiddlyDesktop/Help]] respectively.
+
+~TiddlyWiki "host windows" are windows displaying the tiddler HostWindow, which contains a sandboxed iframe to display the hosted ~TiddlyWiki document. The URL to use for the iframe is passed as a variable when opening the tiddler window.
+
+You can explore the backstage wiki to find out more about how ~TiddlyDesktop works.
+
