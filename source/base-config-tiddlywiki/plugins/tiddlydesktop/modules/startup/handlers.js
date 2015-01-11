@@ -35,8 +35,8 @@ exports.startup = function() {
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-add-wiki-path",function(event) {
-		for(var t=0; t<event.param.length; t++) {
-			var file = event.param[t];
+		for(var t=0; t<event.files.length; t++) {
+			var file = event.files[t];
 			$tw.desktop.tiddlerWindows.openHostWindowByPath(file.path);
 		}
 		return false;
