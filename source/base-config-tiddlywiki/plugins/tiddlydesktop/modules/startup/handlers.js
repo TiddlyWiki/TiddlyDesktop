@@ -30,6 +30,13 @@ exports.startup = function() {
 		$tw.desktop.backstageWindow.show();
 		return false;
 	});
+	$tw.rootWidget.addEventListener("tiddlydesktop-create-wiki",function(event) {
+		for(var t=0; t<event.files.length; t++) {
+			var file = event.files[t];
+			$tw.desktop.tiddlerWindows.createNewWiki(event.param,file.path);
+		}
+		return false;
+	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-add-wiki-url",function(event) {
 		$tw.desktop.tiddlerWindows.openHostWindowByUrl(event.param);
 		return false;

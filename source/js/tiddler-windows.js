@@ -3,7 +3,10 @@
 /*jslint browser: true */
 "use strict";
 
-var devTools = require("../js/dev-tools.js");
+var devTools = require("../js/dev-tools.js"),
+	slaveWiki = require("../js/slave-wiki.js"),
+	path = require("path"),
+	fs = require("fs");
 
 /*
 A hashmap of TiddlerWindow objects for open windows. The key is the tiddler title and the values of all specified variables, concatenated with a vertical bar. For example:
@@ -300,6 +303,17 @@ function showDevToolsForHostWindowByUrl(url) {
 	});
 }
 
+/*
+Create a new wiki of the specified edition
+*/
+function createNewWiki(edition,pathname) {
+console.log("in createNewWiki",edition,pathname)
+	// Use a slave wiki to create the new file
+	slaveWiki.runSlaveWiki([path.resolve(path.dirname(module.filename),"../tiddlywiki/editions/",edition),"--verbose","--rendertiddler","$:/core/save/all",pathname,"text/plain"]);
+	// Add it and open it
+	openHostWindowByPath(pathname);
+}
+
 function findHostWindowIframe(url,callback) {
 	var tiddlerWindowIdentifier = makeWindowIdentifier("HostWindow",{"currentTiddler": url}),
 		tiddlerWindow = findTiddlerWindow(tiddlerWindowIdentifier);
@@ -327,5 +341,6 @@ exports.removeHostWindowByUrl = removeHostWindowByUrl;
 exports.showDevToolsForHostWindowByUrl = showDevToolsForHostWindowByUrl;
 exports.navigateBackForHostWindowByUrl = navigateBackForHostWindowByUrl;
 exports.navigateForwardForHostWindowByUrl = navigateForwardForHostWindowByUrl;
+exports.createNewWiki = createNewWiki;
 
 })();

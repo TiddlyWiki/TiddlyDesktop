@@ -13,6 +13,22 @@ title: WikiListToolbar
 </div>
 </div>
 <div class="td-toolbar-item">
+<div class="td-file-input-wrapper">
+<$button>
+<$text text="Create a new TiddlyWiki file"/>
+</$button>
+<$browse message="tiddlydesktop-create-wiki" param={{$:/TiddlyDesktop/CreateEdition}} nwsaveas="tiddlywiki.html"/>
+</div>
+<$select tiddler="$:/TiddlyDesktop/CreateEdition">
+<$list filter="[editions[]]">
+<option value=<<currentTiddler>>><$text text=<<currentTiddler>>/>: <$list filter="[<currentTiddler>editiondescription[]]">
+<$text text=<<currentTiddler>>/>
+</$list>
+</option>
+</$list>
+</$select>
+</div>
+<div class="td-toolbar-item">
 <$button>
 <$action-sendmessage $message="tiddlydesktop-open-config-window" tiddler="$:/TiddlyDesktop/ControlPanel"/>
 Control Panel
