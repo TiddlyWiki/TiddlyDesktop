@@ -278,7 +278,6 @@ Navigate backwards for the host window for the specified URL
 */
 function navigateBackForHostWindowByUrl(url) {
 	findHostWindowIframe(url,function(tiddlerWindow,iframe) {
-console.log("Going back",iframe.contentWindow)
 		iframe.contentWindow.history.back()
 	});
 }
