@@ -3,3 +3,5 @@ tmp/
 source/bin/
 output/
 node-webkit/*
+node_modules/
+source/tiddlywiki/

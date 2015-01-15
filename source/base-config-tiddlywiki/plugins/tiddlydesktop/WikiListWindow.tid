@@ -1,0 +1,6 @@
+title: WikiListWindow
+page-title: TiddlyDesktop -- Main 
+
+<$transclude tiddler="WikiListToolbar" mode="inline"/>
+
+<$transclude tiddler="WikiList" mode="inline"/>

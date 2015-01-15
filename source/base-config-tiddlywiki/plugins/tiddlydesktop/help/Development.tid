@@ -1,0 +1,17 @@
+title: $:/TiddlyDesktop/Help/Development
+caption: Development
+tags: $:/TiddlyDesktop/Help
+
+! ~GitHub
+
+Development of ~TiddlyDesktop is on ~GitHub:
+
+https://github.com/Jermolene/TiddlyDesktop
+
+! Using Chromium ~DevTools
+
+The Chromium ~DevTools are available in ~TiddlyDesktop:
+
+* The F12 key invokes ~DevTools on any ~TiddlyDesktop window
+** Click within the toolbar of ~TiddlyWiki windows before pressing F12 to get the ~DevTools targetting the ~TiddlyWiki file itself
+* Cliking the ~DevTools button on the toolbar of ~TiddlyWiki windows gets the ~DevTools targetting the container window

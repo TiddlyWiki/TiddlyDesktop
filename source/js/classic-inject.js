@@ -1,5 +1,5 @@
 /*
-The JavaScript in this file is injected into each TiddlyWiki page that loads
+The JavaScript in this file is injected into each TiddlyWiki Classic page that loads
 */
 
 (function () {

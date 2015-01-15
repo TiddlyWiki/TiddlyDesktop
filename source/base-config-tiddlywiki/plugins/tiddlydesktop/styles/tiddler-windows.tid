@@ -1,0 +1,8 @@
+title: $:/TiddlyDesktop/styles/tiddler-windows
+tags: $:/tags/Stylesheet
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+.td-tiddler-window .td-tiddler-window-padded {
+	padding: 2em;
+}

@@ -1,0 +1,34 @@
+title: $:/TiddlyDesktop/Help/Backups
+caption: Backups
+tags: $:/TiddlyDesktop/Help
+
+Backups are automatically made every time saving changes results in a file being overwritten. The previous content of the file is copied to a backup file with a filename such as `\MyData\index.html_backup\index.20150107172517000.html`.
+
+The backup filename is composed of the filename plus a date string, like this:
+
+```
+index.20150109082810000.html
+```
+
+The backup pathname is configurable in <$button>
+<$action-sendmessage $message="tiddlydesktop-open-config-window" tiddler="$:/TiddlyDesktop/ControlPanel"/>
+Control Panel
+</$button>.
+
+You can store backups in a subfolder relative to each file like this:
+
+```
+./$filename$_backup/
+```
+
+Or you can store backups in a centralised location like this:
+
+```
+/Users/me/TiddlyBackups/
+```
+
+By including the `$filepath$` in the backup path you can automatically create subfolders for each parent folder of the file being backed up. The result is pathnames such as `Users/me/TiddlyBackups/Users/me/myWikis/index.html/index.20150109082810000.html`.
+
+```
+/Users/me/TiddlyBackups/$filepath$
+```

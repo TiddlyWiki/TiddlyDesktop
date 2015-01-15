@@ -50,7 +50,7 @@ The F12 key opens the Chromium developer tools for the current window.
 
 # Building
 
-1. Download **node-webkit-v0.8.4-osx-ia32** , **node-webkit-v0.8.4-win-ia32** , **node-webkit-v0.8.4-linux-x64** **node-webkit-v0.8.4-linux-ia32** from the <a href="https://github.com/rogerwang/node-webkit#downloads">node-webkit GitHub repo</a> and unpack them into `/node-webkit`
+1. Download **node-webkit-v0.11.3-osx-ia32** , **node-webkit-v0.11.3-osx-x64** , **node-webkit-v0.11.3-win-ia32** , **node-webkit-v0.11.3-win-x64** , **node-webkit-v0.11.3-linux-x64** **node-webkit-v0.11.3-linux-ia32** from the <a href="https://github.com/rogerwang/node-webkit#downloads">node-webkit GitHub repo</a> and unpack them into `/node-webkit`
 2. Run `bld.sh`
 3. Execute `output/mac/TiddlyWiki.app` or `output/win/nw.exe` or `output/linux32/nw` or `output/linux64/nw`
 
@@ -59,7 +59,7 @@ The F12 key opens the Chromium developer tools for the current window.
 You can create links that open a TiddlyWiki in a new window:
 
 ```
-<a href="/Users/jack/MyTiddlyWiki.html" class="tw-interwiki-link">Open my wiki</a>
+<a href="/Users/jack/MyTiddlyWiki.html" class="tc-interwiki-link">Open my wiki</a>
 ```
 
 These links only work within TiddlyDesktop.

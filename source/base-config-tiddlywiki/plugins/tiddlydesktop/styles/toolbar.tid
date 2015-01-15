@@ -1,0 +1,47 @@
+title: $:/TiddlyDesktop/styles/toolbar
+tags: $:/tags/Stylesheet
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+.td-toolbar {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+	color: #888;
+	background-color: #d3d3d3;
+	font-size: 0.9em;
+	padding: 1em 2em 1em 2em;
+}
+
+.td-toolbar-item {
+    display: inline-block;
+}
+
+.td-logo {
+	height: 3em;
+	margin-right: 1em;
+	vertical-align: middle;
+}
+
+.td-file-input-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.td-file-input-wrapper input[type="file"] {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    font-size: 999px;
+    max-width: 100%;
+    max-height: 100%;
+    opacity: 0;
+    outline: medium none;
+    background: none repeat scroll 0% 0% #FFF;
+    cursor: pointer;
+    display: inline-block;
+}

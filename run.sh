@@ -5,11 +5,11 @@
 
 pushd ../TiddlyWiki5
 
-./qbld.sh
+../build.jermolene.github.io/quick-bld.sh
 
 popd
 
 ./bld.sh
 
-./output/mac/TiddlyWiki.app/Contents/MacOS/node-webkit
+./output/mac64/TiddlyWiki.app/Contents/MacOS/node-webkit
 
