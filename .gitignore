@@ -2,6 +2,6 @@
 tmp/
 source/bin/
 output/
-node-webkit/*
+nwjs/*
 node_modules/
 source/tiddlywiki/

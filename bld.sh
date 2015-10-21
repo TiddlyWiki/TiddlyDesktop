@@ -21,29 +21,29 @@ mkdir -p output/linux32
 mkdir -p output/linux64
 
 # OS X 64-bit App
-cp -R node-webkit/node-webkit-v0.11.5-osx-x64/node-webkit.app output/mac64/TiddlyWiki.app
+cp -R nwjs/nwjs-v0.12.3-osx-x64/nwjs.app output/mac64/TiddlyWiki.app
 cp -R source output/mac64/TiddlyWiki.app/Contents/Resources/app.nw
 cp icons/app.icns output/mac64/TiddlyWiki.app/Contents/Resources/nw.icns
 cp Info.plist output/mac64/TiddlyWiki.app/Contents/Info.plist
 
 # OS X 32-bit App
-cp -R node-webkit/node-webkit-v0.11.5-osx-ia32/node-webkit.app output/mac32/TiddlyWiki.app
+cp -R nwjs/nwjs-v0.12.3-osx-ia32/nwjs.app output/mac32/TiddlyWiki.app
 cp -R source output/mac32/TiddlyWiki.app/Contents/Resources/app.nw
 cp icons/app.icns output/mac32/TiddlyWiki.app/Contents/Resources/nw.icns
 cp Info.plist output/mac32/TiddlyWiki.app/Contents/Info.plist
 
 # Windows 64-bit App
-cp -R node-webkit/node-webkit-v0.11.5-win-x64/* output/win64
+cp -R nwjs/nwjs-v0.12.3-win-x64/* output/win64
 cp -R source/* output/win64
 
 # Windows 32-bit App
-cp -R node-webkit/node-webkit-v0.11.5-win-ia32/* output/win32
+cp -R nwjs/nwjs-v0.12.3-win-ia32/* output/win32
 cp -R source/* output/win32
 
 # Linux 64-bit App
-cp -R node-webkit/node-webkit-v0.11.5-linux-x64/* output/linux64
+cp -R nwjs/nwjs-v0.12.3-linux-x64/* output/linux64
 cp -R source/* output/linux64
 
 # Linux 32-bit App
-cp -R node-webkit/node-webkit-v0.11.5-linux-ia32/* output/linux32
+cp -R nwjs/nwjs-v0.12.3-linux-ia32/* output/linux32
 cp -R source/* output/linux32

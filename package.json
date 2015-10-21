@@ -1,6 +1,6 @@
 {
 	"name": "tiddlydesktop",
-	"version": "0.0.4-prerelease",
+	"version": "0.0.5-prerelease",
 	"author": "Jeremy Ruston <jeremy@jermolene.com>",
 	"description": "a desktop application for TiddlyWiki",
 	"contributors": [
@@ -18,9 +18,6 @@
 		"tiddlywiki5",
 		"wiki"
 	],
-	"dependencies": {
-		"tiddlywiki": "5.1.5"
-	},
 	"devDependencies": {},
 	"bundleDependencies": [],
 	"license": "BSD"

@@ -11,5 +11,5 @@ popd
 
 ./bld.sh
 
-./output/mac64/TiddlyWiki.app/Contents/MacOS/node-webkit
+./output/mac64/TiddlyWiki.app/Contents/MacOS/nwjs
 
