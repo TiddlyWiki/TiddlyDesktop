@@ -11,8 +11,8 @@ index.20150109082810000.html
 ```
 
 The backup pathname is configurable in <$button>
-<$action-sendmessage $message="tiddlydesktop-open-config-window" tiddler="$:/TiddlyDesktop/ControlPanel"/>
-Control Panel
+<$action-sendmessage $message="tiddlydesktop-open-config-window" tiddler="$:/TiddlyDesktop/Settings"/>
+Settings
 </$button>.
 
 You can store backups in a subfolder relative to each file like this:

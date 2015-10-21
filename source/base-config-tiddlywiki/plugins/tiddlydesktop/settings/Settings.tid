@@ -1,8 +1,8 @@
-title: $:/TiddlyDesktop/ControlPanel
-tags: $:/tags/ControlPanel
-list-before: $:/core/ui/ControlPanel/Info
+title: $:/TiddlyDesktop/Settings
+tags: $:/tags/Settings
+list-before: $:/core/ui/Settings/Info
 caption: ~TiddlyDesktop
-page-title: TiddlyDesktop Control Panel
+page-title: TiddlyDesktop Settings
 
 <div class="td-tiddler-window-padded">
 
