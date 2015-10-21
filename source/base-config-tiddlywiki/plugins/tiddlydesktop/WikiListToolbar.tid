@@ -15,7 +15,7 @@ title: WikiListToolbar
 <div class="td-toolbar-item">
 <$button>
 <$action-sendmessage $message="tiddlydesktop-open-config-window" tiddler="$:/TiddlyDesktop/ControlPanel"/>
-Control Panel
+Settings
 </$button>
 </div>
 <div class="td-toolbar-item">
