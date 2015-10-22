@@ -122,6 +122,10 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 		$tw.wiki.removeEventListener("change",changeHandler);
 		// Close the window
 		self.window.close(true);
+		// Exit if there are no windows left
+		if(Object.keys(tiddlerWindows).length === 0) {
+		   $tw.desktop.gui.App.quit();
+		}
 	};
 	this.window.on("close",function(event) {
 		// Check the window is happy to close (only works for TiddlyWiki Classic)
