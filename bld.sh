@@ -9,6 +9,13 @@ rm -Rf source/tiddlywiki
 # Get the correct version of TiddlyWiki and copy to source/tiddlywiki
 # npm install
 npm install ../TiddlyWiki5
+
+pushd ./node_modules/tiddlywiki
+
+./bin/clean.sh
+
+popd
+
 cp -R node_modules/tiddlywiki source/tiddlywiki
 
 # Create the output directory
