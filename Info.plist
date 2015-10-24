@@ -7,7 +7,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>TiddlyWiki</string>
 	<key>CFBundleExecutable</key>
-	<string>node-webkit</string>
+	<string>nwjs</string>
 	<key>CFBundleIconFile</key>
 	<string>nw.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -21,9 +21,15 @@
 	<key>CFBundleShortVersionString</key>
 	<string>0.0.5</string>
 	<key>CFBundleVersion</key>
-	<string>0.0.5</string>
+	<string>5</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © Jeremy Ruston 2004-2015</string>
+	<key>LSApplicationCategoryType</key>
+    <string>public.app-category.productivity</string>
+    <key>LSApplicationSecondaryCategoryType</key>
+    <string>public.app-category.utilities</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
 </dict>
