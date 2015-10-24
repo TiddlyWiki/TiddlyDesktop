@@ -6,9 +6,9 @@ See this video tutorial for an overview of installing and using TiddlyDesktop on
 
 https://www.youtube.com/watch?v=i3Bggkm7paA
 
-It is based on node-webkit, a project created and developed in the Intel Open Source Technology Center:
+It is based on nw.js, a project created and developed in the Intel Open Source Technology Center:
 
-https://github.com/rogerwang/node-webkit
+https://github.com/nwjs/nw.js
 
 # Download and Install
 
@@ -40,7 +40,7 @@ sudo apt-get install bless
 
 6. Save the edited ''nw'' binary
 
-Other possible solutions: https://github.com/rogerwang/node-webkit/wiki/The-solution-of-lacking-libudev.so.0
+Other possible solutions: https://github.com/nwjs/nw.js/wiki/The-solution-of-lacking-libudev.so.0
 
 # Usage
 
