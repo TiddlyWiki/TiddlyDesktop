@@ -14,13 +14,13 @@ title: WikiListToolbar
 </div>
 <div class="td-toolbar-item">
 <$button>
-<$action-sendmessage $message="tiddlydesktop-open-config-window" tiddler="$:/TiddlyDesktop/ControlPanel"/>
+<$action-sendmessage $message="tiddlydesktop-open-tiddler-window" tiddler="$:/TiddlyDesktop/Settings"/>
 Settings
 </$button>
 </div>
 <div class="td-toolbar-item">
 <$button>
-<$action-sendmessage $message="tiddlydesktop-open-config-window" tiddler="$:/TiddlyDesktop/Help"/>
+<$action-sendmessage $message="tiddlydesktop-open-tiddler-window" tiddler="$:/TiddlyDesktop/Help"/>
 Help
 </$button>
 </div>

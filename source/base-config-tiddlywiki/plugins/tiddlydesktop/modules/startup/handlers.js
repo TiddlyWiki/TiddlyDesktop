@@ -20,7 +20,7 @@ exports.synchronous = true;
 exports.startup = function() {
 	var fs = require("fs"),
 		path = require("path");
-	$tw.rootWidget.addEventListener("tiddlydesktop-open-config-window",function(event) {
+	$tw.rootWidget.addEventListener("tiddlydesktop-open-tiddler-window",function(event) {
 		if(typeof event.paramObject === "object") {
 			$tw.desktop.tiddlerWindows.open(event.paramObject);
 		}

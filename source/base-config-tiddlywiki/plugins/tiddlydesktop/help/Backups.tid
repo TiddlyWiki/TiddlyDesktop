@@ -11,7 +11,7 @@ index.20150109082810000.html
 ```
 
 The backup pathname is configurable in <$button>
-<$action-sendmessage $message="tiddlydesktop-open-config-window" tiddler="$:/TiddlyDesktop/Settings"/>
+<$action-sendmessage $message="tiddlydesktop-open-tiddler-window" tiddler="$:/TiddlyDesktop/Settings"/>
 Settings
 </$button>.
 
