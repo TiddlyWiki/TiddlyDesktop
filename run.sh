@@ -11,5 +11,5 @@ popd
 
 ./bld.sh
 
-./output/mac64/TiddlyWiki.app/Contents/MacOS/nwjs
+./output/mac64/TiddlyDesktop-mac64-v0.0.5/TiddlyWiki.app/Contents/MacOS/nwjs
 
