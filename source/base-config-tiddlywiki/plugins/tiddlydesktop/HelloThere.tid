@@ -1,8 +1,16 @@
 title: HelloThere
 
-Welcome to the internal configuration wiki of ~TiddlyDesktop.
+@@.tc-alert
+Welcome to the internal configuration wiki of ~TiddlyDesktop.<br><br>
+Making changes without knowing what you are doing can break ~TiddlyDesktop.<br><br>
+You can repair things by clearing your configuration - just open <$button>
+<$action-sendmessage $message="tiddlydesktop-open-config-folder" $param="USER_CONFIG_FOLDER"/>
+this folder
+</$button>, quit ~TiddlyDesktop, and delete the folder before restarting ~TiddlyDesktop. You will lose your list of registered wikis.
 
-Interesting things to look at include:
+@@
+
+If you heed the warning, poking around here is a great way to learn how ~TiddlyDesktop works. Interesting things to look at include:
 
 * WikiListWindow, which is made up of
 ** WikiListToolbar
