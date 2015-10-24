@@ -15,11 +15,8 @@ var backstageWindow = gui.Window.get();
 // backstageWindow.showDevTools();
 
 // Hide the backstage window when we start, and when it is closed
-backstageWindow.hide();
 backstageWindow.on("close",function(isQuitting) {
-	if(isQuitting) {
-		gui.App.quit();
-	} else {
+	if(!isQuitting) {
 		backstageWindow.hide();
 	}
 });
