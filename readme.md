@@ -56,13 +56,3 @@ The F12 key opens the Chromium developer tools for the current window.
 2. Download the TiddlyWiki5 repo from https://github.com/Jermolene/TiddlyWiki5 to a sibling directory to the TiddlyDesktop repo called "TiddlyWiki5"
 3. Run `bld.sh`
 4. Execute `output/mac/TiddlyWiki.app` or `output/win/nw.exe` or `output/linux32/nw` or `output/linux64/nw`
-
-# Creating inter-wiki links
-
-You can create links that open a TiddlyWiki in a new window:
-
-```
-<a href="/Users/jack/MyTiddlyWiki.html" class="tc-interwiki-link">Open my wiki</a>
-```
-
-These links only work within TiddlyDesktop.
