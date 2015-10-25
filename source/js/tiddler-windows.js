@@ -56,6 +56,7 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 		toolbar: false,
 		show: false,
 		title: pageTitle,
+		icon: "images/app_icon.png",
 		x: "x" in configData ? configData.x : undefined,
 		y: "y" in configData ? configData.y : undefined,
 		width: "width" in configData ? configData.width : packageJson.window.width,
