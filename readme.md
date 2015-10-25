@@ -18,6 +18,8 @@ https://github.com/Jermolene/TiddlyDesktop/releases
 
 Unzip into a folder and run `TiddlyWiki.app` or `nw.exe` and for linux `nw`
 
+Note that TiddlyDesktop will not work correctly from a Windows UNC network share (eg ``\\MY-SERVER\SHARE\MyFolder``). You should map the network share to a local drive, and run it from there.
+
 ## Known issue - "nothing happens"
 
 This has been seen in Ubuntu 13.10 (see Issue #14)
