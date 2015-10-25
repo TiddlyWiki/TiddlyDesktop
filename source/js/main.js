@@ -5,14 +5,15 @@
 
 var gui = require("nw.gui"),
 	fs = require("fs"),
-	path = require("path"),
-	tiddlerWindows = require("../js/tiddler-windows.js"),
-	savingSupport = require("../js/saving-support.js"),
-	devTools = require("../js/dev-tools.js");
+	path = require("path");
 
 // Use the main window as the backstage window
 var backstageWindow = gui.Window.get();
 // backstageWindow.showDevTools();
+
+var tiddlerWindows = require("../js/tiddler-windows.js"),
+	savingSupport = require("../js/saving-support.js"),
+	devTools = require("../js/dev-tools.js");
 
 // Hide the backstage window when we start, and when it is closed
 backstageWindow.on("close",function(isQuitting) {
@@ -25,7 +26,6 @@ function showBackstageWindow() {
 	backstageWindow.show();
 }
 
-// Set up the menu bar
 var menuBar = new gui.Menu({type:"menubar"});
 if(process.platform === "darwin") {
 	menuBar.createMacBuiltin("TiddlyDesktop");
