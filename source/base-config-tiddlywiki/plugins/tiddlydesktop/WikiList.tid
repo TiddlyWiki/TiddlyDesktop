@@ -39,7 +39,7 @@ remove
 
 \define wikilist()
 <div class="td-wikilist">
-<$list filter="[tag[wikilist]sort[page-title]!has[draft.of]]" emptyMessage="Create or add a wiki to get started" storyview="pop">
+<$list filter="[tag[wikilist]sort[page-title]!has[draft.of]]" emptyMessage="Add a ~TiddlyWiki file to get started" storyview="pop">
 <<wikilist-row>>
 </$list>
 </div>
