@@ -46,6 +46,9 @@ Other possible solutions: https://github.com/nwjs/nw.js/wiki/The-solution-of-lac
 
 # Usage
 
+## Multiple Configurations
+To have separate mutliple instances of TiddlyDesktop (for example, separate Personal and Professional instances), you can pass the `--data-path` argument.  e.g. `/opt/TiddlyDesktop/nw --data-path=/mnt/data/TiddlyWiki/config`.  The property should be a directory to use for holding configuration data.
+
 ## Developer Tools
 
 The F12 key opens the Chromium developer tools for the current window.
