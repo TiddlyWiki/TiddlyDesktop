@@ -41,6 +41,7 @@ WikiFrameWidget.prototype.render = function(parent,nextSibling) {
 	}
 	domNode.setAttribute("nwdisable","nwdisable");
 	domNode.setAttribute("nwfaketop","nwfaketop");
+	domNode.setAttribute("nwUserAgent",navigator.userAgent + " TiddlyDesktop/" + $tw.desktop.version);
 	// Set up the frame when it has loaded
 	var loaded = false;
 	domNode.onload = function() {

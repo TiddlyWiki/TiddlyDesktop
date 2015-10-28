@@ -16,8 +16,14 @@ pushd ./node_modules/tiddlywiki
 
 popd
 
+# Copy TiddlyWiki core files
 cp -R node_modules/tiddlywiki source/tiddlywiki
+
+# Copy TiddlyDesktop plugin
 cp -R plugins/tiddlydesktop source/tiddlywiki/plugins/tiddlywiki
+
+# Copy version
+node propogate-version.js
 
 # Create the output directory
 mkdir -p output
