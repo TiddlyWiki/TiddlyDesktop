@@ -36,26 +36,33 @@ backstageWindow.menu = menuBar;
 devTools.trapDevTools(backstageWindow,document);
 
 // Create a user configuration wiki folder if it doesn't exist
-var wikiFolder = path.resolve(gui.App.dataPath,"user-config-tiddlywiki");
-if(!fs.existsSync(wikiFolder)) {
-	var packageFilename = path.resolve(wikiFolder,"tiddlywiki.info"),
-		packageJson = {
-			"description": "TiddlyDesktop backstage user configuration wiki",
-			"plugins": [
-				"tiddlywiki/filesystem"
-			],
-			"themes": [
-				"tiddlywiki/vanilla",
-				"tiddlywiki/snowwhite"
-			],
-			"includeWikis": [
-				{"path": path.resolve(process.cwd(),"base-config-tiddlywiki"),
-				"read-only": true}
-			]
-		};
-	fs.mkdirSync(wikiFolder);
-	fs.writeFileSync(packageFilename,JSON.stringify(packageJson,null,4));
+var wikiFolder = path.resolve(gui.App.dataPath,"user-config-tiddlywiki"),
+	packageFilename = path.resolve(wikiFolder,"tiddlywiki.info"),
+	packageJson;
+if(fs.existsSync(wikiFolder) && fs.existsSync(packageFilename)) {
+	packageJson = JSON.parse(fs.readFileSync(packageFilename,"utf8") || {});
+	packageJson.plugins = packageJson.plugins || [];
+	if(packageJson.plugins.indexOf("tiddlywiki/tiddlydesktop") === -1) {
+		packageJson.plugins.push("tiddlywiki/tiddlydesktop");
+	}
+	packageJson.includeWikis = [];
+} else {
+	packageJson = {
+		"description": "TiddlyDesktop backstage user configuration wiki",
+		"plugins": [
+			"tiddlywiki/filesystem",
+			"tiddlywiki/tiddlydesktop"
+		],
+		"themes": [
+			"tiddlywiki/vanilla",
+			"tiddlywiki/snowwhite"
+		]
+	};
 }
+if(!fs.existsSync(wikiFolder)) {
+	fs.mkdirSync(wikiFolder);
+}
+fs.writeFileSync(packageFilename,JSON.stringify(packageJson,null,4));
 
 // Set up the $tw global
 var $tw = {desktop: {
