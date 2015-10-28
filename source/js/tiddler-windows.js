@@ -129,7 +129,7 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 		}
 	};
 	this.window.on("close",function(event) {
-		// Check the window is happy to close (only works for TiddlyWiki Classic)
+		// Check the window is happy to close
 		var iframes = self.window.window.document.getElementsByTagName("iframe");
 		for(var t=0; t<iframes.length; t++) {
 			var onbeforeunload = iframes[t].contentWindow.onbeforeunload;
