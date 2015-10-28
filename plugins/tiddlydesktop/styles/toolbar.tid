@@ -8,9 +8,10 @@ tags: $:/tags/Stylesheet
     -webkit-user-select: none;
     -ms-user-select: none;
 	color: #888;
+    fill: #888;
 	background-color: #d3d3d3;
 	font-size: 0.9em;
-	padding: 1em 2em 1em 2em;
+	padding: 0.25em;
 }
 
 .td-toolbar-item {

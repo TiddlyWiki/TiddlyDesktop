@@ -7,6 +7,7 @@ title: WikiListToolbar
 <div class="td-toolbar-item">
 <div class="td-file-input-wrapper">
 <$button>
+{{$:/core/images/new-button}}
 <$text text="Add a TiddlyWiki file"/>
 </$button>
 <$browse message="tiddlydesktop-add-wiki-path"/>
@@ -15,18 +16,21 @@ title: WikiListToolbar
 <div class="td-toolbar-item">
 <$button>
 <$action-sendmessage $message="tiddlydesktop-open-tiddler-window" tiddler="$:/TiddlyDesktop/Settings"/>
+{{$:/core/images/options-button}}
 Settings
 </$button>
 </div>
 <div class="td-toolbar-item">
 <$button>
 <$action-sendmessage $message="tiddlydesktop-open-tiddler-window" tiddler="$:/TiddlyDesktop/Help"/>
+{{$:/core/images/help}}
 Help
 </$button>
 </div>
 <div class="td-toolbar-item">
 <$button>
 <$action-sendmessage $message="tiddlydesktop-open-backstage-wiki"/>
+{{$:/core/images/spiral}}
 Backstage
 </$button>
 </div>
