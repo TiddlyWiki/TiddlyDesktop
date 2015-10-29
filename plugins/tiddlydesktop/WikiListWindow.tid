@@ -1,6 +1,11 @@
 title: WikiListWindow
 page-title: TiddlyDesktop -- Main 
 
+<$droplink>
+
 <$transclude tiddler="WikiListToolbar" mode="inline"/>
 
 <$transclude tiddler="WikiList" mode="inline"/>
+
+</$droplink>
+
