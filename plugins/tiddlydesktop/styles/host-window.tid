@@ -1,4 +1,4 @@
-title: $:/TiddlyDesktop/styles/wikiframe
+title: $:/TiddlyDesktop/styles/host-window
 tags: $:/tags/Stylesheet
 
 \rules only filteredtranscludeinline transcludeinline macrodef macrocallinline

@@ -27,7 +27,7 @@ tags: $:/tags/Stylesheet
 	text-align: center;
 	content: "Drop here to add TiddlyWiki HTML file";
 	font-size: 2em;
-	font-weight: 700;
+	font-weight: 400;
 	vertical-align: bottom;
 	line-height: 100vh;
 }
