@@ -84,7 +84,11 @@ exports.startup = function() {
 };
 
 function convertFileUrlToPath(pathname) {
-	var fileUriPrefix = "file://";
+	var os = require("os"),
+		fileUriPrefix = "file://";
+	if(os.platform() === "win32") {
+		fileUriPrefix = fileUriPrefix + "/";
+	}
 	if(pathname.substr(0,fileUriPrefix.length) === fileUriPrefix) {
 		pathname = pathname.substr(fileUriPrefix.length);
 	}
