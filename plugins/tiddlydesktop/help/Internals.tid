@@ -2,11 +2,28 @@ title: $:/TiddlyDesktop/Help/Internals
 caption: Internals
 tags: $:/TiddlyDesktop/Help
 
-~TiddlyDesktop is itself an instance of ~TiddlyWiki, configured to run as a hybrid of the Node.js configuration and the browser-based configuration. Unlike TiddlyWiki HTML files hosted in TiddlyDesktop, the backstage wiki uses the Node.js file APIs to synchronise individual tiddler files to the file system while also rendering a user interface in the "backstage" window.
+! Architecture
 
-~TiddlyDesktop is capable of opening any individual tiddler from the backstage wiki as an independent window (a so-called "tiddler window"). The settings window and this help window are both tiddler windows, targetting [[$:/TiddlyDesktop/Settings]] and [[$:/TiddlyDesktop/Help]] respectively.
+~TiddlyDesktop is itself an instance of ~TiddlyWiki, configured to run as a hybrid of the Node.js configuration and the browser-based configuration. Unlike TiddlyWiki HTML files in an ordinary browser, the backstage wiki uses the Node.js file APIs to synchronise individual tiddler files to the file system while also rendering a user interface directly in the "backstage" window.
 
-~TiddlyWiki "host windows" are windows displaying the tiddler HostWindow, which contains a sandboxed iframe to display the hosted ~TiddlyWiki document. The URL to use for the iframe is passed as a variable when opening the tiddler window.
+!! TiddlyDesktop Application
 
-You can explore the backstage wiki to find out more about how ~TiddlyDesktop works.
+The main TiddlyDesktop application starts with the `source/html/main.html` file that is specified by the `package.json` used by nw.js. It starts up the backstage wiki and opens the wiki list window.
+
+!! Backstage Plugin Components
+
+The backstage wiki includes the plugin `tiddlywiki/tiddlydesktop` that adds the following capabilities to the backstage wiki. Note that this plugin is not added to the wikis that TiddlyDesktop hosts.
+
+* The `tiddlydesktop-open-tiddler-window` message creates an independent window that dynamically displays any specific tiddler from the backstage wiki (a so-called "tiddler window"). The settings window, this help window and the wiki list window are all tiddler windows, targetting [[$:/TiddlyDesktop/Settings]], [[$:/TiddlyDesktop/Help]] and WikiListWindow respectively
+* The `<$wikiframe>` widget displays a TiddlyWiki HTML file with automatic support for saving changes
+* The `<$droplink>` widget, a clone of the core `<$dropzone>` widget with the added ability to process the source path of dropped files
+
+!! Backstage Architecture
+
+Entries in the wiki list window are represented by configuration tiddlers with the tag `wikilist`. Entries representing wiki folders have the additional tag `wikifolder`. Entries representing TiddlyWiki HTML files may have the optional tag `wikifile`.
+
+The title of the tiddler is the `file://` URI of the file or wiki folder.
+
+The field `page-title` contains the plain text title of the page.
+
 
