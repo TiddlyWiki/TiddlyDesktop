@@ -6,26 +6,23 @@
 rm -Rf output
 rm -Rf source/tiddlywiki
 
-# Get the correct version of TiddlyWiki and copy to source/tiddlywiki
-# npm install
+# Get the correct version of TiddlyWiki
+# (Here we install from a sibling directory; use plain "npm install" to install the latest)
 npm install ../TiddlyWiki5
-
 pushd ./node_modules/tiddlywiki
-
 ./bin/clean.sh
-
 popd
 
-# Copy TiddlyWiki core files
+# Copy TiddlyWiki core files into the source directory
 cp -R node_modules/tiddlywiki source/tiddlywiki
 
-# Copy TiddlyDesktop plugin
+# Copy TiddlyDesktop plugin into the source directory
 cp -R plugins/tiddlydesktop source/tiddlywiki/plugins/tiddlywiki
 
-# Copy version
+# Copy TiddlyDesktop version number from package.json to the plugin.info of the plugin and the tiddler $:/plugins/tiddlywiki/tiddlydesktop/version
 node propogate-version.js
 
-# Create the output directory
+# Create the output directories
 mkdir -p output
 mkdir -p output/mac32
 mkdir -p output/mac32/TiddlyDesktop-mac32-v0.0.7
@@ -39,6 +36,8 @@ mkdir -p output/linux32
 mkdir -p output/linux32/TiddlyDesktop-linux32-v0.0.7
 mkdir -p output/linux64
 mkdir -p output/linux64/TiddlyDesktop-linux64-v0.0.7
+
+# For each platform, copy the stock nw.js binaries overlaying the "source" directory (and icons and plist for the Mac)
 
 # OS X 64-bit App
 cp -R nwjs/nwjs-v0.12.3-osx-x64/nwjs.app output/mac64/TiddlyDesktop-mac64-v0.0.7/TiddlyWiki.app
