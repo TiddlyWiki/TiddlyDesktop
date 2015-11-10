@@ -118,7 +118,7 @@ function trapLinks(doc) {
 		}
 		// See if we're in an external link
 		// "tw-tiddlylink-external" is for TW5, "externallink" for TWC
-		var externalLink = findParentWithClass(event.target,"tc-tiddlylink-external externalLink") || findParentWithClass(event.target,"tw-tiddlylink-external externalLink") || findParentWithClass(event.target,"externallink");
+		var externalLink = findParentWithClass(event.target,"tc-tiddlylink-external tw-tiddlylink-external externalLink");
 		if(externalLink) {
 			gui.Shell.openExternal(externalLink.href);
 			event.preventDefault();
