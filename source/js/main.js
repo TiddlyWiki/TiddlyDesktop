@@ -111,7 +111,7 @@ function trapLinks(doc) {
 		// See if we're in an interwiki link
 		var interwikiLink = findParentWithClass(event.target,"tc-interwiki-link") || findParentWithClass(event.target,"tw-interwiki-link");
 		if(interwikiLink) {
-			config.window.openHostWindowByUrl(interwikiLink.href);
+			$tw.desktop.tiddlerWindows.openHostWindowByUrl(interwikiLink.href);
 			event.preventDefault();
 			event.stopPropagation();
 			return false;

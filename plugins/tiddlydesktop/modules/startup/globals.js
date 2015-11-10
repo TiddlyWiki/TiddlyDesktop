@@ -21,7 +21,7 @@ exports.synchronous = true;
 
 exports.startup = function() {
 	$tw.desktop = $tw.desktop || {};
-	$tw.desktop.version = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/version")
+	$tw.desktop.version = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/version");
 };
 
 })();
