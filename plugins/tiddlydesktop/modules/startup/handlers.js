@@ -31,13 +31,13 @@ exports.startup = function() {
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-add-wiki-url",function(event) {
-		$tw.desktop.tiddlerWindows.openHostWindowByUrl(event.param);
+		$tw.desktop.openWiki(event.param);
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-add-wiki-path",function(event) {
 		for(var t=0; t<event.files.length; t++) {
 			var file = event.files[t];
-			$tw.desktop.tiddlerWindows.openHostWindowByPath(file.path);
+			$tw.desktop.openWikiByPath(file.path);
 		}
 		return false;
 	});
@@ -46,7 +46,7 @@ exports.startup = function() {
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-backups-wiki-url",function(event) {
-		var backupPath = $tw.desktop.backupPathByPath(convertFileUrlToPath(event.param));
+		var backupPath = $tw.desktop.backupPathByPath($tw.desktop.utils.convertFileUrlToPath(event.param));
 		if(!fs.existsSync(backupPath)) {
 			$tw.utils.createDirectory(backupPath);
 		}
@@ -77,22 +77,10 @@ exports.startup = function() {
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-url-in-shell",function(event) {
 		if(event.param) {
-			$tw.desktop.gui.Shell.showItemInFolder(convertFileUrlToPath(event.param));
+			$tw.desktop.gui.Shell.showItemInFolder($tw.desktop.utils.convertFileUrlToPath(event.param));
 		}
 		return false;
 	});
 };
-
-function convertFileUrlToPath(pathname) {
-	var os = require("os"),
-		fileUriPrefix = "file://";
-	if(os.platform() === "win32") {
-		fileUriPrefix = fileUriPrefix + "/";
-	}
-	if(pathname.substr(0,fileUriPrefix.length) === fileUriPrefix) {
-		pathname = pathname.substr(fileUriPrefix.length);
-	}
-	return pathname;
-}
 
 })();

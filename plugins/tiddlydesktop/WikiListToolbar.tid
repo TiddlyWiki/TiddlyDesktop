@@ -14,6 +14,15 @@ title: WikiListToolbar
 </div>
 </div>
 <div class="td-toolbar-item">
+<div class="td-file-input-wrapper">
+<$button>
+{{$:/core/images/new-button}}
+<$text text="Add a TiddlyWiki wiki folder"/>
+</$button>
+<$browse webkitdirectory message="tiddlydesktop-add-wiki-path"/>
+</div>
+</div>
+<div class="td-toolbar-item">
 <$button>
 <$action-sendmessage $message="tiddlydesktop-open-tiddler-window" tiddler="$:/TiddlyDesktop/Settings"/>
 {{$:/core/images/options-button}}

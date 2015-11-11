@@ -12,7 +12,7 @@ var backstageWindow = gui.Window.get();
 // backstageWindow.showDevTools();
 
 var tiddlerWindows = require("../js/tiddler-windows.js"),
-	savingSupport = require("../js/saving-support.js"),
+	wikiFolderWindows = require("../js/wiki-folder-windows.js"),
 	devTools = require("../js/dev-tools.js");
 
 // Hide the backstage window when we start, and when it is closed
@@ -67,10 +67,11 @@ fs.writeFileSync(packageFilename,JSON.stringify(packageJson,null,4));
 // Set up the $tw global
 var $tw = {desktop: {
 	tiddlerWindows: tiddlerWindows,
+	wikiFolderWindows: wikiFolderWindows,
 	backstageWindow: {
 		show: showBackstageWindow
 	},
-	savingSupport: savingSupport,
+	savingSupport: require("../js/saving-support.js"),
 	trapLinks: trapLinks,
 	backupPathByPath: backupPathByPath,
 	gui: gui
@@ -78,6 +79,38 @@ var $tw = {desktop: {
 
 global.$tw = $tw;
 window.$tw = $tw;
+
+$tw.desktop.utils = {};
+
+$tw.desktop.utils.convertFileUrlToPath = function(url) {
+	var os = require("os"),
+		pathname = url,
+		fileUriPrefix = "file://";
+	if(os.platform() === "win32") {
+		fileUriPrefix = fileUriPrefix + "/";
+	}
+	if(pathname.substr(0,fileUriPrefix.length) === fileUriPrefix) {
+		pathname = pathname.substr(fileUriPrefix.length);
+	}
+	return pathname;
+};
+
+$tw.desktop.openWiki = function(url) {
+	var filepath = $tw.desktop.utils.convertFileUrlToPath(url);
+	if(fs.existsSync(filepath) && fs.statSync(filepath).isDirectory()) {
+		$tw.desktop.wikiFolderWindows.openWikiFolderWindowByPath(filepath);
+	} else {
+		$tw.desktop.tiddlerWindows.openHostWindowByUrl(url);
+	}
+}
+
+$tw.desktop.openWikiByPath = function(filepath) {
+	if(fs.existsSync(filepath) && fs.statSync(filepath).isDirectory()) {
+		$tw.desktop.wikiFolderWindows.openWikiFolderWindowByPath(filepath);
+	} else {
+		$tw.desktop.tiddlerWindows.openHostWindowByUrl(url);
+	}
+}
 
 // First part of boot process
 require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
