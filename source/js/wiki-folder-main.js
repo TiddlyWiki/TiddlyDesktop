@@ -11,7 +11,8 @@ var gui = require("nw.gui"),
 var containerWindow = gui.Window.get();
 containerWindow.showDevTools();
 
-var devTools = require("../js/dev-tools.js");
+var devTools = require("../js/dev-tools.js"),
+	utils = require("../js/utils.js");
 
 // Hide the container window when we start, and when it is closed
 containerWindow.on("close",function(isQuitting) {
@@ -39,7 +40,7 @@ window.$tw = $tw;
 
 // Get the query parameters that were used to open this container window
 
-var queryObject = decodeQueryString(containerWindow.window.document.location);
+var queryObject = utils.decodeQueryString(containerWindow.window.document.location);
 
 // First part of boot process
 require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
@@ -52,16 +53,5 @@ $tw.boot.argv = [pathname];
 
 // Main part of boot process
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
-
-function decodeQueryString(location) {
-	var result = {};
-	location.search.substr(1).split('&').forEach(function(pair) {
-		if(pair) {
-			var parts = pair.split("=");
-			result[parts[0]] = decodeURIComponent(parts[1].replace(/\+/g, " "));
-		}
-	});
-	return result;
-}
 
 })();

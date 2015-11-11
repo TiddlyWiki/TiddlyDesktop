@@ -259,7 +259,7 @@ function openHostWindowByUrl(url) {
 Opens a host window for the specified path
 */
 function openHostWindowByPath(pathname) {
-	openHostWindowByUrl(convertPathToFileUrl(pathname));
+	openHostWindowByUrl($tw.desktop.utils.convertPathToFileUrl(pathname));
 }
 
 /*
@@ -314,15 +314,6 @@ function findHostWindowIframe(url,callback) {
 			callback(tiddlerWindow,iframes[0]);		
 		}
 	}
-}
-
-function convertPathToFileUrl(path) {
-	// File prefix depends on platform
-	var fileUriPrefix = "file://";
-	if(process.platform.substr(0,3) === "win") {
-		fileUriPrefix = fileUriPrefix + "/";
-	}
-	return fileUriPrefix + path.replace(/\\/g,"/");
 }
 
 exports.open = open;

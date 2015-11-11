@@ -74,26 +74,12 @@ var $tw = {desktop: {
 	savingSupport: require("../js/saving-support.js"),
 	trapLinks: trapLinks,
 	backupPathByPath: backupPathByPath,
-	gui: gui
+	gui: gui,
+	utils: require("../js/utils.js")
 }};
 
 global.$tw = $tw;
 window.$tw = $tw;
-
-$tw.desktop.utils = {};
-
-$tw.desktop.utils.convertFileUrlToPath = function(url) {
-	var os = require("os"),
-		pathname = url,
-		fileUriPrefix = "file://";
-	if(os.platform() === "win32") {
-		fileUriPrefix = fileUriPrefix + "/";
-	}
-	if(pathname.substr(0,fileUriPrefix.length) === fileUriPrefix) {
-		pathname = pathname.substr(fileUriPrefix.length);
-	}
-	return pathname;
-};
 
 $tw.desktop.openWiki = function(url) {
 	var filepath = $tw.desktop.utils.convertFileUrlToPath(url);
@@ -142,7 +128,7 @@ function backupPathByPath(pathname) {
 function trapLinks(doc) {
 	doc.addEventListener("click",function(event) {
 		// See if we're in an interwiki link
-		var interwikiLink = findParentWithClass(event.target,"tc-interwiki-link") || findParentWithClass(event.target,"tw-interwiki-link");
+		var interwikiLink = $tw.desktop.utils.findParentWithClass(event.target,"tc-interwiki-link") || $tw.desktop.utils.findParentWithClass(event.target,"tw-interwiki-link");
 		if(interwikiLink) {
 			$tw.desktop.tiddlerWindows.openHostWindowByUrl(interwikiLink.href);
 			event.preventDefault();
@@ -151,7 +137,7 @@ function trapLinks(doc) {
 		}
 		// See if we're in an external link
 		// "tw-tiddlylink-external" is for TW5, "externallink" for TWC
-		var externalLink = findParentWithClass(event.target,"tc-tiddlylink-external tw-tiddlylink-external externalLink");
+		var externalLink = $tw.desktop.utils.findParentWithClass(event.target,"tc-tiddlylink-external tw-tiddlylink-external externalLink");
 		if(externalLink) {
 			gui.Shell.openExternal(externalLink.href);
 			event.preventDefault();
@@ -160,21 +146,6 @@ function trapLinks(doc) {
 		}
 		return true;
 	},false);
-}
-
-function findParentWithClass(node,classNames) {
-	classNames = classNames.split(" ");
-	while(node) {
-		if(node.classList) {
-			for(var t=0; t<classNames.length; t++) {
-				if(node.classList.contains(classNames[t])) {
-					return node;
-				}
-			}
-		}
-		node = node.parentNode;
-	}
-	return null;
 }
 
 })();
