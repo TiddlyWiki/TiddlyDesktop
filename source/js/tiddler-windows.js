@@ -153,8 +153,9 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 	// Trap moving or resizing the window
 	function moveHandler() {
 		var data = self.getWindowConfigData();
-		data.x = self.window.x;
-		data.y = self.window.y;
+		// nw.js returns -32000 for minimised windows on Windows
+		data.x = self.window.x === -32000 ? undefined : self.window.x;
+		data.y = self.window.y === -32000 ? undefined : self.window.y;
 		data.width = self.window.width;
 		data.height = self.window.height;
 		self.saveWindowConfigData(data);
@@ -176,10 +177,11 @@ TiddlerWindow.prototype.saveWindowConfigData = function(data) {
 
 TiddlerWindow.prototype.moveAndResizeWindow = function() {
 	var data = this.getWindowConfigData();
-	if(data.x) {
+	// nw.js returns -32000 for minimised windows on Windows; we check here because older versions of TiddlyDesktop sometimes saved the window position as -32000,-32000
+	if(data.x && data.x !== -32000) {
 		this.window.x = data.x;
 	}
-	if(data.y) {
+	if(data.y && data.y !== -32000) {
 		this.window.y = data.y;
 	}
 	if(data.width) {
