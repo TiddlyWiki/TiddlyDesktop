@@ -1,7 +1,6 @@
 {
     "name": "TiddlyWiki",
     "main": "./html/main.html",
-    "chromium-args": "--enable-experimental-web-platform-features",
 	"window": {
 		"show": false,
 		"icon": "images/app_icon.png",
