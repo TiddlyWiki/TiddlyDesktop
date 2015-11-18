@@ -46,7 +46,7 @@ exports.startup = function() {
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-backups-wiki-url",function(event) {
-		var backupPath = $tw.desktop.backupPathByPath($tw.desktop.utils.convertFileUrlToPath(event.param));
+		var backupPath = $tw.desktop.utils.saving.backupPathByPath($tw.desktop.utils.convertFileUrlToPath(event.param));
 		if(!fs.existsSync(backupPath)) {
 			$tw.utils.createDirectory(backupPath);
 		}

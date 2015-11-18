@@ -84,7 +84,7 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 		$tw.desktop.utils.devtools.trapDevTools(self.window,self.window.window.document);
 // self.window.showDevTools();
 		// Trap external links
-		$tw.desktop.trapLinks(doc);
+		$tw.desktop.utils.links.trapLinks(doc);
 		// Make $tw available in the window
 		self.window.window.$tw = $tw;
 		// Set up the title

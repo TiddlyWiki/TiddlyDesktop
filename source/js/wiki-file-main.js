@@ -46,7 +46,7 @@ iframe.onload = function() {
 
 	// Enable saving and trap links
 	$tw.desktop.utils.saving.enableSaving(iframe.contentDocument);
-	$tw.desktop.trapLinks(iframe.contentDocument);
+	$tw.desktop.utils.links.trapLinks(iframe.contentDocument);
 
 	var pullUpIframeTitle = function() {
 			containerWindow.window.document.title = iframe.contentDocument.title;

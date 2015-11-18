@@ -77,7 +77,7 @@ function backupFile(filepath) {
 	if(fs.existsSync(filepath)) {
 		// Get the timestamp
 		var timestamp = $tw.utils.stringifyDate(fs.statSync(filepath).mtime || (new Date())),
-			backupSubPath = $tw.desktop.backupPathByPath(filepath);
+			backupSubPath = backupPathByPath(filepath);
 		// Compose and uniquify the backup pathname
 		var count = 0,
 			backupPath,
@@ -96,5 +96,17 @@ function backupFile(filepath) {
 		fs.writeFileSync(backupPath,fs.readFileSync(filepath)); // For some reason $tw.utils.copyFile() doesn't work here
 	}
 }
+
+// Helper to get the backup folder for a given filepath
+function backupPathByPath(pathname) {
+	var backupPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath","");
+	// Replace $filename$ with the filename portion of the filepath and $filepath$ with the entire filepath 
+	backupPath = backupPath.replace(/\$filename\$/mgi,path.basename(pathname))
+		.replace(/\$filepath\$/mgi,pathname);
+	backupPath = path.resolve(path.dirname(pathname),backupPath)
+	return backupPath;
+}
+
+exports.backupPathByPath = backupPathByPath;
 
 })();

@@ -67,15 +67,14 @@ var $tw = {desktop: {
 	backstageWindow: {
 		show: showBackstageWindow
 	},
-	trapLinks: trapLinks,
-	backupPathByPath: backupPathByPath,
 	gui: gui,
 	utils: {
 		dom: require("../js/utils/dom.js"),
 		file: require("../js/utils/file.js"),
 		devtools: require("../js/utils/devtools.js"),
 		menu: require("../js/utils/menu.js"),
-		saving: require("../js/utils/saving.js")
+		saving: require("../js/utils/saving.js"),
+		links: require("../js/utils/links.js")
 	}
 }};
 
@@ -118,40 +117,5 @@ require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 var wikilistWindow = tiddlerWindows.open({
 	tiddler: "WikiListWindow"
 });
-
-// Helper to get the backup folder for a given filepath
-function backupPathByPath(pathname) {
-	var backupPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath","");
-
-	// Replace $filename$ with the filename portion of the filepath and $filepath$ with the entire filepath 
-	backupPath = backupPath.replace(/\$filename\$/mgi,path.basename(pathname))
-		.replace(/\$filepath\$/mgi,pathname);
-	backupPath = path.resolve(path.dirname(pathname),backupPath)
-	return backupPath;
-}
-
-// Helper to trap wikilinks within a window
-function trapLinks(doc) {
-	doc.addEventListener("click",function(event) {
-		// See if we're in an interwiki link
-		var interwikiLink = $tw.desktop.utils.dom.findParentWithClass(event.target,"tc-interwiki-link") || $tw.desktop.utils.dom.findParentWithClass(event.target,"tw-interwiki-link");
-		if(interwikiLink) {
-			$tw.desktop.openWiki(interwikiLink.href);
-			event.preventDefault();
-			event.stopPropagation();
-			return false;
-		}
-		// See if we're in an external link
-		// "tw-tiddlylink-external" is for TW5, "externallink" for TWC
-		var externalLink = $tw.desktop.utils.dom.findParentWithClass(event.target,"tc-tiddlylink-external tw-tiddlylink-external externalLink");
-		if(externalLink) {
-			gui.Shell.openExternal(externalLink.href);
-			event.preventDefault();
-			event.stopPropagation();
-			return false;
-		}
-		return true;
-	},false);
-}
 
 })();
