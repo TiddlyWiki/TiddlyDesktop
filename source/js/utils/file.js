@@ -1,3 +1,7 @@
+/*
+Utilities concerned with file and path manipulation
+*/
+
 (function(){
 
 /*jslint browser: true */

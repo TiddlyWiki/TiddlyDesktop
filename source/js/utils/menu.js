@@ -1,3 +1,7 @@
+/*
+Utilities concerned with nwjs menu bars
+*/
+
 (function(){
 
 /*jslint browser: true */

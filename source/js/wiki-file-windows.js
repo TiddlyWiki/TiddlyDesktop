@@ -1,3 +1,7 @@
+/*
+Support for wiki file windows
+*/
+
 (function(){
 
 /*jslint browser: true */

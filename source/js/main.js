@@ -1,3 +1,7 @@
+/*
+Main script, executed via main.html
+*/
+
 (function(){
 
 /*jslint browser: true */

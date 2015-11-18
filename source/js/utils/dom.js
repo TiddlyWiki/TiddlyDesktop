@@ -1,3 +1,7 @@
+/*
+Utilities concerned with the DOM
+*/
+
 (function(){
 
 /*jslint browser: true */

@@ -1,3 +1,7 @@
+/*
+Utilities concerned with managing the devtools panel
+*/
+
 (function(){
 
 /*jslint browser: true */
