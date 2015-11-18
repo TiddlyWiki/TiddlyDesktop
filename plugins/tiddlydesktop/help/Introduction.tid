@@ -6,3 +6,4 @@ Welcome to ~TiddlyDesktop. It enables you to work offline with ~TiddlyWiki docum
 
 ~TiddlyDesktop supports both the newer version 5 from http://tiddlywiki.com and the older version from http://classic.tiddlywiki.com
 
+This is ~TiddlyDesktop version {{$:/TiddlyDesktop/version}}

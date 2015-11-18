@@ -8,6 +8,8 @@ page-title: TiddlyDesktop Settings
 
 ! ~TiddlyDesktop Settings
 
+Version {{$:/TiddlyDesktop/version}}
+
 !! Backups
 
 Backups are automatically made every time saving changes results in a file being overwritten. The previous content of the file is copied to a backup file with a filename such as `\MyData\index.html_backup\index.20150107172517000.html`.
