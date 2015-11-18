@@ -67,7 +67,6 @@ var $tw = {desktop: {
 	backstageWindow: {
 		show: showBackstageWindow
 	},
-	savingSupport: require("../js/saving-support.js"),
 	trapLinks: trapLinks,
 	backupPathByPath: backupPathByPath,
 	gui: gui,
@@ -75,7 +74,8 @@ var $tw = {desktop: {
 		dom: require("../js/utils/dom.js"),
 		file: require("../js/utils/file.js"),
 		devtools: require("../js/utils/devtools.js"),
-		menu: require("../js/utils/menu.js")
+		menu: require("../js/utils/menu.js"),
+		saving: require("../js/utils/saving.js")
 	}
 }};
 

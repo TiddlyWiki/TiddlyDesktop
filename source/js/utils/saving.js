@@ -1,3 +1,7 @@
+/*
+Saving support for TiddlyWiki5 and TiddlyWiki Classic
+*/
+
 (function(){
 
 /*jslint browser: true */
