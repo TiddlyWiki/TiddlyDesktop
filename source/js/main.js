@@ -12,8 +12,8 @@ var backstageWindow = gui.Window.get();
 // backstageWindow.showDevTools();
 
 var tiddlerWindows = require("../js/tiddler-windows.js"),
-	wikiFolderWindows = require("../js/wiki-folder-windows.js"),
-	devTools = require("../js/dev-tools.js");
+	wikiFileWindows = require("../js/wiki-file-windows.js"),
+	wikiFolderWindows = require("../js/wiki-folder-windows.js");
 
 // Hide the backstage window when we start, and when it is closed
 backstageWindow.on("close",function(isQuitting) {
@@ -25,15 +25,6 @@ backstageWindow.on("close",function(isQuitting) {
 function showBackstageWindow() {
 	backstageWindow.show();
 }
-
-var menuBar = new gui.Menu({type:"menubar"});
-if(process.platform === "darwin") {
-	menuBar.createMacBuiltin("TiddlyDesktop");
-}
-backstageWindow.menu = menuBar;
-
-// Show dev tools on F12
-devTools.trapDevTools(backstageWindow,document);
 
 // Create a user configuration wiki folder if it doesn't exist
 var wikiFolder = path.resolve(gui.App.dataPath,"user-config-tiddlywiki"),
@@ -67,6 +58,7 @@ fs.writeFileSync(packageFilename,JSON.stringify(packageJson,null,4));
 // Set up the $tw global
 var $tw = {desktop: {
 	tiddlerWindows: tiddlerWindows,
+	wikiFileWindows: wikiFileWindows,
 	wikiFolderWindows: wikiFolderWindows,
 	backstageWindow: {
 		show: showBackstageWindow
@@ -75,18 +67,28 @@ var $tw = {desktop: {
 	trapLinks: trapLinks,
 	backupPathByPath: backupPathByPath,
 	gui: gui,
-	utils: require("../js/utils.js")
+	utils: {
+		dom: require("../js/utils/dom.js"),
+		file: require("../js/utils/file.js"),
+		devtools: require("../js/utils/devtools.js"),
+		menu: require("../js/utils/menu.js")
+	}
 }};
 
 global.$tw = $tw;
 window.$tw = $tw;
 
+backstageWindow.menu = $tw.desktop.utils.menu.createMenuBar();
+
+// Show dev tools on F12
+$tw.desktop.utils.devtools.trapDevTools(backstageWindow,document);
+
 $tw.desktop.openWiki = function(url) {
-	var filepath = $tw.desktop.utils.convertFileUrlToPath(url);
+	var filepath = $tw.desktop.utils.file.convertFileUrlToPath(url);
 	if(fs.existsSync(filepath) && fs.statSync(filepath).isDirectory()) {
 		$tw.desktop.wikiFolderWindows.openWikiFolderWindowByPath(filepath);
 	} else {
-		$tw.desktop.tiddlerWindows.openHostWindowByUrl(url);
+		$tw.desktop.wikiFileWindows.openWikiFileWindowByUrl(url);
 	}
 }
 
@@ -94,7 +96,7 @@ $tw.desktop.openWikiByPath = function(filepath) {
 	if(fs.existsSync(filepath) && fs.statSync(filepath).isDirectory()) {
 		$tw.desktop.wikiFolderWindows.openWikiFolderWindowByPath(filepath);
 	} else {
-		$tw.desktop.tiddlerWindows.openHostWindowByUrl(url);
+		$tw.desktop.wikiFileWindows.openWikiFileWindowByUrl(url);
 	}
 }
 
@@ -128,16 +130,16 @@ function backupPathByPath(pathname) {
 function trapLinks(doc) {
 	doc.addEventListener("click",function(event) {
 		// See if we're in an interwiki link
-		var interwikiLink = $tw.desktop.utils.findParentWithClass(event.target,"tc-interwiki-link") || $tw.desktop.utils.findParentWithClass(event.target,"tw-interwiki-link");
+		var interwikiLink = $tw.desktop.utils.dom.findParentWithClass(event.target,"tc-interwiki-link") || $tw.desktop.utils.dom.findParentWithClass(event.target,"tw-interwiki-link");
 		if(interwikiLink) {
-			$tw.desktop.tiddlerWindows.openHostWindowByUrl(interwikiLink.href);
+			$tw.desktop.openWiki(interwikiLink.href);
 			event.preventDefault();
 			event.stopPropagation();
 			return false;
 		}
 		// See if we're in an external link
 		// "tw-tiddlylink-external" is for TW5, "externallink" for TWC
-		var externalLink = $tw.desktop.utils.findParentWithClass(event.target,"tc-tiddlylink-external tw-tiddlylink-external externalLink");
+		var externalLink = $tw.desktop.utils.dom.findParentWithClass(event.target,"tc-tiddlylink-external tw-tiddlylink-external externalLink");
 		if(externalLink) {
 			gui.Shell.openExternal(externalLink.href);
 			event.preventDefault();

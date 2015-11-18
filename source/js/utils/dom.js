@@ -29,26 +29,8 @@ exports.findParentWithClass = function(node,classNames) {
 	return null;
 };
 
-exports.convertFileUrlToPath = function(url) {
-	var os = require("os"),
-		pathname = url,
-		fileUriPrefix = "file://";
-	if(process.platform.substr(0,3) === "win") {
-		fileUriPrefix = fileUriPrefix + "/";
-	}
-	if(pathname.substr(0,fileUriPrefix.length) === fileUriPrefix) {
-		pathname = pathname.substr(fileUriPrefix.length);
-	}
-	return pathname;
-};
+exports.onIframeTitleChange = function(iframe,callback) {
 
-exports.convertPathToFileUrl = function(path) {
-	// File prefix depends on platform
-	var fileUriPrefix = "file://";
-	if(process.platform.substr(0,3) === "win") {
-		fileUriPrefix = fileUriPrefix + "/";
-	}
-	return fileUriPrefix + path.replace(/\\/g,"/");
-}
+};
 
 })();

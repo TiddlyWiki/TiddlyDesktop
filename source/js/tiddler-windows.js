@@ -3,8 +3,6 @@
 /*jslint browser: true */
 "use strict";
 
-var devTools = require("../js/dev-tools.js");
-
 /*
 A hashmap of TiddlerWindow objects for open windows. The key is the tiddler title and the values of all specified variables, concatenated with a vertical bar. For example:
 "TiddlerTitle|variable:value|variable:value"
@@ -83,7 +81,7 @@ function TiddlerWindow(options,tiddlerWindowIdentifier) {
 		self.window.show();
 		self.window.focus();
 		// Trap developer tools on F12
-		devTools.trapDevTools(self.window,self.window.window.document);
+		$tw.desktop.utils.devtools.trapDevTools(self.window,self.window.window.document);
 // self.window.showDevTools();
 		// Trap external links
 		$tw.desktop.trapLinks(doc);
@@ -261,7 +259,7 @@ function openHostWindowByUrl(url) {
 Opens a host window for the specified path
 */
 function openHostWindowByPath(pathname) {
-	openHostWindowByUrl($tw.desktop.utils.convertPathToFileUrl(pathname));
+	openHostWindowByUrl($tw.desktop.utils.file.convertPathToFileUrl(pathname));
 }
 
 /*

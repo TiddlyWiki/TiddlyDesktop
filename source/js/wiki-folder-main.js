@@ -11,9 +11,6 @@ var gui = require("nw.gui"),
 var containerWindow = gui.Window.get();
 containerWindow.showDevTools();
 
-var devTools = require("../js/dev-tools.js"),
-	utils = require("../js/utils.js");
-
 // Hide the container window when we start, and when it is closed
 containerWindow.on("close",function(isQuitting) {
 	if(!isQuitting) {
@@ -28,7 +25,7 @@ if(process.platform === "darwin") {
 containerWindow.menu = menuBar;
 
 // Show dev tools on F12
-devTools.trapDevTools(containerWindow,document);
+$tw.desktop.utils.devTools.trapDevTools(containerWindow,document);
 
 // Set up the $tw global
 var $tw = {desktop: {
@@ -40,7 +37,7 @@ window.$tw = $tw;
 
 // Get the query parameters that were used to open this container window
 
-var queryObject = utils.decodeQueryString(containerWindow.window.document.location);
+var queryObject = $tw.desktop.utils.dom.decodeQueryString(containerWindow.window.document.location);
 
 // First part of boot process
 require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
@@ -49,7 +46,7 @@ var pathname = queryObject.pathname;
 
 // Set command line
 $tw.boot = $tw.boot || {};
-$tw.boot.argv = [pathname];
+$tw.boot.argv = [pathname,"--server"];
 
 // Main part of boot process
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
