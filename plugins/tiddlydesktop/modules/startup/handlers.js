@@ -31,18 +31,18 @@ exports.startup = function() {
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-add-wiki-url",function(event) {
-		$tw.desktop.openWiki(event.param);
+		$tw.desktop.windowList.openByUrl(event.param);
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-add-wiki-path",function(event) {
 		for(var t=0; t<event.files.length; t++) {
 			var file = event.files[t];
-			$tw.desktop.openWikiByPath(file.path);
+			$tw.desktop.windowList.openByPathname(file.path);
 		}
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-remove-wiki-url",function(event) {
-		$tw.desktop.tiddlerWindows.removeHostWindowByUrl(event.param);
+		$tw.desktop.windowList.removeByUrl(event.param);
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-backups-wiki-url",function(event) {
@@ -53,14 +53,6 @@ exports.startup = function() {
 		$tw.desktop.gui.Shell.openItem(backupPath);
 		return false;
 	});
-	$tw.rootWidget.addEventListener("tiddlydesktop-navigate-back-wiki-url",function(event) {
-		$tw.desktop.tiddlerWindows.navigateBackForHostWindowByUrl(event.param);
-		return false;
-	});
-	$tw.rootWidget.addEventListener("tiddlydesktop-navigate-forward-wiki-url",function(event) {
-		$tw.desktop.tiddlerWindows.navigateForwardForHostWindowByUrl(event.param);
-		return false;
-	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-show-devtools-wiki-url",function(event) {
 		$tw.desktop.tiddlerWindows.showDevToolsForHostWindowByUrl(event.param);
 		return false;
@@ -69,16 +61,8 @@ exports.startup = function() {
 		$tw.desktop.gui.Shell.openItem($tw.desktop.gui.App.dataPath);
 		return false;
 	});
-	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-path-in-shell",function(event) {
-		if(event.param) {
-			$tw.desktop.gui.Shell.showItemInFolder(event.param);
-		}
-		return false;
-	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-url-in-shell",function(event) {
-		if(event.param) {
-			$tw.desktop.gui.Shell.showItemInFolder($tw.desktop.utils.convertFileUrlToPath(event.param));
-		}
+		$tw.desktop.windowList.revealByUrl(event.param);
 		return false;
 	});
 };

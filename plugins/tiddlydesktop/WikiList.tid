@@ -4,14 +4,22 @@ title: WikiList
 <div class="td-wikilist-item">
 <div class="td-wikilist-thumbnail">
 <$button message="tiddlydesktop-add-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible">
-<$list filter="[[$:/TiddlyDesktop/Thumbnail/$(currentTiddler)$]!is[missing]]" emptyMessage="no image">
-<$image source="""$:/TiddlyDesktop/Thumbnail/$(currentTiddler)$""" width="120"/>
+<$list filter="[[$:/TiddlyDesktop/Config/favicon/$(currentTiddler)$]!is[missing]]" emptyMessage="">
+<$image source="""$:/TiddlyDesktop/Config/favicon/$(currentTiddler)$""" width="120"/>
 </$list>
 </$button>
 </div>
 <div class="td-wikilist-info">
 <div class="td-wiki-title">
-<$view field="page-title">Untitled</$view>
+<$list filter="[all[current]prefix[wikifile://]]">
+{{$:/core/images/file}}
+</$list>
+<$list filter="[all[current]prefix[wikifolder://]]">
+{{$:/core/images/folder}}
+</$list>
+<$view tiddler="""$:/TiddlyDesktop/Config/title/$(currentTiddler)$""">
+Untitled
+</$view>
 </div>
 <div class="td-wiki-url">
 <$view field="title"/>

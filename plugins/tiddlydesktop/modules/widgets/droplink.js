@@ -122,12 +122,6 @@ DropLinkWidget.prototype.handleDropEvent  = function(event) {
 		file = dataTransfer.files[f];
 		if(file.path) {
 			title = "file://" + file.path;
-			tiddler = {
-				title: title,
-				tags: ["wikilist"],
-				"page-title": "Loading..."
-			};
-			this.wiki.addTiddler(new $tw.Tiddler(this.wiki.getCreationFields(),tiddler,this.wiki.getModificationFields()));
 			this.dispatchEvent({type: "tiddlydesktop-add-wiki-url", param: title});
 		}
 	}

@@ -99,7 +99,8 @@ function backupFile(filepath) {
 
 // Helper to get the backup folder for a given filepath
 function backupPathByPath(pathname) {
-	var backupPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath","");
+	var path = require("path"),
+		backupPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath","");
 	// Replace $filename$ with the filename portion of the filepath and $filepath$ with the entire filepath 
 	backupPath = backupPath.replace(/\$filename\$/mgi,path.basename(pathname))
 		.replace(/\$filepath\$/mgi,pathname);

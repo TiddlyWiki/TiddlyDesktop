@@ -33,8 +33,4 @@ exports.findParentWithClass = function(node,classNames) {
 	return null;
 };
 
-exports.onIframeTitleChange = function(iframe,callback) {
-
-};
-
 })();
