@@ -28,6 +28,51 @@ function showBackstageWindow() {
 	backstageWindow.show();
 }
 
+// Create the tray icon
+var tray = new gui.Tray({
+	title: "",
+	icon: "images/tray_icon.png",
+	alticon: "",
+	tooltip: "This is my tooltip",
+	iconsAreTemplates: false
+});
+
+// Give it a menu
+var menu = new gui.Menu();
+menu.append(new gui.MenuItem({
+	label: "Wiki List",
+	click: function() {
+		$tw.desktop.windowList.openByUrl("backstage://WikiListWindow");
+	}
+}));
+menu.append(new gui.MenuItem({
+	label: "Settings",
+	click: function() {
+		$tw.desktop.windowList.openByUrl("backstage://$:/TiddlyDesktop/Settings");
+	}
+}));
+menu.append(new gui.MenuItem({
+	label: "",
+	type: "separator"
+}));
+menu.append(new gui.MenuItem({
+	label: "Help",
+	click: function() {
+		$tw.desktop.windowList.openByUrl("backstage://$:/TiddlyDesktop/Help");
+	}
+}));
+menu.append(new gui.MenuItem({
+	label: "",
+	type: "separator"
+}));
+menu.append(new gui.MenuItem({
+	label: "Quit",
+	click: function() {
+		$tw.desktop.gui.App.quit();
+	}
+}));
+tray.menu = menu;
+
 // Set up the $tw global
 var $tw = {desktop: {
 	windowList: new WindowList({
