@@ -24,21 +24,21 @@ title: WikiListToolbar
 </div>
 <div class="td-toolbar-item">
 <$button>
-<$action-sendmessage $message="tiddlydesktop-open-tiddler-window" tiddler="$:/TiddlyDesktop/Settings"/>
+<$action-sendmessage $message="tiddlydesktop-add-wiki-url" $param="backstage://$:/TiddlyDesktop/Settings"/>
 {{$:/core/images/options-button}}
 Settings
 </$button>
 </div>
 <div class="td-toolbar-item">
 <$button>
-<$action-sendmessage $message="tiddlydesktop-open-tiddler-window" tiddler="$:/TiddlyDesktop/Help"/>
+<$action-sendmessage $message="tiddlydesktop-add-wiki-url" $param="backstage://$:/TiddlyDesktop/Help"/>
 {{$:/core/images/help}}
 Help
 </$button>
 </div>
 <div class="td-toolbar-item">
 <$button>
-<$action-sendmessage $message="tiddlydesktop-open-backstage-wiki"/>
+<$action-sendmessage $message="tiddlydesktop-add-wiki-url" $param="backstage://"/>
 {{$:/core/images/spiral}}
 Backstage
 </$button>

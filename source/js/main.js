@@ -17,8 +17,6 @@ var WindowList = require("../js/window-list.js").WindowList;
 var backstageWindow = gui.Window.get();
 // backstageWindow.showDevTools();
 
-var tiddlerWindows = require("../js/tiddler-windows.js");
-
 // Hide the backstage window when we start, and when it is closed
 backstageWindow.on("close",function(isQuitting) {
 	if(!isQuitting) {
@@ -35,7 +33,6 @@ var $tw = {desktop: {
 	windowList: new WindowList({
 		backstageWindow_nwjs: gui.Window.get()
 	}),
-	tiddlerWindows: tiddlerWindows,
 	backstageWindow: {
 		show: showBackstageWindow
 	},
@@ -72,9 +69,6 @@ $tw.boot.argv = [backstageWikiFolder];
 // Main part of boot process
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 
-// Open the wiki list window
-var wikilistWindow = tiddlerWindows.open({
-	tiddler: "WikiListWindow"
-});
+var wikilistWindow = $tw.desktop.windowList.openByUrl("backstage://WikiListWindow");
 
 })();

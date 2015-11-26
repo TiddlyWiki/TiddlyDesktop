@@ -8,7 +8,8 @@ Manage the list of windows
 "use strict";
 
 var WikiFileWindow = require("./wiki-file-window.js").WikiFileWindow,
-	WikiFolderWindow = require("./wiki-folder-window.js").WikiFolderWindow;
+	WikiFolderWindow = require("./wiki-folder-window.js").WikiFolderWindow,
+	BackstageWindow = require("./backstage-window.js").BackstageWindow;
 
 function WindowList(options) {
 	options = options || {};
@@ -17,6 +18,7 @@ function WindowList(options) {
 }
 
 WindowList.prototype.decodeUrl = function(url) {
+console.log("Decoding " + url)
 	// Decode the URL to figure out the constructor and parameters
 	var result = {
 			WindowConstructor: null,
@@ -39,12 +41,16 @@ WindowList.prototype.decodeUrl = function(url) {
 	} else if(url.indexOf("wikifolder://") === 0) {
 		result.WindowConstructor = WikiFolderWindow;
 		result.info.pathname = url.substr(13);
+	} else if(url.indexOf("backstage://") === 0) {
+		result.WindowConstructor = BackstageWindow;
+		result.info.tiddler = url.substr(12);
 	}
 	return result;
 };
 
 WindowList.prototype.openByUrl = function(url) {
 	var decodedUrl = this.decodeUrl(url);
+console.log("Decoded url ",decodedUrl)
 	this.open(decodedUrl.WindowConstructor,decodedUrl.info);
 };
 
@@ -130,8 +136,11 @@ WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
 };
 
 WindowList.prototype.revealByUrl = function(url) {
-	var decodedUrl = this.decodeUrl(url);
-	$tw.desktop.gui.Shell.showItemInFolder(decodedUrl.WindowConstructor.getPathnameFromInfo(decodedUrl.info));
+	var decodedUrl = this.decodeUrl(url),
+		getPathnameFromInfo = decodedUrl.WindowConstructor.getPathnameFromInfo;
+	if(getPathnameFromInfo) {
+		$tw.desktop.gui.Shell.showItemInFolder(getPathnameFromInfo(decodedUrl.info));
+	}
 };
 
 exports.WindowList = WindowList;

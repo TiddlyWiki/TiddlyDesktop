@@ -47,7 +47,7 @@ WikiFolderWindow.prototype.matchInfo = function(info) {
 	return info.pathname === this.pathname;
 };
 
-// The identifier for wiki file windows is the prefix `wikifile://` plus the pathname of the file
+// The identifier for wiki file windows is the prefix `wikifolder://` plus the pathname of the file
 WikiFolderWindow.prototype.getIdentifier = function() {
 	return "wikifolder://" + this.pathname;
 };

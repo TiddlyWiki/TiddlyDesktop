@@ -53,10 +53,6 @@ exports.startup = function() {
 		$tw.desktop.gui.Shell.openItem(backupPath);
 		return false;
 	});
-	$tw.rootWidget.addEventListener("tiddlydesktop-show-devtools-wiki-url",function(event) {
-		$tw.desktop.tiddlerWindows.showDevToolsForHostWindowByUrl(event.param);
-		return false;
-	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-open-config-folder",function(event) {
 		$tw.desktop.gui.Shell.openItem($tw.desktop.gui.App.dataPath);
 		return false;

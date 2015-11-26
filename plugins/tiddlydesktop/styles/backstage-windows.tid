@@ -3,6 +3,6 @@ tags: $:/tags/Stylesheet
 
 \rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
 
-.td-tiddler-window .td-tiddler-window-padded {
+.td-backstage-tiddler-window .td-backstage-tiddler-window-padded {
 	padding: 2em;
 }

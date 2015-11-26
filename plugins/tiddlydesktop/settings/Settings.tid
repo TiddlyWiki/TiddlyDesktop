@@ -4,7 +4,7 @@ list-before: $:/core/ui/Settings/Info
 caption: ~TiddlyDesktop
 page-title: TiddlyDesktop Settings
 
-<div class="td-tiddler-window-padded">
+<div class="td-backstage-tiddler-window-padded">
 
 ! ~TiddlyDesktop Settings
 

@@ -17,7 +17,7 @@ function WikiFileWindow(options) {
 	this.info = options.info || {};
 	this.pathname = options.info.pathname;
 	// Open the window
-	this.window_nwjs = $tw.desktop.gui.Window.open("app://foobar.wiki.file.window/html/wiki-file-window.html",{
+	this.window_nwjs = $tw.desktop.gui.Window.open("app://foobar/html/wiki-file-window.html",{
 		toolbar: false,
 		show: false,
 		nodejs: true,
