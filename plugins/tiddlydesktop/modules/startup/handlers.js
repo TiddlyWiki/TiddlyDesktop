@@ -20,12 +20,6 @@ exports.synchronous = true;
 exports.startup = function() {
 	var fs = require("fs"),
 		path = require("path");
-	$tw.rootWidget.addEventListener("tiddlydesktop-open-tiddler-window",function(event) {
-		if(typeof event.paramObject === "object") {
-			$tw.desktop.tiddlerWindows.open(event.paramObject);
-		}
-		return false;
-	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-open-backstage-wiki",function(event) {
 		$tw.desktop.backstageWindow.show();
 		return false;

@@ -49,7 +49,7 @@ BackstageWindow.prototype.onloaded = function(event) {
 	// Make $tw available in the window
 	this.window_nwjs.window.$tw = $tw;
 	// Show dev tools
-this.window_nwjs.showDevTools();
+// this.window_nwjs.showDevTools();
 	// Show dev tools on F12
 	$tw.desktop.utils.devtools.trapDevTools(this.window_nwjs.window,this.window_nwjs.window.document);
 	// Add menu
