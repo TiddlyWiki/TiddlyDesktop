@@ -133,6 +133,10 @@ WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
 			this.windows.splice(t,1);
 		}
 	}
+	// Quit if there are no windows left
+	if(this.windows.length === 0) {
+		$tw.desktop.gui.App.quit();
+	}
 };
 
 WindowList.prototype.revealByUrl = function(url) {
