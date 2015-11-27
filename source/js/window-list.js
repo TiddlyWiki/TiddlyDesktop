@@ -18,7 +18,6 @@ function WindowList(options) {
 }
 
 WindowList.prototype.decodeUrl = function(url) {
-console.log("Decoding " + url)
 	// Decode the URL to figure out the constructor and parameters
 	var result = {
 			WindowConstructor: null,
@@ -50,7 +49,6 @@ console.log("Decoding " + url)
 
 WindowList.prototype.openByUrl = function(url) {
 	var decodedUrl = this.decodeUrl(url);
-console.log("Decoded url ",decodedUrl)
 	this.open(decodedUrl.WindowConstructor,decodedUrl.info);
 };
 
@@ -99,7 +97,6 @@ WindowList.prototype.find = function(WindowConstructor,info) {
 };
 
 WindowList.prototype.removeByUrl = function(url) {
-console.log("Removing by url",url);
 	// Find the window corresponding to this url
 	var decodedUrl = this.decodeUrl(url),
 		w = this.find(decodedUrl.WindowConstructor,decodedUrl.info);

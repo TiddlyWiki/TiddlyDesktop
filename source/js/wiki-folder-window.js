@@ -54,7 +54,6 @@ WikiFolderWindow.prototype.getIdentifier = function() {
 
 // Load handler for window
 WikiFolderWindow.prototype.onloaded = function(event) {
-	console.log("WikiFolderWindow.prototype.onloaded");
 };
 
 // Get the wiki title
@@ -74,7 +73,6 @@ WikiFolderWindow.prototype.getWikiFavIconType = function() {
 
 // Close handler for window
 WikiFolderWindow.prototype.onclose = function(event) {
-console.log("WikiFolderWindow.prototype.onclose")
 	// Close the window, remove it from the window list and exit if there are no windows open
 	this.windowList.handleClose(this);
 };
