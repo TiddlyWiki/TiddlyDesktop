@@ -40,6 +40,10 @@ var tray = new gui.Tray({
 // Give it a menu
 var menu = new gui.Menu();
 menu.append(new gui.MenuItem({
+	label: "TiddlyDesktop v" + require("../package.json").version,
+	enabled: false
+}));
+menu.append(new gui.MenuItem({
 	label: "Wiki List",
 	click: function() {
 		$tw.desktop.windowList.openByUrl("backstage://WikiListWindow");

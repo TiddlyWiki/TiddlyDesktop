@@ -18,6 +18,11 @@ var fs = require("fs"),
 // Get package.info
 var packageInfo = require("./package.json");
 
+// Insert version number in the nwjs package.json
+var nwAppPackageInfo = JSON.parse(fs.readFileSync("./source/package.json","utf8") || {});
+nwAppPackageInfo.version = packageInfo.version;
+fs.writeFileSync("./source/package.json",JSON.stringify(nwAppPackageInfo,null,4));
+
 // Insert version number in plugin.info
 var pluginInfo = JSON.parse(fs.readFileSync("./source/tiddlywiki/plugins/tiddlywiki/tiddlydesktop/plugin.info","utf8") || {});
 pluginInfo.version = packageInfo.version;
