@@ -47,10 +47,12 @@ remove
 
 \define wikilist()
 <div class="td-wikilist">
-<$list filter="[tag[wikilist]sort[title]!has[draft.of]]" emptyMessage="Add a ~TiddlyWiki file to get started.
+<$list filter="[tag[wikilist]sort[title]!has[draft.of]]" emptyMessage="Add a ~TiddlyWiki file or folder to get started.
 
-Click the button above to browse for the file, or drag and drop from the file Explorer/Finder" storyview="pop">
+Click the buttons above to browse, or drag and drop from your file Explorer/Finder" storyview="pop">
+<div>
 <<wikilist-row>>
+</div>
 </$list>
 </div>
 \end
