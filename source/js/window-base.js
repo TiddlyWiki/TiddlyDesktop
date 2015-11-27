@@ -44,37 +44,57 @@ exports.addBaseMethods = function(proto) {
 				self.windowWidth = self.window_nwjs.width;
 				self.windowHeight = self.window_nwjs.height;
 			}
+			self.saveWindowLayout();
 		});
 		win.on("move",function () {
 // console.log("move event")
 			self.windowX = self.window_nwjs.x;
 			self.windowY = self.window_nwjs.y;
+			self.saveWindowLayout();
 		});
 		win.on("maximize",function () {
 // console.log("maximize event")
 			self.resizesSinceMaximized = 0;
 		    self.windowState = "maximized";
+		    self.saveWindowLayout();
 		});
 		win.on("unmaximize",function () {
 // console.log("unmaximize event")
 		    self.windowState = "normal";
+		    self.saveWindowLayout();
 		});
 		win.on("minimize",function () {
 // console.log("minimize event")
 		    self.windowState = "minimized";
+		    self.saveWindowLayout();
 		});
 		win.on("restore",function () {
 // console.log("restore event")
 		    self.windowState = "normal";
+		    self.saveWindowLayout();
 		});
 		win.on("enter-fullscreen",function () {
 // console.log("enter-fullscreen event")
 		    self.windowState = "fullscreen";
+		    self.saveWindowLayout();
 		});
 		win.on("leave-fullscreen",function () {
 // console.log("leave-fullscreen event")
 		    self.windowState = "normal";
+		    self.saveWindowLayout();
 		});
+	};
+
+	proto.saveWindowLayout = function() {
+		var self = this;
+		if(this.windowLayoutTimer) {
+			clearTimeout(this.windowLayoutTimer);
+		}
+		this.windowLayoutTimer = setTimeout(function() {
+			// Save the position/layout of the window
+			self.saveWindowConfigData("layout",self.getWindowLayout());
+			self.windowLayoutTimer = null;
+		},500);
 	};
 
 	proto.getWindowLayout = function() {

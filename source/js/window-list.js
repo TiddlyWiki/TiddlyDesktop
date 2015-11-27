@@ -115,8 +115,6 @@ WindowList.prototype.removeByInfo = function(WindowConstructor,info) {
 };
 
 WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
-	// Save the position/layout of the window
-	w.saveWindowConfigData("layout",w.getWindowLayout());
 	// Remove from the wiki list if required
 	if(removeFromWikiListOnClose) {
 		var wikiListTiddlerTitle = w.getIdentifier();
