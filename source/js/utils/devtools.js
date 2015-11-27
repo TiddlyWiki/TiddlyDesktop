@@ -10,10 +10,10 @@ Utilities concerned with managing the devtools panel
 /*
 Display the dev tools when F12 is pressed
 */
-exports.trapDevTools = function(window,document) {
+exports.trapDevTools = function(window_nwjs,document) {
 	document.addEventListener("keyup",function(event) {
 		if(event.keyCode === 123) {
-			window.showDevTools();
+			window_nwjs.showDevTools();
 			event.preventDefault();
 			event.stopPropagation();
 			return false;

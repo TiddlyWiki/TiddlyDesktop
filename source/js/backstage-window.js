@@ -51,7 +51,7 @@ BackstageWindow.prototype.onloaded = function(event) {
 	// Show dev tools
 // this.window_nwjs.showDevTools();
 	// Show dev tools on F12
-	$tw.desktop.utils.devtools.trapDevTools(this.window_nwjs.window,this.window_nwjs.window.document);
+	$tw.desktop.utils.devtools.trapDevTools(this.window_nwjs,this.window_nwjs.window.document);
 	// Add menu
 	this.window_nwjs.menu = $tw.desktop.utils.menu.createMenuBar();
 	// Track changes to the window state
