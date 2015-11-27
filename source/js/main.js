@@ -34,7 +34,7 @@ var tray = new gui.Tray({
 	icon: "images/tray_icon.png",
 	alticon: "",
 	tooltip: "This is my tooltip",
-	iconsAreTemplates: false
+	iconsAreTemplates: true
 });
 
 // Give it a menu
