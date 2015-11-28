@@ -40,6 +40,11 @@ reveal
 remove
 </$button>
 </div>
+<div class="td-wiki-toolbar-item">
+<$button message="tiddlydesktop-reveal-backups-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-wikilist-button td-wikilist-button-reveal-backups">
+reveal backups
+</$button>
+</div>
 </div>
 </div>
 </div>

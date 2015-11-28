@@ -7,6 +7,9 @@ Manage the list of windows
 /*jslint browser: true */
 "use strict";
 
+var fs = require("fs"),
+	path = require("path");
+
 var WikiFileWindow = require("./wiki-file-window.js").WikiFileWindow,
 	WikiFolderWindow = require("./wiki-folder-window.js").WikiFolderWindow,
 	BackstageWindow = require("./backstage-window.js").BackstageWindow;
@@ -139,6 +142,19 @@ WindowList.prototype.revealByUrl = function(url) {
 		getPathnameFromInfo = decodedUrl.WindowConstructor.getPathnameFromInfo;
 	if(getPathnameFromInfo) {
 		$tw.desktop.gui.Shell.showItemInFolder(getPathnameFromInfo(decodedUrl.info));
+	}
+};
+
+WindowList.prototype.revealBackupsByUrl = function(url) {
+	var decodedUrl = this.decodeUrl(url),
+		hasBackups = decodedUrl.WindowConstructor.hasBackups,
+		getPathnameFromInfo = decodedUrl.WindowConstructor.getPathnameFromInfo;
+	if(hasBackups && hasBackups() && getPathnameFromInfo) {
+		var pathname = $tw.desktop.utils.saving.backupPathByPath(getPathnameFromInfo(decodedUrl.info));
+		if(!fs.existsSync(pathname)) {
+			$tw.utils.createDirectory(pathname);
+		}
+		$tw.desktop.gui.Shell.openItem(pathname);
 	}
 };
 

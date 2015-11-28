@@ -37,6 +37,11 @@ WikiFileWindow.getPathnameFromInfo = function(info) {
 	return info.pathname;
 };
 
+// Static method to indicate that this window generates backups
+WikiFileWindow.hasBackups = function() {
+	return true;
+};
+
 windowBase.addBaseMethods(WikiFileWindow.prototype);
 
 // Returns true if the provided parameters are the same as the ones used to create this window
