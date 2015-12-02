@@ -4,7 +4,9 @@ title: WikiList
 <div class="td-wikilist-item">
 <div class="td-wikilist-thumbnail">
 <$button message="tiddlydesktop-add-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible">
-<$list filter="[[$:/TiddlyDesktop/Config/favicon/$(currentTiddler)$]!is[missing]]" emptyMessage="">
+<$list filter="[[$:/TiddlyDesktop/Config/favicon/$(currentTiddler)$]!is[missing]]" emptyMessage="""
+<$image source="$:/TiddlyDesktop/images/missing-favicon.png" width="120"/>
+""">
 <$image source="""$:/TiddlyDesktop/Config/favicon/$(currentTiddler)$""" width="120"/>
 </$list>
 </$button>
