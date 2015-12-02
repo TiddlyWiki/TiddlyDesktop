@@ -38,44 +38,44 @@ var tray = new gui.Tray({
 });
 
 // Give it a menu
-var menu = new gui.Menu();
-menu.append(new gui.MenuItem({
+var trayMenu = new gui.Menu();
+trayMenu.append(new gui.MenuItem({
 	label: "TiddlyDesktop v" + require("../package.json").version,
 	enabled: false
 }));
-menu.append(new gui.MenuItem({
+trayMenu.append(new gui.MenuItem({
 	label: "Wiki List",
 	click: function() {
 		$tw.desktop.windowList.openByUrl("backstage://WikiListWindow");
 	}
 }));
-menu.append(new gui.MenuItem({
+trayMenu.append(new gui.MenuItem({
 	label: "Settings",
 	click: function() {
 		$tw.desktop.windowList.openByUrl("backstage://$:/TiddlyDesktop/Settings");
 	}
 }));
-menu.append(new gui.MenuItem({
+trayMenu.append(new gui.MenuItem({
 	label: "",
 	type: "separator"
 }));
-menu.append(new gui.MenuItem({
+trayMenu.append(new gui.MenuItem({
 	label: "Help",
 	click: function() {
 		$tw.desktop.windowList.openByUrl("backstage://$:/TiddlyDesktop/Help");
 	}
 }));
-menu.append(new gui.MenuItem({
+trayMenu.append(new gui.MenuItem({
 	label: "",
 	type: "separator"
 }));
-menu.append(new gui.MenuItem({
+trayMenu.append(new gui.MenuItem({
 	label: "Quit",
 	click: function() {
 		$tw.desktop.gui.App.quit();
 	}
 }));
-tray.menu = menu;
+tray.menu = trayMenu;
 
 // Set up the $tw global
 var $tw = {desktop: {
