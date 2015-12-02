@@ -18,8 +18,11 @@ function WikiFolderWindow(options) {
 	this.pathname = options.info.pathname;
 	// Save the wiki list tiddler
 	this.saveWikiListTiddler();
+	// Get the host and port
+	var host = $tw.wiki.getTiddlerText(this.getConfigTitle("host"),""),
+		port = $tw.wiki.getTiddlerText(this.getConfigTitle("port"),"");
 	// Open the window
-	this.window_nwjs = $tw.desktop.gui.Window.open("app://foobar/html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname),{
+	this.window_nwjs = $tw.desktop.gui.Window.open("app://foobar/html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname) + "&host=" + encodeURIComponent(host) + "&port=" + encodeURIComponent(port),{
 		toolbar: false,
 		show: true,
 		"new-instance": true,

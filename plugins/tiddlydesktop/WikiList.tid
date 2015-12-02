@@ -43,11 +43,33 @@ remove
 </$button>
 </div>
 <div class="td-wiki-toolbar-item">
+<$button popup="""$:/TiddlyDesktop/Config/advanced/$(currentTiddler)$""" class="tc-btn-invisible td-wikilist-button td-wikilist-button-advanced">
+advanced
+</$button>
+</div>
+</div>
+<$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/advanced/$(currentTiddler)$""" text="">
+<div class="td-wiki-advanced">
+
+<$list filter="[all[current]prefix[wikifile://]]">
+<div class="td-wiki-toolbar-item">
 <$button message="tiddlydesktop-reveal-backups-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-wikilist-button td-wikilist-button-reveal-backups">
 reveal backups
 </$button>
 </div>
+</$list>
+<$list filter="[all[current]prefix[wikifolder://]]">
+<div class="td-wiki-toolbar-item">
+<div>
+Host: <$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/host/$(currentTiddler)$""" default=""/>
 </div>
+<div>
+Port: <$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/port/$(currentTiddler)$""" default=""/>
+</div>
+</div>
+</$list>
+</div>
+</$reveal>
 </div>
 </div>
 \end

@@ -33,7 +33,7 @@ tags: $:/tags/Stylesheet
 
 .td-wikilist .td-wikilist-item .td-wikilist-thumbnail {
 	display: inline-block;
-	vertical-align: middle;
+	vertical-align: top;
 	margin: 12px 0 12px 12px;
 }
 
@@ -54,7 +54,7 @@ tags: $:/tags/Stylesheet
 
 .td-wikilist .td-wikilist-info {
 	display: inline-block;
-	vertical-align: middle;
+	vertical-align: top;
 	margin: 12px;
 	color: #000;
 }
@@ -127,6 +127,7 @@ tags: $:/tags/Stylesheet
 .td-wikilist .td-wikilist-button-remove {
 	background-color: #d85778;
 }
+
 .td-wikilist .td-wikilist-button-remove:hover {
 	background-color: red;
 }

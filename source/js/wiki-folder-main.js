@@ -45,11 +45,15 @@ var queryObject = $tw.desktop.utils.dom.decodeQueryString(containerWindow.window
 // First part of boot process
 require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
 
-var pathname = queryObject.pathname;
-
 // Set command line
 $tw.boot = $tw.boot || {};
-$tw.boot.argv = [pathname];
+$tw.boot.argv = [queryObject.pathname];
+
+if(queryObject.host && queryObject.port) {
+	$tw.boot.argv.push("--server",queryObject.port,"$:/core/save/all","text/plain","text/html","","",queryObject.host);
+}
+
+console.log("Running tiddlywiki " + $tw.boot.argv.join(" "));
 
 // Main part of boot process
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
