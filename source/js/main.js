@@ -31,7 +31,7 @@ function showBackstageWindow() {
 // Create the tray icon
 var tray = new gui.Tray({
 	title: "",
-	icon: "images/tray_icon.png",
+	icon: window.devicePixelRatio > 1 ? "images/tray_icon@2x.png" : "images/tray_icon.png",
 	alticon: "",
 	tooltip: "This is my tooltip",
 	iconsAreTemplates: true
