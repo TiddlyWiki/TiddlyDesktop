@@ -75,6 +75,7 @@ WikiFileWindow.prototype.onloaded = function(event) {
 	this.saveWikiListTiddler();
 	// Show the window
 	this.window_nwjs.show();
+	this.window_nwjs.focus();
 };
 
 // Load handler for iframe

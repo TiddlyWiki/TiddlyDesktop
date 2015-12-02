@@ -60,6 +60,7 @@ BackstageWindow.prototype.onloaded = function(event) {
 	this.restoreWindowLayout(this.getWindowConfigData("layout"));
 	// Show the window
 	this.window_nwjs.show();
+	this.window_nwjs.focus();
 	// Render the window content
 	this.renderWindow();
 };
