@@ -8,27 +8,55 @@ tags: $:/TiddlyDesktop/Help
 
 !! TiddlyDesktop Application
 
-The main TiddlyDesktop application starts with the `source/html/main.html` file that is specified by the `package.json` used by nw.js. It starts up the backstage wiki and opens the wiki list window.
+The main TiddlyDesktop application starts with the `source/html/main.html` file that is specified by the `package.json` used by nw.js. It loads up the backstage wiki and then opens the wiki list window.
 
-The main application exposes low level services to the backstage wiki via the global `$tw.desktop`.
+The main application exposes low level services to the backstage wiki via the global `$tw.desktop`. These are chiefly concerned with managing a list of "wiki windows", each of which can be:
+
+* A "backstage tiddler window" showing a dynamic view of a specified tiddler in the backstage wiki
+* A "wiki file window" showing a sandboxed TiddlyWiki HTML file with editing support
+* A "wiki folder window" showing a sandboxed TiddlyWiki wiki folder
+
+There is also a special backstage window showing the backstage wiki itself.
+
+!!! TiddlyDesktop URL pseudo-schemes
+
+TiddlyDesktop uses pseudo-schemes create URLs representing the different types of window:
+
+* `backstage://<title>` for a backstage tiddler window
+* `wikifile://<path>` for a wiki file window
+* `wikifolder://<path>` for a wiki folder window
 
 !! Backstage Wiki
 
 The backstage wiki contains the user interface and configuration data for TiddlyDesktop. Initially, it is empty apart from the backstage plugin (see below).
 
+Configuration data in the backstage wiki includes:
+
+* `$:/TiddlyDesktop/Config/favicon/<url>` containing the favicon (currently only supported for wiki files)
+* `$:/TiddlyDesktop/Config/host/<url>` containing the IP host used when serving wiki folders over HTTP
+* `$:/TiddlyDesktop/Config/port/<url>` containing the IP port used when serving wiki folders over HTTP
+* `$:/TiddlyDesktop/Config/layout/<url>` containing the window size and position (currently not supported for wiki folders)
+* `$:/TiddlyDesktop/Config/title/<url>` containing the human readable title of the wiki (currently not supported for wiki folders)
+
 !! Backstage Plugin
 
 The backstage wiki includes the plugin `tiddlywiki/tiddlydesktop` that adds the following capabilities to the backstage wiki. Note that this plugin is not added to the wikis that TiddlyDesktop hosts.
 
-* The `tiddlydesktop-open-tiddler-window` message creates an independent window that dynamically displays any specific tiddler from the backstage wiki (a so-called "tiddler window"). The settings window, this help window and the wiki list window are all tiddler windows, targetting [[$:/TiddlyDesktop/Settings]], [[$:/TiddlyDesktop/Help]] and WikiListWindow respectively
-* The `<$wikiframe>` widget displays a TiddlyWiki HTML file in a sandboxed iframe with automatic support for saving changes
+* Several messages that are handled at the root widget:
+** `tiddlydesktop-open-backstage-wiki` to open the backstage wiki window
+** `tiddlydesktop-add-wiki-url` to add the URL of a wiki file or folder
+** `tiddlydesktop-add-wiki-path` to add the path of a wiki file or folder
+** `tiddlydesktop-remove-wiki-url` to remove a wiki from the list via its URL
+** `tiddlydesktop-reveal-backups-wiki-url` to reveal the backup directory for a wiki
+** `tiddlydesktop-open-config-folder` to reveal the TiddlyDesktop configuration folder
+** `tiddlydesktop-reveal-url-in-shell` to reveal the location of a wiki file or folder
 * The `<$droplink>` widget, a clone of the core `<$dropzone>` widget with the added ability to process the source path of dropped files
 
 Initially, the backstage wiki is empty apart from the plugin components. Configuration data is saved as tiddlers in the backstage wiki.
 
 !! Backstage Architecture
 
-Entries in the wiki list window are represented by configuration tiddlers with the tag `wikilist`. Entries representing wiki folders have the additional tag `wikifolder`. Entries representing TiddlyWiki HTML files may have the optional tag `wikifile`.
+Entries in the wiki list window are represented by configuration tiddlers with the tag `wikilist`. Entries representing wiki folders have the additional tag `wikifolder`. Entries representing TiddlyWiki HTML files have the additional tag `wikifile`.
 
 The title of the tiddler is the `file://` URI of the file or wiki folder.
 
