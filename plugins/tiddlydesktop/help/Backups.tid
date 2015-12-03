@@ -2,9 +2,9 @@ title: $:/TiddlyDesktop/Help/Backups
 caption: Backups
 tags: $:/TiddlyDesktop/Help/Usage
 
-When working with TiddlyWiki files, backups are automatically taken every time saving changes results in a file being overwritten. The previous content of the file is copied to a backup file with a filename such as `\MyData\index.html_backup\index.20150107172517000.html`.
+When working with ~TiddlyWiki files, backups are automatically taken every time saving changes results in a file being overwritten. The previous content of the file is copied to a backup file with a filename such as `\MyData\index.html_backup\index.20150107172517000.html`.
 
-The backup filename is composed of the filename of the TiddlyWiki file plus a date string, like this:
+The backup filename is composed of the filename of the ~TiddlyWiki file plus a date string, like this:
 
 ```
 index.20150109082810000.html

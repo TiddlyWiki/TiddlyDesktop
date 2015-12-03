@@ -4,23 +4,23 @@ tags: $:/TiddlyDesktop/Help
 
 ! Architecture
 
-~TiddlyDesktop is itself an instance of ~TiddlyWiki, configured to run as a hybrid of the Node.js configuration and the browser-based configuration. Unlike TiddlyWiki HTML files in an ordinary browser, the backstage wiki uses the Node.js file APIs to synchronise individual tiddler files to the file system while also rendering a user interface directly in the "backstage" window.
+~TiddlyDesktop is itself an instance of ~TiddlyWiki, configured to run as a hybrid of the Node.js configuration and the browser-based configuration. Unlike ~TiddlyWiki HTML files in an ordinary browser, the backstage wiki uses the Node.js file APIs to synchronise individual tiddler files to the file system while also rendering a user interface directly in the "backstage" window.
 
-!! TiddlyDesktop Application
+!! ~TiddlyDesktop Application
 
-The main TiddlyDesktop application starts with the `source/html/main.html` file that is specified by the `package.json` used by nw.js. It loads up the backstage wiki and then opens the wiki list window.
+The main ~TiddlyDesktop application starts with the `source/html/main.html` file that is specified by the `package.json` used by nw.js. It loads up the backstage wiki and then opens the wiki list window.
 
 The main application exposes low level services to the backstage wiki via the global `$tw.desktop`. These are chiefly concerned with managing a list of "wiki windows", each of which can be:
 
 * A "backstage tiddler window" showing a dynamic view of a specified tiddler in the backstage wiki
-* A "wiki file window" showing a sandboxed TiddlyWiki HTML file with editing support
-* A "wiki folder window" showing a sandboxed TiddlyWiki wiki folder
+* A "wiki file window" showing a sandboxed ~TiddlyWiki HTML file with editing support
+* A "wiki folder window" showing a sandboxed ~TiddlyWiki wiki folder
 
 There is also a special backstage window showing the backstage wiki itself.
 
-!!! TiddlyDesktop URL pseudo-schemes
+!!! ~TiddlyDesktop URL pseudo-schemes
 
-TiddlyDesktop uses pseudo-schemes create URLs representing the different types of window:
+~TiddlyDesktop uses pseudo-schemes create URLs representing the different types of window:
 
 * `backstage://<title>` for a backstage tiddler window
 * `wikifile://<path>` for a wiki file window
@@ -40,7 +40,7 @@ Configuration data in the backstage wiki includes:
 
 !! Backstage Plugin
 
-The backstage wiki includes the plugin `tiddlywiki/tiddlydesktop` that adds the following capabilities to the backstage wiki. Note that this plugin is not added to the wikis that TiddlyDesktop hosts.
+The backstage wiki includes the plugin `tiddlywiki/tiddlydesktop` that adds the following capabilities to the backstage wiki. Note that this plugin is not added to the wikis that ~TiddlyDesktop hosts.
 
 * Several messages that are handled at the root widget:
 ** `tiddlydesktop-open-backstage-wiki` to open the backstage wiki window
@@ -56,7 +56,7 @@ Initially, the backstage wiki is empty apart from the plugin components. Configu
 
 !! Backstage Architecture
 
-Entries in the wiki list window are represented by configuration tiddlers with the tag `wikilist`. Entries representing wiki folders have the additional tag `wikifolder`. Entries representing TiddlyWiki HTML files have the additional tag `wikifile`.
+Entries in the wiki list window are represented by configuration tiddlers with the tag `wikilist`. Entries representing wiki folders have the additional tag `wikifolder`. Entries representing ~TiddlyWiki HTML files have the additional tag `wikifile`.
 
 The title of the tiddler is the `file://` URI of the file or wiki folder.
 

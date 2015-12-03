@@ -3,3 +3,77 @@ caption: Usage
 tags: $:/TiddlyDesktop/Help
 
 ! Getting Started
+
+~TiddlyDesktop is a custom web browser that enables you to work directly with ~TiddlyWiki files and folders stored on your local file system.
+
+Wikis can be opened in a ~TiddlyDesktop window that has all the capabilities of a modern browser, plus the special ability to directly save changes to the file system.
+
+! Wiki List Window
+
+~TiddlyDesktop displays the wiki list window on startup. It shows a listing of the wikis that are registered with ~TiddlyDesktop so that they can be opened with a single click.
+
+Initially, the wiki list will be empty. You can add wikis by:
+
+* Dragging and dropping files or folders from your operating system file explorer
+* Clicking the ''Add ~TiddlyWiki file/folder'' and selecting the file/folder from the file system
+
+Each wiki offers the following toolbar buttons:
+
+* ''open'' to open the wiki in a new window
+* ''reveal'' to reveal the wiki file/folder in your operating system file explorer
+* ''remove'' to remove the wiki file/folder from the list
+* ''advanced'' to show further options for files and folders
+
+!! ~TiddlyWiki Files Advanced Options
+
+* ''reveal backups'' to reveal the folder to which backups will be saved
+
+!! ~TiddlyWiki Folders Advanced Options
+
+<div class="tc-alert">
+
+~TiddlyDesktop's support for wiki folders is preliminary and experimental. There are several significant shortcomings that may make it unsuitable for regular use.
+
+The limitations of the multi-processor architecture of nw.js mean that:
+
+* ~TiddlyDesktop cannot extract the favicon or title, or restore the window position and size
+* Wiki folder windows cannot be manually closed except by closing the application
+
+Furthermore, the only way to see errors on the server is to use the ~JavaScript console in ~TiddlyDesktop's developer tools.
+
+</div>
+
+These advanced options allow wiki folders to be accessed over HTTP from any browser
+
+* ''Host'': the IP address on which the server should listen. Choose `127.0.0.1` to restrict access to the wiki to browsers on the same machine, or `0.0.0.0` to allow access on all network adaptors
+* ''Port'': the port on which the server should listen. `8080` is a traditional choice for an initial port. A different port must be chosen for each open wiki
+
+The `tiddlywiki.info` file for the wiki folder must include both the ''tiddlyweb'' and ''filesystem'' plugins. For example:
+
+```
+{
+    "description": "Basic client-server edition",
+    "plugins": [
+        "tiddlywiki/tiddlyweb",
+        "tiddlywiki/filesystem",
+        "tiddlywiki/highlight"
+    ],
+    "themes": [
+        "tiddlywiki/vanilla",
+        "tiddlywiki/snowwhite"
+    ]
+}
+```
+
+To open the wiki, navigate to the following URL in a browser:
+
+```
+http://<host>:<port>/
+```
+
+For example:
+
+```
+http://127.0.0.1:8080/
+```
+

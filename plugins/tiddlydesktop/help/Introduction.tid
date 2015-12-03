@@ -2,11 +2,13 @@ title: $:/TiddlyDesktop/Help/Introduction
 caption: Introduction
 tags: $:/TiddlyDesktop/Help
 
-Welcome to ~TiddlyDesktop. It enables you to work offline with ~TiddlyWiki documents.
+!! Welcome to ~TiddlyDesktop
 
-~TiddlyDesktop supports both the newer version 5 from http://tiddlywiki.com and the older version from http://classic.tiddlywiki.com
+~TiddlyDesktop supports both the classic version 2.x.x from http://classic.tiddlywiki.com, and the current version 5 from http://tiddlywiki.com.
 
-Here is a brief video introduction to using TiddlyDesktop:
+It enables you to work offline with ~TiddlyWiki wikis that are either in the traditional single HTML file format, or (for the latest version) to use a new "wiki folder" format where each tiddler is stored as a separate file.
+
+Here is a brief video introduction to using ~TiddlyDesktop:
 
 <iframe width="560" height="315" src="http://www.youtube.com/embed/i3Bggkm7paA" frameborder="0" allowfullscreen></iframe>
 
