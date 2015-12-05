@@ -50,12 +50,14 @@ WindowList.prototype.decodeUrl = function(url) {
 	return result;
 };
 
-WindowList.prototype.openByUrl = function(url) {
+WindowList.prototype.openByUrl = function(url,options) {
+	options = options || {};
 	var decodedUrl = this.decodeUrl(url);
-	this.open(decodedUrl.WindowConstructor,decodedUrl.info);
+	this.open(decodedUrl.WindowConstructor,decodedUrl.info,options);
 };
 
-WindowList.prototype.openByPathname = function(pathname) {
+WindowList.prototype.openByPathname = function(pathname,options) {
+	options = options || {};
 	var WindowConstructor,
 		info = {
 			pathname: pathname
@@ -65,24 +67,22 @@ WindowList.prototype.openByPathname = function(pathname) {
 	} else {
 		WindowConstructor = WikiFileWindow;
 	}
-	this.open(WindowConstructor,info);
+	this.open(WindowConstructor,info,options);
 };
 
-WindowList.prototype.open = function(WindowConstructor,info) {
+WindowList.prototype.open = function(WindowConstructor,info,options) {
+	options = options || {};
 	// Check if the window is already open
 	var w = this.find(WindowConstructor,info);
 	if(w) {
 		// If so, just focus it
-		try {
-			w.window_nwjs.focus();
-		} catch(e) {
-			console.log("WARNING: Focusing wiki window failed");
-		}
+		w.reopen(options);
 	} else {
 		// Construct the window and save it
 		w = new WindowConstructor({
 			windowList: this,
-			info: info
+			info: info,
+			mustQuitOnClose: options.mustQuitOnClose
 		});
 		this.windows.push(w);		
 	}
@@ -123,18 +123,18 @@ WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
 		var wikiListTiddlerTitle = w.getIdentifier();
 		$tw.wiki.deleteTiddler(wikiListTiddlerTitle);
 	}
-	// Close the window
-	w.window_nwjs.close(true);
 	// Remove the window from the list
 	for(var t=this.windows.length-1; t>=0; t--) {
 		if(this.windows[t] === w) {
 			this.windows.splice(t,1);
 		}
 	}
-	// Quit if there are no windows left
-	if(this.windows.length === 0) {
+	// Quit if required
+	if(w.mustQuitOnClose) {
 		$tw.desktop.gui.App.quit();
 	}
+	// Close the window
+	w.window_nwjs.close(true);
 };
 
 WindowList.prototype.revealByUrl = function(url) {

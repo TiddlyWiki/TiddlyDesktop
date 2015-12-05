@@ -16,6 +16,7 @@ function WikiFolderWindow(options) {
 	this.windowList = options.windowList;
 	this.info = options.info || {};
 	this.pathname = options.info.pathname;
+	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Save the wiki list tiddler
 	this.saveWikiListTiddler();
 	// Get the host and port
@@ -59,6 +60,11 @@ WikiFolderWindow.prototype.getIdentifier = function() {
 WikiFolderWindow.prototype.onloaded = function(event) {
 };
 
+// Reopen this window
+WikiFolderWindow.prototype.reopen = function() {
+	$tw.desktop.windowList.openByUrl("backstage://Wiki Folder Warning");
+};
+
 // Get the wiki title
 WikiFolderWindow.prototype.getWikiTitle = function() {
 	return "";
@@ -76,7 +82,7 @@ WikiFolderWindow.prototype.getWikiFavIconType = function() {
 
 // Close handler for window
 WikiFolderWindow.prototype.onclose = function(event) {
-	// Close the window, remove it from the window list and exit if there are no windows open
+	// Close the window, remove it from the window list
 	this.windowList.handleClose(this);
 };
 

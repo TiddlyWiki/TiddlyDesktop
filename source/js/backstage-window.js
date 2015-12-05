@@ -16,6 +16,7 @@ function BackstageWindow(options) {
 	this.windowList = options.windowList;
 	this.info = options.info || {};
 	this.tiddler = this.info.tiddler;
+	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Open the window
 	this.window_nwjs = $tw.desktop.gui.Window.open("app://foobar/html/backstage-tiddler-window.html",{
 		toolbar: false,
@@ -109,8 +110,13 @@ BackstageWindow.prototype.changeHandler = function (changes) {
 BackstageWindow.prototype.onclose = function(event) {
 	// Remove our wiki change event handler
 	$tw.wiki.removeEventListener("change",this.boundChangeHandler);
-	// Close the window, remove it from the window list and exit if there are no windows open
+	// Close the window, remove it from the window list
 	this.windowList.handleClose(this);
+};
+
+// Reopen this window
+BackstageWindow.prototype.reopen = function() {
+	this.window_nwjs.focus();
 };
 
 exports.BackstageWindow = BackstageWindow;

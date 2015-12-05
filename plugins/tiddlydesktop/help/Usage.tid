@@ -30,18 +30,7 @@ Each wiki offers the following toolbar buttons:
 
 !! ~TiddlyWiki Folders Advanced Options
 
-<div class="tc-alert">
-
-~TiddlyDesktop's support for wiki folders is preliminary and experimental. There are several significant shortcomings that may make it unsuitable for regular use.
-
-The limitations of the multi-processor architecture of nw.js mean that:
-
-* ~TiddlyDesktop cannot extract the favicon or title, or restore the window position and size
-* Wiki folder windows cannot be manually closed except by closing the application
-
-Furthermore, the only way to see errors on the server is to use the ~JavaScript console in ~TiddlyDesktop's developer tools.
-
-</div>
+{{Wiki Folder Warning}}
 
 These advanced options allow wiki folders to be accessed over HTTP from any browser
 

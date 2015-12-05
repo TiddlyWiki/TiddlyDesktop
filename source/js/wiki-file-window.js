@@ -16,6 +16,7 @@ function WikiFileWindow(options) {
 	this.windowList = options.windowList;
 	this.info = options.info || {};
 	this.pathname = options.info.pathname;
+	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Open the window
 	this.window_nwjs = $tw.desktop.gui.Window.open("app://foobar/html/wiki-file-window.html",{
 		toolbar: false,
@@ -98,6 +99,11 @@ WikiFileWindow.prototype.onloadiframe = function() {
 	this.favIconObserver.observe(faviconLink,{attributes: true, childList: true, characterData: true});
 };
 
+// Reopen this window
+WikiFileWindow.prototype.reopen = function() {
+	this.window_nwjs.focus();
+};
+
 // Extract the iframe title
 WikiFileWindow.prototype.extractIframeTitle = function() {
 	this.wikiTitle = this.iframe.contentDocument.title;
@@ -151,7 +157,7 @@ WikiFileWindow.prototype.onclose = function(event) {
 	// Delete the mutation observers for the title and the favicon
 	this.titleObserver.disconnect();
 	this.favIconObserver.disconnect();
-	// Close the window, remove it from the window list and exit if there are no windows open
+	// Close the window, remove it from the window list
 	this.windowList.handleClose(this,this.mustRemoveFromWikiListOnClose);
 };
 

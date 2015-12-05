@@ -30,7 +30,7 @@ containerWindow.showDevTools();
 
 // Hide the container window when we start, and when it is closed
 containerWindow.on("close",function(isQuitting) {
-	alert("Wiki folder windows cannot be manually closed. This window will close when the application is quit.\n\nThis temporary limitation will be removed as soon as possible");
+	containerWindow.close(true);
 });
 
 containerWindow.menu = $tw.desktop.utils.menu.createMenuBar();
