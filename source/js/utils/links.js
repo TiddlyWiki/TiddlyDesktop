@@ -22,7 +22,7 @@ exports.trapLinks = function(doc) {
 		// "tw-tiddlylink-external" is for TW5, "externallink" for TWC
 		var externalLink = $tw.desktop.utils.dom.findParentWithClass(event.target,"tc-tiddlylink-external tw-tiddlylink-external externalLink");
 		if(externalLink) {
-			gui.Shell.openExternal(externalLink.href);
+			$tw.desktop.gui.Shell.openExternal(externalLink.href);
 			event.preventDefault();
 			event.stopPropagation();
 			return false;
