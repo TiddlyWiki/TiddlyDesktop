@@ -65,6 +65,12 @@ WikiFolderWindow.prototype.reopen = function() {
 	$tw.desktop.windowList.openByUrl("backstage://Wiki Folder Warning");
 };
 
+// Mark window to be removed from list on close
+WikiFolderWindow.prototype.removeFromWikiListOnClose = function() {
+	this.mustRemoveFromWikiListOnClose = true;
+	$tw.desktop.windowList.openByUrl("backstage://Wiki Folder Warning");
+};
+
 // Get the wiki title
 WikiFolderWindow.prototype.getWikiTitle = function() {
 	return "";

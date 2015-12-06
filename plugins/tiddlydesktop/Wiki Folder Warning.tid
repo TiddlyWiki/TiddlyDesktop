@@ -7,6 +7,7 @@ title: Wiki Folder Warning
 ~TiddlyDesktop's support for wiki folders is preliminary and experimental, with some significant limitations:
 
 * Wiki folder windows cannot be re-opened once closed, other than by closing and restarting the application
+* Wiki folder windows cannot be removed from the wiki list once they have been opened, other than by closing and restarting the application
 * ~TiddlyDesktop cannot extract the favicon or title, or restore the window position and size
 * The only way to see errors on the server is to use the ~JavaScript console in ~TiddlyDesktop's developer tools.
 
