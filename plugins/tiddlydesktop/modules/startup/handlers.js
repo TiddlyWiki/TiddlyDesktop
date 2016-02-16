@@ -52,20 +52,9 @@ exports.startup = function() {
 		return false;
 	});
 	$tw.rootWidget.addEventListener("tiddlydesktop-clone-wiki-path",function(event) {
-
-		/* Find the main window */
-		var window_url = $tw.desktop.windowList.decodeUrl("backstage://WikiListWindow")
-		var main_window = $tw.desktop.windowList.find(window_url.WindowConstructor, window_url.info) 
-
-		/* Ask for the new file name */
 		var src  = $tw.desktop.windowList.decodeUrl(event.param).info.pathname
-		var dest = main_window.window_nwjs.window.prompt("What should be the path to the new file?");
-		if(dest === null){ return false; } /* If the prompt returns null, the user cancelled the action, we should too. */
-
-		/* Copy the file */
+		var dest = event.files[0].path
 		fs.writeFileSync(dest,fs.readFileSync(src));
-
-		/* Add the new file */
 		$tw.desktop.windowList.openByUrl("file://"+dest);
 	});
 };

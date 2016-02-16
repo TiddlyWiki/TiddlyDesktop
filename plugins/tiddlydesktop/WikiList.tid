@@ -58,9 +58,12 @@ reveal backups
 </$button>
 </div>
 <div class="td-wiki-toolbar-item">
-<$button message="tiddlydesktop-clone-wiki-path" param=<<currentTiddler>> class="tc-btn-invisible td-wikilist-button td-wikilist-button-open">
+<div class="td-file-input-wrapper">
+<$button class="tc-btn-invisible td-wikilist-button td-wikilist-button-open"q>
 clone
 </$button>
+<$browse message="tiddlydesktop-clone-wiki-path" nwsaveas="nwsaveas" param=<<currentTiddler>> />
+</div>
 </div>
 </$list>
 <$list filter="[all[current]prefix[wikifolder://]]">
