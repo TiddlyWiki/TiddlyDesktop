@@ -118,6 +118,16 @@ $tw.boot.argv = [backstageWikiFolder];
 // Main part of boot process
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 
-var wikilistWindow = $tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});
+var dest;
+if (gui.App.argv != ""){
+    if($tw.utils.isDirectory(gui.App.argv)){
+        dest = "wikifolder://" + gui.App.argv[0];
+    } else {
+        dest = "wikifile://" + gui.App.argv[0];
+    }
+} else {
+    dest = "backstage://WikiListWindow";
+}
+var wikilistWindow = $tw.desktop.windowList.openByUrl(dest,{mustQuitOnClose: true});
 
 })();
