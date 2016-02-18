@@ -119,7 +119,7 @@ $tw.boot.argv = [backstageWikiFolder];
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 
 var dest;
-if (gui.App.argv != ""){
+if (gui.App.argv.length !== 0){
     if($tw.utils.isDirectory(gui.App.argv)){
         dest = "wikifolder://" + gui.App.argv[0];
     } else {
