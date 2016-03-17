@@ -56,13 +56,13 @@ exports.startup = function() {
 		var src  = $tw.desktop.windowList.decodeUrl(event.param);
 		var dest = event.files[0].path;
 		if(src.info.hasOwnProperty('url')) {
-            var file = fs.createWriteStream(dest);
-            var request = http.get(src.info.url, function (response) {
-                var stream = response.pipe(file);
-                stream.on('finish', function() {
-                    $tw.desktop.windowList.openByUrl("file://"+dest);
-                });
-            });
+			var file = fs.createWriteStream(dest);
+			var request = http.get(src.info.url, function (response) {
+				var stream = response.pipe(file);
+				stream.on('finish', function() {
+					$tw.desktop.windowList.openByUrl("file://"+dest);
+				});
+			});
 		} else {
 			fs.writeFileSync(dest,fs.readFileSync(src.info.pathname));
 			$tw.desktop.windowList.openByUrl("file://"+dest);
