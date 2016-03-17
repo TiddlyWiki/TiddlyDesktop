@@ -43,4 +43,19 @@ Help
 Backstage
 </$button>
 </div>
+<$select tiddler="$:/config/templatewiki/source">
+<option></option>
+<$list filter="[all[tiddlers+shadows]has[source]]">
+<option value={{!!source}}>{{!!title}}</option>
+</$list>
+</$select>
+<div class="td-toolbar-item">
+<div class="td-file-input-wrapper">
+
+<$button>
+copy
+</$button>
+<$browse message="tiddlydesktop-clone-wiki-path" nwsaveas="nwsaveas" param={{$:/config/templatewiki/source}} />
+</div>
+</div>
 </div>

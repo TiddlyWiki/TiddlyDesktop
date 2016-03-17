@@ -46,6 +46,8 @@ WindowList.prototype.decodeUrl = function(url) {
 	} else if(url.indexOf("backstage://") === 0) {
 		result.WindowConstructor = BackstageWindow;
 		result.info.tiddler = url.substr(12);
+	} else if(url.indexOf("http://") === 0) {
+		result.info.url = url;
 	}
 	return result;
 };

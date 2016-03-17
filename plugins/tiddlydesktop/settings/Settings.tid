@@ -10,6 +10,27 @@ page-title: TiddlyDesktop Settings
 
 Version {{$:/TiddlyDesktop/version}}
 
+!! Templates
+
+<$navigator>
+
+!!! Add a new template:
+''Title'': <$edit-text tag="input" tiddler="$:/temp/newtemplate/title" default=""/><br />
+''Source'': <$edit-text tag="input" tiddler="$:/temp/newtemplate/source" default=""/>
+<$button>
+Add Template
+<$action-setfield $tiddler={{$:/temp/newtemplate/title}} source={{$:/temp/newtemplate/source}} />
+</$button>
+
+!!! Delete an existing template
+<$list filter="[all[tiddlers+shadows]has[source]]">
+<$button message="tm-delete-tiddler" tooltip={{$:/language/Buttons/Delete/Hint}} aria-label={{$:/language/Buttons/Delete/Caption}} class="tc-btn-invisible tc-tiddlylink" param=<<currentTiddler>> >
+{{$:/core/images/delete-button}}
+</$button>
+ <$text text={{!!title}} />: {{!!source}}<br />
+</$list>
+</$navigator>
+
 !! Backups
 
 Backups are automatically made every time saving changes results in a file being overwritten. The previous content of the file is copied to a backup file with a filename such as `\MyData\index.html_backup\index.20150107172517000.html`.

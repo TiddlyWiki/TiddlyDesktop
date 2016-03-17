@@ -19,7 +19,8 @@ exports.synchronous = true;
 
 exports.startup = function() {
 	var fs = require("fs"),
-		path = require("path");
+		path = require("path"),
+		http = require("http");
 	$tw.rootWidget.addEventListener("tiddlydesktop-open-backstage-wiki",function(event) {
 		$tw.desktop.backstageWindow.show();
 		return false;
@@ -50,6 +51,22 @@ exports.startup = function() {
 	$tw.rootWidget.addEventListener("tiddlydesktop-reveal-url-in-shell",function(event) {
 		$tw.desktop.windowList.revealByUrl(event.param);
 		return false;
+	});
+	$tw.rootWidget.addEventListener("tiddlydesktop-clone-wiki-path",function(event) {
+		var src  = $tw.desktop.windowList.decodeUrl(event.param);
+		var dest = event.files[0].path;
+		if(src.info.hasOwnProperty('url')) {
+            var file = fs.createWriteStream(dest);
+            var request = http.get(src.info.url, function (response) {
+                var stream = response.pipe(file);
+                stream.on('finish', function() {
+                    $tw.desktop.windowList.openByUrl("file://"+dest);
+                });
+            });
+		} else {
+			fs.writeFileSync(dest,fs.readFileSync(src.info.pathname));
+			$tw.desktop.windowList.openByUrl("file://"+dest);
+		}
 	});
 };
 
