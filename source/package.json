@@ -4,14 +4,21 @@
     "window": {
         "show": false,
         "icon": "images/app_icon.png",
-        "toolbar": false,
         "width": 980,
         "height": 700,
         "min_width": 700,
         "min_height": 500
     },
-    "webkit": {
-        "plugin": true
+    "version": "0.0.9",
+    "webview": {
+        "partitions": [
+            {
+                "name": "trusted",
+                "accessible_resources": [
+                    "<all_urls>"
+                ]
+            }
+        ]
     },
-    "version": "0.0.8"
+    "chromium-args": "--mixed-context"
 }

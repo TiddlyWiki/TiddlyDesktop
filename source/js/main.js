@@ -115,9 +115,26 @@ require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
 $tw.boot = $tw.boot || {};
 $tw.boot.argv = [backstageWikiFolder];
 
-// Main part of boot process
-require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
+// Override process.nextTick() because it is broken under nw.js in mixed mode
+var old_process_nextTick = process.nextTick;
+process.nextTick = function() {
+	var fn = arguments[0],
+		args = Array.prototype.slice.call(arguments,1);
+	window.setTimeout(function() {
+		fn.apply(null,args);
+	},4);
+};
 
-var wikilistWindow = $tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});
+// Main part of boot process
+
+var wikilistWindow;
+
+$tw.boot.suppressBoot = true;
+require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
+$tw.boot.boot(function() {
+	wikilistWindow = $tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});
+});
+
+
 
 })();
