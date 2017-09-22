@@ -10,15 +10,5 @@
         "min_height": 500
     },
     "version": "0.0.9",
-    "webview": {
-        "partitions": [
-            {
-                "name": "trusted",
-                "accessible_resources": [
-                    "<all_urls>"
-                ]
-            }
-        ]
-    },
     "chromium-args": "--mixed-context"
 }
