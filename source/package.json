@@ -2,6 +2,7 @@
     "name": "TiddlyDesktop",
     "main": "./html/main.html",
     "window": {
+        "id": "tiddlydesktop://",
         "show": false,
         "icon": "images/app_icon.png",
         "width": 980,

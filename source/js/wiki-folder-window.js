@@ -25,6 +25,7 @@ function WikiFolderWindow(options) {
 		port = $tw.wiki.getTiddlerText(this.getConfigTitle("port"),"");
 	// Open the window
 	$tw.desktop.gui.Window.open("html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname) + "&host=" + encodeURIComponent(host) + "&port=" + encodeURIComponent(port),{
+		id: this.getIdentifier(),
 		show: true,
 		"new-instance": true,
 		icon: "images/app_icon.png"

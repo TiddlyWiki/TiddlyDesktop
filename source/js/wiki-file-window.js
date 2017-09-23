@@ -20,6 +20,7 @@ function WikiFileWindow(options) {
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Open the window
 	$tw.desktop.gui.Window.open("html/wiki-file-window.html",{
+		id: this.getIdentifier(),
 		show: false,
 		icon: "images/app_icon.png"
 	},function(win) {
@@ -69,10 +70,6 @@ WikiFileWindow.prototype.onloaded = function(event) {
 	this.iframe.onload = this.onloadiframe.bind(this);
 	// Show dev tools
 	// this.window_nwjs.showDevTools(this.iframe);
-	// Track changes to the window state
-	this.trackWindowLayout();
-	// Restore the window layout
-	this.restoreWindowLayout(this.getWindowConfigData("layout"));
 	// Save the wiki list tiddler
 	this.saveWikiListTiddler();
 	// Show the window

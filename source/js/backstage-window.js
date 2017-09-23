@@ -20,6 +20,7 @@ function BackstageWindow(options) {
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Open the window
 	$tw.desktop.gui.Window.open("html/backstage-tiddler-window.html",{
+		id: this.getIdentifier(),
 		show: true,
 		icon: "images/app_icon.png"
 	},function(win) {
@@ -56,10 +57,6 @@ BackstageWindow.prototype.onloaded = function(event) {
 	$tw.desktop.utils.devtools.trapDevTools(this.window_nwjs,this.window_nwjs.window.document);
 	// Add menu
 	this.window_nwjs.menu = $tw.desktop.utils.menu.createMenuBar();
-	// Track changes to the window state
-	this.trackWindowLayout();
-	// Restore the window layout
-	this.restoreWindowLayout(this.getWindowConfigData("layout"));
 	// Show the window
 	this.window_nwjs.show();
 	this.window_nwjs.focus();
