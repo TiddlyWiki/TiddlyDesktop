@@ -19,7 +19,7 @@ title: WikiListToolbar
 {{$:/core/images/new-button}} {{$:/core/images/folder}}
 <$text text="Add a TiddlyWiki folder"/>
 </$button>
-<$browse webkitdirectory message="tiddlydesktop-add-wiki-path"/>
+<$browse nwdirectory message="tiddlydesktop-add-wiki-path"/>
 </div>
 </div>
 <div class="td-toolbar-item">

@@ -27,7 +27,7 @@ function WikiFolderWindow(options) {
 	$tw.desktop.gui.Window.open("html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname) + "&host=" + encodeURIComponent(host) + "&port=" + encodeURIComponent(port),{
 		id: this.getIdentifier(),
 		show: true,
-		"new-instance": true,
+		new_instance: true,
 		icon: "images/app_icon.png"
 	},function(win) {
 		self.window_nwjs = win;
