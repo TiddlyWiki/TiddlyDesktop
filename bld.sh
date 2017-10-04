@@ -41,29 +41,29 @@ mkdir -p output/linux64/TiddlyDesktop-linux64-v0.0.9
 
 # OS X 64-bit App
 
-cp -R nwjs/nwjs-sdk-v0.25.2-osx-x64/nwjs.app output/mac64/TiddlyDesktop-mac64-v0.0.9/TiddlyWiki.app
+cp -R nwjs/nwjs-sdk-v0.25.4-osx-x64/nwjs.app output/mac64/TiddlyDesktop-mac64-v0.0.9/TiddlyWiki.app
 cp -R source output/mac64/TiddlyDesktop-mac64-v0.0.9/TiddlyWiki.app/Contents/Resources/app.nw
 cp icons/app.icns output/mac64/TiddlyDesktop-mac64-v0.0.9/TiddlyWiki.app/Contents/Resources/nw.icns
 cp Info.plist output/mac64/TiddlyDesktop-mac64-v0.0.9/TiddlyWiki.app/Contents/Info.plist
 
 # OS X 32-bit App
-# cp -R nwjs/nwjs-v0.25.2-osx-ia32/nwjs.app output/mac32/TiddlyDesktop-mac32-v0.0.9/TiddlyWiki.app
+# cp -R nwjs/nwjs-v0.25.4-osx-ia32/nwjs.app output/mac32/TiddlyDesktop-mac32-v0.0.9/TiddlyWiki.app
 # cp -R source output/mac32/TiddlyDesktop-mac32-v0.0.9/TiddlyWiki.app/Contents/Resources/app.nw
 # cp icons/app.icns output/mac32/TiddlyDesktop-mac32-v0.0.9/TiddlyWiki.app/Contents/Resources/nw.icns
 # cp Info.plist output/mac32/TiddlyDesktop-mac32-v0.0.9/TiddlyWiki.app/Contents/Info.plist
 
 # # Windows 64-bit App
-# cp -R nwjs/nwjs-v0.25.2-win-x64/* output/win64/TiddlyDesktop-win64-v0.0.9
+# cp -R nwjs/nwjs-v0.25.4-win-x64/* output/win64/TiddlyDesktop-win64-v0.0.9
 # cp -R source/* output/win64/TiddlyDesktop-win64-v0.0.9
 
 # # Windows 32-bit App
-# cp -R nwjs/nwjs-v0.25.2-win-ia32/* output/win32/TiddlyDesktop-win32-v0.0.9
+# cp -R nwjs/nwjs-v0.25.4-win-ia32/* output/win32/TiddlyDesktop-win32-v0.0.9
 # cp -R source/* output/win32/TiddlyDesktop-win32-v0.0.9
 
 # # Linux 64-bit App
-# cp -R nwjs/nwjs-v0.25.2-linux-x64/* output/linux64/TiddlyDesktop-linux64-v0.0.9
+# cp -R nwjs/nwjs-v0.25.4-linux-x64/* output/linux64/TiddlyDesktop-linux64-v0.0.9
 # cp -R source/* output/linux64/TiddlyDesktop-linux64-v0.0.9
 
 # # Linux 32-bit App
-# cp -R nwjs/nwjs-v0.25.2-linux-ia32/* output/linux32/TiddlyDesktop-linux32-v0.0.9
+# cp -R nwjs/nwjs-v0.25.4-linux-ia32/* output/linux32/TiddlyDesktop-linux32-v0.0.9
 # cp -R source/* output/linux32/TiddlyDesktop-linux32-v0.0.9
