@@ -18,9 +18,11 @@ var backstageWindow = gui.Window.get();
 // backstageWindow.showDevTools();
 
 // Hide the backstage window when we start, and when it is closed
-backstageWindow.on("close",function(isQuitting) {
-	if(!isQuitting) {
+backstageWindow.on("close",function(force) {
+	if(!force) {
 		backstageWindow.hide();
+	} else {
+		backstageWindow.close(true);
 	}
 });
 
@@ -72,7 +74,8 @@ trayMenu.append(new gui.MenuItem({
 trayMenu.append(new gui.MenuItem({
 	label: "Quit",
 	click: function() {
-		$tw.desktop.gui.App.quit();
+		$tw.desktop.gui.App.closeAllWindows();
+		backstageWindow.close(true);
 	}
 }));
 tray.menu = trayMenu;
