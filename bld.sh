@@ -20,7 +20,7 @@ cp -R node_modules/tiddlywiki source/tiddlywiki
 cp -R plugins/tiddlydesktop source/tiddlywiki/plugins/tiddlywiki
 
 # Copy TiddlyDesktop version number from package.json to the plugin.info of the plugin and the tiddler $:/plugins/tiddlywiki/tiddlydesktop/version
-node propogate-version.js
+node propagate-version.js
 
 # Create the output directories
 mkdir -p output
