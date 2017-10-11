@@ -12,9 +12,9 @@ exports.trapLinks = function(doc) {
 	doc.addEventListener("click",function(event) {
 		// Check that we're not in an internal link
 		// "tc-tiddlylink" is for TW5, "tiddlyLink" for TWC
-		var internalLink = $tw.desktop.utils.dom.findParentWithClass(event.target,"tc-tiddlylink tw-tiddlylink tiddlyLink");
-		if(!internalLink) {
-			$tw.desktop.gui.Shell.openExternal(event.target.getAttribute("href"));
+		var link = $tw.desktop.utils.dom.findParentWithTag(event.target,"a");
+		if(link && !$tw.desktop.utils.dom.hasClass(link,"tc-tiddlylink tw-tiddlylink tiddlyLink")) {
+			$tw.desktop.gui.Shell.openExternal(link.getAttribute("href"));
 			event.preventDefault();
 			event.stopPropagation();
 			return false;

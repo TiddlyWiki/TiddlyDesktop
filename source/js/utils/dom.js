@@ -33,4 +33,27 @@ exports.findParentWithClass = function(node,classNames) {
 	return null;
 };
 
+exports.hasClass = function(node,classNames) {
+	classNames = classNames.split(" ");
+	if(node.classList) {
+		for(var t=0; t<classNames.length; t++) {
+			if(node.classList.contains(classNames[t])) {
+				return true;
+			}
+		}
+	}
+	return false;
+};
+
+
+exports.findParentWithTag = function(node,tagName) {
+	while(node) {
+		if(node.tagName && node.tagName.toUpperCase() === tagName.toUpperCase()) {
+			return node;
+		}
+		node = node.parentNode;
+	}
+	return null;
+};
+
 })();
