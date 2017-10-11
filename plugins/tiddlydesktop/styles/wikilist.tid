@@ -76,7 +76,7 @@ tags: $:/tags/Stylesheet
 
 .td-wikilist .td-wikilist-item .td-wiki-toolbar {
 	font-size: 0.8em;
-	opacity: 0;
+	opacity: 0.4;
 	margin-top: 0.5em;
 	transition: opacity 300ms ease-in-out;
 }
@@ -88,24 +88,6 @@ tags: $:/tags/Stylesheet
 .td-wikilist .td-wiki-toolbar-item {
 	display: inline-block;
 	margin-right: 1em;
-}
-
-.td-wikilist .td-wikilist-button:hover {
-	-webkit-transform: scale(1.2,1.2);
-}
-
-.td-wikilist .td-wikilist-button {
-	background: #acacac;
-	border-radius: 3px;
-	border: none;
-	padding: 3px 7px;
-	color: #fff;
-	transition: -webkit-transform 300ms ease-in-out;
-}
-
-.td-wikilist .td-wikilist-button:active {
-	-webkit-transform: scale(0.9,0.9);
-	color: #444;
 }
 
 .td-wikilist .td-wikilist-button-open {

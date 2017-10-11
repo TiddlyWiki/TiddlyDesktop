@@ -11,16 +11,16 @@ tags: $:/tags/Stylesheet
     fill: #888;
 	background-color: #d3d3d3;
 	font-size: 0.9em;
-	padding: 0.25em;
+	padding: 1em;
 }
 
 .td-toolbar-item {
     display: inline-block;
+    margin-right: 1em;
 }
 
 .td-logo {
 	height: 3em;
-	margin-right: 1em;
 	vertical-align: middle;
 }
 
@@ -29,6 +29,7 @@ tags: $:/tags/Stylesheet
     overflow: hidden;
     display: inline-block;
     vertical-align: middle;
+    transition: -webkit-transform 300ms ease-in-out;
 }
 
 .td-file-input-wrapper input[type="file"] {
@@ -45,4 +46,11 @@ tags: $:/tags/Stylesheet
     background: none repeat scroll 0% 0% #FFF;
     cursor: pointer;
     display: inline-block;
+}
+
+.td-file-input-wrapper:hover {
+    -webkit-transform: scale(1.2,1.2);
+}
+
+.td-file-input-wrapper:hover button {
 }

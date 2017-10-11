@@ -28,22 +28,22 @@ Untitled
 </div>
 <div class="td-wiki-toolbar">
 <div class="td-wiki-toolbar-item">
-<$button message="tiddlydesktop-add-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-wikilist-button td-wikilist-button-open">
+<$button message="tiddlydesktop-add-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-open">
 open
 </$button>
 </div>
 <div class="td-wiki-toolbar-item">
-<$button message="tiddlydesktop-reveal-url-in-shell" param=<<currentTiddler>> class="tc-btn-invisible td-wikilist-button td-wikilist-button-reveal">
+<$button message="tiddlydesktop-reveal-url-in-shell" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-reveal">
 reveal
 </$button>
 </div>
 <div class="td-wiki-toolbar-item">
-<$button message="tiddlydesktop-remove-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-wikilist-button td-wikilist-button-remove">
+<$button message="tiddlydesktop-remove-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-remove">
 remove
 </$button>
 </div>
 <div class="td-wiki-toolbar-item">
-<$button popup="""$:/TiddlyDesktop/Config/advanced/$(currentTiddler)$""" class="tc-btn-invisible td-wikilist-button td-wikilist-button-advanced">
+<$button popup="""$:/TiddlyDesktop/Config/advanced/$(currentTiddler)$""" class="tc-btn-invisible td-button td-wikilist-button-advanced">
 advanced
 </$button>
 </div>
@@ -53,7 +53,7 @@ advanced
 
 <$list filter="[all[current]prefix[wikifile://]]">
 <div class="td-wiki-toolbar-item">
-<$button message="tiddlydesktop-reveal-backups-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-wikilist-button td-wikilist-button-reveal-backups">
+<$button message="tiddlydesktop-reveal-backups-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-reveal-backups">
 reveal backups
 </$button>
 </div>
