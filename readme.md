@@ -24,7 +24,7 @@ Note that TiddlyDesktop will not work correctly from a Windows UNC network share
 
 ## Multiple Configurations
 
-To have separate mutliple instances of TiddlyDesktop (for example, separate Personal and Professional instances), you can pass the `--data-path` argument.  e.g. `/opt/TiddlyDesktop/nw --data-path=/mnt/data/TiddlyWiki/config`.  The property should be a directory to use for holding configuration data.
+To have separate mutliple instances of TiddlyDesktop (for example, separate Personal and Professional instances), you can pass the `--user-data-dir` argument.  e.g. `/opt/TiddlyDesktop/nw --user-data-dir=/mnt/data/TiddlyWiki/config`.  The property should be a directory to use for holding configuration data.
 
 ## Developer Tools
 
