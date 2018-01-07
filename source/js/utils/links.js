@@ -14,7 +14,16 @@ exports.trapLinks = function(doc) {
 		// "tc-tiddlylink" is for TW5, "tiddlyLink" for TWC
 		var link = $tw.desktop.utils.dom.findParentWithTag(event.target,"a");
 		if(link && !$tw.desktop.utils.dom.hasClass(link,"tc-tiddlylink tw-tiddlylink tiddlyLink")) {
-			$tw.desktop.gui.Shell.openExternal(link.getAttribute("href"));
+			var href = link.getAttribute("href");
+			if (doc.location.protocol === "file:" && href.substr(0, 5) === 'file:') {
+				// File links - open as local files
+				var locationPathParts = doc.location.pathname.split("/").slice(0,-1).map(decodeURIComponent),
+					filePathParts = href.substr(5).split(/[\\\/]/mg).map(decodeURIComponent),
+					url = locationPathParts.join('/') + '/' + filePathParts.join('/');
+				$tw.desktop.gui.Shell.openItem(url);
+			} else {
+				$tw.desktop.gui.Shell.openExternal(href);
+			}
 			event.preventDefault();
 			event.stopPropagation();
 			return false;
