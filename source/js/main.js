@@ -35,7 +35,7 @@ var tray = new gui.Tray({
 	title: "",
 	icon: window.devicePixelRatio > 1 ? "images/tray_icon@2x.png" : "images/tray_icon.png",
 	alticon: "",
-	tooltip: "This is my tooltip",
+	tooltip: "TiddlyDesktop",
 	iconsAreTemplates: true
 });
 
