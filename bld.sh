@@ -25,37 +25,37 @@ node propagate-version.js
 # Create the output directories
 mkdir -p output
 mkdir -p output/mac64
-mkdir -p output/mac64/TiddlyDesktop-mac64-v0.0.9
+mkdir -p output/mac64/TiddlyDesktop-mac64-v0.0.10
 mkdir -p output/win32
-mkdir -p output/win32/TiddlyDesktop-win32-v0.0.9
+mkdir -p output/win32/TiddlyDesktop-win32-v0.0.10
 mkdir -p output/win64
-mkdir -p output/win64/TiddlyDesktop-win64-v0.0.9
+mkdir -p output/win64/TiddlyDesktop-win64-v0.0.10
 mkdir -p output/linux32
-mkdir -p output/linux32/TiddlyDesktop-linux32-v0.0.9
+mkdir -p output/linux32/TiddlyDesktop-linux32-v0.0.10
 mkdir -p output/linux64
-mkdir -p output/linux64/TiddlyDesktop-linux64-v0.0.9
+mkdir -p output/linux64/TiddlyDesktop-linux64-v0.0.10
 
 # For each platform, copy the stock nw.js binaries overlaying the "source" directory (and icons and plist for the Mac)
 
 # OS X 64-bit App
 
-cp -R nwjs/nwjs-sdk-v0.25.4-osx-x64/nwjs.app output/mac64/TiddlyDesktop-mac64-v0.0.9/TiddlyWiki.app
-cp -R source output/mac64/TiddlyDesktop-mac64-v0.0.9/TiddlyWiki.app/Contents/Resources/app.nw
-cp icons/app.icns output/mac64/TiddlyDesktop-mac64-v0.0.9/TiddlyWiki.app/Contents/Resources/nw.icns
-cp Info.plist output/mac64/TiddlyDesktop-mac64-v0.0.9/TiddlyWiki.app/Contents/Info.plist
+cp -R nwjs/nwjs-sdk-v0.27.3-osx-x64/nwjs.app output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyWiki.app
+cp -R source output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyWiki.app/Contents/Resources/app.nw
+cp icons/app.icns output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyWiki.app/Contents/Resources/nw.icns
+cp Info.plist output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyWiki.app/Contents/Info.plist
 
 # Windows 64-bit App
-cp -R nwjs/nwjs-sdk-v0.25.4-win-x64/* output/win64/TiddlyDesktop-win64-v0.0.9
-cp -R source/* output/win64/TiddlyDesktop-win64-v0.0.9
+cp -R nwjs/nwjs-sdk-v0.27.3-win-x64/* output/win64/TiddlyDesktop-win64-v0.0.10
+cp -R source/* output/win64/TiddlyDesktop-win64-v0.0.10
 
 # Windows 32-bit App
-cp -R nwjs/nwjs-sdk-v0.25.4-win-ia32/* output/win32/TiddlyDesktop-win32-v0.0.9
-cp -R source/* output/win32/TiddlyDesktop-win32-v0.0.9
+cp -R nwjs/nwjs-sdk-v0.27.3-win-ia32/* output/win32/TiddlyDesktop-win32-v0.0.10
+cp -R source/* output/win32/TiddlyDesktop-win32-v0.0.10
 
 # Linux 64-bit App
-cp -R nwjs/nwjs-sdk-v0.25.4-linux-x64/* output/linux64/TiddlyDesktop-linux64-v0.0.9
-cp -R source/* output/linux64/TiddlyDesktop-linux64-v0.0.9
+cp -R nwjs/nwjs-sdk-v0.27.3-linux-x64/* output/linux64/TiddlyDesktop-linux64-v0.0.10
+cp -R source/* output/linux64/TiddlyDesktop-linux64-v0.0.10
 
 # Linux 32-bit App
-cp -R nwjs/nwjs-sdk-v0.25.4-linux-ia32/* output/linux32/TiddlyDesktop-linux32-v0.0.9
-cp -R source/* output/linux32/TiddlyDesktop-linux32-v0.0.9
+cp -R nwjs/nwjs-sdk-v0.27.3-linux-ia32/* output/linux32/TiddlyDesktop-linux32-v0.0.10
+cp -R source/* output/linux32/TiddlyDesktop-linux32-v0.0.10
