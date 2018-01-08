@@ -39,10 +39,15 @@ mkdir -p output/linux64/TiddlyDesktop-linux64-v0.0.10
 
 # OS X 64-bit App
 
-cp -R nwjs/nwjs-sdk-v0.27.3-osx-x64/nwjs.app output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyWiki.app
-cp -R source output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyWiki.app/Contents/Resources/app.nw
-cp icons/app.icns output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyWiki.app/Contents/Resources/nw.icns
-cp Info.plist output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyWiki.app/Contents/Info.plist
+cp -R nwjs/nwjs-sdk-v0.27.3-osx-x64/nwjs.app output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyDesktop.app
+cp -R source output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyDesktop.app/Contents/Resources/app.nw
+cp icons/app.icns output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyDesktop.app/Contents/Resources/nw.icns
+cp Info.plist output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyDesktop.app/Contents/Info.plist
+
+for f in output/mac64/TiddlyDesktop-mac64-v0.0.10/TiddlyDesktop.app/Contents/Resources/*.lproj
+do
+	cp "./strings/InfoPlist.strings" "$f/InfoPlist.strings"
+done
 
 # Windows 64-bit App
 cp -R nwjs/nwjs-sdk-v0.27.3-win-x64/* output/win64/TiddlyDesktop-win64-v0.0.10
