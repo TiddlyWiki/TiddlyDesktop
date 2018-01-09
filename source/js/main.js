@@ -17,15 +17,6 @@ var WindowList = require("../js/window-list.js").WindowList;
 var backstageWindow = gui.Window.get();
 // backstageWindow.showDevTools();
 
-// Hide the backstage window when we start, and when it is closed
-backstageWindow.on("close",function(force) {
-	if(!force) {
-		backstageWindow.hide();
-	} else {
-		backstageWindow.close(true);
-	}
-});
-
 function showBackstageWindow() {
 	backstageWindow.show();
 }
