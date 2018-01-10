@@ -1,0 +1,22 @@
+title: $:/TiddlyDesktop/styles/buttons
+tags: $:/tags/Stylesheet
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+button.td-button {
+	background: #acacac;
+	border-radius: 3px;
+	border: none;
+	padding: 3px 7px;
+    color: #000;
+    fill: #000;
+	transition: -webkit-transform 300ms ease-in-out;
+}
+
+button.td-button:hover {
+	-webkit-transform: scale(1.2,1.2);
+}
+
+button.td-button:active {
+	-webkit-transform: scale(0.9,0.9);
+}

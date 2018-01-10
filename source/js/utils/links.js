@@ -10,19 +10,11 @@ Utilities concerned with handling TiddlyDesktop links
 // Helper to trap wikilinks within a window
 exports.trapLinks = function(doc) {
 	doc.addEventListener("click",function(event) {
-		// See if we're in an interwiki link
-		var interwikiLink = $tw.desktop.utils.dom.findParentWithClass(event.target,"tc-interwiki-link") || $tw.desktop.utils.dom.findParentWithClass(event.target,"tw-interwiki-link");
-		if(interwikiLink) {
-			$tw.desktop.openWiki(interwikiLink.href);
-			event.preventDefault();
-			event.stopPropagation();
-			return false;
-		}
-		// See if we're in an external link
-		// "tw-tiddlylink-external" is for TW5, "externallink" for TWC
-		var externalLink = $tw.desktop.utils.dom.findParentWithClass(event.target,"tc-tiddlylink-external tw-tiddlylink-external externalLink");
-		if(externalLink) {
-			$tw.desktop.gui.Shell.openExternal(externalLink.href);
+		// Check that we're not in an internal link
+		// "tc-tiddlylink" is for TW5, "tiddlyLink" for TWC
+		var link = $tw.desktop.utils.dom.findParentWithTag(event.target,"a");
+		if(link && !$tw.desktop.utils.dom.hasClass(link,"tc-tiddlylink tw-tiddlylink tiddlyLink")) {
+			$tw.desktop.gui.Shell.openExternal(link.href);
 			event.preventDefault();
 			event.stopPropagation();
 			return false;

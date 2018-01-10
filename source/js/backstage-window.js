@@ -11,6 +11,7 @@ var windowBase = require("../js/window-base.js");
 
 // Constructor
 function BackstageWindow(options) {
+	var self = this;
 	options = options || {};
 	// Save the options
 	this.windowList = options.windowList;
@@ -18,14 +19,15 @@ function BackstageWindow(options) {
 	this.tiddler = this.info.tiddler;
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Open the window
-	this.window_nwjs = $tw.desktop.gui.Window.open("app://foobar/html/backstage-tiddler-window.html",{
-		toolbar: false,
-		show: false,
-		nodejs: true,
+	$tw.desktop.gui.Window.open("html/backstage-tiddler-window.html",{
+		id: this.getIdentifier(),
+		show: true,
 		icon: "images/app_icon.png"
+	},function(win) {
+		self.window_nwjs = win;
+		self.window_nwjs.once("loaded",self.onloaded.bind(self));
+		self.window_nwjs.on("close",self.onclose.bind(self));
 	});
-	this.window_nwjs.once("loaded",this.onloaded.bind(this));
-	this.window_nwjs.on("close",this.onclose.bind(this));
 }
 
 // Static method for getting the identifier for the specified info
@@ -50,15 +52,11 @@ BackstageWindow.prototype.onloaded = function(event) {
 	// Make $tw available in the window
 	this.window_nwjs.window.$tw = $tw;
 	// Show dev tools
-// this.window_nwjs.showDevTools();
+	// this.window_nwjs.showDevTools();
 	// Show dev tools on F12
 	$tw.desktop.utils.devtools.trapDevTools(this.window_nwjs,this.window_nwjs.window.document);
 	// Add menu
 	this.window_nwjs.menu = $tw.desktop.utils.menu.createMenuBar();
-	// Track changes to the window state
-	this.trackWindowLayout();
-	// Restore the window layout
-	this.restoreWindowLayout(this.getWindowConfigData("layout"));
 	// Show the window
 	this.window_nwjs.show();
 	this.window_nwjs.focus();

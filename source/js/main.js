@@ -17,13 +17,6 @@ var WindowList = require("../js/window-list.js").WindowList;
 var backstageWindow = gui.Window.get();
 // backstageWindow.showDevTools();
 
-// Hide the backstage window when we start, and when it is closed
-backstageWindow.on("close",function(isQuitting) {
-	if(!isQuitting) {
-		backstageWindow.hide();
-	}
-});
-
 function showBackstageWindow() {
 	backstageWindow.show();
 }
@@ -33,7 +26,7 @@ var tray = new gui.Tray({
 	title: "",
 	icon: window.devicePixelRatio > 1 ? "images/tray_icon@2x.png" : "images/tray_icon.png",
 	alticon: "",
-	tooltip: "This is my tooltip",
+	tooltip: "TiddlyDesktop",
 	iconsAreTemplates: true
 });
 
@@ -71,9 +64,8 @@ trayMenu.append(new gui.MenuItem({
 }));
 trayMenu.append(new gui.MenuItem({
 	label: "Quit",
-	click: function() {
-		$tw.desktop.gui.App.quit();
-	}
+	// Undocumented nw.js feature for invoking system actions:
+    selector: "closeAllWindowsQuit:"
 }));
 tray.menu = trayMenu;
 
@@ -115,19 +107,34 @@ require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
 $tw.boot = $tw.boot || {};
 $tw.boot.argv = [backstageWikiFolder];
 
-// Main part of boot process
-require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
+// Override process.nextTick() because it is broken under nw.js in mixed mode
+var old_process_nextTick = process.nextTick;
+process.nextTick = function() {
+	var fn = arguments[0],
+		args = Array.prototype.slice.call(arguments,1);
+	window.setTimeout(function() {
+		fn.apply(null,args);
+	},4);
+};
 
-var dest;
-if (gui.App.argv.length !== 0){
+// Main part of boot process
+
+var wikilistWindow;
+
+$tw.boot.suppressBoot = true;
+require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
+$tw.boot.boot(function() {
+  var dest;
+  if (gui.App.argv.length !== 0){
     if($tw.utils.isDirectory(gui.App.argv)){
-        dest = "wikifolder://" + gui.App.argv[0];
+      dest = "wikifolder://" + gui.App.argv[0];
     } else {
-        dest = "wikifile://" + gui.App.argv[0];
+      dest = "wikifile://" + gui.App.argv[0];
     }
-} else {
+  } else {
     dest = "backstage://WikiListWindow";
-}
-var wikilistWindow = $tw.desktop.windowList.openByUrl(dest,{mustQuitOnClose: true});
+  }
+	wikilistWindow = $tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});
+});
 
 })();

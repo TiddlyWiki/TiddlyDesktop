@@ -26,7 +26,7 @@ window.$tw = $tw;
 
 // Use the main window as the container window
 var containerWindow = gui.Window.get();
-containerWindow.showDevTools();
+// containerWindow.showDevTools();
 
 // Hide the container window when we start, and when it is closed
 containerWindow.on("close",function(isQuitting) {
