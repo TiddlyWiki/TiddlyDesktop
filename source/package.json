@@ -10,6 +10,6 @@
         "min_width": 700,
         "min_height": 500
     },
-    "version": "0.0.11",
+    "version": "0.0.12",
     "chromium-args": "--mixed-context"
 }
