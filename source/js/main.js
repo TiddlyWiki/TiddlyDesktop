@@ -64,10 +64,8 @@ trayMenu.append(new gui.MenuItem({
 }));
 trayMenu.append(new gui.MenuItem({
 	label: "Quit",
-	click: function() {
-		$tw.desktop.gui.App.closeAllWindows();
-		backstageWindow.close(true);
-	}
+	// Undocumented nw.js feature for invoking system actions:
+    selector: "closeAllWindowsQuit:"
 }));
 tray.menu = trayMenu;
 
