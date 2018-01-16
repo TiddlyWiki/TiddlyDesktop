@@ -134,7 +134,7 @@ $tw.boot.boot(function() {
   } else {
     dest = "backstage://WikiListWindow";
   }
-	wikilistWindow = $tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});
+  wikilistWindow = $tw.desktop.windowList.openByUrl(dest,{mustQuitOnClose: true});
 });
 
 })();
