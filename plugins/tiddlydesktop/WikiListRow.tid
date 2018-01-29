@@ -53,6 +53,9 @@ advanced
 
 <$list filter="[all[current]prefix[wikifile://]]">
 <div class="td-wiki-toolbar-item">
+<$checkbox tiddler="""$:/TiddlyDesktop/Config/disable-backups/$(currentTiddler)$""" field="text" checked="no" unchecked="yes" default="no"> enable backups</$checkbox>
+</div>
+<div class="td-wiki-toolbar-item">
 <$button message="tiddlydesktop-reveal-backups-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-reveal-backups">
 reveal backups
 </$button>

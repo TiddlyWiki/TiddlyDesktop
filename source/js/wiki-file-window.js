@@ -79,10 +79,14 @@ WikiFileWindow.prototype.onloaded = function(event) {
 
 // Load handler for iframe
 WikiFileWindow.prototype.onloadiframe = function() {
+	var self = this;
 	// Get the mutation observer prototype for the window
 	var MutationObserver = this.window_nwjs.window.MutationObserver;
 	// Enable saving
-	$tw.desktop.utils.saving.enableSaving(this.iframe.contentDocument);
+	var areBackupsEnabledFn = function() {
+		return $tw.wiki.getTiddlerText(self.getConfigTitle("disable-backups"),"no") !== "yes";
+	};
+	$tw.desktop.utils.saving.enableSaving(this.iframe.contentDocument,areBackupsEnabledFn);
 	// Trap links
 	$tw.desktop.utils.links.trapLinks(this.iframe.contentDocument);
 	// Observe mutations of the title element of the iframe

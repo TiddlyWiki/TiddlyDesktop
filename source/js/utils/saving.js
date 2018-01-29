@@ -8,7 +8,7 @@ Saving support for TiddlyWiki5 and TiddlyWiki Classic
 "use strict";
 
 // Helper to enable TiddlyFox-style saving for a window
-exports.enableSaving = function(doc) {
+exports.enableSaving = function(doc,areBackupsEnabledFn) {
 	// Create the message box
 	var messageBox = doc.createElement("div");
 	messageBox.id = "tiddlyfox-message-box";
@@ -29,7 +29,7 @@ exports.enableSaving = function(doc) {
 			filepath = (new Buffer(filepath,"binary")).toString();			
 		}
 		// Backup the existing file (if any)
-		if(!isClassic) {
+		if(areBackupsEnabledFn() && !isClassic) {
 			backupFile(filepath);
 		}
 		// Save the file
