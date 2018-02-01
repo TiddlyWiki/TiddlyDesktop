@@ -98,7 +98,9 @@ WikiFileWindow.prototype.onloadiframe = function() {
 	var faviconLink = this.iframe.contentDocument.getElementById("faviconLink");
 	this.favIconObserver = new MutationObserver(this.extractIframeFavicon.bind(this));
 	this.extractIframeFavicon();
-	this.favIconObserver.observe(faviconLink,{attributes: true, childList: true, characterData: true});
+	if(faviconLink) {
+		this.favIconObserver.observe(faviconLink,{attributes: true, childList: true, characterData: true});		
+	}
 };
 
 // Reopen this window
