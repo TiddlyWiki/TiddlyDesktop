@@ -25,8 +25,8 @@ exports.enableSaving = function(doc,areBackupsEnabledFn) {
 			filepath = message.getAttribute("data-tiddlyfox-path"),
 			content = message.getAttribute("data-tiddlyfox-content");
 		// Convert filepath from UTF8 binary to a real string
-		if(process.platform !== "win32") {
-			filepath = (new Buffer(filepath,"binary")).toString();			
+		if(process.platform !== "win32" || isClassic) {
+			filepath = (new Buffer(filepath,"binary")).toString("utf8");			
 		}
 		// Backup the existing file (if any)
 		if(areBackupsEnabledFn() && !isClassic) {
