@@ -13,10 +13,8 @@ exports.trapLinks = function(doc) {
 		// Check that we're not in an internal link
 		// "tc-tiddlylink" is for TW5, "tiddlyLink" for TWC
 		var link = $tw.desktop.utils.dom.findParentWithTag(event.target,"a");
-		if(link && !$tw.desktop.utils.dom.hasClass(link,"tc-tiddlylink tw-tiddlylink tiddlyLink")) {
-			if(link.href.slice(0,11) !== "javascript:") {
-				$tw.desktop.gui.Shell.openExternal(link.href);
-			}
+		if(link && link.href.slice(0,11) !== "javascript:" && link.href.slice(0,5) !== "blob:" && link.href.split("#")[0] !== window.location.href.split("#")[0]) {
+			$tw.desktop.gui.Shell.openExternal(link.href);
 			event.preventDefault();
 			event.stopPropagation();
 			return false;
