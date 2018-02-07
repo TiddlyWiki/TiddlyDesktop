@@ -39,7 +39,7 @@ mkdir -p output/linux64/TiddlyDesktop-linux64-v0.0.13
 
 # OS X 64-bit App
 
-cp -R nwjs/nwjs-sdk-v0.28.0-osx-x64/nwjs.app output/mac64/TiddlyDesktop-mac64-v0.0.13/TiddlyDesktop.app
+cp -R nwjs/nwjs-sdk-v0.28.1-osx-x64/nwjs.app output/mac64/TiddlyDesktop-mac64-v0.0.13/TiddlyDesktop.app
 cp -R source output/mac64/TiddlyDesktop-mac64-v0.0.13/TiddlyDesktop.app/Contents/Resources/app.nw
 cp icons/app.icns output/mac64/TiddlyDesktop-mac64-v0.0.13/TiddlyDesktop.app/Contents/Resources/nw.icns
 cp Info.plist output/mac64/TiddlyDesktop-mac64-v0.0.13/TiddlyDesktop.app/Contents/Info.plist
@@ -50,17 +50,17 @@ do
 done
 
 # Windows 64-bit App
-cp -R nwjs/nwjs-sdk-v0.28.0-win-x64/* output/win64/TiddlyDesktop-win64-v0.0.13
+cp -R nwjs/nwjs-sdk-v0.28.1-win-x64/* output/win64/TiddlyDesktop-win64-v0.0.13
 cp -R source/* output/win64/TiddlyDesktop-win64-v0.0.13
 
 # # Windows 32-bit App
-cp -R nwjs/nwjs-sdk-v0.28.0-win-ia32/* output/win32/TiddlyDesktop-win32-v0.0.13
+cp -R nwjs/nwjs-sdk-v0.28.1-win-ia32/* output/win32/TiddlyDesktop-win32-v0.0.13
 cp -R source/* output/win32/TiddlyDesktop-win32-v0.0.13
 
 # # Linux 64-bit App
-cp -R nwjs/nwjs-sdk-v0.28.0-linux-x64/* output/linux64/TiddlyDesktop-linux64-v0.0.13
+cp -R nwjs/nwjs-sdk-v0.28.1-linux-x64/* output/linux64/TiddlyDesktop-linux64-v0.0.13
 cp -R source/* output/linux64/TiddlyDesktop-linux64-v0.0.13
 
 # # Linux 32-bit App
-cp -R nwjs/nwjs-sdk-v0.28.0-linux-ia32/* output/linux32/TiddlyDesktop-linux32-v0.0.13
+cp -R nwjs/nwjs-sdk-v0.28.1-linux-ia32/* output/linux32/TiddlyDesktop-linux32-v0.0.13
 cp -R source/* output/linux32/TiddlyDesktop-linux32-v0.0.13
