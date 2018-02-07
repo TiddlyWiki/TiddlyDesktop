@@ -7,12 +7,12 @@ Utilities concerned with nwjs menu bars
 /*jslint browser: true */
 "use strict";
 
-exports.createMenuBar = function() {
-	var menuBar = new $tw.desktop.gui.Menu({type:"menubar"});
-	if(process.platform === "darwin") {
+exports.createMenuBar = function(win) {
+	if(process.platform === "darwin") {	
+		var menuBar = new $tw.desktop.gui.Menu({type:"menubar"});
 		menuBar.createMacBuiltin("TiddlyDesktop");
+		win.menu = menuBar;
 	}
-	return menuBar;
 };
 
 })();

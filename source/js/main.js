@@ -95,7 +95,7 @@ window.$tw = $tw;
 
 var backstageWikiFolder = $tw.desktop.utils.wiki.getBackstageWikiFolder(gui.App.dataPath);
 
-backstageWindow.menu = $tw.desktop.utils.menu.createMenuBar();
+$tw.desktop.utils.menu.createMenuBar(backstageWindow);
 
 // Show dev tools on F12
 $tw.desktop.utils.devtools.trapDevTools(backstageWindow,document);

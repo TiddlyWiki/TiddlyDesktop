@@ -64,7 +64,7 @@ WikiFileWindow.prototype.onloaded = function(event) {
 	// Show dev tools on F12
 	$tw.desktop.utils.devtools.trapDevTools(this.window_nwjs,this.window_nwjs.window.document);
 	// Add menu
-	this.window_nwjs.menu = $tw.desktop.utils.menu.createMenuBar();
+	$tw.desktop.utils.menu.createMenuBar(this.window_nwjs);
 	// Load the iframe
 	this.iframe = this.window_nwjs.window.document.getElementById("tid-main-wiki-file-viewer");
 	this.iframe.src = "file://" + this.pathname;

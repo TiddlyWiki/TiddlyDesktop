@@ -33,7 +33,7 @@ containerWindow.on("close",function(isQuitting) {
 	containerWindow.close(true);
 });
 
-containerWindow.menu = $tw.desktop.utils.menu.createMenuBar();
+$tw.desktop.utils.menu.createMenuBar(containerWindow);
 
 // Show dev tools on F12
 $tw.desktop.utils.devtools.trapDevTools(containerWindow,document);
