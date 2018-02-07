@@ -4,28 +4,23 @@ tags: $:/tags/Stylesheet
 \rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
 
 .td-wikilist {
-	padding: 0;
-	background: #fff;
+	padding: 1em;
+	background: #e5e5e5;
 	width: 100%;
 	margin: 0;
 }
 
 .td-wikilist .td-wikilist-item {
-	border-top: 1px solid #f4f4f4;
-	border-bottom: 1px solid #d4d4d4;
-	transition: background-color 300ms ease-in-out;	
-}
-
-.td-wikilist .td-wikilist-item:nth-child(odd) {
-	background-color: #e5e5e5;
-}
-
-.td-wikilist .td-wikilist-item:nth-child(even) {
-	background-color: #ededed;
+	border: none;
+	border-left: 5px solid transparent;
+	transition: background-color 300ms ease-in-out;
+	margin: 0 0 1em 0;
+    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+    background: #fff;
 }
 
 .td-wikilist .td-wikilist-item:hover {
-	background: #fff;
+	border-left: 5px solid #000;
 }
 
 .td-wikilist .td-wikilist-item .td-wikilist-thumbnail {
