@@ -7,7 +7,8 @@ Class for wiki file windows
 /*jslint browser: true */
 "use strict";
 
-var windowBase = require("../js/window-base.js");
+var windowBase = require("../js/window-base.js"),
+	fs = require("fs");
 
 // Constructor
 function WikiFileWindow(options) {
@@ -84,9 +85,12 @@ WikiFileWindow.prototype.onloadiframe = function() {
 	var MutationObserver = this.window_nwjs.window.MutationObserver;
 	// Enable saving
 	var areBackupsEnabledFn = function() {
-		return $tw.wiki.getTiddlerText(self.getConfigTitle("disable-backups"),"no") !== "yes";
-	};
-	$tw.desktop.utils.saving.enableSaving(this.iframe.contentDocument,areBackupsEnabledFn);
+			return $tw.wiki.getTiddlerText(self.getConfigTitle("disable-backups"),"no") !== "yes";
+		},
+		loadFileTextFn = function() {
+			return 	fs.readFileSync(self.pathname,"utf8");
+		};
+	$tw.desktop.utils.saving.enableSaving(this.iframe.contentDocument,areBackupsEnabledFn,loadFileTextFn);
 	// Trap links
 	$tw.desktop.utils.links.trapLinks(this.iframe.contentDocument);
 	// Observe mutations of the title element of the iframe
