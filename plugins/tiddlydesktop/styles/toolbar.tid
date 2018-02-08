@@ -12,6 +12,17 @@ tags: $:/tags/Stylesheet
 	background-color: #d3d3d3;
 	font-size: 0.9em;
 	padding: 1em;
+    position: fixed;
+    left: 0;
+    right: 0;
+    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.3);
+}
+
+.tc-hidden-wikilist-toolbar .td-toolbar {
+    position: static;
+    width: 100%;
+    visibility: hidden;
+    box-shadow: none;
 }
 
 .td-toolbar-item {
@@ -29,7 +40,6 @@ tags: $:/tags/Stylesheet
     overflow: hidden;
     display: inline-block;
     vertical-align: middle;
-    transition: -webkit-transform 300ms ease-in-out;
 }
 
 .td-file-input-wrapper input[type="file"] {
@@ -46,11 +56,4 @@ tags: $:/tags/Stylesheet
     background: none repeat scroll 0% 0% #FFF;
     cursor: pointer;
     display: inline-block;
-}
-
-.td-file-input-wrapper:hover {
-    -webkit-transform: scale(1.2,1.2);
-}
-
-.td-file-input-wrapper:hover button {
 }

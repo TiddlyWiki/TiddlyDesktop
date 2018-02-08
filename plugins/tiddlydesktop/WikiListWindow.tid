@@ -7,6 +7,12 @@ page-title: TiddlyDesktop -- Main
 
 <$transclude tiddler="WikiListToolbar" mode="inline"/>
 
+<div class="tc-hidden-wikilist-toolbar">
+
+<$transclude tiddler="WikiListToolbar" mode="inline"/>
+
+</div>
+
 <$transclude tiddler="WikiList" mode="inline"/>
 
 </$droplink>

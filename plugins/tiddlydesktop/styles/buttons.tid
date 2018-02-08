@@ -10,13 +10,4 @@ button.td-button {
 	padding: 3px 7px;
     color: #000;
     fill: #000;
-	transition: -webkit-transform 300ms ease-in-out;
-}
-
-button.td-button:hover {
-	-webkit-transform: scale(1.2,1.2);
-}
-
-button.td-button:active {
-	-webkit-transform: scale(0.9,0.9);
 }
