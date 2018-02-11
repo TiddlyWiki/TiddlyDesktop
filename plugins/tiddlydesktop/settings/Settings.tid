@@ -37,4 +37,13 @@ This is the folder in which ~TiddlyDesktop stores internal configuration. Notabl
 Open user config folder
 </$button>
 
+!! Flags
+
+[TBD - link to Chromium flag docs]
+
+<$button>
+<$action-sendmessage $message="tiddlydesktop-flags"/>
+Open Chromium flags
+</$button>
+
 </div>
