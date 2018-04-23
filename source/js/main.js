@@ -126,7 +126,7 @@ require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 $tw.boot.boot(function() {
   var dest;
   if (gui.App.argv.length !== 0){
-    if($tw.utils.isDirectory(gui.App.argv)){
+    if($tw.utils.isDirectory(gui.App.argv[0])){
       dest = "wikifolder://" + gui.App.argv[0];
     } else {
       dest = "wikifile://" + gui.App.argv[0];
