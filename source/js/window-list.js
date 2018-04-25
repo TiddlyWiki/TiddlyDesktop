@@ -52,7 +52,7 @@ WindowList.prototype.decodeUrl = function(url) {
 	} else if(url.indexOf("https://") === 0) {
 		result.info.url = url;
 		result.info.protocol = "https"
-    }
+	}
 	return result;
 };
 
