@@ -8,7 +8,7 @@ Saving support for TiddlyWiki5 and TiddlyWiki Classic
 "use strict";
 
 // Helper to enable TiddlyFox-style saving for a window
-exports.enableSaving = function(doc) {
+exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn) {
 	// Create the message box
 	var messageBox = doc.createElement("div");
 	messageBox.id = "tiddlyfox-message-box";
@@ -16,7 +16,7 @@ exports.enableSaving = function(doc) {
 	// Inject saving code into TiddlyWiki classic
 	var isClassic = isTiddlyWikiClassic(doc);
 	if(isClassic) {
-		injectClassicOverrides(doc);
+		injectClassicOverrides(doc,loadFileTextFn);
 	}
 	// Listen for save events
 	messageBox.addEventListener("tiddlyfox-save-file",function(event) {
@@ -25,9 +25,11 @@ exports.enableSaving = function(doc) {
 			filepath = message.getAttribute("data-tiddlyfox-path"),
 			content = message.getAttribute("data-tiddlyfox-content");
 		// Convert filepath from UTF8 binary to a real string
-		filepath = (new Buffer(filepath,"binary")).toString();
+		if(process.platform !== "win32" || isClassic) {
+			filepath = (new Buffer(filepath,"binary")).toString("utf8");			
+		}
 		// Backup the existing file (if any)
-		if(!isClassic) {
+		if(areBackupsEnabledFn() && !isClassic) {
 			backupFile(filepath);
 		}
 		// Save the file
@@ -51,17 +53,67 @@ function isTiddlyWikiClassic(doc) {
 }
 
 // Helper to inject overrides into TiddlyWiki Classic
-function injectClassicOverrides(doc) {
+function injectClassicOverrides(doc,loadFileTextFn) {
 	// Read classic-inject.js
 	var fs = require("fs"),
 		path = require("path"),
 		text = fs.readFileSync(path.resolve(path.dirname(module.filename),"classic-inject.js"));
+	// Add the source text of the file so that the injected loadFile function can access it
+	text += "\n\nwindow.tiddlywikiSourceText=\"" + stringify(loadFileTextFn()) + "\";"
 	// Inject it in a script tag
 	var script = doc.createElement("script");
 	script.appendChild(doc.createTextNode(text));
 	doc.getElementsByTagName("head")[0].appendChild(script);
 }
 
+/*
+Pad a string to a given length with "0"s. Length defaults to 2
+*/
+function pad(value,length) {
+	length = length || 2;
+	var s = value.toString();
+	if(s.length < length) {
+		s = "000000000000000000000000000".substr(0,length - s.length) + s;
+	}
+	return s;
+};
+
+/*
+ * Returns an escape sequence for given character. Uses \x for characters <=
+ * 0xFF to save space, \u for the rest.
+ *
+ * The code needs to be in sync with th code template in the compilation
+ * function for "action" nodes.
+ */
+// Copied from peg.js, thanks to David Majda
+function escape(ch) {
+	var charCode = ch.charCodeAt(0);
+	if(charCode <= 0xFF) {
+		return '\\x' + pad(charCode.toString(16).toUpperCase());
+	} else {
+		return '\\u' + pad(charCode.toString(16).toUpperCase(),4);
+	}
+};
+
+// Turns a string into a legal JavaScript string
+// Copied from peg.js, thanks to David Majda
+function stringify(s) {
+	/*
+	* ECMA-262, 5th ed., 7.8.4: All characters may appear literally in a string
+	* literal except for the closing quote character, backslash, carriage return,
+	* line separator, paragraph separator, and line feed. Any character may
+	* appear in the form of an escape sequence.
+	*
+	* For portability, we also escape all non-ASCII characters.
+	*/
+	return (s || "")
+		.replace(/\\/g, '\\\\')            // backslash
+		.replace(/"/g, '\\"')              // double quote character
+		.replace(/'/g, "\\'")              // single quote character
+		.replace(/\r/g, '\\r')             // carriage return
+		.replace(/\n/g, '\\n')             // line feed
+		.replace(/[\x00-\x1f\x80-\uFFFF]/g, escape); // non-ASCII characters
+};
 
 // Helper function to save a file
 function saveFile(filepath,content) {

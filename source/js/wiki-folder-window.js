@@ -11,6 +11,7 @@ var windowBase = require("../js/window-base.js");
 
 // Constructor
 function WikiFolderWindow(options) {
+	var self = this;
 	options = options || {};
 	// Save the options
 	this.windowList = options.windowList;
@@ -23,15 +24,16 @@ function WikiFolderWindow(options) {
 	var host = $tw.wiki.getTiddlerText(this.getConfigTitle("host"),""),
 		port = $tw.wiki.getTiddlerText(this.getConfigTitle("port"),"");
 	// Open the window
-	this.window_nwjs = $tw.desktop.gui.Window.open("app://foobar/html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname) + "&host=" + encodeURIComponent(host) + "&port=" + encodeURIComponent(port),{
-		toolbar: false,
+	$tw.desktop.gui.Window.open("html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname) + "&host=" + encodeURIComponent(host) + "&port=" + encodeURIComponent(port),{
+		id: this.getIdentifier(),
 		show: true,
-		"new-instance": true,
-		nodejs: true,
+		new_instance: true,
 		icon: "images/app_icon.png"
+	},function(win) {
+		self.window_nwjs = win;
+		self.window_nwjs.once("loaded",self.onloaded.bind(self));
+		self.window_nwjs.on("close",self.onclose.bind(self));		
 	});
-	this.window_nwjs.once("loaded",this.onloaded.bind(this));
-	this.window_nwjs.on("close",this.onclose.bind(this));
 }
 
 // Static method for getting the identifier for the specified info

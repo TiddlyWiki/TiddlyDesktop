@@ -131,12 +131,12 @@ WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
 			this.windows.splice(t,1);
 		}
 	}
-	// Quit if required
-	if(w.mustQuitOnClose) {
-		$tw.desktop.gui.App.quit();
-	}
 	// Close the window
 	w.window_nwjs.close(true);
+	// Close the backstage window if there are no windows left
+	if(this.windows.length === 0) {
+		this.backstageWindow_nwjs.close(true);
+	}
 };
 
 WindowList.prototype.revealByUrl = function(url) {

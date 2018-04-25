@@ -10,22 +10,25 @@ Utilities concerned with handling TiddlyDesktop links
 // Helper to trap wikilinks within a window
 exports.trapLinks = function(doc) {
 	doc.addEventListener("click",function(event) {
-		// See if we're in an interwiki link
-		var interwikiLink = $tw.desktop.utils.dom.findParentWithClass(event.target,"tc-interwiki-link") || $tw.desktop.utils.dom.findParentWithClass(event.target,"tw-interwiki-link");
-		if(interwikiLink) {
-			$tw.desktop.openWiki(interwikiLink.href);
-			event.preventDefault();
-			event.stopPropagation();
-			return false;
-		}
-		// See if we're in an external link
-		// "tw-tiddlylink-external" is for TW5, "externallink" for TWC
-		var externalLink = $tw.desktop.utils.dom.findParentWithClass(event.target,"tc-tiddlylink-external tw-tiddlylink-external externalLink");
-		if(externalLink) {
-			$tw.desktop.gui.Shell.openExternal(externalLink.href);
-			event.preventDefault();
-			event.stopPropagation();
-			return false;
+		// Check that we're not in an internal link
+		// "tc-tiddlylink" is for TW5, "tiddlyLink" for TWC
+		var link = $tw.desktop.utils.dom.findParentWithTag(event.target,"a");
+		if(link) {
+			var href;
+			if(link.namespaceURI === "http://www.w3.org/2000/svg") {
+				// SVG
+				href = link.href.baseVal.split("#");
+				href = (href[0] || doc.location.href.split("#")[0]) + "#" + href[1];
+			} else {
+				// HTML
+				href = link.href;
+			}
+			if(href && href.slice(0,11) !== "javascript:" && href.slice(0,5) !== "blob:" && href.split("#")[0] !== doc.location.href.split("#")[0]) {
+				$tw.desktop.gui.Shell.openExternal(href);
+				event.preventDefault();
+				event.stopPropagation();
+				return false;
+			}
 		}
 		return true;
 	},false);

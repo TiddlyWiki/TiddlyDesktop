@@ -7,10 +7,12 @@ Class for wiki file windows
 /*jslint browser: true */
 "use strict";
 
-var windowBase = require("../js/window-base.js");
+var windowBase = require("../js/window-base.js"),
+	fs = require("fs");
 
 // Constructor
 function WikiFileWindow(options) {
+	var self = this;
 	options = options || {};
 	// Save the options
 	this.windowList = options.windowList;
@@ -18,14 +20,15 @@ function WikiFileWindow(options) {
 	this.pathname = options.info.pathname;
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Open the window
-	this.window_nwjs = $tw.desktop.gui.Window.open("app://foobar/html/wiki-file-window.html",{
-		toolbar: false,
+	$tw.desktop.gui.Window.open("html/wiki-file-window.html",{
+		id: this.getIdentifier(),
 		show: false,
-		nodejs: true,
 		icon: "images/app_icon.png"
+	},function(win) {
+		self.window_nwjs = win;
+		self.window_nwjs.once("loaded",self.onloaded.bind(self));
+		self.window_nwjs.on("close",self.onclose.bind(self));
 	});
-	this.window_nwjs.once("loaded",this.onloaded.bind(this));
-	this.window_nwjs.on("close",this.onclose.bind(this));
 }
 
 // Static method for getting the identifier for the specified info
@@ -58,20 +61,16 @@ WikiFileWindow.prototype.getIdentifier = function() {
 // Load handler for window
 WikiFileWindow.prototype.onloaded = function(event) {
 	this.window_nwjs.window.$tw = $tw;
-	// Show dev tools
-// this.window_nwjs.showDevTools();
 	// Show dev tools on F12
 	$tw.desktop.utils.devtools.trapDevTools(this.window_nwjs,this.window_nwjs.window.document);
 	// Add menu
-	this.window_nwjs.menu = $tw.desktop.utils.menu.createMenuBar();
+	$tw.desktop.utils.menu.createMenuBar(this.window_nwjs);
 	// Load the iframe
 	this.iframe = this.window_nwjs.window.document.getElementById("tid-main-wiki-file-viewer");
 	this.iframe.src = "file://" + this.pathname;
 	this.iframe.onload = this.onloadiframe.bind(this);
-	// Track changes to the window state
-	this.trackWindowLayout();
-	// Restore the window layout
-	this.restoreWindowLayout(this.getWindowConfigData("layout"));
+	// Show dev tools
+	// this.window_nwjs.showDevTools(this.iframe);
 	// Save the wiki list tiddler
 	this.saveWikiListTiddler();
 	// Show the window
@@ -81,10 +80,17 @@ WikiFileWindow.prototype.onloaded = function(event) {
 
 // Load handler for iframe
 WikiFileWindow.prototype.onloadiframe = function() {
+	var self = this;
 	// Get the mutation observer prototype for the window
 	var MutationObserver = this.window_nwjs.window.MutationObserver;
 	// Enable saving
-	$tw.desktop.utils.saving.enableSaving(this.iframe.contentDocument);
+	var areBackupsEnabledFn = function() {
+			return $tw.wiki.getTiddlerText(self.getConfigTitle("disable-backups"),"no") !== "yes";
+		},
+		loadFileTextFn = function() {
+			return 	fs.readFileSync(self.pathname,"utf8");
+		};
+	$tw.desktop.utils.saving.enableSaving(this.iframe.contentDocument,areBackupsEnabledFn,loadFileTextFn);
 	// Trap links
 	$tw.desktop.utils.links.trapLinks(this.iframe.contentDocument);
 	// Observe mutations of the title element of the iframe
@@ -96,7 +102,9 @@ WikiFileWindow.prototype.onloadiframe = function() {
 	var faviconLink = this.iframe.contentDocument.getElementById("faviconLink");
 	this.favIconObserver = new MutationObserver(this.extractIframeFavicon.bind(this));
 	this.extractIframeFavicon();
-	this.favIconObserver.observe(faviconLink,{attributes: true, childList: true, characterData: true});
+	if(faviconLink) {
+		this.favIconObserver.observe(faviconLink,{attributes: true, childList: true, characterData: true});		
+	}
 };
 
 // Reopen this window
