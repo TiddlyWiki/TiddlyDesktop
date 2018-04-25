@@ -21,6 +21,8 @@ Version {{$:/TiddlyDesktop/version}}
 Add Template
 <$action-setfield $tiddler={{$:/temp/newtemplate/title}} source={{$:/temp/newtemplate/source}} />
 </$button>
+''Note'': When adding a file or folder, prefix the path with wikifile:// or wikifolder:// respectively.  
+
 
 !!! Delete an existing template
 <$list filter="[all[tiddlers+shadows]has[source]]">
