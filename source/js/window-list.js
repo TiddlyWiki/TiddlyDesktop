@@ -48,7 +48,11 @@ WindowList.prototype.decodeUrl = function(url) {
 		result.info.tiddler = url.substr(12);
 	} else if(url.indexOf("http://") === 0) {
 		result.info.url = url;
-	}
+		result.info.protocol = "http"
+	} else if(url.indexOf("https://") === 0) {
+		result.info.url = url;
+		result.info.protocol = "https"
+    }
 	return result;
 };
 

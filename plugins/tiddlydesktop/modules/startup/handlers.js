@@ -57,16 +57,28 @@ exports.startup = function() {
 		var dest = event.files[0].path;
 		if(src.info.hasOwnProperty('url')) {
 			var file = fs.createWriteStream(dest);
-			var request = http.get(src.info.url, function (response) {
+			var protocol;
+			if(src.info.protocol === "http") {
+				protocol = http;
+			} else if (src.info.protocol === "https") {
+				protocol = https;
+			}
+			protocol.get(src.info.url, function (response) {
 				var stream = response.pipe(file);
 				stream.on('finish', function() {
 					$tw.desktop.windowList.openByUrl("file://"+dest);
 				});
+				stream.on('error', function(err) {
+				    console.log("Error: " + err);
+			    });
 			});
-		} else {
+		} else if(src.info.hasOwnProperty('pathname') {
 			fs.writeFileSync(dest,fs.readFileSync(src.info.pathname));
 			$tw.desktop.windowList.openByUrl("file://"+dest);
+		} else {
+		    console.log("Uncertain how to clone this: " + src)
 		}
+		
 	});
 };
 
