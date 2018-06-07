@@ -12,6 +12,15 @@ https://github.com/nwjs/nw.js
 
 # Download and Install
 
+## Dependencies
+
+### Linux
+
+**libgconf** (installed by default on GNOME-based systems)
+- Ubuntu: apt install libgconf-2-4
+- Arch Linux: pacman -S gconf
+- Fedora: yum install gconf2
+
 Download the Windows, linux or Mac binary .zip files from:
 
 https://github.com/Jermolene/TiddlyDesktop/releases
