@@ -12,3 +12,9 @@ curl -o 'nwjs/nwjs-sdk-v0.32.4-linux-x64.tar.gz' 'https://dl.nwjs.io/v0.32.4/nwj
 curl -o 'nwjs/nwjs-sdk-v0.32.4-linux-ia32.tar.gz' 'https://dl.nwjs.io/v0.32.4/nwjs-sdk-v0.32.4-linux-ia32.tar.gz'
 curl -o 'nwjs/nwjs-sdk-v0.32.4-osx-x64.zip' 'https://dl.nwjs.io/v0.32.4/nwjs-sdk-v0.32.4-osx-x64.zip'
 
+pushd nwjs
+
+ls *.gz | xargs -n 1 tar -xvzf
+ls *.zip | xargs -n 1 unzip
+
+popd
