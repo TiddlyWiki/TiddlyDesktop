@@ -64,8 +64,9 @@ trayMenu.append(new gui.MenuItem({
 }));
 trayMenu.append(new gui.MenuItem({
 	label: "Quit",
-	// Undocumented nw.js feature for invoking system actions:
-    selector: "closeAllWindowsQuit:"
+    click: function() {
+        gui.App.quit();
+    }
 }));
 tray.menu = trayMenu;
 
