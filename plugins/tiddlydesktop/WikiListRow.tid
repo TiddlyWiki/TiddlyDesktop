@@ -69,6 +69,15 @@ Host: <$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/host/$(currentT
 <div>
 Port: <$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/port/$(currentTiddler)$""" default=""/>
 </div>
+<div>
+Credentials: <$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/credentials/$(currentTiddler)$""" default="users.csv"/>
+</div>
+<div>
+Readers: <$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/readers/$(currentTiddler)$""" default="(anon)"/>
+</div>
+<div>
+Writers: <$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/writers/$(currentTiddler)$""" default="(authenticated)"/>
+</div>
 </div>
 </$list>
 </div>

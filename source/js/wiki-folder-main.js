@@ -50,7 +50,7 @@ $tw.boot = $tw.boot || {};
 $tw.boot.argv = [queryObject.pathname];
 
 if(queryObject.host && queryObject.port) {
-	$tw.boot.argv.push("--server",queryObject.port,"$:/core/save/all","text/plain","text/html","","",queryObject.host);
+	$tw.boot.argv.push("--listen","host="+queryObject.host,"port="+queryObject.port,"credentials="+queryObject.credentials,"readers="+queryObject.readers,"writers="+queryObject.writers);
 }
 
 console.log("Running tiddlywiki " + $tw.boot.argv.join(" "));
@@ -58,4 +58,5 @@ console.log("Running tiddlywiki " + $tw.boot.argv.join(" "));
 // Main part of boot process
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 
+$tw.wiki.addTiddler({title: "$:/status/IsReadOnly",text: "no"});
 })();
