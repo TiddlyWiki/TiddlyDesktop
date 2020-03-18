@@ -9,7 +9,7 @@ tags: $:/tags/Stylesheet
     -ms-user-select: none;
 	color: #888;
     fill: #888;
-	background-color: #d3d3d3;
+	background-color: <<colour wikilist-toolbar-background>>;
 	font-size: 0.9em;
 	padding: 1em;
     position: fixed;
