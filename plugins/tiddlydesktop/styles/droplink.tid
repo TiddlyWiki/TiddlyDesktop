@@ -22,7 +22,7 @@ tags: $:/tags/Stylesheet
 	left: 0;
 	right: 0;
 	bottom: 0;
-	background: rgba(255,192,192,0.5);
+	background: <<colour wikilist-droplink-dragover>>;
 	background-image: radial-gradient(circle closest-side at 50% 50% , #fff 0%, rgba(0,0,0, 0) 100%);
 	text-align: center;
 	content: "Drop here to add TiddlyWiki HTML file";
