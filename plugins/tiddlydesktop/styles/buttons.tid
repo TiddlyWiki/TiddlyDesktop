@@ -4,10 +4,10 @@ tags: $:/tags/Stylesheet
 \rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
 
 button.td-button {
-	background: #acacac;
+	background: <<colour wikilist-button-background>>;
 	border-radius: 3px;
 	border: none;
 	padding: 3px 7px;
-    color: #000;
-    fill: #000;
+    color: <<colour wikilist-button-foreground>>;
+    fill: <<colour wikilist-button-foreground>>;
 }
