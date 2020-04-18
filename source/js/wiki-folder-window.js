@@ -20,11 +20,15 @@ function WikiFolderWindow(options) {
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Save the wiki list tiddler
 	this.saveWikiListTiddler();
-	// Get the host and port
+	// Get the host, port and credentials
 	var host = $tw.wiki.getTiddlerText(this.getConfigTitle("host"),""),
-		port = $tw.wiki.getTiddlerText(this.getConfigTitle("port"),"");
+		port = $tw.wiki.getTiddlerText(this.getConfigTitle("port"),""),
+		credentials = $tw.wiki.getTiddlerText(this.getConfigTitle("credentials"),"users.csv"),
+		readers = $tw.wiki.getTiddlerText(this.getConfigTitle("readers"),"(anon)"),
+		writers = $tw.wiki.getTiddlerText(this.getConfigTitle("writers"),"(authenticated)");
 	// Open the window
-	$tw.desktop.gui.Window.open("html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname) + "&host=" + encodeURIComponent(host) + "&port=" + encodeURIComponent(port),{
+	$tw.desktop.gui.Window.open("html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname) + "&host=" + encodeURIComponent(host) + "&port=" + encodeURIComponent(port)
+			+ "&credentials=" + encodeURIComponent(credentials) + "&readers=" + encodeURIComponent(readers) + "&writers=" + encodeURIComponent(writers),{
 		id: this.getIdentifier(),
 		show: true,
 		new_instance: true,
