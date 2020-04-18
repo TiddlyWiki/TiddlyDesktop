@@ -21,6 +21,10 @@ function showBackstageWindow() {
 	backstageWindow.show();
 }
 
+backstageWindow.on("close",function(event) {
+	backstageWindow.hide();
+});
+
 // Create the tray icon
 var tray = new gui.Tray({
 	title: "",
