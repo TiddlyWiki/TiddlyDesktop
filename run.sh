@@ -5,11 +5,10 @@
 
 pushd ../TiddlyWiki5
 
-../build.jermolene.github.io/quick-bld.sh
+./bin/quick-bld.sh || exit 1
 
 popd
 
-./bld.sh
+./bld.sh || exit 1
 
-./output/mac64/TiddlyDesktop-mac64-v0.0.13/TiddlyWiki.app/Contents/MacOS/nwjs
-
+./output/mac64/TiddlyDesktop-mac64-v0.0.14/TiddlyDesktop.app/Contents/MacOS/nwjs || exit 1
