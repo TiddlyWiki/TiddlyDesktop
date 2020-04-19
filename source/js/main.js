@@ -128,9 +128,17 @@ var wikilistWindow;
 $tw.boot.suppressBoot = true;
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 $tw.boot.boot(function() {
-	wikilistWindow = $tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});
+  var dest;
+  if (gui.App.argv.length !== 0){
+    if($tw.utils.isDirectory(gui.App.argv[0])){
+      dest = "wikifolder://" + gui.App.argv[0];
+    } else {
+      dest = "wikifile://" + gui.App.argv[0];
+    }
+  } else {
+    dest = "backstage://WikiListWindow";
+  }
+  wikilistWindow = $tw.desktop.windowList.openByUrl(dest,{mustQuitOnClose: true});
 });
-
-
 
 })();
