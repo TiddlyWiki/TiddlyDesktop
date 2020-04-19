@@ -141,6 +141,7 @@ var defaultCommand = "open",
 $tw.boot.suppressBoot = true;
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 $tw.boot.boot(function() {
+	// Process command line
 	var tokens = gui.App.argv.slice(0),
 		command, commandFn,
 		args;
@@ -159,8 +160,13 @@ $tw.boot.boot(function() {
 			console.err("Unknown command: --" + command);
 		} else {
 			commandFn(args);
-		}		
+		}
 	}
+	// Register for file open events
+	gui.App.on("open",function(p) {
+		$tw.desktop.windowList.openByPathname(p);
+	});
+	// Open wiki list window if we haven't opened any other windows
 	if(!commandFlags.haveOpenedWindow) {
 		$tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});		
 	}
