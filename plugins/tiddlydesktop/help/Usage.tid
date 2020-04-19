@@ -66,3 +66,43 @@ For example:
 http://127.0.0.1:8080/
 ```
 
+! Command Line Options
+
+Command line options can be specified by starting TiddlyDesktop from a terminal window, the details of which are different on different operating systems. On Windows:
+
+```
+./nw.exe <options>
+```
+
+On Linux:
+
+```
+./nw <options>
+```
+
+On macOS:
+
+```
+./TiddlyDesktop.app/Contents/MacOS/nwjs <options>
+```
+
+Command line options can also be specified by creating a Finder/Explorer shortcut to TiddlyDesktop and specifying the command line options within the shortcut properties.
+
+The options consist of a sequence of commands marked with `--`, each optionally followed by a list of parameters. For example: `--open ./mywiki/index.html`.
+
+If no command is specified then the default command `open` is assumed instead, so `./mywiki/index.html` is interpreted as `--open ./mywiki/index.html`.
+
+!! Commands
+
+!!! ''open'' command
+
+The ''open'' command opens one or more wiki files/folders specified by its parameters. For example:
+
+```
+--open first.html second.html
+```
+
+!!! ''debug'' command
+
+Opens the backstage wiki developer tools at startup.
+

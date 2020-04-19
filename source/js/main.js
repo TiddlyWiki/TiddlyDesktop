@@ -15,7 +15,6 @@ var WindowList = require("../js/window-list.js").WindowList;
 
 // Use the main window as the backstage window
 var backstageWindow = gui.Window.get();
-// backstageWindow.showDevTools();
 
 function showBackstageWindow() {
 	backstageWindow.show();
@@ -69,7 +68,7 @@ trayMenu.append(new gui.MenuItem({
 trayMenu.append(new gui.MenuItem({
 	label: "Quit",
 	// Undocumented nw.js feature for invoking system actions:
-    selector: "closeAllWindowsQuit:"
+	selector: "closeAllWindowsQuit:"
 }));
 tray.menu = trayMenu;
 
@@ -121,24 +120,50 @@ process.nextTick = function() {
 	},4);
 };
 
-// Main part of boot process
+// Command handlers
 
-var wikilistWindow;
+var defaultCommand = "open",
+	commandFlags = {},
+	commands = {
+		"open": function(args) {
+			args.forEach(function(p) {
+				$tw.desktop.windowList.openByPathname(p);
+				commandFlags.haveOpenedWindow = true;
+			});
+		},
+		"debug": function(args) {
+			backstageWindow.showDevTools();
+		}
+	};
+
+// Main boot process
 
 $tw.boot.suppressBoot = true;
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 $tw.boot.boot(function() {
-  var dest;
-  if (gui.App.argv.length !== 0){
-    if($tw.utils.isDirectory(gui.App.argv[0])){
-      dest = "wikifolder://" + gui.App.argv[0];
-    } else {
-      dest = "wikifile://" + gui.App.argv[0];
-    }
-  } else {
-    dest = "backstage://WikiListWindow";
-  }
-  wikilistWindow = $tw.desktop.windowList.openByUrl(dest,{mustQuitOnClose: true});
+	var tokens = gui.App.argv.slice(0),
+		command, commandFn,
+		args;
+	while(tokens.length > 0) {
+		if(tokens[0].startsWith("--")) {
+			command = tokens.shift().slice(2);
+		} else {
+			command = defaultCommand;
+		}
+		args = [];
+		while(tokens.length > 0 && !tokens[0].startsWith("--")) {
+			args.push(tokens.shift());
+		}
+		commandFn = commands[command];
+		if(!commandFn) {
+			console.err("Unknown command: --" + command);
+		} else {
+			commandFn(args);
+		}		
+	}
+	if(!commandFlags.haveOpenedWindow) {
+		$tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});		
+	}
 });
 
 })();
