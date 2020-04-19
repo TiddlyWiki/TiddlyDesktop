@@ -28,7 +28,7 @@ backstageWindow.on("close",function(event) {
 // Create the tray icon
 var tray = new gui.Tray({
 	title: "",
-	icon: window.devicePixelRatio > 1 ? "images/tray_icon@2x.png" : "images/tray_icon.png",
+	icon: "images/tray_icon_" + (process.platform === "darwin" ? "mono" : "color") + (window.devicePixelRatio > 1 ? "@2x" : "") + ".png",
 	alticon: "",
 	tooltip: "TiddlyDesktop",
 	iconsAreTemplates: true
