@@ -18,9 +18,10 @@ exports.after = ["startup"];
 exports.synchronous = true;
 
 exports.startup = function() {
-	var fs = require("fs"),
-		path = require("path"),
-		http = require("http");
+	var fs    = require("fs"),
+		path  = require("path"),
+		http  = require("http"),
+		https = require("https");
 	$tw.rootWidget.addEventListener("tiddlydesktop-open-backstage-wiki",function(event) {
 		$tw.desktop.backstageWindow.show();
 		return false;
@@ -72,14 +73,12 @@ exports.startup = function() {
 				    console.log("Error: " + err);
 			    });
 			});
-		} else if(src.info.hasOwnProperty('pathname') {
+		} else if(src.info.hasOwnProperty('pathname')) {
 			fs.writeFileSync(dest,fs.readFileSync(src.info.pathname));
 			$tw.desktop.windowList.openByUrl("file://"+dest);
 		} else {
 		    console.log("Uncertain how to clone this: " + src)
 		}
-		
 	});
 };
-
 })();
