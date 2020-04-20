@@ -62,10 +62,10 @@ reveal backups
 </div>
 <div class="td-wiki-toolbar-item">
 <div class="td-file-input-wrapper">
-<$button class="tc-btn-invisible td-wikilist-button td-wikilist-button-open"q>
+<$button class="tc-btn-invisible td-button td-wikilist-button-open">
 clone
 </$button>
-<$browse message="tiddlydesktop-clone-wiki-path" nwsaveas="nwsaveas" param=<<currentTiddler>> />
+<$browse message="tiddlydesktop-clone-wiki-path" nwsaveas="copy.html" param=<<currentTiddler>> />
 </div>
 </div>
 
