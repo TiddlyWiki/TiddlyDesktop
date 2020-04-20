@@ -11,5 +11,5 @@
         "min_height": 500
     },
     "version": "0.0.14",
-    "chromium-args": "--mixed-context"
+    "chromium-args": "--mixed-context --enable-spell-checking --allow-file-access-from-files --allow-file-access --allow-file-cookies"
 }

@@ -5,7 +5,7 @@ tags: $:/tags/Stylesheet
 
 .td-wikilist {
 	padding: 1em;
-	background: #e5e5e5;
+	background: <<colour wikilist-background>>;
 	width: 100%;
 	margin: 0;
 }
@@ -15,11 +15,11 @@ tags: $:/tags/Stylesheet
 	border-left: 5px solid transparent;
 	margin: 0 0 1em 0;
     box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-    background: #fff;
+    background: <<colour wikilist-item>>;
 }
 
 .td-wikilist .td-wikilist-item:hover {
-	border-left: 5px solid #000;
+	border-left: 5px solid <<colour wikilist-item-border-hover>>;
     box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
 }
 
@@ -48,22 +48,22 @@ tags: $:/tags/Stylesheet
 	display: inline-block;
 	vertical-align: top;
 	margin: 12px;
-	color: #000;
+	color: <<colour wikilist-info>>;
 }
 
 .td-wikilist .td-wiki-title {
 	font-weight: bold;
-	color: #666;
+	color: <<colour wikilist-title>>;
 }
 
 .td-wikilist .td-wiki-title svg {
 	width: 1.2em;
 	height: 1.2em;
-	fill: #666;
+	fill: <<colour wikilist-title-svg>>;
 }
 
 .td-wikilist .td-wiki-url {
-	color: #aaa;
+	color: <<colour wikilist-url>>;
 }
 
 .td-wikilist .td-wikilist-item .td-wiki-toolbar {
@@ -80,25 +80,25 @@ tags: $:/tags/Stylesheet
 }
 
 .td-wikilist .td-wikilist-button-open {
-	background-color: #4fb82b;
+	background-color: <<colour wikilist-button-open>>;
 }
 
 .td-wikilist .td-wikilist-button-open:hover {
-	background-color: green;
+	background-color: <<colour wikilist-button-open-hover>>;
 }
 
 .td-wikilist .td-wikilist-button-reveal {
-	background-color: #5778d8;
+	background-color: <<colour wikilist-button-reveal>>;
 }
 
 .td-wikilist .td-wikilist-button-reveal:hover {
-	background-color: blue;
+	background-color: <<colour wikilist-button-reveal-hover>>;
 }
 
 .td-wikilist .td-wikilist-button-remove {
-	background-color: #d85778;
+	background-color: <<colour wikilist-button-remove>>;
 }
 
 .td-wikilist .td-wikilist-button-remove:hover {
-	background-color: red;
+	background-color: <<colour wikilist-button-remove-hover>>;
 }

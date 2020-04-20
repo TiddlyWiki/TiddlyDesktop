@@ -7,9 +7,9 @@ tags: $:/tags/Stylesheet
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
-	color: #888;
-    fill: #888;
-	background-color: #d3d3d3;
+	color: <<colour wikilist-toolbar-foreground>>;
+    fill: <<colour wikilist-toolbar-foreground>>;
+	background-color: <<colour wikilist-toolbar-background>>;
 	font-size: 0.9em;
 	padding: 1em;
     position: fixed;

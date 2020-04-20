@@ -12,7 +12,7 @@ pushd ./output/win64
 zip -r ../tiddlydesktop-win64-v0.0.14.zip *
 popd
 pushd ./output/mac64
-zip -r ../tiddlydesktop-mac64-v0.0.14.zip *
+zip --symlinks -r ../tiddlydesktop-mac64-v0.0.14.zip *
 popd
 pushd ./output/linux32
 zip -r ../tiddlydesktop-linux32-v0.0.14.zip *

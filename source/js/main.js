@@ -15,16 +15,19 @@ var WindowList = require("../js/window-list.js").WindowList;
 
 // Use the main window as the backstage window
 var backstageWindow = gui.Window.get();
-// backstageWindow.showDevTools();
 
 function showBackstageWindow() {
 	backstageWindow.show();
 }
 
+backstageWindow.on("close",function(event) {
+	backstageWindow.hide();
+});
+
 // Create the tray icon
 var tray = new gui.Tray({
 	title: "",
-	icon: window.devicePixelRatio > 1 ? "images/tray_icon@2x.png" : "images/tray_icon.png",
+	icon: "images/tray_icon_" + (process.platform === "darwin" ? "mono" : "color") + (window.devicePixelRatio > 1 ? "@2x" : "") + ".png",
 	alticon: "",
 	tooltip: "TiddlyDesktop",
 	iconsAreTemplates: true
@@ -65,7 +68,7 @@ trayMenu.append(new gui.MenuItem({
 trayMenu.append(new gui.MenuItem({
 	label: "Quit",
 	// Undocumented nw.js feature for invoking system actions:
-    selector: "closeAllWindowsQuit:"
+	selector: "closeAllWindowsQuit:"
 }));
 tray.menu = trayMenu;
 
@@ -117,16 +120,56 @@ process.nextTick = function() {
 	},4);
 };
 
-// Main part of boot process
+// Command handlers
 
-var wikilistWindow;
+var defaultCommand = "open",
+	commandFlags = {},
+	commands = {
+		"open": function(args) {
+			args.forEach(function(p) {
+				$tw.desktop.windowList.openByPathname(p);
+				commandFlags.haveOpenedWindow = true;
+			});
+		},
+		"debug": function(args) {
+			backstageWindow.showDevTools();
+		}
+	};
+
+// Main boot process
 
 $tw.boot.suppressBoot = true;
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 $tw.boot.boot(function() {
-	wikilistWindow = $tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});
+	// Process command line
+	var tokens = gui.App.argv.slice(0),
+		command, commandFn,
+		args;
+	while(tokens.length > 0) {
+		if(tokens[0].startsWith("--")) {
+			command = tokens.shift().slice(2);
+		} else {
+			command = defaultCommand;
+		}
+		args = [];
+		while(tokens.length > 0 && !tokens[0].startsWith("--")) {
+			args.push(tokens.shift());
+		}
+		commandFn = commands[command];
+		if(!commandFn) {
+			console.err("Unknown command: --" + command);
+		} else {
+			commandFn(args);
+		}
+	}
+	// Register for file open events
+	gui.App.on("open",function(p) {
+		$tw.desktop.windowList.openByPathname(p);
+	});
+	// Open wiki list window if we haven't opened any other windows
+	if(!commandFlags.haveOpenedWindow) {
+		$tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});		
+	}
 });
-
-
 
 })();
