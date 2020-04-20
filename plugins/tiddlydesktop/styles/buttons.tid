@@ -1,0 +1,13 @@
+title: $:/TiddlyDesktop/styles/buttons
+tags: $:/tags/Stylesheet
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+button.td-button {
+	background: #acacac;
+	border-radius: 3px;
+	border: none;
+	padding: 3px 7px;
+    color: #000;
+    fill: #000;
+}

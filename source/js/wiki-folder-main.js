@@ -26,14 +26,14 @@ window.$tw = $tw;
 
 // Use the main window as the container window
 var containerWindow = gui.Window.get();
-containerWindow.showDevTools();
+// containerWindow.showDevTools();
 
 // Hide the container window when we start, and when it is closed
 containerWindow.on("close",function(isQuitting) {
 	containerWindow.close(true);
 });
 
-containerWindow.menu = $tw.desktop.utils.menu.createMenuBar();
+$tw.desktop.utils.menu.createMenuBar(containerWindow);
 
 // Show dev tools on F12
 $tw.desktop.utils.devtools.trapDevTools(containerWindow,document);
