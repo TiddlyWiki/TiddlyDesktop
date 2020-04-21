@@ -18,6 +18,7 @@ var backstageWindow = gui.Window.get();
 
 function showBackstageWindow() {
 	backstageWindow.show();
+	$tw.desktop.utils.menu.createMenuBar(backstageWindow);
 }
 
 backstageWindow.on("close",function(event) {
@@ -97,8 +98,6 @@ global.$tw = $tw;
 window.$tw = $tw;
 
 var backstageWikiFolder = $tw.desktop.utils.wiki.getBackstageWikiFolder(gui.App.dataPath);
-
-$tw.desktop.utils.menu.createMenuBar(backstageWindow);
 
 // Show dev tools on F12
 $tw.desktop.utils.devtools.trapDevTools(backstageWindow,document);
