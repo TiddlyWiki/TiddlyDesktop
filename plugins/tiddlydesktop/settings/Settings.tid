@@ -32,6 +32,30 @@ Reset to default
 
 (Note that backups for ~TiddlyWiki Classic wikis are managed within the TWC wiki - see "txtBackupFolder" in ~AdvancedOptions).
 
+!! Templates
+
+<$navigator>
+
+!!! Add a new template:
+''Title'': <$edit-text tag="input" tiddler="$:/temp/newtemplate/title" default=""/><br />
+''Source'': <$edit-text tag="input" tiddler="$:/temp/newtemplate/source" default=""/>
+<$button>
+Add Template
+<$action-setfield $tiddler={{$:/temp/newtemplate/title}} source={{$:/temp/newtemplate/source}} />
+</$button>
+
+''Note'': When adding a file or folder, prefix the path with `wikifile://` or `wikifolder://` respectively.
+
+
+!!! Delete an existing template
+<$list filter="[all[tiddlers+shadows]has[source]]">
+<$button message="tm-delete-tiddler" tooltip={{$:/language/Buttons/Delete/Hint}} aria-label={{$:/language/Buttons/Delete/Caption}} class="tc-btn-invisible tc-tiddlylink" param=<<currentTiddler>> >
+{{$:/core/images/delete-button}}
+</$button>
+ <$text text={{!!title}} />: {{!!source}}<br />
+</$list>
+</$navigator>
+
 !! User Configuration Folder
 
 This is the folder in which ~TiddlyDesktop stores internal configuration. Notably, the subfolder `user-config-tiddlywiki` contains the backstage wiki folder. If you are experiencing problems with ~TiddlyDesktop you can delete the entire configuration folder to reset TiddlyDesktop to default settings.

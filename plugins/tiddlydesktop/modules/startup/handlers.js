@@ -18,8 +18,10 @@ exports.after = ["startup"];
 exports.synchronous = true;
 
 exports.startup = function() {
-	var fs = require("fs"),
-		path = require("path");
+	var fs    = require("fs"),
+		path  = require("path"),
+		http  = require("http"),
+		https = require("https");
 	$tw.rootWidget.addEventListener("tiddlydesktop-open-backstage-wiki",function(event) {
 		$tw.desktop.backstageWindow.show();
 		return false;
@@ -51,12 +53,32 @@ exports.startup = function() {
 		$tw.desktop.windowList.revealByUrl(event.param);
 		return false;
 	});
-	$tw.rootWidget.addEventListener("tiddlydesktop-flags",function(event) {
-		$tw.desktop.gui.Window.open("chrome://flags",{
-			id: "chrome://flags"
-		});
-		return false;
+	$tw.rootWidget.addEventListener("tiddlydesktop-clone-wiki-path",function(event) {
+		var src  = $tw.desktop.windowList.decodeUrl(event.param);
+		var dest = event.files[0].path;
+		if(src.info.hasOwnProperty('url')) {
+			var file = fs.createWriteStream(dest);
+			var protocol;
+			if(src.info.protocol === "http") {
+				protocol = http;
+			} else if (src.info.protocol === "https") {
+				protocol = https;
+			}
+			protocol.get(src.info.url, function (response) {
+				var stream = response.pipe(file);
+				stream.on('finish', function() {
+					$tw.desktop.windowList.openByUrl("file://"+dest);
+				});
+				stream.on('error', function(err) {
+				    console.log("Error: " + err);
+			    });
+			});
+		} else if(src.info.hasOwnProperty('pathname')) {
+			fs.writeFileSync(dest,fs.readFileSync(src.info.pathname));
+			$tw.desktop.windowList.openByUrl("file://"+dest);
+		} else {
+		    console.log("Uncertain how to clone this: " + src)
+		}
 	});
 };
-
 })();
