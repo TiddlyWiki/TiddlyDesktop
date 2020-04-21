@@ -80,5 +80,11 @@ exports.startup = function() {
 		    console.log("Uncertain how to clone this: " + src)
 		}
 	});
+	$tw.rootWidget.addEventListener("tiddlydesktop-flags",function(event) {
+		$tw.desktop.gui.Window.open("chrome://flags",{
+			id: "chrome://flags"
+		});
+		return false;
+	});
 };
 })();

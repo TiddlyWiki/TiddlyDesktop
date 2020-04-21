@@ -10,7 +10,7 @@ page-title: TiddlyDesktop Settings
 
 Version {{$:/TiddlyDesktop/version}}
 
-!! Title of the WikiList Window
+!! Title of the ~WikiList Window
 
 <$edit-text tiddler="WikiListWindow" class="td-big-textarea" field="page-title" tag="input"/>
 
@@ -67,7 +67,9 @@ Open user config folder
 
 !! Flags
 
-[TBD - link to Chromium flag docs]
+These flags are used to control Chromium, the browser component within ~TiddlyDesktop.
+
+[[Chromium flags reference|https://peter.sh/experiments/chromium-command-line-switches/]]
 
 <$button>
 <$action-sendmessage $message="tiddlydesktop-flags"/>
