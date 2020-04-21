@@ -56,26 +56,26 @@ exports.startup = function() {
 	$tw.rootWidget.addEventListener("tiddlydesktop-clone-wiki-path",function(event) {
 		var src  = $tw.desktop.windowList.decodeUrl(event.param);
 		var dest = event.files[0].path;
-		if(src.info.hasOwnProperty('url')) {
+		if(src.info.hasOwnProperty("url")) {
 			var file = fs.createWriteStream(dest);
 			var protocol;
 			if(src.info.protocol === "http") {
 				protocol = http;
-			} else if (src.info.protocol === "https") {
+			} else if(src.info.protocol === "https") {
 				protocol = https;
 			}
-			protocol.get(src.info.url, function (response) {
+			protocol.get(src.info.url,function (response) {
 				var stream = response.pipe(file);
-				stream.on('finish', function() {
-					$tw.desktop.windowList.openByUrl("file://"+dest);
+				stream.on("finish",function() {
+					$tw.desktop.windowList.openByUrl("file://" + dest);
 				});
-				stream.on('error', function(err) {
+				stream.on("error",function(err) {
 				    console.log("Error: " + err);
 			    });
 			});
-		} else if(src.info.hasOwnProperty('pathname')) {
+		} else if(src.info.hasOwnProperty("pathname")) {
 			fs.writeFileSync(dest,fs.readFileSync(src.info.pathname));
-			$tw.desktop.windowList.openByUrl("file://"+dest);
+			$tw.desktop.windowList.openByUrl("file://" + dest);
 		} else {
 		    console.log("Uncertain how to clone this: " + src)
 		}
