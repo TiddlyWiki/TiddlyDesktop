@@ -157,7 +157,7 @@ $tw.boot.boot(function() {
 		}
 		commandFn = commands[command];
 		if(!commandFn) {
-			console.err("Unknown command: --" + command);
+			console.error("Unknown command: --" + command);
 		} else {
 			commandFn(args);
 		}
