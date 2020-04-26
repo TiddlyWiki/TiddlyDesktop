@@ -10,6 +10,10 @@ Utilities concerned with TiddlyWiki internals
 var fs = require("fs"),
 	path = require("path");
 
+exports.alert = function(text,topic) {
+	(new $tw.utils.Logger(topic || "TiddlyDesktop")).alert(text);
+};
+
 // Get the path of the backstage wiki folder, creating it if needed
 exports.getBackstageWikiFolder = function(appDataPath) {
 	// Create a user configuration wiki folder if it doesn't exist

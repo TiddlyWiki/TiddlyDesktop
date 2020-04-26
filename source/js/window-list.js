@@ -8,7 +8,9 @@ Manage the list of windows
 "use strict";
 
 var fs = require("fs"),
-	path = require("path");
+	path = require("path"),
+	http = require("http"),
+	https = require("https");
 
 var WikiFileWindow = require("./wiki-file-window.js").WikiFileWindow,
 	WikiFolderWindow = require("./wiki-folder-window.js").WikiFolderWindow,
@@ -24,7 +26,8 @@ WindowList.prototype.decodeUrl = function(url) {
 	// Decode the URL to figure out the constructor and parameters
 	var result = {
 			WindowConstructor: null,
-			info: {}
+			info: {},
+			type: null
 		};
 	if(url.indexOf("file://") === 0) {
 		if(url.charAt(7) === "/" && process.platform.substr(0,3) === "win") {
@@ -34,24 +37,29 @@ WindowList.prototype.decodeUrl = function(url) {
 		}
 		if($tw.utils.isDirectory(result.info.pathname)) {
 			result.WindowConstructor = WikiFolderWindow;
+			result.type = "folder";
 		} else {
 			result.WindowConstructor = WikiFileWindow;
+			result.type = "file";
 		}
 	} else if(url.indexOf("wikifile://") === 0) {
 		result.WindowConstructor = WikiFileWindow;
 		result.info.pathname = url.substr(11);
+		result.type = "file";
 	} else if(url.indexOf("wikifolder://") === 0) {
 		result.WindowConstructor = WikiFolderWindow;
 		result.info.pathname = url.substr(13);
+		result.type = "folder";
 	} else if(url.indexOf("backstage://") === 0) {
 		result.WindowConstructor = BackstageWindow;
 		result.info.tiddler = url.substr(12);
+		result.type = "backstage";
 	} else if(url.indexOf("http://") === 0) {
 		result.info.url = url;
-		result.info.protocol = "http";
+		result.type = "http";
 	} else if(url.indexOf("https://") === 0) {
 		result.info.url = url;
-		result.info.protocol = "https";
+		result.type = "https";
 	}
 	return result;
 };
@@ -162,6 +170,65 @@ WindowList.prototype.revealBackupsByUrl = function(url) {
 		}
 		$tw.desktop.gui.Shell.openItem(pathname);
 	}
+};
+
+/*
+Clone an existing wiki file or folder
+source: URL of source (wikifolder://,wikifile://,http(s)://)
+dest: path of destination file or folder
+*/
+WindowList.prototype.cloneToPath = function(source,dest) {
+	var decodedSource = this.decodeUrl(source);
+	if(decodedSource.type === "folder") {
+		this.cloneFolderToPath(decodedSource.info.pathname,dest);
+	} else if(decodedSource.type === "file") {
+		this.cloneFileToPath(decodedSource.info.pathname,dest);
+	} else if(decodedSource.type === "http" || decodedSource.type === "https") {
+		this.cloneWebToPath(decodedSource.info.url,dest);
+	} else {
+		console.log("Cannot clone",source,dest);
+	}
+};
+
+/*
+Clone an existing wiki folder
+source: path to wiki folder
+dest: path of destination folder
+*/
+WindowList.prototype.cloneFolderToPath = function(source,dest) {
+	$tw.utils.copyDirectory(source,dest);
+	$tw.desktop.windowList.openByUrl("wikifolder://" + dest);
+};
+
+
+/*
+Clone an existing wiki file
+source: path to wiki file
+dest: path of destination file
+*/
+WindowList.prototype.cloneFileToPath = function(source,dest) {
+	fs.writeFileSync(dest,fs.readFileSync(source,"utf8"),"utf8");
+	$tw.desktop.windowList.openByUrl("wikifile://" + dest);
+};
+
+
+/*
+Clone a wiki file from the web
+source: URL of wiki file
+dest: path of destination file
+*/
+WindowList.prototype.cloneWebToPath = function(source,dest) {
+	var protocol = source.substr(0,5) === "https" ? https : http,
+		file = fs.createWriteStream(dest);
+	protocol.get(source,function(response) {
+		var stream = response.pipe(file);
+		stream.on("finish",function() {
+			$tw.desktop.windowList.openByUrl("wikifile://" + dest);
+		});
+		stream.on("error",function(err) {
+			$tw.desktop.utils.alert("Error: " + err);
+		});
+	});
 };
 
 exports.WindowList = WindowList;

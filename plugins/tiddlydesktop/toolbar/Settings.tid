@@ -1,0 +1,8 @@
+title: WikiListToolbar/Settings
+tags: toolbar
+
+<$button class="td-button">
+<$action-sendmessage $message="tiddlydesktop-add-wiki-url" $param="backstage://$:/TiddlyDesktop/Settings"/>
+{{$:/core/images/options-button}}
+Settings
+</$button>

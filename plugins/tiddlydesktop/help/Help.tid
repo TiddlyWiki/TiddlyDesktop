@@ -3,5 +3,5 @@ page-title: TiddlyDesktop Help
 list: $:/TiddlyDesktop/Help/Introduction $:/TiddlyDesktop/Help/Usage $:/TiddlyDesktop/Help/Internals $:/TiddlyDesktop/Help/Development
 
 <$importvariables filter="[[$:/core/macros/toc]]">
-<$macrocall $name="toc-tabbed-internal-nav" tag="$:/TiddlyDesktop/Help" selectedTiddler="$:/temp/toc/selectedTiddler" unselectedText="<p>Select a topic in the table of contents. Click the arrow to expand a topic.</p>" missingText="<p>Missing tiddler.</p>"/>
+<$macrocall $name="toc-tabbed-internal-nav" tag="$:/TiddlyDesktop/Help" selectedTiddler="$:/temp/help/toc/selectedTiddler" unselectedText="<p>Select a topic in the table of contents. Click the arrow to expand a topic.</p>" missingText="<p>Missing tiddler.</p>"/>
 </$importvariables>

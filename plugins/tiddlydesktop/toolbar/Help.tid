@@ -1,0 +1,8 @@
+title: WikiListToolbar/Help
+tags: toolbar
+
+<$button class="td-button">
+<$action-sendmessage $message="tiddlydesktop-add-wiki-url" $param="backstage://$:/TiddlyDesktop/Help"/>
+{{$:/core/images/help}}
+Help
+</$button>

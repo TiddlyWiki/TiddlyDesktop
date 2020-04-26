@@ -1,0 +1,54 @@
+title: $:/TiddlyDesktop/Settings/Templates
+caption: Templates
+tags: $:/TiddlyDesktop/Settings
+
+<$list filter="[all[tiddlers+shadows]tag[template]]">
+<div style="margin-bottom:1em;padding:0.5em;background:white;">
+<div style="float:right;">
+<$list filter="[<currentTiddler>is[shadow]is[missing]]" variable="ignore" emptyMessage="""
+<$button tooltip="Delete this template" class="tc-btn-invisible td-button">
+<$action-deletetiddler $tiddler=<<currentTiddler>>/>
+{{$:/core/images/delete-button}} Delete
+</$button>
+""">
+<span class="tc-muted">(built-in)</span>
+</$list>
+</div>
+<div><$text text={{!!caption}}/></div>
+<div class="tc-muted">
+<$list filter="[<currentTiddler>get[source]prefix[http]]" variable="ignore" emptyMessage="<$text text={{!!source}}/>">
+<$link><$text text={{!!source}}/></$link>
+</$list>
+</div>
+</div>
+</$list>
+
+!! Add a new template
+
+''Caption'': <$edit-text tag="input" tiddler="$:/temp/newtemplate/caption" default=""/>
+
+''Source'': <$edit-text tag="input" tiddler="$:/temp/newtemplate/source" default=""/>
+
+<$list filter="[{$:/temp/newtemplate/source}prefix[http://]] ~[{$:/temp/newtemplate/source}prefix[https://]] ~[{$:/temp/newtemplate/source}prefix[wikifile://]] ~[{$:/temp/newtemplate/source}prefix[wikifolder://]]" variable="ignore" emptyMessage="<button disabled>Invalid source</button>">
+<$button>
+Add Template
+<$action-createtiddler $basetitle="$:/TiddlyDesktop/Templates/Custom" caption={{$:/temp/newtemplate/caption}} source={{$:/temp/newtemplate/source}} tags="template"/>
+<$action-setfield $tiddler="$:/temp/newtemplate/caption" $value=""/>
+<$action-setfield $tiddler="$:/temp/newtemplate/source" $value=""/>
+</$button>
+</$list>
+
+The source must match one of these patterns:
+
+* `wikifile://<path-to-wiki-file>`
+* `wikifolder://<path-to-wiki-folder>`
+* `http://<url-of-wiki-file>`
+* `https://<url-of-wiki-file>`
+
+Examples:
+
+```
+wikifile:///Users/jobloggs/files/wiki.html
+wikifolder:///MyWikiFolder
+wikifolder://C:\MyWikiFolder
+```

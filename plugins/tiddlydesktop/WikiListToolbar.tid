@@ -1,61 +1,9 @@
 title: WikiListToolbar
 
 <div class="td-toolbar">
+<$list filter="[all[tiddlers+shadows]tag[toolbar]]" variable="toolbar">
 <div class="td-toolbar-item">
-<$image source="AppIcon.svg" class="td-logo"/>
+<$transclude tiddler=<<toolbar>>/>
 </div>
-<div class="td-toolbar-item">
-<div class="td-file-input-wrapper">
-<$button class="td-button">
-{{$:/core/images/new-button}} {{$:/core/images/file}}
-<$text text="Add a TiddlyWiki file"/>
-</$button>
-<$browse message="tiddlydesktop-add-wiki-path"/>
-</div>
-</div>
-<div class="td-toolbar-item">
-<div class="td-file-input-wrapper">
-<$button class="td-button">
-{{$:/core/images/new-button}} {{$:/core/images/folder}}
-<$text text="Add a TiddlyWiki folder"/>
-</$button>
-<$browse nwdirectory message="tiddlydesktop-add-wiki-path"/>
-</div>
-</div>
-<div class="td-toolbar-item">
-<$button class="td-button">
-<$action-sendmessage $message="tiddlydesktop-add-wiki-url" $param="backstage://$:/TiddlyDesktop/Settings"/>
-{{$:/core/images/options-button}}
-Settings
-</$button>
-</div>
-<div class="td-toolbar-item">
-<$button class="td-button">
-<$action-sendmessage $message="tiddlydesktop-add-wiki-url" $param="backstage://$:/TiddlyDesktop/Help"/>
-{{$:/core/images/help}}
-Help
-</$button>
-</div>
-<div class="td-toolbar-item">
-<$button class="td-button">
-<$action-sendmessage $message="tiddlydesktop-open-backstage-wiki"/>
-{{$:/core/images/spiral}}
-Backstage
-</$button>
-</div>
-<$select tiddler="$:/config/templatewiki/source">
-<option></option>
-<$list filter="[all[tiddlers+shadows]has[source]]">
-<option value={{!!source}}>{{!!title}}</option>
 </$list>
-</$select>
-<div class="td-toolbar-item">
-<div class="td-file-input-wrapper">
-
-<$button>
-copy
-</$button>
-<$browse message="tiddlydesktop-clone-wiki-path" nwsaveas="nwsaveas" param={{$:/config/templatewiki/source}} />
-</div>
-</div>
 </div>

@@ -52,14 +52,6 @@ advanced
 <div class="td-wiki-advanced">
 <$list filter="[all[current]prefix[wikifile://]]">
 <div class="td-wiki-toolbar-item">
-<div class="td-file-input-wrapper">
-<$button class="tc-btn-invisible td-button td-wikilist-button-open">
-clone
-</$button>
-<$browse message="tiddlydesktop-clone-wiki-path" nwsaveas="nwsaveas" param=<<currentTiddler>> />
-</div>
-</div>
-<div class="td-wiki-toolbar-item">
 <$checkbox tiddler="""$:/TiddlyDesktop/Config/disable-backups/$(currentTiddler)$""" field="text" checked="no" unchecked="yes" default="no"> enable backups</$checkbox>
 </div>
 <div class="td-wiki-toolbar-item">

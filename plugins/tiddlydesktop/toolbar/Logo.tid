@@ -1,0 +1,4 @@
+title: WikiListToolbar/Logo
+tags: toolbar
+
+<$image source="AppIcon.svg" class="td-logo"/>

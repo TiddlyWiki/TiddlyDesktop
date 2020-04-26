@@ -1,0 +1,10 @@
+title: WikiListToolbar/AddWikiFolder
+tags: toolbar
+
+<div class="td-file-input-wrapper">
+<$button class="td-button">
+{{$:/core/images/folder}}
+<$text text="Add wiki folder"/>
+</$button>
+<$browse nwdirectory message="tiddlydesktop-add-wiki-path"/>
+</div>

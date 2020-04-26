@@ -1,0 +1,5 @@
+title: $:/TiddlyDesktop/Settings/WikiListTitle
+caption: Wiki List Window Title
+tags: $:/TiddlyDesktop/Settings
+
+<$edit-text tiddler="WikiListWindow" class="td-big-textarea" field="page-title" tag="input"/>

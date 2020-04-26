@@ -1,0 +1,8 @@
+title: WikiListToolbar/Backstage
+tags: toolbar
+
+<$button class="td-button">
+<$action-sendmessage $message="tiddlydesktop-open-backstage-wiki"/>
+{{$:/core/images/spiral}}
+Backstage
+</$button>

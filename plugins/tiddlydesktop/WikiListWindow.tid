@@ -3,15 +3,11 @@ page-title: TiddlyDesktop -- Main
 
 <$importvariables filter="[[$:/core/ui/PageMacros]] [all[shadows+tiddlers]tag[$:/tags/Macro]!has[draft.of]]">
 
+<$transclude tiddler="$:/core/ui/PageTemplate/alerts" mode="inline"/>
+
 <$droplink>
 
 <$transclude tiddler="WikiListToolbar" mode="inline"/>
-
-<div class="tc-hidden-wikilist-toolbar">
-
-<$transclude tiddler="WikiListToolbar" mode="inline"/>
-
-</div>
 
 <$transclude tiddler="WikiList" mode="inline"/>
 

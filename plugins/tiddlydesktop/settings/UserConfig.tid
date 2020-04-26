@@ -1,0 +1,10 @@
+title: $:/TiddlyDesktop/Settings/UserConfig
+caption: User Configuration Folder
+tags: $:/TiddlyDesktop/Settings
+
+This is the folder in which ~TiddlyDesktop stores internal configuration. Notably, the subfolder `user-config-tiddlywiki` contains the backstage wiki folder. If you are experiencing problems with ~TiddlyDesktop you can delete the entire configuration folder to reset TiddlyDesktop to default settings.
+
+<$button>
+<$action-sendmessage $message="tiddlydesktop-open-config-folder" $param="USER_CONFIG_FOLDER"/>
+Open user config folder
+</$button>

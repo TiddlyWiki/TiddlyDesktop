@@ -4,6 +4,7 @@ tags: $:/tags/Stylesheet
 \rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
 
 .td-toolbar {
+	position: relative;
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
@@ -12,17 +13,7 @@ tags: $:/tags/Stylesheet
 	background-color: <<colour wikilist-toolbar-background>>;
 	font-size: 0.9em;
 	padding: 1em;
-    position: fixed;
-    left: 0;
-    right: 0;
     box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.3);
-}
-
-.tc-hidden-wikilist-toolbar .td-toolbar {
-    position: static;
-    width: 100%;
-    visibility: hidden;
-    box-shadow: none;
 }
 
 .td-toolbar-item {
@@ -56,4 +47,22 @@ tags: $:/tags/Stylesheet
     background: none repeat scroll 0% 0% #FFF;
     cursor: pointer;
     display: inline-block;
+}
+
+.td-create-wiki-dropdown .td-file-input-wrapper {
+    display: block;
+}
+
+.td-create-wiki-dropdown .td-file-input-wrapper button {
+    display: block;
+}
+
+.td-create-wiki-dropdown .td-file-input-wrapper:hover button {
+    color: <<color background>>;
+    background: <<color primary>>;
+}
+
+.td-create-wiki-dropdown h2 {
+	font-weight: bold;
+	margin: 0;
 }
