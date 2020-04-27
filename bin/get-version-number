@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+// Extract raw version number from package.json
+
+var fs = require("fs"),
+	path = require("path");
+
+var json = JSON.parse(fs.readFileSync("./package.json","utf8"));
+
+if(!json.version) {
+	throw "Missing version number in package.json";
+}
+
+process.stdout.write(json.version);
