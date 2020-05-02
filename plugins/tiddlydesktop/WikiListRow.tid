@@ -49,7 +49,7 @@ advanced
 </div>
 </div>
 <$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/advanced/$(currentTiddler)$""" text="">
-<div class="td-wiki-advanced">
+<div class="td-wiki-advanced tc-popup-handle">
 <$list filter="[all[current]prefix[wikifile://]]">
 <div class="td-wiki-toolbar-item">
 <$checkbox tiddler="""$:/TiddlyDesktop/Config/disable-backups/$(currentTiddler)$""" field="text" checked="no" unchecked="yes" default="no"> enable backups</$checkbox>
