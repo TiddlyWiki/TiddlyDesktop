@@ -1,27 +1,27 @@
 {
-	"name": "tiddlydesktop",
-	"version": "0.0.14-prerelease.1",
-	"author": "Jeremy Ruston <jeremy@jermolene.com>",
-	"description": "a desktop application for TiddlyWiki",
-	"contributors": [
-		{
-			"name": "Jeremy Ruston",
-			"email": "jeremy@jermolene.com"
-		}
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Jermolene/TiddlyDesktop.git"
-	},
-	"keywords": [
-		"tiddlywiki",
-		"tiddlywiki5",
-		"wiki"
-	],
-	"devDependencies": {},
-	"bundleDependencies": [],
-	"license": "BSD",
-	"dependencies": {
-		"tiddlywiki": "file:../TiddlyWiki5"
-	}
+    "name": "tiddlydesktop",
+    "version": "0.0.14-prerelease.2",
+    "author": "Jeremy Ruston <jeremy@jermolene.com>",
+    "description": "a desktop application for TiddlyWiki",
+    "contributors": [
+        {
+            "name": "Jeremy Ruston",
+            "email": "jeremy@jermolene.com"
+        }
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Jermolene/TiddlyDesktop.git"
+    },
+    "keywords": [
+        "tiddlywiki",
+        "tiddlywiki5",
+        "wiki"
+    ],
+    "devDependencies": {},
+    "bundleDependencies": [],
+    "license": "BSD",
+    "dependencies": {
+        "tiddlywiki": "Jermolene/TiddlyWiki5#75d65d2694d31688c6e18d6d9ce28826c17a71e8"
+    }
 }

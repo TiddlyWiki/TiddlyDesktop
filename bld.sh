@@ -6,12 +6,8 @@
 rm -Rf output
 rm -Rf source/tiddlywiki
 
-# Get the correct version of TiddlyWiki
-# (Here we install from a sibling directory; use plain "npm install" to install the latest)
-npm install ../TiddlyWiki5
-pushd ./node_modules/tiddlywiki
-./bin/clean.sh
-popd
+# Install TiddlyWiki to node_modules/tiddlywiki
+npm install
 
 # Copy TiddlyWiki core files into the source directory
 cp -RH node_modules/tiddlywiki source/tiddlywiki

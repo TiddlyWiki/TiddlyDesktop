@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# build TiddlyWiki and TiddlyDesktop
-
+# build and run TiddlyDesktop
 
 ./bld.sh || exit 1
 
