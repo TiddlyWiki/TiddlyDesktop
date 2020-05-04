@@ -23,7 +23,7 @@ exports.trapLinks = function(doc) {
 				// HTML
 				href = link.href;
 			}
-			if(href && href.slice(0,11) !== "javascript:" && href.slice(0,5) !== "blob:" && href.split("#")[0] !== doc.location.href.split("#")[0]) {
+			if(href && href.slice(0,11) !== "javascript:" && href.slice(0,5) !== "blob:" && href.slice(0,5) !== "data:" && href.split("#")[0] !== doc.location.href.split("#")[0]) {
 				$tw.desktop.gui.Shell.openExternal(href);
 				event.preventDefault();
 				event.stopPropagation();
