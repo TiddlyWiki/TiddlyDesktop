@@ -63,6 +63,9 @@ reveal backups
 <$list filter="[all[current]prefix[wikifolder://]]">
 <div class="td-wiki-toolbar-item">
 <div>
+Title: <$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/title/$(currentTiddler)$""" default=""/> 
+</div>
+<div>
 Host: <$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/host/$(currentTiddler)$""" default=""/>
 </div>
 <div>
