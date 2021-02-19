@@ -26,53 +26,55 @@ backstageWindow.on("close",function(event) {
 });
 
 // Create the tray icon
-var tray = new gui.Tray({
-	title: "",
-	icon: "images/tray_icon_" + (process.platform === "darwin" ? "mono" : "color") + (window.devicePixelRatio > 1 ? "@2x" : "") + ".png",
-	alticon: "",
-	tooltip: "TiddlyDesktop",
-	iconsAreTemplates: true
-});
-
-// Give it a menu
-var trayMenu = new gui.Menu();
-trayMenu.append(new gui.MenuItem({
-	label: "TiddlyDesktop v" + require("../package.json").version,
-	enabled: false
-}));
-trayMenu.append(new gui.MenuItem({
-	label: "Wiki List",
-	click: function() {
-		$tw.desktop.windowList.openByUrl("backstage://WikiListWindow");
-	}
-}));
-trayMenu.append(new gui.MenuItem({
-	label: "Settings",
-	click: function() {
-		$tw.desktop.windowList.openByUrl("backstage://$:/TiddlyDesktop/Settings");
-	}
-}));
-trayMenu.append(new gui.MenuItem({
-	label: "",
-	type: "separator"
-}));
-trayMenu.append(new gui.MenuItem({
-	label: "Help",
-	click: function() {
-		$tw.desktop.windowList.openByUrl("backstage://$:/TiddlyDesktop/Help");
-	}
-}));
-trayMenu.append(new gui.MenuItem({
-	label: "",
-	type: "separator"
-}));
+if (process.platform !== "darwin") {
+	var tray = new gui.Tray({
+		title: "",
+		icon: "images/tray_icon_" + (process.platform === "darwin" ? "mono" : "color") + (window.devicePixelRatio > 1 ? "@2x" : "") + ".png",
+		alticon: "",
+		tooltip: "TiddlyDesktop",
+		iconsAreTemplates: true
+	});
+	
+	// Give it a menu
+	var trayMenu = new gui.Menu();
 	trayMenu.append(new gui.MenuItem({
-	label: "Quit",
-	click: function() {
-		gui.App.quit();
-	}
-}));
-tray.menu = trayMenu;
+		label: "TiddlyDesktop v" + require("../package.json").version,
+		enabled: false
+	}));
+	trayMenu.append(new gui.MenuItem({
+		label: "Wiki List",
+		click: function() {
+			$tw.desktop.windowList.openByUrl("backstage://WikiListWindow");
+		}
+	}));
+	trayMenu.append(new gui.MenuItem({
+		label: "Settings",
+		click: function() {
+			$tw.desktop.windowList.openByUrl("backstage://$:/TiddlyDesktop/Settings");
+		}
+	}));
+	trayMenu.append(new gui.MenuItem({
+		label: "",
+		type: "separator"
+	}));
+	trayMenu.append(new gui.MenuItem({
+		label: "Help",
+		click: function() {
+			$tw.desktop.windowList.openByUrl("backstage://$:/TiddlyDesktop/Help");
+		}
+	}));
+	trayMenu.append(new gui.MenuItem({
+		label: "",
+		type: "separator"
+	}));
+		trayMenu.append(new gui.MenuItem({
+		label: "Quit",
+		click: function() {
+			gui.App.quit();
+		}
+	}));
+	tray.menu = trayMenu;
+}
 
 // Set up the $tw global
 var $tw = {desktop: {
