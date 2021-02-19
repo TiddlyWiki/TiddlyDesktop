@@ -49,14 +49,14 @@ done
 cp -RH nwjs/nwjs-sdk-v0.51.1-win-x64/* output/win64/TiddlyDesktop-win64-v$(./bin/get-version-number)
 cp -RH source/* output/win64/TiddlyDesktop-win64-v$(./bin/get-version-number)
 
-# # # Windows 32-bit App
-# cp -RH nwjs/nwjs-sdk-v0.51.1-win-ia32/* output/win32/TiddlyDesktop-win32-v$(./bin/get-version-number)
-# cp -RH source/* output/win32/TiddlyDesktop-win32-v$(./bin/get-version-number)
+# # Windows 32-bit App
+cp -RH nwjs/nwjs-sdk-v0.51.1-win-ia32/* output/win32/TiddlyDesktop-win32-v$(./bin/get-version-number)
+cp -RH source/* output/win32/TiddlyDesktop-win32-v$(./bin/get-version-number)
 
-# # # Linux 64-bit App
-# cp -RH nwjs/nwjs-sdk-v0.51.1-linux-x64/* output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)
-# cp -RH source/* output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)
+# # Linux 64-bit App
+cp -RH nwjs/nwjs-sdk-v0.51.1-linux-x64/* output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)
+cp -RH source/* output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)
 
-# # # Linux 32-bit App
-# cp -RH nwjs/nwjs-sdk-v0.51.1-linux-ia32/* output/linux32/TiddlyDesktop-linux32-v$(./bin/get-version-number)
-# cp -RH source/* output/linux32/TiddlyDesktop-linux32-v$(./bin/get-version-number)
+# # Linux 32-bit App
+cp -RH nwjs/nwjs-sdk-v0.51.1-linux-ia32/* output/linux32/TiddlyDesktop-linux32-v$(./bin/get-version-number)
+cp -RH source/* output/linux32/TiddlyDesktop-linux32-v$(./bin/get-version-number)
