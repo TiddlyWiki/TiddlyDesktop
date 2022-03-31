@@ -14,7 +14,7 @@ https://github.com/nwjs/nw.js
 
 Download the Windows, linux or Mac binary .zip files from:
 
-https://github.com/Jermolene/TiddlyDesktop/releases
+https://github.com/TiddlyWiki/TiddlyDesktop/releases
 
 Unzip into a folder and run `TiddlyWiki.app` or `nw.exe` and for linux `nw`
 
