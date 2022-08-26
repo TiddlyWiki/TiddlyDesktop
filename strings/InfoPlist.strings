@@ -1,4 +1,4 @@
 CFBundleDisplayName = "TiddlyDesktop";
-CFBundleGetInfoString = "TiddlyDesktop, based on nwjs Copyright 2018 UnaMesa Association. All rights reserved.";
+CFBundleGetInfoString = "TiddlyDesktop, based on nwjs Copyright 2022 UnaMesa Association. All rights reserved.";
 CFBundleName = "TiddlyDesktop";
-NSHumanReadableCopyright = "Copyright 2018 UnaMesa Association. All rights reserved. Copyright 2017 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSHumanReadableCopyright = "Copyright 2022 UnaMesa Association. All rights reserved. Copyright 2017 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
