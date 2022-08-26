@@ -8,6 +8,7 @@ Class for wiki file windows
 "use strict";
 
 var windowBase = require("../js/window-base.js"),
+	hash = require("../js/utils/hash.js"),
 	fs = require("fs");
 
 // Constructor
@@ -20,9 +21,10 @@ function WikiFileWindow(options) {
 	this.pathname = options.info.pathname;
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Open the window
+console.log("Opening window with id",this.getIdentifier());
 	$tw.desktop.gui.Window.open("html/wiki-file-window.html",{
-		id: this.getIdentifier(),
-		show: false,
+		id: hash.simpleHash(this.getIdentifier()),
+		show: true,
 		icon: "images/app_icon.png"
 	},function(win) {
 		self.window_nwjs = win;
@@ -55,7 +57,7 @@ WikiFileWindow.prototype.matchInfo = function(info) {
 
 // The identifier for wiki file windows is the prefix `wikifile://` plus the pathname of the file
 WikiFileWindow.prototype.getIdentifier = function() {
-	return "wikifile://" + this.pathname;
+	return WikiFileWindow.getIdentifierFromInfo({pathname: this.pathname});
 };
 
 // Load handler for window

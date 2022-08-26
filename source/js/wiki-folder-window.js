@@ -7,7 +7,8 @@ Class for wiki folder windows
 /*jslint browser: true */
 "use strict";
 
-var windowBase = require("../js/window-base.js");
+var windowBase = require("../js/window-base.js"),
+	hash = require("../js/utils/hash.js");
 
 // Constructor
 function WikiFolderWindow(options) {
@@ -29,7 +30,7 @@ function WikiFolderWindow(options) {
 	// Open the window
 	$tw.desktop.gui.Window.open("html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname) + "&host=" + encodeURIComponent(host) + "&port=" + encodeURIComponent(port)
 			+ "&credentials=" + encodeURIComponent(credentials) + "&readers=" + encodeURIComponent(readers) + "&writers=" + encodeURIComponent(writers),{
-		id: this.getIdentifier(),
+		id: hash.simpleHash(this.getIdentifier()),
 		show: true,
 		new_instance: true,
 		icon: "images/app_icon.png"

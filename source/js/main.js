@@ -70,6 +70,7 @@ trayMenu.append(new gui.MenuItem({
 	label: "Quit",
 	click: function() {
 		gui.App.quit();
+		// gui.App.closeAllWindows();
 	}
 }));
 tray.menu = trayMenu;

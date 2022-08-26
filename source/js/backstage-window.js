@@ -7,7 +7,8 @@ Class for backstage windows
 /*jslint browser: true */
 "use strict";
 
-var windowBase = require("../js/window-base.js");
+var windowBase = require("../js/window-base.js"),
+	hash = require("../js/utils/hash.js");
 
 // Constructor
 function BackstageWindow(options) {
@@ -20,7 +21,7 @@ function BackstageWindow(options) {
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Open the window
 	$tw.desktop.gui.Window.open("html/backstage-tiddler-window.html",{
-		id: this.getIdentifier(),
+		id: hash.simpleHash(this.getIdentifier()),
 		show: true,
 		icon: "images/app_icon.png"
 	},function(win) {
@@ -44,7 +45,7 @@ BackstageWindow.prototype.matchInfo = function(info) {
 
 // The identifier for wiki file windows is the prefix `backstage://` plus the title of the tiddler
 BackstageWindow.prototype.getIdentifier = function() {
-	return "backstage://" + this.tiddler;
+	return BackstageWindow.getIdentifierFromInfo({tiddler: this.tiddler});
 };
 
 // Load handler for window
