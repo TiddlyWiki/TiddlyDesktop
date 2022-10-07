@@ -20,6 +20,32 @@ Unzip into a folder and run `TiddlyWiki.app` or `nw.exe` and for linux `nw`
 
 Note that TiddlyDesktop will not work correctly from a Windows UNC network share (eg ``\\MY-SERVER\SHARE\MyFolder``). You should map the network share to a local drive, and run it from there.
 
+## NixOS
+
+To install TiddlyDesktop on NixOS, you first need to add this repo to your `configuration.nix`; Using a `let` expression at the top of the file is a good approach: 
+
+```
+let
+  twdesktop = let
+    rev = "Set this to the TiddlyDesktop Git revision that you want to install.";
+  in import (fetchTarball "https://github.com/TiddlyWiki/TiddlyDesktop/archive/${rev}.tar.gz") { };
+in
+ ...
+``` 
+
+Then add the attribute name (which is twdesktop in the example above) to your `systemPackages`:
+
+```
+...
+environment.systemPackages = with pkgs; [
+   ...
+   twdesktop
+];
+...
+```
+
+In addition to the method described above, the tiddlydesktop package is available as a Nix Flake; See https://nixos.wiki/wiki/Flakes to read more about Flakes. Simply use the Flake input `github:TiddlyWiki/TiddlyDesktop`. For example, you can run TiddlyDesktop with the command `nix run github:TiddlyWiki/TiddlyDesktop`.
+
 # Usage
 
 ## Multiple Configurations
