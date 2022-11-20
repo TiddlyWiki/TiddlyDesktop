@@ -56,6 +56,23 @@ To have separate mutliple instances of TiddlyDesktop (for example, separate Pers
 
 The F12 key opens the Chromium developer tools for the current window.
 
+## Debugging example
+
+Configure TiddlyDesktop debugging environment（TiddlyDesktop-win64-v0.0.15）
+
+System environment: Win10 64-bit
+
+Required software: VScode, Debugger for NWjs plugin installed in vscode.
+
+Download the latest version of TiddlyDesktop-win64-v0.0.15 and unzip it to keep only four folders: html, images, js, tiddlywiki and package.json file.
+
+Download nwjs-sdk-v0.69.1-win-x64, put it in C:\Users\your username\.nwjs folder and unzip it. After unzipping you can see the nw.exe program in the .nwjs\nwjs-sdk-v0.69.1-win-x64 folder to indicate that it is correct. (Again, you can use Ctrl + shift + p in vscode to bring up the command to execute the NWjs Install command and select the version to install)
+
+Use vscode to open the TiddlyDesktop-win64 folder.
+
+Modify the "main" field in the package.json file to "html/main.html"
+Click Debug and select nwjs to automatically create the configuration file laugh.json (no need to modify it). Then click Start to debug.
+
 # Building
 
 1. Run `download-nwjs.sh` to download the latest nw.js binaries
