@@ -72,6 +72,14 @@ WindowList.prototype.openByUrl = function(url,options) {
 
 WindowList.prototype.openByPathname = function(pathname,options) {
 	options = options || {};
+	// Fix #214 Filter out invalid pathnames.
+	// Find pathnames with BadPathName feature and filter them out。
+	const BadPathNameFeature = '--mixed-context --enable-spell-checking --allow-file-access-from-files';
+	if (pathname.indexOf(BadPathNameFeature) != -1) {
+		console.error('File path error:' + pathname);
+		pathname = '';
+		return;
+	}
 	var WindowConstructor,
 		info = {
 			pathname: pathname
