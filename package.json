@@ -18,10 +18,9 @@
         "tiddlywiki5",
         "wiki"
     ],
-    "devDependencies": {},
     "bundleDependencies": [],
     "license": "BSD",
     "dependencies": {
-        "tiddlywiki": "Jermolene/TiddlyWiki5"
+        "tiddlywiki": "github:Jermolene/TiddlyWiki5"
     }
 }
