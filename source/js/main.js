@@ -104,6 +104,12 @@ var backstageWikiFolder = $tw.desktop.utils.wiki.getBackstageWikiFolder(gui.App.
 // Show dev tools on F12
 $tw.desktop.utils.devtools.trapDevTools(backstageWindow,document);
 
+
+// First part of boot process
+var _sjcl = require("../tiddlywiki/boot/sjcl.js");
+global.sjcl = _sjcl;
+window.sjcl = _sjcl;
+
 // First part of boot process
 require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
 
