@@ -6,11 +6,11 @@
 
 # Download nw.js
 
-curl --output 'nwjs/nwjs-sdk-v0.67.1-win-x64.zip' 'https://dl.nwjs.io/v0.67.1/nwjs-sdk-v0.67.1-win-x64.zip' || exit 1
-curl --output 'nwjs/nwjs-sdk-v0.67.1-win-ia32.zip' 'https://dl.nwjs.io/v0.67.1/nwjs-sdk-v0.67.1-win-ia32.zip' || exit 1
-curl --output 'nwjs/nwjs-sdk-v0.67.1-linux-x64.tar.gz' 'https://dl.nwjs.io/v0.67.1/nwjs-sdk-v0.67.1-linux-x64.tar.gz' || exit 1
-curl --output 'nwjs/nwjs-sdk-v0.67.1-linux-ia32.tar.gz' 'https://dl.nwjs.io/v0.67.1/nwjs-sdk-v0.67.1-linux-ia32.tar.gz' || exit 1
-curl --output 'nwjs/nwjs-sdk-v0.67.1-osx-x64.zip' 'https://dl.nwjs.io/v0.67.1/nwjs-sdk-v0.67.1-osx-x64.zip' || exit 1
+curl --output 'nwjs/nwjs-sdk-v0.70.1-win-x64.zip' 'https://dl.nwjs.io/v0.70.1/nwjs-sdk-v0.70.1-win-x64.zip' || exit 1
+curl --output 'nwjs/nwjs-sdk-v0.70.1-win-ia32.zip' 'https://dl.nwjs.io/v0.70.1/nwjs-sdk-v0.70.1-win-ia32.zip' || exit 1
+curl --output 'nwjs/nwjs-sdk-v0.70.1-linux-x64.tar.gz' 'https://dl.nwjs.io/v0.70.1/nwjs-sdk-v0.70.1-linux-x64.tar.gz' || exit 1
+curl --output 'nwjs/nwjs-sdk-v0.70.1-linux-ia32.tar.gz' 'https://dl.nwjs.io/v0.70.1/nwjs-sdk-v0.70.1-linux-ia32.tar.gz' || exit 1
+curl --output 'nwjs/nwjs-sdk-v0.70.1-osx-x64.zip' 'https://dl.nwjs.io/v0.70.1/nwjs-sdk-v0.70.1-osx-x64.zip' || exit 1
 
 pushd nwjs
 
