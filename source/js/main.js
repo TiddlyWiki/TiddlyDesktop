@@ -170,9 +170,10 @@ $tw.boot.boot(function() {
 		}
 	}
 	// Register for file open events
-	gui.App.on("open",function(p) {
-		$tw.desktop.windowList.openByPathname(p);
-	});
+	// Commented out as an attempt to fix https://github.com/TiddlyWiki/TiddlyDesktop/issues/214
+	// gui.App.on("open",function(cmdline) {
+	// 	$tw.desktop.windowList.openByPathname(p);
+	// });
 	// Open wiki list window if we haven't opened any other windows
 	if(!commandFlags.haveOpenedWindow) {
 		$tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});		
