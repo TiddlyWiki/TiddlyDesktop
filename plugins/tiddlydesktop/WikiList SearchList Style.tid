@@ -1,18 +1,18 @@
 tags: $:/tags/Stylesheet
 title: WikiList/SearchListStyle
 
-.search-container{
+.td-search{
 display:flex;
 gap:1ch;
 flex-wrap:wrap;
 }
 
-.search-container,.tags{
+.td-search,.td-tags{
 padding:10px;
 padding-bottom:0;
 padding-top:0;
 }
 
-.tc-edit-texteditor{
+.td-search .tc-edit-texteditor{
 flex:1;
 }
