@@ -1,0 +1,23 @@
+tags: $:/tags/Stylesheet
+title: WikiList/SearchListStyle
+
+.search-container{
+display:flex;
+gap:1ch;
+flex-wrap:wrap;
+}
+
+.search-container,.tags{
+padding:10px;
+padding-bottom:0;
+padding-top:0;
+}
+
+.tc-edit-texteditor{
+flex:1;
+}
+
+.tc-edit-tags{
+border:none;
+box-shadow:none;
+}
