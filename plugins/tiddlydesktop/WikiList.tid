@@ -1,6 +1,6 @@
 title: WikiList
 
-<p class="search-container">
+<p class="td-search">
 <$edit-text tiddler=<<qualify '$:/temp/WikiList/search'>> tag="input" class="tc-edit-texteditor" placeholder="search"/>
 
 <$list filter="[<qualify '$:/temp/WikiList/search'>get[text]minlength[1]]">
@@ -8,7 +8,7 @@ title: WikiList
 </$list>
 </p>
     
-<p class="tags">
+<p class="td-search-tags">
 <$list filter="[prefix[$:/TiddlyDesktop/Config/wiki-tags/]tags[]]" variable="tag">
 <$button set=<<qualify '$:/temp/WikiList/search'>> setTo={{{ "[tag["[<tag>]"]]"+[join[]] }}} class="tc-tag-label tc-btn-invisible" style="background-color:;
 fill:#333333;
