@@ -16,8 +16,3 @@ padding-top:0;
 .tc-edit-texteditor{
 flex:1;
 }
-
-.tc-edit-tags{
-border:none;
-box-shadow:none;
-}
