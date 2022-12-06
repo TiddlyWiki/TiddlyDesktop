@@ -27,7 +27,7 @@ filter={{{ [<input>minlength[3]]:map[search<beginfilter>then<filtersearch>else<t
 >
 
 <div class="td-wikilist">
-<$macrocall $name="list-tagged-draggable" subFilter="all[tiddlers]subfilter<filter>" itemTemplate="WikiListRow" emptyMessage="Add a ~TiddlyWiki file or folder to get started.
+<$macrocall $name="list-tagged-draggable" subFilter="all[tiddlers]subfilter<filter>unique[]" itemTemplate="WikiListRow" emptyMessage="Add a ~TiddlyWiki file or folder to get started.
 
 Click the buttons above to browse, or drag and drop from your file Explorer/Finder"/>
 </div>
