@@ -8,7 +8,7 @@ title: WikiList
 </$list>
 </p>
     
-<p class="td-search-tags">
+<p class="td-tags">
 <$list filter="[prefix[$:/TiddlyDesktop/Config/wiki-tags/]tags[]]" variable="tag">
 <$button set=<<qualify '$:/temp/WikiList/search'>> setTo={{{ "[tag["[<tag>]"]]"+[join[]] }}} class="tc-tag-label tc-btn-invisible" style="background-color:;
 fill:#333333;
