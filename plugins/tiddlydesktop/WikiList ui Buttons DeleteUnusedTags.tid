@@ -1,0 +1,12 @@
+tags: $:/tags/StartupAction
+title: WikiList/ui/Buttons/DeleteUnusedTags
+
+\define delete-unused-tags()
+<$action-deletetiddler $filter="[all[tiddlers]prefix[$:/TiddlyDesktop/Config/wiki-tags/]]:filter[removeprefix[$:/TiddlyDesktop/Config/wiki-tags/]!is[tiddler]]"/>
+\end
+
+<$list filter="[prefix[$:/TiddlyDesktop/Config/wiki-tags/]removeprefix[$:/TiddlyDesktop/Config/wiki-tags/]!is[tiddler]limit[1]]">
+<$button actions=<<delete-unused-tags>> tooltip="delete unused tags" class="tc-btn-invisible">
+{{$:/core/images/refresh-button}}
+</$button>
+</$list>

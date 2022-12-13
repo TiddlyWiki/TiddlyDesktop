@@ -47,6 +47,13 @@ remove
 advanced
 </$button>
 </div>
+<div class="td-wiki-toolbar-item">
+<$let storyTiddler="$:/TiddlyDesktop/Config/wiki-tags/$(currentTiddler)$">
+<$tiddler tiddler=<<storyTiddler>>>
+{{||WikiList/edit-tags-template}}
+</$tiddler>
+</$let>
+</div>
 </div>
 <$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/advanced/$(currentTiddler)$""" text="">
 <div class="td-wiki-advanced tc-popup-handle">
