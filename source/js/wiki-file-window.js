@@ -67,9 +67,9 @@ WikiFileWindow.prototype.onloaded = function(event) {
 	$tw.desktop.utils.devtools.trapDevTools(this.window_nwjs,this.window_nwjs.window.document);
 	// Add menu
 	$tw.desktop.utils.menu.createMenuBar(this.window_nwjs);
-	// Load the iframe
+	// Load the iframe, escaping specific characters that are troublesome in URLs
 	this.iframe = this.window_nwjs.window.document.getElementById("tid-main-wiki-file-viewer");
-	this.iframe.src = "file://" + this.pathname;
+	this.iframe.src = "file://" + this.pathname.replace(/[#]/g,function(s) {return encodeURIComponent(s);});
 	this.iframe.onload = this.onloadiframe.bind(this);
 	// Show dev tools
 	// this.window_nwjs.showDevTools(this.iframe);
