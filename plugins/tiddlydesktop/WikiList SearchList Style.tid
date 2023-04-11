@@ -15,4 +15,5 @@ padding-top:0;
 
 .td-search .tc-edit-texteditor{
 flex:1;
+border:none;
 }

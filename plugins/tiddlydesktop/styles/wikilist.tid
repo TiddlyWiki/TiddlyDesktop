@@ -102,3 +102,7 @@ tags: $:/tags/Stylesheet
 .td-wikilist .td-wikilist-button-remove:hover {
 	background-color: <<colour wikilist-button-remove-hover>>;
 }
+
+.td-wikilist-info .td-wiki-toolbar .tc-add-tag-name input {
+	border: none;
+}
