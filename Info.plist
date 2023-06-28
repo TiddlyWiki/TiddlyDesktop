@@ -19,13 +19,13 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.0.16</string>
+	<string>0.0.17</string>
 	<key>CFBundleVersion</key>
 	<string>15</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © Jeremy Ruston 2004-2021</string>
+	<string>Copyright © Jeremy Ruston 2004-2023</string>
 	<key>LSApplicationCategoryType</key>
     <string>public.app-category.productivity</string>
     <key>LSApplicationSecondaryCategoryType</key>
