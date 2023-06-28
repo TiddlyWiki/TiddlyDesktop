@@ -11,7 +11,7 @@ curl --output 'nwjs/nwjs-sdk-v0.77.0-win-ia32.zip' 'https://dl.nwjs.io/v0.77.0/n
 curl --output 'nwjs/nwjs-sdk-v0.77.0-linux-x64.tar.gz' 'https://dl.nwjs.io/v0.77.0/nwjs-sdk-v0.77.0-linux-x64.tar.gz' || exit 1
 curl --output 'nwjs/nwjs-sdk-v0.77.0-linux-ia32.tar.gz' 'https://dl.nwjs.io/v0.77.0/nwjs-sdk-v0.77.0-linux-ia32.tar.gz' || exit 1
 curl --output 'nwjs/nwjs-sdk-v0.77.0-osx-x64.zip' 'https://dl.nwjs.io/v0.77.0/nwjs-sdk-v0.77.0-osx-x64.zip' || exit 1
-curl --output 'nwjs/nwjs-sdk-v0.77.0-osx-applesilicon.zip' 'https://dl.nwjs.io/v0.77.0/nwjs-sdk-v0.77.0-osx-arm64.zip' || exit 1
+curl --output 'nwjs/nwjs-sdk-v0.77.0-osx-arm64.zip' 'https://dl.nwjs.io/v0.77.0/nwjs-sdk-v0.77.0-osx-arm64.zip' || exit 1
 
 pushd nwjs
 
