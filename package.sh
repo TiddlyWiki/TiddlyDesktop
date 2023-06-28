@@ -16,6 +16,9 @@ popd
 pushd ./output/mac64
 zip --symlinks -r "../tiddlydesktop-mac64-v$VERSION.zip" *
 popd
+pushd ./output/macapplesilicon
+zip --symlinks -r "../tiddlydesktop-macapplesilicon-v$VERSION.zip" *
+popd
 pushd ./output/linux32
 zip -r "../tiddlydesktop-linux32-v$VERSION.zip" *
 popd
