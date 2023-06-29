@@ -59,6 +59,8 @@ do
 	cp "./strings/InfoPlist.strings" "$f/InfoPlist.strings"
 done
 
+xattr -c output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)/TiddlyDesktop.app
+
 # Windows 64-bit App
 cp -RH nwjs/nwjs-sdk-v0.77.0-win-x64/* output/win64/TiddlyDesktop-win64-v$(./bin/get-version-number)
 cp -RH source/* output/win64/TiddlyDesktop-win64-v$(./bin/get-version-number)
