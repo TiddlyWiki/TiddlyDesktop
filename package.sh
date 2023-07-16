@@ -17,6 +17,7 @@ pushd ./output/mac64
 zip --symlinks -r "../tiddlydesktop-mac64-v$VERSION.zip" *
 popd
 pushd ./output/macapplesilicon
+sudo xattr -rc "./TiddlyDesktop-macapplesilicon-v$VERSION/TiddlyDesktop.app" && sudo codesign --force --deep --sign - "./TiddlyDesktop-macapplesilicon-v$VERSION/TiddlyDesktop.app"
 zip --symlinks -r "../tiddlydesktop-macapplesilicon-v$VERSION.zip" *
 popd
 pushd ./output/linux32
