@@ -1,0 +1,27 @@
+name: Build and package TiddlyDesktop
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-and-package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "💾 Checking out repository code..."
+        uses: actions/checkout@v4
+      - name: "🛝 Downloading nw.js..."
+        run: ./download-nwjs.sh
+      - name: "🛠️ Building TiddlyDesktop..."
+        run: ./bld.sh
+      - name: "📦 Packaging TiddlyDesktop..."
+        run: ./package.sh
+      - name: "🚀 Uploading packages..."
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiddlydesktop-built-files
+          path: output/tiddlydesktop-*.zip
