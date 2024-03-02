@@ -87,9 +87,31 @@ jobs:
         env:
           PLATFORM: ${{ matrix.platform }}
           ARCH: ${{ matrix.arch }}
-      - name: "🚀 Uploading packages..."
+      - name: "📤 Uploading packages..."
         uses: actions/upload-artifact@v4
         with:
           name: tiddlydesktop-${{ matrix.platform-for-pkg }}-v${{ steps.td-version.outputs.version }}.zip
           path: output/tiddlydesktop-${{ matrix.platform-for-pkg }}-v${{ steps.td-version.outputs.version }}.zip
-      # TODO: Add step to create a draft release and upload build artifacts to it, but only if a v#.#.# tag was pushed
+    outputs:
+      td-version: ${{ steps.td-version.outputs.version }}
+
+  release:
+    # Run only if a tag was pushed (tag filter in workflow guarantees the only tags we'll see are ones that look like v1.2.3)
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    # Run only after build-and-package job completes
+    needs: build-and-package
+    # This job does *not* have a matrix so it runs only a single copy
+    runs-on: ubuntu-latest
+    steps:
+      - name: "📥 Downloading packages..."
+        uses: actions/download-artifact@v4
+        with:
+          # merge-multiple: true means that all built files will end up in the workspace directory
+          # If it was false, they would all be given their own separate directories, which is not convenient for the release step
+          merge-multiple: true
+      - name: "🚀 Creating release..."
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: |
+            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.zip
