@@ -1,6 +1,6 @@
 {
     "name": "tiddlydesktop",
-    "version": "0.0.18",
+    "version": "0.0.20",
     "author": "Jeremy Ruston <jeremy@jermolene.com>",
     "description": "a desktop application for TiddlyWiki",
     "contributors": [
