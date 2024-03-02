@@ -1,0 +1,117 @@
+name: Build and package TiddlyDesktop
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-and-package:
+    strategy:
+      matrix:
+        include:
+          - platform: linux
+            arch: x64
+            ext: tar.gz
+            platform-for-pkg: linux64
+            runs-on: ubuntu-latest
+          - platform: linux
+            arch: ia32
+            ext: tar.gz
+            platform-for-pkg: linux32
+            runs-on: ubuntu-latest
+          - platform: win
+            arch: x64
+            ext: zip
+            platform-for-pkg: win64
+            runs-on: ubuntu-latest
+          - platform: win
+            arch: ia32
+            ext: zip
+            platform-for-pkg: win32
+            runs-on: ubuntu-latest
+          - platform: osx
+            arch: x64
+            ext: zip
+            platform-for-pkg: mac64
+            runs-on: macos-latest
+          - platform: osx
+            arch: arm64
+            ext: zip
+            platform-for-pkg: macapplesilicon
+            runs-on: macos-latest
+    runs-on: ${{ matrix.runs-on }}
+    name: "Build ${{ matrix.platform-for-pkg }}"
+    steps:
+      - name: "💾 Checking out repository code..."
+        uses: actions/checkout@v4
+      - name: "🔭 Looking up TiddlyDesktop version..."
+        id: td-version
+        run: |
+          TD_VERSION=$(bin/get-version-number)
+          echo "TiddlyDesktop version: $TD_VERSION"
+          echo "version=$TD_VERSION" >> "$GITHUB_OUTPUT"
+      - name: "🧮 Calculating nw.js version..."
+        id: calc-version
+        run: |
+          NWJS_VERSION=$(<nwjs-version.txt)
+          [ -n "$NWJS_VERSION" ] && echo "nw.js version: $NWJS_VERSION" || echo "No nwjs-version.txt file found!"
+          [ -n "$NWJS_VERSION" ] && echo "nwjs-version=$NWJS_VERSION" >> "$GITHUB_OUTPUT"
+      - name: "🗃️ Setting up caching for nw.js..."
+        id: nwjs-cache
+        uses: actions/cache@v4
+        with:
+           path: nwjs
+           key: nwjs-${{ matrix.platform }}-${{ matrix.arch }}-${{ steps.calc-version.outputs.nwjs-version }}
+      - name: "🛝 Downloading nw.js..."
+        if: ${{ steps.nwjs-cache.outputs.cache-hit != 'true' }}
+        run: ./download-nwjs.sh
+        env:
+          NWJS_VERSION: ${{ steps.calc-version.outputs.nwjs-version }}
+          PLATFORM: ${{ matrix.platform }}
+          ARCH: ${{ matrix.arch }}
+          EXT: ${{ matrix.ext }}
+      - name: "🛠️ Building TiddlyDesktop..."
+        run: ./bld.sh
+        env:
+          NWJS_VERSION: ${{ steps.calc-version.outputs.nwjs-version }}
+          PLATFORM: ${{ matrix.platform }}
+          ARCH: ${{ matrix.arch }}
+      - name: "📦 Packaging TiddlyDesktop..."
+        run: ./package.sh
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          ARCH: ${{ matrix.arch }}
+      - name: "📤 Uploading packages..."
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiddlydesktop-${{ matrix.platform-for-pkg }}-v${{ steps.td-version.outputs.version }}.zip
+          path: output/tiddlydesktop-${{ matrix.platform-for-pkg }}-v${{ steps.td-version.outputs.version }}.zip
+    outputs:
+      td-version: ${{ steps.td-version.outputs.version }}
+
+  release:
+    # Run only if a tag was pushed (tag filter in workflow guarantees the only tags we'll see are ones that look like v1.2.3)
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    # Run only after build-and-package job completes
+    needs: build-and-package
+    # This job does *not* have a matrix so it runs only a single copy
+    runs-on: ubuntu-latest
+    steps:
+      - name: "📥 Downloading packages..."
+        uses: actions/download-artifact@v4
+        with:
+          # merge-multiple: true means that all built files will end up in the workspace directory
+          # If it was false, they would all be given their own separate directories, which is not convenient for the release step
+          merge-multiple: true
+      - name: "🚀 Creating release..."
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: |
+            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.zip
