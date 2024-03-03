@@ -67,6 +67,15 @@ Instructions for Windows 10 64-bit (updates for other OSs welcome).
 * Modify the "main" field in the package.json file to "html/main.html"
 * Click 'Debug' and select nwjs to automatically create the configuration file laugh.json (no need to modify it). Then click Start to debug.
 
+# Releasing with Continuous Integration
+
+1. Update the version number in package.json, plus any other changes that should be included
+2. Make a commit and push it
+3. Tag that commit with v#.#.#, the version number you just updated in package.json
+4. Push that tag and a draft release will be created
+5. Edit the draft release: add release notes, edit whatever else might need to be changed. Download its build files and test them
+6. Switch the draft release to be a public release once it's tested and ready
+
 # Building
 
 1. Run `download-nwjs.sh` to download the latest nw.js binaries
