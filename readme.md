@@ -70,7 +70,9 @@ Instructions for Windows 10 64-bit (updates for other OSs welcome).
 # Releasing with Continuous Integration
 
 1. Update the version number in package.json, plus any other changes that should be included
+2. Run `npm install --save`
 2. Make a commit and push it
+3. Check the build output in the GitHub Actions tab
 3. Tag that commit with v#.#.#, the version number you just updated in package.json
 4. Push that tag and a draft release will be created
 5. Edit the draft release: add release notes, edit whatever else might need to be changed. Download its build files and test them
