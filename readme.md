@@ -44,7 +44,7 @@ environment.systemPackages = with pkgs; [
 ...
 ```
 
-In addition to the method described above, the tiddlydesktop package is available as a Nix Flake; See https://nixos.wiki/wiki/Flakes to read more about Flakes. Simply use the Flake input `github:TiddlyWiki/TiddlyDesktop`. For example, you can run TiddlyDesktop with the command `nix run github:TiddlyWiki/TiddlyDesktop`.
+In addition to the method described above, the tiddlydesktop package is available as a Nix Flake; See https://wiki.nixos.org/wiki/Flakes to read more about Flakes. Simply use the Flake input `github:TiddlyWiki/TiddlyDesktop`. For example, you can run TiddlyDesktop with the command `nix run github:TiddlyWiki/TiddlyDesktop`.
 
 # Usage
 
