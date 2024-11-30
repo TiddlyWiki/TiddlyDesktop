@@ -101,6 +101,49 @@ cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-ia32/* output/linux32/TiddlyDesktop-
 cp -RH source/* output/linux32/TiddlyDesktop-linux32-v$(./bin/get-version-number)
 }
 
+# # Linux AppImage
+# # For Github CI, only
+build_linux_appimage() {
+appdir="output/AppDir.$ARCH"
+build_dependencies="curl findutils desktop-file-utils"
+font_packages="fonts-dejavu-core fonts-dejavu-extra"
+runtime_dependencies="$font_packages libnss3 libnspr4 libasound2-dev libatomic1 libatk1.0-0 libcups2-dev libxkbcommon-dev libatspi2.0-dev libxcomposite-dev libxdamage-dev libxfixes-dev libxrandr-dev libpango1.0-dev libgbm-dev libcairo2-dev libxi-dev libxrender-dev libwayland-dev libfribidi-dev libthai-dev libharfbuzz-dev libpng-dev libfontconfig-dev libfreetype-dev libpixman-1-dev libdatrie-dev libgraphite2-dev libbz2-dev fonts-dejavu"
+package_arch=""
+appimagetool_arch=""
+sudo apt-get install -y $runtime_dependencies $build_dependencies
+
+case "$ARCH" in
+    ia32)
+        package_arch="linux32"
+        appimagetool_arch="i686"
+        curl -L https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-i686.AppImage -o output/appimagetool-$ARCH.AppImage
+    ;;
+    x64)
+        package_arch="linux64"
+        appimagetool_arch="x86_64"
+        curl -L https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -o output/appimagetool-$ARCH.AppImage
+    ;;
+esac
+
+chmod u+x output/appimagetool-$ARCH.AppImage
+mkdir -p $appdir
+mkdir -p $appdir/usr/{bin,lib,share}
+mkdir -p $appdir/usr/share/fonts/truetype/dejavu
+cp icons/app-icon1024.png $appdir/tiddlydesktop.png
+cp linux/AppRun $appdir/
+cp linux/tiddlydesktop.desktop $appdir/
+cp -r output/$package_arch/TiddlyDesktop-$package_arch-v$(./bin/get-version-number)/* $appdir/usr/bin/
+
+libraries=$(dpkg -L $runtime_dependencies | grep "\.so" 2>/dev/null)
+for f in $libraries; do
+    cp $f* $appdir/usr/lib/
+done
+
+dpkg -L $font_packages | grep "\.ttf" 2>/dev/null | xargs -I '{}' -- cp '{}' $appdir/usr/share/fonts/truetype/dejavu/
+VERSION=$(./bin/get-version-number)
+ARCH=$appimagetool_arch ./output/appimagetool-$ARCH.AppImage --no-appstream $appdir output/tiddlydesktop-$package_arch-v$(./bin/get-version-number).AppImage
+}
+
 if [ "$CI" = "true" ]; then
     # Running in GitHub Actions, where each platform builds as a separate step, in parallel, with PLATFORM and ARCH variables supplied by the GitHub Actions script
 	case "$PLATFORM-$ARCH" in
@@ -118,9 +161,11 @@ if [ "$CI" = "true" ]; then
 			;;
 		linux-ia32)
 			build_linux32
+			build_linux_appimage
 			;;
 		linux-x64)
 			build_linux64
+			build_linux_appimage
 			;;
 	esac
 else

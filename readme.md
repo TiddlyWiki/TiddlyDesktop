@@ -20,6 +20,18 @@ Unzip into a folder and run `TiddlyWiki.app` or `nw.exe` and for linux `nw`
 
 Note that TiddlyDesktop will not work correctly from a Windows UNC network share (eg ``\\MY-SERVER\SHARE\MyFolder``). You should map the network share to a local drive, and run it from there.
 
+## Linux AppImage
+
+Linux releases are also available in the AppImage format. The AppImages are compatible with glibc-based Desktop Linux distributions such as Ubuntu, Fedora, and Arch Linux. The AppImages are _not_ compatible with musl-based Linux distributions such as Alpine Linux, nor are they compatible with Linux server distributions; Server distributions don't provide enough of the required dependencies.
+
+To use an AppImage, your Linux distribution must provide `fusermount3`, which is typically provided in a package named `fuse3`.
+
+Before you can execute an AppImage, you must set the executable permission:
+
+```
+chmod u+x tiddlydesktop-*-v*.AppImage
+```
+
 ## NixOS
 
 To install TiddlyDesktop on NixOS, you first need to add this repo to your `configuration.nix`; Using a `let` expression at the top of the file is a good approach: 
