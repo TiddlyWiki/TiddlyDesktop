@@ -92,6 +92,12 @@ jobs:
         with:
           name: tiddlydesktop-${{ matrix.platform-for-pkg }}-v${{ steps.td-version.outputs.version }}.zip
           path: output/tiddlydesktop-${{ matrix.platform-for-pkg }}-v${{ steps.td-version.outputs.version }}.zip
+      - name: "📤 Uploading Linux AppImage packages..."
+        uses: actions/upload-artifact@v4
+        if: matrix.platform == 'linux'
+        with:
+          name: tiddlydesktop-${{ matrix.platform-for-pkg }}-v${{ steps.td-version.outputs.version }}.AppImage
+          path: output/tiddlydesktop-${{ matrix.platform-for-pkg }}-v${{ steps.td-version.outputs.version }}.AppImage
     outputs:
       td-version: ${{ steps.td-version.outputs.version }}
 
@@ -115,3 +121,4 @@ jobs:
           draft: true
           files: |
             tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.zip
+            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.AppImage
