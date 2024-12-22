@@ -40,7 +40,7 @@ mkdir -p output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)
 if [ $# -gt 0 ]; then
     NWJS_VERSION=$1
 elif [ -z "$NWJS_VERSION" ]; then
-    NWJS_VERSION=0.77.0
+    NWJS_VERSION=0.94.0
 fi
 
 # Build function definitions (which will be called at the end of the script)
