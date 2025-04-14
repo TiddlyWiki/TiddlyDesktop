@@ -2,9 +2,6 @@
 Saving support for TiddlyWiki5 and TiddlyWiki Classic
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 // Helper to enable TiddlyFox-style saving for a window
@@ -161,5 +158,3 @@ function backupPathByPath(pathname) {
 }
 
 exports.backupPathByPath = backupPathByPath;
-
-})();

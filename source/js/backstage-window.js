@@ -2,9 +2,6 @@
 Class for backstage windows
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 var windowBase = require("../js/window-base.js"),
@@ -127,5 +124,3 @@ BackstageWindow.prototype.reopen = function() {
 };
 
 exports.BackstageWindow = BackstageWindow;
-
-})();

@@ -2,9 +2,6 @@
 Utilities concerned with managing the devtools panel
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 /*
@@ -21,5 +18,3 @@ exports.trapDevTools = function(window_nwjs,document) {
 		return true;
 	});
 };
-
-})();

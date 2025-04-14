@@ -2,9 +2,6 @@
 Utilities concerned with handling TiddlyDesktop links
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 // Helper to trap wikilinks within a window
@@ -33,5 +30,3 @@ exports.trapLinks = function(doc) {
 		return true;
 	},false);
 };
-
-})();

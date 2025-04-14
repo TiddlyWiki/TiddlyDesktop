@@ -2,9 +2,6 @@
 Hash utility
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 // https://gist.github.com/jlevy/c246006675becc446360a798e2b2d781
@@ -18,5 +15,3 @@ exports.simpleHash = function(str) {
 	}
 	return new Uint32Array([hash])[0].toString(36);
 };
-
-})();

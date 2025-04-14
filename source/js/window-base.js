@@ -2,9 +2,6 @@
 Base class methods for TiddlyDesktop window objects
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 exports.addBaseMethods = function(proto) {
@@ -36,5 +33,3 @@ exports.addBaseMethods = function(proto) {
 	};
 
 }
-
-})();

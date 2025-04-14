@@ -7,9 +7,6 @@ Propogate the version number from package.json to:
 
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 var fs = require("fs"),
@@ -30,5 +27,3 @@ fs.writeFileSync("./source/tiddlywiki/plugins/tiddlywiki/tiddlydesktop/plugin.in
 
 // Create $:/plugins/tiddlywiki/tiddlydesktop/version
 fs.writeFileSync("./source/tiddlywiki/plugins/tiddlywiki/tiddlydesktop/system/version.txt",packageInfo.version);
-
-})();

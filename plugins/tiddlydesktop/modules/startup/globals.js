@@ -8,10 +8,6 @@ Set up globals:
 * Copy version number from tiddler $:/TiddlyDesktop/version to variable $tw.desktop.version
 
 \*/
-(function(){
-
-/*jslint node: true, browser: true */
-/*global $tw: false */
 "use strict";
 
 // Export name and synchronous status
@@ -23,5 +19,3 @@ exports.startup = function() {
 	$tw.desktop = $tw.desktop || {};
 	$tw.desktop.version = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/version");
 };
-
-})();
