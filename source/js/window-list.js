@@ -2,9 +2,6 @@
 Manage the list of windows
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 var fs = require("fs"),
@@ -232,5 +229,3 @@ WindowList.prototype.cloneWebToPath = function(source,dest) {
 };
 
 exports.WindowList = WindowList;
-
-})();

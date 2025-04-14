@@ -2,9 +2,6 @@
 Class for wiki file windows
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 var windowBase = require("../js/window-base.js"),
@@ -182,5 +179,3 @@ WikiFileWindow.prototype.saveWikiListTiddler = function() {
 };
 
 exports.WikiFileWindow = WikiFileWindow;
-
-})();

@@ -2,10 +2,6 @@
 Utilities concerned with nwjs features
 */
 
-(function(){
-
-/*jslint browser: true */
-"use strict";
 
 exports.captureWindowToTiddler = function(window_nwjs,tiddlerTitle,callback) {
 	if(tiddlerTitle) {
@@ -27,5 +23,3 @@ exports.captureWindowToTiddler = function(window_nwjs,tiddlerTitle,callback) {
 		}
 	}
 };
-
-})();

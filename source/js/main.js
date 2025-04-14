@@ -2,9 +2,6 @@
 Main script, executed via main.html
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 var gui = require("nw.gui"),
@@ -179,5 +176,3 @@ $tw.boot.boot(function() {
 		$tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});		
 	}
 });
-
-})();

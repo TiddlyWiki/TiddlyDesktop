@@ -2,9 +2,6 @@
 Utilities concerned with TiddlyWiki internals
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 var fs = require("fs"),
@@ -46,5 +43,3 @@ exports.getBackstageWikiFolder = function(appDataPath) {
 	fs.writeFileSync(packageFilename,JSON.stringify(packageJson,null,4));
 	return wikiFolder;
 };
-
-})();

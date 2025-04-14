@@ -2,9 +2,6 @@
 Utilities concerned with file and path manipulation
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 exports.convertFileUrlToPath = function(url) {
@@ -28,5 +25,3 @@ exports.convertPathToFileUrl = function(path) {
 	}
 	return fileUriPrefix + path.replace(/\\/g,"/");
 }
-
-})();

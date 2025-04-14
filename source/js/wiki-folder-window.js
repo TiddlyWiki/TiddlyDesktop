@@ -2,9 +2,6 @@
 Class for wiki folder windows
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 var windowBase = require("../js/window-base.js"),
@@ -110,5 +107,3 @@ WikiFolderWindow.prototype.saveWikiListTiddler = function() {
 };
 
 exports.WikiFolderWindow = WikiFolderWindow;
-
-})();

@@ -2,9 +2,6 @@
 Script for wiki folder windows
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 var gui = require("nw.gui"),
@@ -59,4 +56,3 @@ console.log("Running tiddlywiki " + $tw.boot.argv.join(" "));
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 
 $tw.wiki.addTiddler({title: "$:/status/IsReadOnly",text: "no"});
-})();

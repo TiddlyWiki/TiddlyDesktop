@@ -2,9 +2,6 @@
 Utilities concerned with the DOM
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 exports.decodeQueryString = function(location) {
@@ -55,5 +52,3 @@ exports.findParentWithTag = function(node,tagName) {
 	}
 	return null;
 };
-
-})();

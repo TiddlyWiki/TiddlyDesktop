@@ -2,9 +2,6 @@
 Utilities concerned with nwjs menu bars
 */
 
-(function(){
-
-/*jslint browser: true */
 "use strict";
 
 exports.createMenuBar = function(win) {
@@ -14,5 +11,3 @@ exports.createMenuBar = function(win) {
 		win.menu = menuBar;
 	}
 };
-
-})();
