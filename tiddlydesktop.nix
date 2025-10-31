@@ -8,7 +8,7 @@
 , makeDesktopItem
 , copyDesktopItems
 , gsettings-desktop-schemas
-, wrapGAppsHook
+, wrapGAppsHook3
 , gtk3
 }:
 let
@@ -25,7 +25,7 @@ in stdenv.mkDerivation rec {
 
   src = ./.;
 
-  nativeBuildInputs = [ copyDesktopItems wrapGAppsHook gtk3 ]; 
+  nativeBuildInputs = [ copyDesktopItems wrapGAppsHook3 gtk3 ]; 
   buildInputs = [ nodePackages.tiddlywiki jq ];
 
   # These instructions are based on those from the bld.sh upstream script.
