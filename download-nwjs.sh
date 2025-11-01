@@ -14,17 +14,19 @@ fi
 
 # Download nw.js
 
+NWJS_BASE_URL="https://dl.node-webkit.org"
+
 if [ "$CI" = "true" ]; then
     # Running in GitHub Actions, where each platform builds as a separate step, in parallel, with PLATFORM and ARCH and EXT variables supplied by the GitHub Actions script
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-${PLATFORM}-${ARCH}.${EXT}" "https://dl.nwjs.io/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-${PLATFORM}-${ARCH}.${EXT}" || exit 1
+    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-${PLATFORM}-${ARCH}.${EXT}" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-${PLATFORM}-${ARCH}.${EXT}" || exit 1
 else
     # Running at the command line, where each platfom builds one at a time in sequence
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-x64.zip" "https://dl.nwjs.io/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-win-x64.zip" || exit 1
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-ia32.zip" "https://dl.nwjs.io/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-win-ia32.zip" || exit 1
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-x64.tar.gz" "https://dl.nwjs.io/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-linux-x64.tar.gz" || exit 1
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-ia32.tar.gz" "https://dl.nwjs.io/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-linux-ia32.tar.gz" || exit 1
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-x64.zip" "https://dl.nwjs.io/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-osx-x64.zip" || exit 1
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-arm64.zip" "https://dl.nwjs.io/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-osx-arm64.zip" || exit 1
+    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-x64.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-win-x64.zip" || exit 1
+    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-ia32.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-win-ia32.zip" || exit 1
+    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-x64.tar.gz" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-linux-x64.tar.gz" || exit 1
+    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-ia32.tar.gz" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-linux-ia32.tar.gz" || exit 1
+    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-x64.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-osx-x64.zip" || exit 1
+    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-arm64.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-osx-arm64.zip" || exit 1
 fi
 
 pushd nwjs
