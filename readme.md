@@ -32,6 +32,8 @@ Before you can execute an AppImage, you must set the executable permission:
 chmod u+x tiddlydesktop-*-v*.AppImage
 ```
 
+*Note that AppImages are not currently included in TiddlyDesktop releases.* The suggested workaround is to fork this repo in GitHub, and then push a dummy commit to the master branch. That will trigger the CI and produce an AppImage, which you can then access.
+
 ## NixOS
 
 To install TiddlyDesktop on NixOS, you first need to add this repo to your `configuration.nix`; Using a `let` expression at the top of the file is a good approach: 
