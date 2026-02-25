@@ -34,29 +34,131 @@ chmod u+x tiddlydesktop-*-v*.AppImage
 
 ## NixOS
 
-To install TiddlyDesktop on NixOS, you first need to add this repo to your `configuration.nix`; Using a `let` expression at the top of the file is a good approach: 
+<details>
+  <summary>Flakes</summary>
 
-```
-let
-  twdesktop = let
-    rev = "Set this to the TiddlyDesktop Git revision that you want to install.";
-  in import (fetchTarball "https://github.com/TiddlyWiki/TiddlyDesktop/archive/${rev}.tar.gz") { };
-in
- ...
-``` 
+  First add the repository to your inputs.
 
-Then add the attribute name (which is twdesktop in the example above) to your `systemPackages`:
+  Point to main branch:
+  
+  ```nix
+  inputs = {
+      ...
+      tiddly-desktop.url = "github:TiddlyWiki/TiddlyDesktop";
+      ...
+  };
+  ```
 
-```
-...
-environment.systemPackages = with pkgs; [
-   ...
-   twdesktop
-];
-...
-```
+  Point to a rev in main branch:
 
-In addition to the method described above, the tiddlydesktop package is available as a Nix Flake; See https://wiki.nixos.org/wiki/Flakes to read more about Flakes. Simply use the Flake input `github:TiddlyWiki/TiddlyDesktop`. For example, you can run TiddlyDesktop with the command `nix run github:TiddlyWiki/TiddlyDesktop`.
+  ```nix
+  inputs = {
+      ...
+      tiddly-desktop.url = "github:TiddlyWiki/TiddlyDesktop/9715840d450b4febec4c24c6fdbd4f74a80a5a12";
+      ...
+  };
+  ```
+
+  Point to a tag:
+
+  ```nix
+  inputs = {
+      ...
+      tiddly-desktop.url = "github:TiddlyWiki/TiddlyDesktop/refs/tags/v0.0.20";
+      ...
+  };
+  ```
+    
+  Then your outputs should look something like this:
+  
+  ```nix
+  outputs = {...} @ inputs: { 
+    # Don't forget to add nixpkgs to your inputs
+    nixosConfigurations."nixos" = inputs.nixpkgs.lib.nixosSystem {
+      ...
+      specialArgs = {inherit inputs;};
+      modules = [
+        ./configuration.nix
+        ... 
+      ];
+    };
+  };
+  ```
+  
+  And finally, somewhere in your `configuration.nix`:
+  
+  ```nix
+  {inputs, pkgs, ...}: {
+    ...
+    environment.systemPackages = [
+      # Note that if `pkgs.stdenv.hostPlatform.system` is anything
+      # other than x86_64-linux (e.g., your system is ARM), this will fail.
+      inputs.tiddly-desktop.packages.${pkgs.stdenv.hostPlatform.system}.default
+    ];
+    ...
+  }
+  ```
+</details>
+
+<details>
+  <summary>Non-Flakes</summary>
+  
+  #### Pinning Tool
+  
+  First add the pin using your pinning tool.
+
+  We assume you are using npins for this example but this can also be done
+  with other similar tools (lon, niv, nvfetcher).
+
+  Point to a branch:
+  
+  ```bash
+  npins add github TiddlyWiki TiddlyDesktop -b master
+  ```
+
+  Point to a rev in main branch:
+
+  ```bash
+  npins add github TiddlyWiki TiddlyDesktop -b master --at 9715840d450b4febec4c24c6fdbd4f74a80a5a12
+  ```
+
+  Point to a tag:
+
+  ```bash
+  npins add github TiddlyWiki TiddlyDesktop --at v0.0.20
+  ```
+
+  Or point to latest release:
+
+  ```bash
+  npins add github TiddlyWiki TiddlyDesktop
+  ```
+  
+  Then add the package to your `systemPackages`:
+  
+  ```nix
+  let
+    sources = import ./npins;
+  in {
+    environment.systemPackages = [
+      (import sources.TiddlyDesktop)
+    ];
+  }
+  ```
+  
+  #### No Pinning Tool
+  
+  ```nix
+  let
+    rev = "9715840d450b4febec4c24c6fdbd4f74a80a5a12"; # Or whatever rev you prefer
+    twdesktop = import (fetchTarball "https://github.com/TiddlyWiki/TiddlyDesktop/archive/${rev}.tar.gz") { };
+  in {
+    environment.systemPackages = [
+      twdesktop
+    ];
+  }
+  ```
+</details>
 
 # Usage
 
