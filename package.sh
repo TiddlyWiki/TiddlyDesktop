@@ -21,13 +21,16 @@ popd
 
 package_mac64() {
 pushd ./output/mac64
+sudo xattr -rc "./TiddlyDesktop-mac64-v$VERSION/TiddlyDesktop.app"
+sudo codesign --force --deep --sign - "./TiddlyDesktop-mac64-v$VERSION/TiddlyDesktop.app"
 zip --symlinks -r "../tiddlydesktop-mac64-v$VERSION.zip" *
 popd
 }
 
 package_macapplesilicon() {
 pushd ./output/macapplesilicon
-sudo xattr -rc "./TiddlyDesktop-macapplesilicon-v$VERSION/TiddlyDesktop.app" -a sudo codesign --force --deep --sign - "./TiddlyDesktop-macapplesilicon-v$VERSION/TiddlyDesktop.app"
+sudo xattr -rc "./TiddlyDesktop-macapplesilicon-v$VERSION/TiddlyDesktop.app"
+sudo codesign --force --deep --sign - "./TiddlyDesktop-macapplesilicon-v$VERSION/TiddlyDesktop.app"
 zip --symlinks -r "../tiddlydesktop-macapplesilicon-v$VERSION.zip" *
 popd
 }
