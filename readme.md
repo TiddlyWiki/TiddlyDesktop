@@ -189,8 +189,8 @@ Instructions for Windows 10 64-bit (updates for other OSs welcome).
 2. Run `npm install --save`
 2. Make a commit and push it
 3. Check the build output in the GitHub Actions tab
-3. Tag that commit with `git tag v0.0.21`, the version number you just updated in package.json
-4. Push that tag with `git push v0.0.21` and a draft release will be created
+3. Tag that commit with `git tag v0.0.22`, the version number you just updated in package.json
+4. Push that tag with `git push origin v0.0.22` and a draft release will be created
 5. Edit the draft release: add release notes, edit whatever else might need to be changed. Download its build files and test them
 6. Switch the draft release to be a public release once it's tested and ready
 

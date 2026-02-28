@@ -10,6 +10,6 @@
         "min_width": 700,
         "min_height": 500
     },
-    "version": "0.0.21",
+    "version": "0.0.22",
     "chromium-args": "--mixed-context --enable-spell-checking --allow-file-access-from-files --allow-file-access --allow-file-cookies --disable-features='SuppressDifferentOriginSubframeJSDialogs'"
 }
