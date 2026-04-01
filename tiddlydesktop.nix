@@ -1,6 +1,6 @@
 { stdenv
 , lib
-, nodePackages
+, tiddlywiki
 , nwjs
 , jq
 , writeScript
@@ -26,11 +26,11 @@ in stdenv.mkDerivation rec {
   src = ./.;
 
   nativeBuildInputs = [ copyDesktopItems wrapGAppsHook3 gtk3 ]; 
-  buildInputs = [ nodePackages.tiddlywiki jq ];
+  buildInputs = [ tiddlywiki jq ];
 
   # These instructions are based on those from the bld.sh upstream script.
   buildPhase = ''
-    cp -RH ${nodePackages.tiddlywiki}/lib/node_modules/tiddlywiki source/tiddlywiki
+    cp -RH ${tiddlywiki}/lib/node_modules/tiddlywiki source/tiddlywiki
     chmod -R u+w source
     cp -RH plugins/tiddlydesktop source/tiddlywiki/plugins/tiddlywiki
 
