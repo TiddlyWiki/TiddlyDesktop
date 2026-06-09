@@ -92,6 +92,16 @@ WikiFileWindow.prototype.onloadiframe = function() {
 	$tw.desktop.utils.saving.enableSaving(this.iframe.contentDocument,areBackupsEnabledFn,loadFileTextFn);
 	// Trap links
 	$tw.desktop.utils.links.trapLinks(this.iframe.contentDocument);
+	// Intercept cross-browser drag-drop imports so tiddlers dragged from Firefox
+	// (which Chromium otherwise hands to TW as text/html) keep their fields
+	$tw.desktop.utils.dragdrop.installImportInterceptor(
+		this.iframe.contentDocument,
+		this.iframe.contentWindow,
+		{
+			parentDocument: this.window_nwjs.window.document,
+			parentWindow: this.window_nwjs.window
+		}
+	);
 	// Observe mutations of the title element of the iframe
 	this.titleObserver = new MutationObserver(this.extractIframeTitle.bind(this));
 	var iframeTitleNode = this.iframe.contentDocument.getElementsByTagName("title")[0];
