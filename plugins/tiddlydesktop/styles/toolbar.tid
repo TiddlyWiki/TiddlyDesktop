@@ -5,6 +5,9 @@ tags: $:/tags/Stylesheet
 
 .td-toolbar {
 	position: relative;
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
