@@ -721,7 +721,7 @@ tags: $:/tags/Stylesheet
 
 .tc-collab-chat-wrap {
   position: fixed;
-  bottom: 26px;
+  bottom: 50px;
   right: 0;
   z-index: 901;
   display: flex;
@@ -901,7 +901,7 @@ tags: $:/tags/Stylesheet
 
 .tc-collab-get-wrap {
   position: fixed;
-  bottom: 48px;
+  bottom: 74px;
   right: 0;
   z-index: 901;
   display: flex;
