@@ -16,9 +16,13 @@ exports.platforms   = ["browser"];
 
 exports.startup = function() {
 
+	// Always use the transport's ephemeral session ID (this module loads after the
+	// transport). Never fall back to the persisted device-id config tiddler — on
+	// cloned wikis that holds a stale, shared value that would re-introduce ID
+	// collisions between the two copies.
 	var deviceId = (window.TiddlyDesktop && window.TiddlyDesktop.collab)
 		? window.TiddlyDesktop.collab.getDeviceId()
-		: ($tw.wiki.getTiddlerText("$:/config/codemirror-6-collab/device-id", "") || "unknown");
+		: "unknown";
 
 	var MSG_PREFIX   = "$:/temp/collab/chat/msg/";
 	var UNREAD_TITLE = "$:/temp/collab/chat/unread";

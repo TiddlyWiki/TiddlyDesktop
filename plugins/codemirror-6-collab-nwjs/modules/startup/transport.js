@@ -64,7 +64,7 @@ Config tiddlers (set in the wiki itself):
   $:/config/codemirror-6-collab/auth-token     - Bearer token
   $:/config/codemirror-6-collab/room-code      - room identifier
   $:/config/codemirror-6-collab/room-token     - E2E secret (NEVER sent to relay)
-  $:/config/codemirror-6-collab/device-id      - auto-generated, persisted
+  (device id is random + ephemeral per window session, never persisted)
   $:/config/codemirror-6-collab/device-name    - display name for this device
   $:/config/codemirror-6-collab/user-name      - display name for the user
   $:/config/codemirror-6-collab/user-color     - hex colour for cursor badge
@@ -130,14 +130,16 @@ exports.startup = function() {
 
 	var relayUrl, roomCode, authToken, roomToken, deviceName, userName, userColor;
 
-	// Persistent base ID (stored in wiki, stable across reconnects)
-	// + ephemeral session suffix (NOT persisted, unique per window load).
-	// This lets two simultaneously open windows of the same wiki be distinct peers.
-	var baseDeviceId  = _ensureDeviceId(nodeCrypto);
-	var sessionSuffix = nodeCrypto
-		? nodeCrypto.randomBytes(3).toString("hex")          // 6 hex chars, crypto-random
-		: Math.random().toString(36).slice(2, 8);
-	var deviceId   = baseDeviceId + "." + sessionSuffix;
+	// Fully-random, ephemeral device ID — generated fresh each time the wiki is
+	// opened and NEVER persisted into the wiki. This is deliberate: the ID used to
+	// be stored in $:/config/codemirror-6-collab/device-id, but single-file wikis
+	// save that tiddler into the HTML, so cloning a wiki (copying its .html) made
+	// both copies share the same ID. A relay that keys a room member by that ID
+	// then conflates the two clients and misroutes messages, breaking sync in one
+	// direction. A per-session random ID can never collide across clones or
+	// windows. It is computed once here, so it stays stable across reconnects
+	// within this window (reconnecting rejoins as the same member, not a new one).
+	var deviceId = _generateDeviceId(nodeCrypto);
 
 	var authProvider;
 
@@ -147,7 +149,7 @@ exports.startup = function() {
 		authToken    = _cfg("auth-token");
 		authProvider = _cfg("auth-provider");
 		roomToken    = _cfg("room-token");
-		deviceName   = _cfg("device-name") || baseDeviceId;
+		deviceName   = _cfg("device-name") || deviceId;
 		userName     = _cfg("user-name") || $tw.wiki.getTiddlerText("$:/temp/collab/auth-username", "") || $tw.wiki.getTiddlerText("$:/status/UserName") || "Anonymous";
 		userColor    = _cfg("user-color") || "";
 	}
@@ -640,14 +642,32 @@ exports.startup = function() {
 				connected = true;
 				_writeStatus("connected");
 				// Relay sends members as an array of device ID strings.
+				var liveIds = {};
 				(msg.members || []).forEach(function(m) {
 					var mId = (typeof m === "string") ? m : (m && m.deviceId);
 					if(mId && mId !== deviceId) {
+						liveIds[mId] = true;
 						var existing = memberInfo[mId] || {deviceId: mId, deviceName: mId, userName: "", userColor: ""};
 						memberInfo[mId] = existing;
 						_writeMember(mId, existing);
 					}
 				});
+				// Reconcile against the relay's authoritative member list: drop any
+				// local entries that are no longer present (stale sessions that left
+				// without a member_left, e.g. abrupt disconnects). Only prune when
+				// the relay actually sent a members array, so a memberless "joined"
+				// frame can't wipe everyone.
+				if(Array.isArray(msg.members)) {
+					Object.keys(memberInfo).forEach(function(mId) {
+						if(!liveIds[mId]) {
+							delete memberInfo[mId];
+							delete memberEditing[mId];
+							if(directPeers[mId]) { try { directPeers[mId].ws.terminate(); } catch(_) {} delete directPeers[mId]; }
+							delete peerSessions[mId];
+							_writeMember(mId, null);
+						}
+					});
+				}
 				_fire("collab-connected", {members: msg.members || []});
 				_sendRelay({type: "request-state", deviceId: deviceId});
 				// Broadcast our display info so peers can show our name/color.
@@ -1152,17 +1172,20 @@ function _cfg(key) {
 	return $tw.wiki.getTiddlerText("$:/config/codemirror-6-collab/" + key, "");
 }
 
-// Returns the persistent base device ID, generating and storing it if absent.
-// Uses crypto-random bytes when available for unguessable identifiers.
-// The caller appends an ephemeral session suffix so two simultaneously open
-// windows of the same wiki file are seen as distinct peers.
-function _ensureDeviceId(nodeCrypto) {
-	var id = _cfg("device-id");
-	if(!id) {
-		id = "nwjs-" + (nodeCrypto
-			? nodeCrypto.randomBytes(8).toString("hex")      // 64 bits, crypto-random
-			: Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
-		$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/config/codemirror-6-collab/device-id", text: id}));
+// Generate a fresh, fully-random, ephemeral device ID (128 bits). NOT persisted:
+// a new ID is minted every time the wiki is opened, so two clones of the same
+// wiki file can never share an ID. Prefers Node crypto, then WebCrypto (available
+// even in the nwdisable iframe of single-file wikis), then Math.random.
+function _generateDeviceId(nodeCrypto) {
+	var hex;
+	if(nodeCrypto && nodeCrypto.randomBytes) {
+		hex = nodeCrypto.randomBytes(16).toString("hex");
+	} else if(window.crypto && window.crypto.getRandomValues) {
+		var arr = new Uint8Array(16);
+		window.crypto.getRandomValues(arr);
+		hex = Array.prototype.map.call(arr, function(b) { return ("0" + b.toString(16)).slice(-2); }).join("");
+	} else {
+		hex = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
 	}
-	return id;
+	return "nwjs-" + hex;
 }

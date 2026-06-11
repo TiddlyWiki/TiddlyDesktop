@@ -85,9 +85,13 @@ exports.startup = function() {
 	// th-renaming-tiddler re-entry.
 	var suppressRenameHook = {};
 
+	// Always use the transport's ephemeral session ID (this module loads after the
+	// transport). Never fall back to the persisted device-id config tiddler — on
+	// cloned wikis that holds a stale, shared value that would re-introduce ID
+	// collisions between the two copies.
 	var deviceId = (window.TiddlyDesktop && window.TiddlyDesktop.collab)
 		? window.TiddlyDesktop.collab.getDeviceId()
-		: ($tw.wiki.getTiddlerText("$:/config/codemirror-6-collab/device-id", "") || "unknown");
+		: "unknown";
 
 	// ── utilities ──────────────────────────────────────────────────────────────
 
@@ -438,6 +442,16 @@ exports.startup = function() {
 	$tw.wiki.addEventListener("change", function(changes) {
 		Object.keys(changes).forEach(function(title) {
 			if(suppressEcho[title]) return;
+			// Owner deleted a tiddler they shared → unshare it: this drops it from
+			// the shared list and the persisted owned set (so it leaves future
+			// manifests) and broadcasts collab-unshare so peers remove it too.
+			// A rename moves the owned entry to the new title before this fires
+			// (via the th-renaming-tiddler hook), so this only matches genuine
+			// deletions of a still-owned tiddler.
+			if(changes[title].deleted && ownedTiddlers[title]) {
+				_unshareTiddler(title);
+				return;
+			}
 			if(!ownedTiddlers[title] && !subscribedTiddlers[title]) return;
 			var tiddler = $tw.wiki.getTiddler(title);
 			if(!tiddler || tiddler.fields["draft.of"]) return;
