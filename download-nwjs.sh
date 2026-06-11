@@ -24,7 +24,7 @@ else
     curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-x64.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-win-x64.zip" || exit 1
     curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-ia32.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-win-ia32.zip" || exit 1
     curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-x64.tar.gz" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-linux-x64.tar.gz" || exit 1
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-ia32.tar.gz" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-linux-ia32.tar.gz" || exit 1
+    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-arm64.tar.gz" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-linux-arm64.tar.gz" || exit 1
     curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-x64.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-osx-x64.zip" || exit 1
     curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-arm64.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-osx-arm64.zip" || exit 1
 fi

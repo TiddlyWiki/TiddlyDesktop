@@ -35,8 +35,8 @@ mkdir -p output/win32
 mkdir -p output/win32/TiddlyDesktop-win32-v$(./bin/get-version-number)
 mkdir -p output/win64
 mkdir -p output/win64/TiddlyDesktop-win64-v$(./bin/get-version-number)
-mkdir -p output/linux32
-mkdir -p output/linux32/TiddlyDesktop-linux32-v$(./bin/get-version-number)
+mkdir -p output/linuxarm64
+mkdir -p output/linuxarm64/TiddlyDesktop-linuxarm64-v$(./bin/get-version-number)
 mkdir -p output/linux64
 mkdir -p output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)
 
@@ -102,10 +102,10 @@ cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-x64/* output/linux64/TiddlyDesktop-l
 cp -RH source/* output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)
 }
 
-# # Linux 32-bit App
-build_linux32() {
-cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-ia32/* output/linux32/TiddlyDesktop-linux32-v$(./bin/get-version-number)
-cp -RH source/* output/linux32/TiddlyDesktop-linux32-v$(./bin/get-version-number)
+# # Linux ARM64 App
+build_linuxarm64() {
+cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-arm64/* output/linuxarm64/TiddlyDesktop-linuxarm64-v$(./bin/get-version-number)
+cp -RH source/* output/linuxarm64/TiddlyDesktop-linuxarm64-v$(./bin/get-version-number)
 }
 
 # # Linux AppImage
@@ -120,10 +120,10 @@ appimagetool_arch=""
 sudo apt-get install -y $runtime_dependencies $build_dependencies
 
 case "$ARCH" in
-    ia32)
-        package_arch="linux32"
-        appimagetool_arch="i686"
-        curl -L https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-i686.AppImage -o output/appimagetool-$ARCH.AppImage
+    arm64)
+        package_arch="linuxarm64"
+        appimagetool_arch="aarch64"
+        curl -L https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage -o output/appimagetool-$ARCH.AppImage
     ;;
     x64)
         package_arch="linux64"
@@ -166,8 +166,8 @@ if [ "$CI" = "true" ]; then
 		win-x64)
 			build_win64
 			;;
-		linux-ia32)
-			build_linux32
+		linux-arm64)
+			build_linuxarm64
 			build_linux_appimage
 			;;
 		linux-x64)
@@ -181,6 +181,6 @@ else
 	build_macapplesilicon
 	build_win32
 	build_win64
-	build_linux32
+	build_linuxarm64
 	build_linux64
 fi

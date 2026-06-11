@@ -21,10 +21,10 @@ jobs:
             platform-for-pkg: linux64
             runs-on: ubuntu-latest
           - platform: linux
-            arch: ia32
+            arch: arm64
             ext: tar.gz
-            platform-for-pkg: linux32
-            runs-on: ubuntu-latest
+            platform-for-pkg: linuxarm64
+            runs-on: ubuntu-24.04-arm
           - platform: win
             arch: x64
             ext: zip
