@@ -896,3 +896,120 @@ tags: $:/tags/Stylesheet
 .tc-collab-chat-send-btn:hover {
   color: <<colour foreground>>;
 }
+
+/* -- Get panel (shared tiddlers; sits directly above the Chat button) ------- */
+
+.tc-collab-get-wrap {
+  position: fixed;
+  bottom: 48px;
+  right: 0;
+  z-index: 901;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.tc-collab-get-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: <<colour tiddler-background>>;
+  border-top: 1px solid <<colour tiddler-border>>;
+  border-left: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px 0 0 0;
+  font-size: 0.76em;
+  color: <<colour foreground>>;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+
+.tc-collab-get-toggle:hover {
+  background: <<colour page-background>>;
+  color: <<colour foreground>>;
+}
+
+.tc-collab-get-badge {
+  display: inline-block;
+  background: #2e7d32;
+  color: #fff;
+  border-radius: 10px;
+  padding: 0 5px;
+  font-size: 0.85em;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.tc-collab-get-panel {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  background: <<colour tiddler-background>>;
+  border-top: 1px solid <<colour tiddler-border>>;
+  border-left: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px 0 0 0;
+  box-shadow: -3px -3px 10px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  font-size: 0.82em;
+  color: <<colour foreground>>;
+}
+
+.tc-collab-get-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  border-bottom: 1px solid <<colour tiddler-border>>;
+  font-weight: 500;
+  font-size: 0.9em;
+  user-select: none;
+}
+
+.tc-collab-get-close-btn {
+  color: <<colour muted-foreground>>;
+  font-size: 1em;
+  line-height: 1;
+}
+
+.tc-collab-get-close-btn:hover {
+  color: <<colour foreground>>;
+}
+
+.tc-collab-get-list {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  max-height: 320px;
+  min-height: 40px;
+  padding: 4px 0;
+}
+
+.tc-collab-get-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 10px;
+  border-bottom: 1px solid <<colour tiddler-border>>;
+}
+
+.tc-collab-get-item:last-child {
+  border-bottom: none;
+}
+
+.tc-collab-get-item-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.tc-collab-get-empty {
+  color: <<colour muted-foreground>>;
+  font-style: italic;
+  padding: 10px;
+  text-align: center;
+}

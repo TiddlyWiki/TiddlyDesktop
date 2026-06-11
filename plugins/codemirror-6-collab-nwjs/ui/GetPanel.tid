@@ -1,0 +1,60 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/GetPanel
+tags: $:/tags/PageTemplate
+
+\whitespace trim
+
+<$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
+<$reveal type="nomatch" state="$:/config/state/collab/chat-open" text="yes">
+<div class="tc-collab-get-wrap">
+
+<$reveal type="match" state="$:/config/state/collab/get-open" text="yes">
+<div class="tc-collab-get-panel">
+<div class="tc-collab-get-header">
+<span>Shared tiddlers</span>
+<$button set="$:/config/state/collab/get-open" setTo="no" class="tc-btn-invisible tc-collab-get-close-btn">✕</$button>
+</div>
+<div class="tc-collab-get-list">
+<$list filter="[prefix[$:/temp/collab/share/available/]sort[tiddler-title]]" emptyMessage="""<div class="tc-collab-get-empty">No shared tiddlers available</div>""">
+<$set name="sharedTitle" value={{{ [<currentTiddler>get[tiddler-title]] }}}>
+<$set name="isSubscribed" value={{{ [<currentTiddler>get[subscribed]] }}}>
+<$set name="isOwned" value={{{ [<sharedTitle>addprefix[$:/temp/collab/share/owned/]is[tiddler]then[yes]else[no]] }}}>
+<div class="tc-collab-get-item">
+<div class="tc-collab-get-item-info">
+<span class="tc-collab-shared-title"><$text text=<<sharedTitle>>/></span>
+<$list filter="[<isOwned>match[yes]]" variable="_">
+<span class="tc-collab-shared-owner-badge">yours</span>
+</$list>
+<$list filter="[<isOwned>!match[yes]]" variable="_">
+<span class="tc-collab-shared-by"><$text text="by "/><$text text={{{ [<currentTiddler>get[owner-name]] }}}/></span>
+</$list>
+</div>
+<$list filter="[<isOwned>!match[yes]]" variable="_">
+<$list filter="[<isSubscribed>match[yes]]" variable="_">
+<$button message="codemirror-6-collab-unsubscribe-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn tc-collab-get-btn-subscribed" tooltip="Stop receiving updates for this tiddler">✓ Got</$button>
+</$list>
+<$list filter="[<isSubscribed>!match[yes]]" variable="_">
+<$button message="codemirror-6-collab-get-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn" tooltip="Get this tiddler and subscribe to updates">Get</$button>
+</$list>
+</$list>
+</div>
+</$set>
+</$set>
+</$set>
+</$list>
+</div>
+</div>
+</$reveal>
+
+<$reveal type="nomatch" state="$:/config/state/collab/get-open" text="yes">
+<$set name="getCount" value={{{ [prefix[$:/temp/collab/share/available/]!field:subscribed[yes]] :filter[get[tiddler-title]addprefix[$:/temp/collab/share/owned/]!is[tiddler]] +[count[]] }}}>
+<$button class="tc-btn-invisible tc-collab-get-toggle" tooltip="Shared tiddlers you can get">
+<$action-setfield $tiddler="$:/config/state/collab/get-open" text="yes"/>
+<$action-setfield $tiddler="$:/config/state/collab/chat-open" text="no"/>
+<$list filter="[<getCount>!match[0]]" variable="_"><span class="tc-collab-get-badge"><$text text=<<getCount>>/></span></$list>Get
+</$button>
+</$set>
+</$reveal>
+
+</div>
+</$reveal>
+</$reveal>

@@ -27,7 +27,7 @@ tags: $:/tags/PageTemplate
 </$reveal>
 
 <$reveal type="nomatch" state="$:/config/state/collab/chat-open" text="yes">
-<$button set="$:/config/state/collab/chat-open" setTo="yes" class="tc-btn-invisible tc-collab-chat-toggle"><$list filter="[[$:/temp/collab/chat/unread]!field:text[0]!field:text[]]" variable="_"><span class="tc-collab-chat-badge"><$text text={{$:/temp/collab/chat/unread}}/></span></$list>Chat</$button>
+<$button class="tc-btn-invisible tc-collab-chat-toggle"><$action-setfield $tiddler="$:/config/state/collab/chat-open" text="yes"/><$action-setfield $tiddler="$:/config/state/collab/get-open" text="no"/><$list filter="[[$:/temp/collab/chat/unread]!field:text[0]!field:text[]]" variable="_"><span class="tc-collab-chat-badge"><$text text={{$:/temp/collab/chat/unread}}/></span></$list>Chat</$button>
 </$reveal>
 
 </div>
