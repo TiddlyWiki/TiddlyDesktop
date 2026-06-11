@@ -5,7 +5,6 @@ tags: $:/tags/PageTemplate
 
 <$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
 <div class="tc-collab-chat-wrap">
-
 <$reveal type="match" state="$:/config/state/collab/chat-open" text="yes">
 <div class="tc-collab-chat-panel">
 <div class="tc-collab-chat-header">
@@ -25,10 +24,8 @@ tags: $:/tags/PageTemplate
 </div>
 </div>
 </$reveal>
-
 <$reveal type="nomatch" state="$:/config/state/collab/chat-open" text="yes">
 <$button class="tc-btn-invisible tc-collab-chat-toggle"><$action-setfield $tiddler="$:/config/state/collab/chat-open" text="yes"/><$action-setfield $tiddler="$:/config/state/collab/get-open" text="no"/><$list filter="[[$:/temp/collab/chat/unread]!field:text[0]!field:text[]]" variable="_"><span class="tc-collab-chat-badge"><$text text={{$:/temp/collab/chat/unread}}/></span></$list>Chat</$button>
 </$reveal>
-
 </div>
 </$reveal>

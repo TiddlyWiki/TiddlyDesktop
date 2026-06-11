@@ -22,7 +22,7 @@ function WikiFileWindow(options) {
 	$tw.desktop.gui.Window.open("html/wiki-file-window.html",{
 		id: hash.simpleHash(this.getIdentifier()),
 		show: true,
-		icon: "images/app_icon.png"
+		icon: "images/app-icon256.png"
 	},function(win) {
 		self.window_nwjs = win;
 		self.window_nwjs.once("loaded",self.onloaded.bind(self));

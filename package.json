@@ -23,5 +23,8 @@
     "dependencies": {
         "tiddlywiki": "github:Jermolene/TiddlyWiki5#e8d4ce2ad017592c444ffddc77f232432f5a603a",
         "ws": "^8.18.0"
+    },
+    "devDependencies": {
+        "resedit": "^3.0.2"
     }
 }

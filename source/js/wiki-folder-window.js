@@ -30,7 +30,7 @@ function WikiFolderWindow(options) {
 		id: hash.simpleHash(this.getIdentifier()),
 		show: true,
 		new_instance: true,
-		icon: "images/app_icon.png"
+		icon: "images/app-icon256.png"
 	},function(win) {
 		self.window_nwjs = win;
 		self.window_nwjs.once("loaded",self.onloaded.bind(self));

@@ -4,7 +4,7 @@
     "window": {
         "id": "tiddlydesktop://",
         "show": false,
-        "icon": "images/app_icon.png",
+        "icon": "images/app-icon256.png",
         "width": 980,
         "height": 700,
         "min_width": 700,

@@ -633,6 +633,12 @@ exports.startup = function() {
 		});
 		// Ask all current peers for their manifests.
 		_send({type: "collab-manifest-request", requesterDeviceId: deviceId});
+		// Also announce our own shares to everyone already in the room. Without
+		// this, a peer that connects *after* us (and already has shared tiddlers)
+		// would never push its manifest to us — the member-joined handler only
+		// pushes manifests from existing peers to the newcomer, not the reverse —
+		// so its shares wouldn't appear until we reconnect.
+		_sendManifest();
 	});
 
 	window.addEventListener("collab-member-joined", function() {

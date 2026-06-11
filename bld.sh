@@ -86,14 +86,24 @@ xattr -c output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-versi
 
 # Windows 64-bit App
 build_win64() {
-cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-win-x64/* output/win64/TiddlyDesktop-win64-v$(./bin/get-version-number)
-cp -RH source/* output/win64/TiddlyDesktop-win64-v$(./bin/get-version-number)
+WIN64_DIR="output/win64/TiddlyDesktop-win64-v$(./bin/get-version-number)"
+cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-win-x64/* "$WIN64_DIR"
+cp -RH source/* "$WIN64_DIR"
+# Rename the executable and embed the TiddlyDesktop icon + version metadata so
+# Windows shows our icon in the taskbar, Start menu, Explorer and pinned shortcuts
+mv "$WIN64_DIR/nw.exe" "$WIN64_DIR/TiddlyDesktop.exe"
+node bin/set-win-icon.js "$WIN64_DIR/TiddlyDesktop.exe" icons/app.ico $(./bin/get-version-number)
 }
 
 # # Windows 32-bit App
 build_win32() {
-cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-win-ia32/* output/win32/TiddlyDesktop-win32-v$(./bin/get-version-number)
-cp -RH source/* output/win32/TiddlyDesktop-win32-v$(./bin/get-version-number)
+WIN32_DIR="output/win32/TiddlyDesktop-win32-v$(./bin/get-version-number)"
+cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-win-ia32/* "$WIN32_DIR"
+cp -RH source/* "$WIN32_DIR"
+# Rename the executable and embed the TiddlyDesktop icon + version metadata so
+# Windows shows our icon in the taskbar, Start menu, Explorer and pinned shortcuts
+mv "$WIN32_DIR/nw.exe" "$WIN32_DIR/TiddlyDesktop.exe"
+node bin/set-win-icon.js "$WIN32_DIR/TiddlyDesktop.exe" icons/app.ico $(./bin/get-version-number)
 }
 
 # # Linux 64-bit App

@@ -6,7 +6,6 @@ tags: $:/tags/PageTemplate
 <$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
 <$reveal type="nomatch" state="$:/config/state/collab/chat-open" text="yes">
 <div class="tc-collab-get-wrap">
-
 <$reveal type="match" state="$:/config/state/collab/get-open" text="yes">
 <div class="tc-collab-get-panel">
 <div class="tc-collab-get-header">
@@ -44,7 +43,6 @@ tags: $:/tags/PageTemplate
 </div>
 </div>
 </$reveal>
-
 <$reveal type="nomatch" state="$:/config/state/collab/get-open" text="yes">
 <$set name="getCount" value={{{ [prefix[$:/temp/collab/share/available/]!field:subscribed[yes]] :filter[get[tiddler-title]addprefix[$:/temp/collab/share/owned/]!is[tiddler]] +[count[]] }}}>
 <$button class="tc-btn-invisible tc-collab-get-toggle" tooltip="Shared tiddlers you can get">
@@ -54,7 +52,6 @@ tags: $:/tags/PageTemplate
 </$button>
 </$set>
 </$reveal>
-
 </div>
 </$reveal>
 </$reveal>
