@@ -43,8 +43,33 @@ remove
 </$button>
 </div>
 <div class="td-wiki-toolbar-item">
+<$list filter="[all[current]prefix[wikifile://]]" variable="ignore">
+<div class="td-file-input-wrapper">
+<$button class="tc-btn-invisible td-button td-wikilist-button-convert">
+{{$:/core/images/folder}} to folder
+</$button>
+<$browse nwdirectory message="tiddlydesktop-convert-wiki" param=<<currentTiddler>> tooltip="Choose (or create) an empty folder for the new wiki folder"/>
+</div>
+</$list>
+<$list filter="[all[current]prefix[wikifolder://]]" variable="ignore">
+<$set name="convertDefaultName" value={{{ [<currentTiddler>removeprefix[wikifolder://]split[/]last[]addsuffix[.html]] }}}>
+<div class="td-file-input-wrapper">
+<$button class="tc-btn-invisible td-button td-wikilist-button-convert">
+{{$:/core/images/file}} to file
+</$button>
+<$browse nwsaveas=<<convertDefaultName>> accept=".html,.htm" message="tiddlydesktop-convert-wiki" param=<<currentTiddler>> tooltip="Choose where to save the new single-file wiki"/>
+</div>
+</$set>
+</$list>
+</div>
+<div class="td-wiki-toolbar-item">
 <$button popup="""$:/TiddlyDesktop/Config/advanced/$(currentTiddler)$""" class="tc-btn-invisible td-button td-wikilist-button-advanced">
 advanced
+</$button>
+</div>
+<div class="td-wiki-toolbar-item">
+<$button message="tiddlydesktop-open-plugin-chooser" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-plugins">
+plugins
 </$button>
 </div>
 <div class="td-wiki-toolbar-item">

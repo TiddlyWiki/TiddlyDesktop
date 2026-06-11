@@ -1,0 +1,898 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/styles/collab-ui
+tags: $:/tags/Stylesheet
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+.tc-collab-sidebar {
+  padding: 1em;
+  font-size: 0.9em;
+}
+
+.tc-collab-status-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 1em;
+  font-weight: 500;
+}
+
+.tc-collab-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #999;
+}
+
+.tc-collab-dot-connected    { background: #4caf50; }
+.tc-collab-dot-connecting   { background: #ff9800; }
+.tc-collab-dot-disconnected { background: #9e9e9e; }
+.tc-collab-dot-error        { background: #f44336; }
+.tc-collab-dot-auth-failed  { background: #f44336; }
+.tc-collab-dot-access-denied { background: #f44336; }
+
+.tc-collab-lan-badge {
+  display: inline-block;
+  font-size: 0.82em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.tc-collab-e2e-badge {
+  display: inline-block;
+  font-size: 0.82em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: help;
+}
+
+.tc-collab-e2e-strong {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.tc-collab-e2e-weak {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.tc-collab-no-peers {
+  color: #888;
+  font-style: italic;
+  margin-bottom: 0.5em;
+}
+
+.tc-collab-member {
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.07);
+}
+
+.tc-collab-member:last-child {
+  border-bottom: none;
+}
+
+.tc-collab-member-name {
+  font-weight: 500;
+}
+
+.tc-collab-member-editing {
+  color: #888;
+  font-size: 0.85em;
+}
+
+.tc-collab-error-notice {
+  margin-bottom: 0.75em;
+  padding: 6px 10px;
+  background: #fdecea;
+  border: 1px solid #f44336;
+  border-radius: 4px;
+  color: #b71c1c;
+  font-size: 0.85em;
+}
+
+.tc-collab-conflict-notice {
+  margin-top: 1em;
+  padding: 6px 10px;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  color: #856404;
+  font-size: 0.85em;
+}
+
+.tc-collab-setup-prompt {
+  background: <<colour tiddler-background>>;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px;
+  padding: 0.8em 1em;
+  margin-bottom: 1em;
+}
+
+.tc-collab-setup-prompt p {
+  margin: 0 0 0.6em;
+  font-size: 0.88em;
+}
+
+.tc-collab-setup-prompt .tc-edit-fields {
+  width: 100%;
+  margin-bottom: 0.6em;
+}
+
+.tc-collab-setup-prompt .tc-edit-field-name {
+  white-space: nowrap;
+  padding-right: 0.5em;
+  font-size: 0.85em;
+  color: <<colour muted-foreground>>;
+}
+
+.tc-collab-setup-prompt .tc-edit-field-value input {
+  width: 100%;
+  padding: 3px 6px;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 3px;
+  background: <<colour page-background>>;
+  color: <<colour foreground>>;
+  font-size: 0.85em;
+}
+
+.tc-collab-settings-toggle {
+  margin-top: 0.8em;
+}
+
+.tc-collab-settings-btn {
+  font-size: 0.8em;
+  color: <<colour muted-foreground>>;
+  padding: 2px 0;
+}
+
+.tc-collab-settings-btn:hover {
+  color: <<colour foreground>>;
+}
+
+.tc-collab-settings-panel {
+  margin-top: 0.6em;
+  border-top: 1px solid <<colour tiddler-border>>;
+  padding-top: 0.6em;
+}
+
+.tc-collab-settings-group {
+  margin-bottom: 0.8em;
+}
+
+.tc-collab-settings-label {
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: <<colour muted-foreground>>;
+  margin-bottom: 4px;
+}
+
+.tc-collab-settings-panel .tc-edit-fields {
+  width: 100%;
+}
+
+.tc-collab-settings-panel .tc-edit-field-name {
+  font-size: 0.82em;
+  color: <<colour muted-foreground>>;
+  white-space: nowrap;
+  padding-right: 6px;
+  vertical-align: middle;
+}
+
+.tc-collab-settings-panel .tc-edit-field-value input {
+  width: 100%;
+  padding: 3px 5px;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 3px;
+  background: <<colour page-background>>;
+  color: <<colour foreground>>;
+  font-size: 0.82em;
+}
+
+/* -- Room panel -------------------------------------------------------------- */
+
+.tc-collab-room-panel {
+  margin: 0.6em 0;
+  padding: 0.5em 0.7em;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px;
+  background: <<colour tiddler-background>>;
+}
+
+.tc-collab-in-room-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tc-collab-room-name {
+  flex: 1;
+  font-size: 0.88em;
+}
+
+.tc-collab-invite-btn,
+.tc-collab-leave-btn,
+.tc-collab-connect-btn,
+.tc-collab-disconnect-btn {
+  font-size: 0.78em;
+  padding: 2px 8px;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 3px;
+  opacity: 0.7;
+}
+
+.tc-collab-invite-btn:hover,
+.tc-collab-leave-btn:hover,
+.tc-collab-connect-btn:hover,
+.tc-collab-disconnect-btn:hover {
+  opacity: 1;
+}
+
+.tc-collab-connect-btn {
+  border-color: <<colour primary>>;
+  color: <<colour primary>>;
+}
+
+.tc-collab-leave-btn:hover,
+.tc-collab-disconnect-btn:hover {
+  border-color: #d32f2f;
+  color: #d32f2f;
+}
+
+/* -- Copy-to-clipboard button (invite code box) ----------------------------- */
+
+.tc-collab-copy-btn {
+  font-size: 0.75em;
+  padding: 1px 6px;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 3px;
+  margin-left: 6px;
+  opacity: 0.7;
+  vertical-align: middle;
+}
+
+.tc-collab-copy-btn:hover {
+  opacity: 1;
+}
+
+.tc-collab-invite-box {
+  margin-top: 0.5em;
+  padding: 0.4em 0.6em;
+  background: <<colour page-background>>;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 3px;
+  word-break: break-all;
+  font-size: 0.78em;
+}
+
+.tc-collab-invite-hint {
+  display: block;
+  margin-top: 3px;
+  color: <<colour muted-foreground>>;
+}
+
+.tc-collab-join-panel {
+  padding: 2px 0;
+}
+
+.tc-collab-join-row {
+  display: flex;
+  gap: 6px;
+}
+
+.tc-collab-join-row input {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 3px;
+  background: <<colour page-background>>;
+  color: <<colour foreground>>;
+  font-size: 0.85em;
+}
+
+.tc-collab-join-btn {
+  padding: 4px 12px;
+  border: 1px solid <<colour primary>>;
+  border-radius: 3px;
+  background: <<colour primary>>;
+  color: #fff;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+.tc-collab-join-btn:hover {
+  opacity: 0.85;
+}
+
+/* -- OAuth / account section ------------------------------------------------- */
+
+.tc-collab-auth-section {
+  margin-top: 1.2em;
+  padding-top: 0.8em;
+  border-top: 1px solid <<colour tiddler-border>>;
+}
+
+.tc-collab-auth-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.6em;
+  font-size: 0.9em;
+}
+
+.tc-collab-auth-provider {
+  color: <<colour muted-foreground>>;
+  font-size: 0.85em;
+}
+
+.tc-collab-signout-btn {
+  font-size: 0.82em;
+  padding: 2px 8px;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 3px;
+  opacity: 0.7;
+}
+
+.tc-collab-signout-btn:hover {
+  opacity: 1;
+}
+
+.tc-collab-signin-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 0.6em;
+}
+
+.tc-collab-signin-btn {
+  padding: 6px 14px;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px;
+  background: <<colour tiddler-background>>;
+  font-size: 0.88em;
+  font-weight: 500;
+}
+
+.tc-collab-signin-btn:hover {
+  background: <<colour page-background>>;
+  border-color: <<colour primary>>;
+}
+
+.tc-collab-auth-status {
+  font-size: 0.85em;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: <<colour tiddler-background>>;
+  border: 1px solid <<colour tiddler-border>>;
+  margin-bottom: 0.6em;
+}
+
+.tc-collab-auth-hint {
+  font-size: 0.85em;
+  color: <<colour muted-foreground>>;
+}
+
+.tc-collab-token-details {
+  margin-top: 0.8em;
+  font-size: 0.88em;
+}
+
+.tc-collab-token-details summary {
+  cursor: pointer;
+  color: <<colour muted-foreground>>;
+  padding: 2px 0;
+}
+
+.tc-collab-token-details summary:hover {
+  color: <<colour foreground>>;
+}
+
+.tc-collab-token-details .tc-edit-fields {
+  margin-top: 0.5em;
+}
+
+/* -- Shared tiddlers list ---------------------------------------------------- */
+
+.tc-collab-shared-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  border-bottom: 1px solid <<colour tiddler-border>>;
+  flex-wrap: wrap;
+}
+
+.tc-collab-shared-item:last-child {
+  border-bottom: none;
+}
+
+.tc-collab-shared-title {
+  flex: 1;
+  font-size: 0.85em;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.tc-collab-shared-by {
+  font-size: 0.75em;
+  color: <<colour muted-foreground>>;
+  white-space: nowrap;
+}
+
+.tc-collab-shared-owner-badge {
+  font-size: 0.72em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: <<colour primary>>;
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.tc-collab-get-btn {
+  font-size: 0.75em;
+  padding: 2px 8px;
+  border: 1px solid <<colour primary>>;
+  border-radius: 3px;
+  color: <<colour primary>>;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.tc-collab-get-btn:hover {
+  background: <<colour primary>>;
+  color: #fff;
+}
+
+.tc-collab-get-btn-subscribed {
+  border-color: #4caf50;
+  color: #4caf50;
+}
+
+.tc-collab-get-btn-subscribed:hover {
+  background: #4caf50;
+  color: #fff;
+}
+
+/* -- Toolbar share button ---------------------------------------------------- */
+
+.tc-collab-share-btn {
+  padding: 2px 6px;
+  opacity: 0.6;
+}
+
+.tc-collab-share-btn:hover {
+  opacity: 1;
+  color: <<colour primary>>;
+}
+
+.tc-collab-share-btn-active {
+  opacity: 1;
+  color: #4caf50;
+}
+
+.tc-tiddler-controls button.tc-collab-share-btn-active svg,
+.tc-tiddler-edit-controls button.tc-collab-share-btn-active svg {
+  fill: #4caf50;
+}
+
+/* -- Shared edit banner ------------------------------------------------------ */
+
+.tc-collab-edit-shared-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  margin-bottom: 4px;
+  background: rgba(76, 175, 80, 0.07);
+  border: 1px solid rgba(76, 175, 80, 0.22);
+  border-radius: 3px;
+  font-size: 0.8em;
+  color: #2e7d32;
+  line-height: 1.4;
+}
+
+.tc-collab-edit-shared-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4caf50;
+  flex-shrink: 0;
+}
+
+.tc-collab-edit-shared-label {
+  font-weight: 500;
+}
+
+.tc-collab-edit-shared-role {
+  font-size: 0.88em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #4caf50;
+  color: #fff;
+  font-weight: 600;
+}
+
+.tc-collab-edit-shared-by {
+  color: #388e3c;
+  font-size: 0.9em;
+}
+
+/* -- Conflict overlay -------------------------------------------------------- */
+
+.tc-collab-conflict-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tc-collab-conflict-dialog {
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.28);
+  padding: 2em;
+  max-width: 820px;
+  width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.tc-collab-conflict-title {
+  margin: 0 0 0.5em;
+  font-size: 1.2em;
+}
+
+.tc-collab-conflict-panels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1em;
+  margin: 1em 0;
+}
+
+.tc-collab-conflict-panel-label {
+  font-size: 0.8em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.tc-collab-conflict-content {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 0.8em;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 0;
+}
+
+.tc-collab-conflict-actions {
+  display: flex;
+  gap: 1em;
+  flex-wrap: wrap;
+}
+
+.tc-collab-btn-discard {
+  background: #d32f2f;
+  color: #fff;
+  border-radius: 4px;
+  padding: 8px 16px;
+}
+
+.tc-collab-btn-discard:hover {
+  background: #b71c1c;
+}
+
+.tc-collab-btn-keep {
+  background: #1976d2;
+  color: #fff;
+  border-radius: 4px;
+  padding: 8px 16px;
+}
+
+.tc-collab-btn-keep:hover {
+  background: #1565c0;
+}
+
+/* -- Colour picker ---------------------------------------------------------- */
+
+.tc-collab-color-picker {
+  width: 40px;
+  height: 26px;
+  padding: 1px 2px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  cursor: pointer;
+  background: none;
+}
+
+/* -- Page controls button -------------------------------------------------- */
+
+.tc-collab-pagecontrols-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* -- Status bar (fixed bottom-right) --------------------------------------- */
+
+.tc-collab-statusbar {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 10px;
+  background: <<colour tiddler-background>>;
+  border-top: 1px solid <<colour tiddler-border>>;
+  border-left: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px 0 0 0;
+  font-size: 0.76em;
+  color: <<colour foreground>>;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  user-select: none;
+  pointer-events: none;
+  line-height: 1.6;
+}
+
+.tc-collab-statusbar-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.tc-collab-statusbar-badge code {
+  font-size: 0.92em;
+  background: <<colour page-background>>;
+  padding: 0 3px;
+  border-radius: 2px;
+  font-family: inherit;
+}
+
+.tc-collab-statusbar-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: <<colour muted-foreground>>;
+  vertical-align: middle;
+}
+
+.tc-collab-statusbar-dot-connected     { background: #4caf50; }
+.tc-collab-statusbar-dot-connecting    { background: #ff9800; }
+.tc-collab-statusbar-dot-disconnected  { background: <<colour muted-foreground>>; }
+.tc-collab-statusbar-dot-error         { background: #f44336; }
+.tc-collab-statusbar-dot-auth-failed   { background: #f44336; }
+.tc-collab-statusbar-dot-access-denied { background: #f44336; }
+
+.tc-collab-statusbar-sep {
+  color: <<colour muted-foreground>>;
+  padding: 0 1px;
+}
+
+.tc-collab-statusbar-dim {
+  color: <<colour muted-foreground>>;
+  font-style: italic;
+}
+
+/* The E2E badge in the status bar is icon-only, so give it a solid, saturated
+   chip background that contrasts against the (light) status-bar background
+   rather than the pale sidebar fills. */
+.tc-collab-statusbar .tc-collab-e2e-badge {
+  padding: 0 5px;
+  border-radius: 3px;
+  font-size: 0.95em;
+  line-height: 1.4;
+}
+
+.tc-collab-statusbar .tc-collab-e2e-strong {
+  background: #2e7d32;
+}
+
+.tc-collab-statusbar .tc-collab-e2e-weak {
+  background: #c77700;
+}
+
+/* -- Chat panel (bottom-right, above status bar) ---------------------------- */
+
+.tc-collab-chat-wrap {
+  position: fixed;
+  bottom: 26px;
+  right: 0;
+  z-index: 901;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.tc-collab-chat-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  background: <<colour tiddler-background>>;
+  border-top: 1px solid <<colour tiddler-border>>;
+  border-left: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px 0 0 0;
+  font-size: 0.76em;
+  color: <<colour foreground>>;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  cursor: pointer;
+}
+
+.tc-collab-chat-toggle:hover {
+  background: <<colour page-background>>;
+  color: <<colour foreground>>;
+}
+
+.tc-collab-chat-badge {
+  display: inline-block;
+  background: #f44336;
+  color: #fff;
+  border-radius: 10px;
+  padding: 0 5px;
+  font-size: 0.85em;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.tc-collab-chat-panel {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  background: <<colour tiddler-background>>;
+  border-top: 1px solid <<colour tiddler-border>>;
+  border-left: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px 0 0 0;
+  box-shadow: -3px -3px 10px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  font-size: 0.82em;
+  color: <<colour foreground>>;
+}
+
+.tc-collab-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  border-bottom: 1px solid <<colour tiddler-border>>;
+  font-weight: 500;
+  font-size: 0.9em;
+  user-select: none;
+}
+
+.tc-collab-chat-close-btn {
+  color: <<colour muted-foreground>>;
+  font-size: 1em;
+  line-height: 1;
+}
+
+.tc-collab-chat-close-btn:hover {
+  color: <<colour foreground>>;
+}
+
+.tc-collab-chat-messages {
+  display: flex;
+  flex-direction: column-reverse;
+  overflow-y: auto;
+  max-height: 280px;
+  min-height: 60px;
+  padding: 8px;
+  gap: 6px;
+}
+
+.tc-collab-chat-empty {
+  color: <<colour muted-foreground>>;
+  font-style: italic;
+  font-size: 0.9em;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.tc-collab-chat-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 88%;
+  align-self: flex-start;
+}
+
+.tc-collab-chat-msg-local {
+  align-self: flex-end;
+}
+
+.tc-collab-chat-meta {
+  font-size: 0.8em;
+  color: <<colour muted-foreground>>;
+}
+
+.tc-collab-chat-msg-local .tc-collab-chat-meta {
+  text-align: right;
+}
+
+.tc-collab-chat-time {
+  color: <<colour muted-foreground>>;
+}
+
+.tc-collab-chat-text {
+  background: <<colour page-background>>;
+  padding: 4px 8px;
+  border-radius: 4px;
+  word-break: break-word;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.tc-collab-chat-msg-local .tc-collab-chat-text {
+  background: <<colour primary>>;
+  color: <<colour tiddler-background>>;
+}
+
+.tc-collab-chat-input-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-top: 1px solid <<colour tiddler-border>>;
+}
+
+.tc-collab-chat-input-row > span {
+  flex: 1;
+  display: flex;
+}
+
+.tc-collab-chat-input {
+  flex: 1;
+  width: 100%;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 1em;
+  outline: none;
+  font-family: inherit;
+  background: <<colour tiddler-background>>;
+  color: <<colour foreground>>;
+}
+
+.tc-collab-chat-input:focus {
+  border-color: <<colour primary>>;
+}
+
+.tc-collab-chat-send-btn {
+  font-size: 0.9em;
+  color: <<colour primary>>;
+  padding: 3px 8px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tc-collab-chat-send-btn:hover {
+  color: <<colour foreground>>;
+}

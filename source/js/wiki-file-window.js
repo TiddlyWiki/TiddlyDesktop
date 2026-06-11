@@ -18,7 +18,7 @@ function WikiFileWindow(options) {
 	this.pathname = options.info.pathname;
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Open the window
-console.log("Opening window with id",this.getIdentifier());
+	console.log("Opening window with id",this.getIdentifier());
 	$tw.desktop.gui.Window.open("html/wiki-file-window.html",{
 		id: hash.simpleHash(this.getIdentifier()),
 		show: true,
@@ -92,6 +92,16 @@ WikiFileWindow.prototype.onloadiframe = function() {
 	$tw.desktop.utils.saving.enableSaving(this.iframe.contentDocument,areBackupsEnabledFn,loadFileTextFn);
 	// Trap links
 	$tw.desktop.utils.links.trapLinks(this.iframe.contentDocument);
+	// Intercept cross-browser drag-drop imports so tiddlers dragged from Firefox
+	// (which Chromium otherwise hands to TW as text/html) keep their fields
+	$tw.desktop.utils.dragdrop.installImportInterceptor(
+		this.iframe.contentDocument,
+		this.iframe.contentWindow,
+		{
+			parentDocument: this.window_nwjs.window.document,
+			parentWindow: this.window_nwjs.window
+		}
+	);
 	// Observe mutations of the title element of the iframe
 	this.titleObserver = new MutationObserver(this.extractIframeTitle.bind(this));
 	var iframeTitleNode = this.iframe.contentDocument.getElementsByTagName("title")[0];
@@ -102,8 +112,137 @@ WikiFileWindow.prototype.onloadiframe = function() {
 	this.favIconObserver = new MutationObserver(this.extractIframeFavicon.bind(this));
 	this.extractIframeFavicon();
 	if(faviconLink) {
-		this.favIconObserver.observe(faviconLink,{attributes: true, childList: true, characterData: true});		
+		this.favIconObserver.observe(faviconLink,{attributes: true, childList: true, characterData: true});
 	}
+	// HTTP queue bridge for plugins running inside the nwdisable iframe.
+	// nwdisable strips Node.js and suppresses any network I/O initiated from the
+	// iframe's call stack. Solution: the parent owns a setInterval that drains a
+	// shared request queue entirely from its own event loop tick. The iframe pushes
+	// requests and polls results as plain window properties — no cross-context
+	// function calls needed during async operations.
+	try {
+		var _httpsM = require("https"), _httpM = require("http");
+		// Initialise the shared queue/results store visible to the iframe.
+		self.iframe.contentWindow._nwjsHttpQueue   = [];
+		self.iframe.contentWindow._nwjsHttpResults = {};
+		// Parent-side queue processor — runs entirely in parent context.
+		var _queueTimer = setInterval(function() {
+			try {
+				var cw    = self.iframe.contentWindow;
+				var queue = cw._nwjsHttpQueue;
+				if(!queue || !queue.length) return;
+				var item = queue.shift();
+				var mod  = (item.url && item.url.substr(0,8) === "https://") ? _httpsM : _httpM;
+				mod.get(item.url, {headers: item.headers || {}}, function(res) {
+					var body = "";
+					res.setEncoding("utf8");
+					res.on("data", function(c) { body += c; });
+					res.on("end", function() {
+						var results = cw._nwjsHttpResults;
+						if(!results) return;
+						if(res.statusCode < 200 || res.statusCode >= 300) {
+							results[item.id] = {err: "HTTP " + res.statusCode};
+						} else {
+							try { results[item.id] = {data: JSON.parse(body)}; }
+							catch(e) { results[item.id] = {err: "Invalid JSON"}; }
+						}
+					});
+				}).on("error", function(e) {
+					var results = cw._nwjsHttpResults;
+					if(results) results[item.id] = {err: e.message || String(e)};
+				});
+			} catch(_e) {}
+		}, 200);
+		self.window_nwjs.once("close", function() { clearInterval(_queueTimer); });
+		// Shell.openExternal bridge (GUI call — not affected by nwdisable).
+		self.iframe.contentWindow._nwjsOpenExternal = function(url) {
+			$tw.desktop.gui.Shell.openExternal(url);
+		};
+		// Notify oauth.js that the queue is ready.
+		if(typeof self.iframe.contentWindow._nwjsHttpQueueReady === "function") {
+			self.iframe.contentWindow._nwjsHttpQueueReady();
+		}
+		// WebSocket bridge — same queue-drain pattern as the HTTP bridge above.
+		// All socket creation and event dispatch happen inside the parent's setInterval
+		// tick (browser context) to avoid NW.js cross-context callback issues.
+		// The iframe pushes commands to _nwjsWsCmdQueue; the parent processes them and
+		// pushes events to _nwjsWsEventQueue; the setInterval drains both queues.
+		var _wsLib = require("ws");
+		var _wsPool = {};
+		var _wsIdSeq = 0;
+		self.iframe.contentWindow._nwjsWsCmdQueue   = [];
+		self.iframe.contentWindow._nwjsWsEventQueue = [];
+		var _wsTimer = setInterval(function() {
+			try {
+				var cw = self.iframe.contentWindow;
+				if(!cw) return;
+				// Process commands queued by the iframe
+				var cmds = cw._nwjsWsCmdQueue;
+				while(cmds && cmds.length) {
+					var cmd = cmds.shift();
+					if(cmd.op === "create") {
+						(function(id, url, hdrs) {
+							var wsHeaders = {"User-Agent": "TiddlyDesktop/1.0 NW.js"};
+							Object.keys(hdrs || {}).forEach(function(k) { wsHeaders[k] = hdrs[k]; });
+							console.log("[ws-bridge] Creating id=" + id + " url=" + url);
+							try {
+								var sock = new _wsLib(url, {headers: wsHeaders, perMessageDeflate: false, handshakeTimeout: 15000});
+								_wsPool[id] = sock;
+								sock.on("open",    function()        { if(cw._nwjsWsEventQueue) cw._nwjsWsEventQueue.push({id: id, type: "open",    data: null}); });
+								sock.on("message", function(d, meta) { if(cw._nwjsWsEventQueue) cw._nwjsWsEventQueue.push({id: id, type: "message", data: (meta && meta.binary) ? d : d.toString("utf8")}); });
+								sock.on("close",   function()        { delete _wsPool[id]; if(cw._nwjsWsEventQueue) cw._nwjsWsEventQueue.push({id: id, type: "close",   data: null}); });
+								sock.on("error",   function(e)       { console.error("[ws-bridge] Error id=" + id + ":", e && e.message); if(cw._nwjsWsEventQueue) cw._nwjsWsEventQueue.push({id: id, type: "error",   data: e && e.message || ""}); });
+							} catch(e) {
+								console.error("[ws-bridge] create failed:", e.message);
+								if(cw._nwjsWsEventQueue) cw._nwjsWsEventQueue.push({id: id, type: "error", data: e.message});
+							}
+						})(cmd.id, cmd.url, cmd.headers);
+					} else if(cmd.op === "send") {
+						var _s = _wsPool[cmd.id];
+						if(_s && _s.readyState === 1) { try { _s.send(cmd.data); } catch(_e) {} }
+					} else if(cmd.op === "terminate") {
+						var _t = _wsPool[cmd.id];
+						if(_t) { try { _t.terminate(); } catch(_e) {} delete _wsPool[cmd.id]; }
+					}
+				}
+				// Dispatch events from ws sockets to the iframe
+				var evts = cw._nwjsWsEventQueue;
+				if(evts && evts.length && typeof cw._nwjsWsOnEvent === "function") {
+					while(evts.length) {
+						var ev = evts.shift();
+						try { cw._nwjsWsOnEvent(ev.id, ev.type, ev.data); } catch(_e) {}
+					}
+				}
+			} catch(_e) {}
+		}, 50);
+		self.window_nwjs.once("close", function() {
+			clearInterval(_wsTimer);
+			Object.keys(_wsPool).forEach(function(id) { try { _wsPool[id].terminate(); } catch(_e) {} });
+			_wsPool = {};
+		});
+		// Iframe interface: push commands to the queue; the setInterval handles them.
+		self.iframe.contentWindow._nwjsWsCreate = function(url, headers) {
+			var id = ++_wsIdSeq;
+			self.iframe.contentWindow._nwjsWsCmdQueue.push({op: "create", id: id, url: url, headers: headers || {}});
+			return id;
+		};
+		self.iframe.contentWindow._nwjsWsSend = function(id, data) {
+			self.iframe.contentWindow._nwjsWsCmdQueue.push({op: "send", id: id, data: data});
+		};
+		self.iframe.contentWindow._nwjsWsTerminate = function(id) {
+			self.iframe.contentWindow._nwjsWsCmdQueue.push({op: "terminate", id: id});
+		};
+		// Notify transport.js that the WebSocket bridge is ready.
+		if(typeof self.iframe.contentWindow._nwjsWsBridgeReady === "function") {
+			self.iframe.contentWindow._nwjsWsBridgeReady();
+		}
+	} catch(_bridgeErr) {
+		console.error("[TiddlyDesktop] Bridge injection failed:", _bridgeErr);
+	}
+	// Run any registered plugin hooks (e.g. collab transport shim)
+	($tw.desktop.pluginHooks || []).forEach(function(hook) {
+		try { hook(self); } catch(e) { console.error("[TiddlyDesktop] Plugin hook error:",e); }
+	});
 };
 
 // Reopen this window

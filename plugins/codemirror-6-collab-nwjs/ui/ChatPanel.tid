@@ -1,0 +1,34 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/ChatPanel
+tags: $:/tags/PageTemplate
+
+\whitespace trim
+
+<$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
+<div class="tc-collab-chat-wrap">
+
+<$reveal type="match" state="$:/config/state/collab/chat-open" text="yes">
+<div class="tc-collab-chat-panel">
+<div class="tc-collab-chat-header">
+<span>Chat</span>
+<$button set="$:/config/state/collab/chat-open" setTo="no" class="tc-btn-invisible tc-collab-chat-close-btn">✕</$button>
+</div>
+<div class="tc-collab-chat-messages">
+<$list filter="[prefix[$:/temp/collab/chat/msg/]sort[msg-sort]reverse[]]" emptyMessage="""<div class="tc-collab-chat-empty">No messages yet</div>""">
+<div class={{{ [<currentTiddler>get[is-local]match[yes]then[tc-collab-chat-msg tc-collab-chat-msg-local]else[tc-collab-chat-msg]] }}}>
+<span class="tc-collab-chat-meta"><$text text={{{ [<currentTiddler>get[sender-name]] }}}/><span class="tc-collab-chat-time"> <$text text={{{ [<currentTiddler>get[time-label]] }}}/></span></span>
+<span class="tc-collab-chat-text"><$text text={{{ [<currentTiddler>get[text]] }}}/></span>
+</div>
+</$list>
+</div>
+<div class="tc-collab-chat-input-row">
+<$keyboard key="Enter" message="codemirror-6-collab-chat-send"><$edit-text tiddler="$:/temp/collab/chat/input" tag="input" placeholder="Message..." class="tc-collab-chat-input" default=""/></$keyboard><$button message="codemirror-6-collab-chat-send" class="tc-btn-invisible tc-collab-chat-send-btn">Send</$button>
+</div>
+</div>
+</$reveal>
+
+<$reveal type="nomatch" state="$:/config/state/collab/chat-open" text="yes">
+<$button set="$:/config/state/collab/chat-open" setTo="yes" class="tc-btn-invisible tc-collab-chat-toggle"><$list filter="[[$:/temp/collab/chat/unread]!field:text[0]!field:text[]]" variable="_"><span class="tc-collab-chat-badge"><$text text={{$:/temp/collab/chat/unread}}/></span></$list>Chat</$button>
+</$reveal>
+
+</div>
+</$reveal>

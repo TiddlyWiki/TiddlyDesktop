@@ -6,14 +6,21 @@
 rm -Rf output
 rm -Rf source/tiddlywiki
 
-# Install TiddlyWiki to node_modules/tiddlywiki
+# Install dependencies (tiddlywiki + ws)
 npm install
+
+# Copy ws WebSocket library into the source directory so NW.js can require() it
+mkdir -p source/node_modules
+cp -RH node_modules/ws source/node_modules/ws
 
 # Copy TiddlyWiki core files into the source directory
 cp -RH node_modules/tiddlywiki source/tiddlywiki
 
 # Copy TiddlyDesktop plugin into the source directory
 cp -RH plugins/tiddlydesktop source/tiddlywiki/plugins/tiddlywiki
+
+# Copy collaborative-editing NW.js transport plugin into the source directory
+cp -RH plugins/codemirror-6-collab-nwjs source/tiddlywiki/plugins/tiddlywiki
 
 # Copy TiddlyDesktop version number from package.json to the plugin.info of the plugin and the tiddler $:/plugins/tiddlywiki/tiddlydesktop/version
 node propagate-version.js
@@ -40,7 +47,7 @@ mkdir -p output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)
 if [ $# -gt 0 ]; then
     NWJS_VERSION=$1
 elif [ -z "$NWJS_VERSION" ]; then
-    NWJS_VERSION=0.108.0
+    NWJS_VERSION=0.112.0
 fi
 
 # Build function definitions (which will be called at the end of the script)

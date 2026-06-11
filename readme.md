@@ -183,6 +183,45 @@ Instructions for Windows 10 64-bit (updates for other OSs welcome).
 * Modify the "main" field in the package.json file to "html/main.html"
 * Click 'Debug' and select nwjs to automatically create the configuration file laugh.json (no need to modify it). Then click Start to debug.
 
+# Troubleshooting
+
+## Linux: Wayland display issues (drag & drop, window frames, dialogs)
+
+On Linux, nw.js (Chromium) defaults to its Wayland backend on Wayland sessions. Under some compositors this causes glitches such as:
+
+* drag & drop not working correctly (for example, dragging tiddlers between windows, or dropping files onto the wiki list)
+* missing, doubled, or oddly-decorated window frames and title bars
+* native dialogs and prompts appearing in the wrong place or behaving strangely
+* incorrect window sizing, positioning, or focus
+
+If you hit any of these, force the X11 (XWayland) backend by launching `nw` with the `--ozone-platform=x11` flag:
+
+```
+./nw --ozone-platform=x11
+```
+
+This can be combined with other arguments, e.g.:
+
+```
+./nw --ozone-platform=x11 --user-data-dir=/path/to/config
+```
+
+To make it permanent you can wrap the launcher in a small script or shell alias, or set the environment variable instead of passing the flag:
+
+```
+OZONE_PLATFORM=x11 ./nw
+```
+
+Most desktop-drag-and-drop and window-decoration problems on Wayland are resolved by running under X11 this way.
+
+## Windows: UNC network shares
+
+TiddlyDesktop will not work correctly when run from a Windows UNC network share (e.g. ``\\MY-SERVER\SHARE\MyFolder``). Map the network share to a local drive letter and run it from there.
+
+## Resetting / isolating configuration
+
+If TiddlyDesktop is behaving unexpectedly, you can start it against a clean configuration directory with `--user-data-dir` (see [Multiple Configurations](#multiple-configurations)). This is also useful for keeping separate instances from interfering with each other.
+
 # Releasing with Continuous Integration
 
 1. Update the version number in package.json, plus any other changes that should be included

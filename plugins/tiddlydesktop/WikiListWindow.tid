@@ -5,6 +5,8 @@ page-title: TiddlyDesktop -- Main
 
 <$transclude tiddler="$:/core/ui/PageTemplate/alerts" mode="inline"/>
 
+<$transclude tiddler="$:/TiddlyDesktop/PluginChooser" mode="inline"/>
+
 <$droplink>
 
 <$transclude tiddler="WikiListToolbar" mode="inline"/>

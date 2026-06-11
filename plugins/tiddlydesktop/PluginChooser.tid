@@ -1,0 +1,56 @@
+title: $:/TiddlyDesktop/PluginChooser
+
+\whitespace trim
+\define plugin-sel-title() $:/temp/TiddlyDesktop/PluginChooser/selected/$(pluginTitle)$
+
+<$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]!is[missing]!field:text[]]" variable="_">
+<div class="td-plugin-overlay">
+<div class="td-plugin-dialog">
+<div class="td-plugin-header">
+<h2 class="td-plugin-heading">Manage Plugins</h2>
+<$button message="tiddlydesktop-close-plugin-chooser" class="tc-btn-invisible td-plugin-close-btn" tooltip="Close">✕</$button>
+</div>
+<div class="td-plugin-wiki-url">
+<$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[file]]" variable="_">{{$:/core/images/file}}</$list>
+<$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[folder]]" variable="_">{{$:/core/images/folder}}</$list>
+<code><$text text={{{ [{$:/temp/TiddlyDesktop/PluginChooser/target}text[]] }}}/></code>
+</div>
+<$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-open[yes]]" variable="_">
+<div class="td-plugin-open-warning">⚠ This wiki is currently open. Close its window first, then click Apply.</div>
+</$list>
+<div class="td-plugin-search-row">
+<$edit-text tiddler="$:/temp/TiddlyDesktop/PluginChooser/search" tag="input" class="tc-edit-texteditor td-plugin-search" placeholder="Filter plugins…"/>
+<$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/search]!field:text[]]">
+<$button class="tc-btn-invisible td-plugin-search-clear" set="$:/temp/TiddlyDesktop/PluginChooser/search" setTo="" tooltip="Clear">✕</$button>
+</$list>
+</div>
+<div class="td-plugin-list">
+<$let searchText={{{ [{$:/temp/TiddlyDesktop/PluginChooser/search}text[]] }}}>
+<$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]search:plugin-title,description<searchText>sort[plugin-title]]">
+<div class="td-plugin-row">
+<$let pluginTitle={{{ [<currentTiddler>get[plugin-title]] }}}>
+<$checkbox tiddler=<<plugin-sel-title>> field="text" checked="yes" unchecked="no" default="no" class="td-plugin-checkbox"/>
+<div class="td-plugin-info">
+<span class="td-plugin-title"><$text text=<<pluginTitle>>/></span>
+<$list filter="[<currentTiddler>get[plugin-type]!match[plugin]]" variable="ptype"><span class="td-plugin-type-badge"><$text text=<<ptype>>/></span></$list>
+<$list filter="[<currentTiddler>get[description]!match[]]" variable="desc"><br/><span class="td-plugin-desc"><$text text=<<desc>>/></span></$list>
+</div>
+<$list filter="[<currentTiddler>get[version]!match[]]" variable="ver"><span class="td-plugin-version">v<$text text=<<ver>>/></span></$list>
+</$let>
+</div>
+</$list>
+<$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]search:plugin-title,description<searchText>count[]compare:number:lt[1]]" variable="_">
+<div class="td-plugin-empty">No plugins match your filter.</div>
+</$list>
+</$let>
+</div>
+<$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/status]!field:text[]]" variable="_">
+<div class="td-plugin-status"><$text text={{{ [{$:/temp/TiddlyDesktop/PluginChooser/status}text[]] }}}/></div>
+</$list>
+<div class="td-plugin-actions">
+<$button message="tiddlydesktop-apply-plugin-changes" class="tc-btn-invisible td-button td-plugin-btn-apply">Apply Changes</$button>
+<$button message="tiddlydesktop-close-plugin-chooser" class="tc-btn-invisible td-button td-plugin-btn-cancel">Cancel</$button>
+</div>
+</div>
+</div>
+</$list>

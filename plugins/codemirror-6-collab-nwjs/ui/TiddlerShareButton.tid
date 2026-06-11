@@ -1,0 +1,22 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/TiddlerShareButton
+tags: $:/tags/ViewToolbar
+caption: Collab share button
+
+\define shareButtonTitle() $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/TiddlerShareButton
+\whitespace trim
+<$list filter="[[$:/temp/collab/status]get[status]match[connected]]" variable="_">
+<$set name="isOwned" value={{{ [<currentTiddler>addprefix[$:/temp/collab/share/owned/]is[tiddler]then[yes]else[no]] }}}>
+<$list filter="[<isOwned>match[yes]]" variable="_">
+<$button message="codemirror-6-collab-unshare-tiddler" param=<<currentTiddler>> class="tc-btn-invisible tc-collab-share-btn tc-collab-share-btn-active" tooltip="Stop sharing this tiddler">
+{{$:/core/images/plugin-generic-plugin}}
+</$button>
+</$list>
+<$list filter="[<isOwned>match[no]]" variable="_">
+<$list filter="[<currentTiddler>!prefix[$:/]]" variable="_">
+<$button message="codemirror-6-collab-share-tiddler" param=<<currentTiddler>> class="tc-btn-invisible tc-collab-share-btn" tooltip="Share this tiddler with room members">
+{{$:/core/images/plugin-generic-plugin}}
+</$button>
+</$list>
+</$list>
+</$set>
+</$list>

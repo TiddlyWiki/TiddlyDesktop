@@ -9,7 +9,7 @@
 if [ $# -gt 0 ]; then
     NWJS_VERSION=$1
 elif [ -z "$NWJS_VERSION" ]; then
-    NWJS_VERSION=0.108.0
+    NWJS_VERSION=0.112.0
 fi
 
 # Download nw.js

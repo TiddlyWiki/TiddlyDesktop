@@ -1,0 +1,370 @@
+/*\
+title: $:/TiddlyDesktop/startup/plugin-manager.js
+type: application/javascript
+module-type: startup
+
+Plugin manager for the wiki list.
+
+Handles enumerating available plugins (from bundled TW and TIDDLYWIKI_PLUGIN_PATH)
+and installing/removing them in single-file wikis (HTML store injection) or
+folder wikis (tiddlywiki.info plugins array).
+
+State tiddlers (all temp, deleted on close):
+  $:/temp/TiddlyDesktop/PluginChooser/target          — wiki URL being managed
+  $:/temp/TiddlyDesktop/PluginChooser/available/*     — one tiddler per available plugin
+  $:/temp/TiddlyDesktop/PluginChooser/selected/*      — one tiddler per plugin, text=yes/no
+  $:/temp/TiddlyDesktop/PluginChooser/search          — current search string
+  $:/temp/TiddlyDesktop/PluginChooser/status          — feedback after apply
+\*/
+
+"use strict";
+
+exports.name = "tiddlydesktop-plugin-manager";
+exports.after = ["startup"];
+exports.synchronous = true;
+
+exports.startup = function() {
+	var fs   = require("fs"),
+		path = require("path");
+
+	// Use $tw.getLibraryItemSearchPaths — this is exactly what TW uses internally
+	// to locate bundled plugins (resolves relative to $tw.boot.corePath which is
+	// the "core" subdirectory, not the package root) plus TIDDLYWIKI_PLUGIN_PATH.
+	// __dirname is NOT reliable here — TW executes startup modules through its own
+	// module system where __dirname is derived from the tiddler title, not the
+	// physical file path.
+	var pluginPaths = $tw.getLibraryItemSearchPaths(
+		$tw.config.pluginsPath,
+		$tw.config.pluginsEnvVar
+	);
+
+	// ── open chooser ──────────────────────────────────────────────────────────
+
+	$tw.rootWidget.addEventListener("tiddlydesktop-open-plugin-chooser", function(event) {
+		var wikiUrl = event.param;
+		if(!wikiUrl) return false;
+
+		var isOpen    = _isWikiOpen(wikiUrl);
+		var isFile    = wikiUrl.startsWith("wikifile://");
+		var installed = _getInstalledPlugins(wikiUrl, fs, path);
+		var available = _getAvailablePlugins(pluginPaths, fs, path);
+
+		// Target tiddler
+		$tw.wiki.addTiddler(new $tw.Tiddler({
+			title: "$:/temp/TiddlyDesktop/PluginChooser/target",
+			text: wikiUrl,
+			"wiki-open": isOpen ? "yes" : "no",
+			"wiki-type": isFile ? "file" : "folder"
+		}));
+
+		// Clear search
+		$tw.wiki.addTiddler(new $tw.Tiddler({
+			title: "$:/temp/TiddlyDesktop/PluginChooser/search",
+			text: ""
+		}));
+
+		// Clear status
+		$tw.wiki.addTiddler(new $tw.Tiddler({
+			title: "$:/temp/TiddlyDesktop/PluginChooser/status",
+			text: ""
+		}));
+
+		// Remove stale available/selected tiddlers
+		_clearChooserTiddlers(["available", "selected"]);
+
+		// Populate one tiddler per available plugin
+		available.forEach(function(plugin) {
+			$tw.wiki.addTiddler(new $tw.Tiddler({
+				title: "$:/temp/TiddlyDesktop/PluginChooser/available/" + plugin.title,
+				tags: ["$:/temp/TiddlyDesktop/PluginChooser/available"],
+				"plugin-title": plugin.title,
+				"plugin-name": plugin.name,
+				"plugin-path": plugin.path,
+				"plugin-type": plugin["plugin-type"] || "plugin",
+				description: plugin.description,
+				version: plugin.version,
+				source: plugin.source
+			}));
+			// Initialise selection from installed state
+			$tw.wiki.addTiddler(new $tw.Tiddler({
+				title: "$:/temp/TiddlyDesktop/PluginChooser/selected/" + plugin.title,
+				text: installed.indexOf(plugin.title) !== -1 ? "yes" : "no"
+			}));
+		});
+
+		return false;
+	});
+
+	// ── apply changes ─────────────────────────────────────────────────────────
+
+	$tw.rootWidget.addEventListener("tiddlydesktop-apply-plugin-changes", function(event) {
+		var targetTid = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
+		if(!targetTid) return false;
+		var wikiUrl = targetTid.fields.text;
+
+		// Block if wiki is still open
+		if(_isWikiOpen(wikiUrl)) {
+			_setStatus("⚠ Please close the wiki window before applying changes.");
+			return false;
+		}
+
+		// Collect toInstall / toRemove by diffing selection against installed
+		var installed = _getInstalledPlugins(wikiUrl, fs, path);
+		var toInstall = [], toRemove = [];
+
+		$tw.wiki.filterTiddlers("[tag[$:/temp/TiddlyDesktop/PluginChooser/available]]").forEach(function(availTitle) {
+			var pluginTitle = $tw.wiki.getTiddler(availTitle).fields["plugin-title"];
+			var selected = $tw.wiki.getTiddlerText(
+				"$:/temp/TiddlyDesktop/PluginChooser/selected/" + pluginTitle, "no"
+			) === "yes";
+			var wasInstalled = installed.indexOf(pluginTitle) !== -1;
+			if(selected && !wasInstalled) {
+				toInstall.push($tw.wiki.getTiddler(availTitle).fields);
+			} else if(!selected && wasInstalled) {
+				toRemove.push(pluginTitle);
+			}
+		});
+
+		if(toInstall.length === 0 && toRemove.length === 0) {
+			_closeChooser();
+			return false;
+		}
+
+		try {
+			if(wikiUrl.startsWith("wikifile://")) {
+				_applyFileChanges(wikiUrl, toInstall, toRemove, fs, path);
+			} else {
+				_applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path);
+			}
+			_closeChooser();
+		} catch(e) {
+			_setStatus("✗ Error: " + e.message);
+		}
+
+		return false;
+	});
+
+	// ── close chooser ─────────────────────────────────────────────────────────
+
+	$tw.rootWidget.addEventListener("tiddlydesktop-close-plugin-chooser", function(event) {
+		_closeChooser();
+		return false;
+	});
+};
+
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+function _isWikiOpen(wikiUrl) {
+	return ($tw.desktop.windowList.windows || []).some(function(w) {
+		return typeof w.getIdentifier === "function" && w.getIdentifier() === wikiUrl;
+	});
+}
+
+function _setStatus(text) {
+	$tw.wiki.addTiddler(new $tw.Tiddler({
+		title: "$:/temp/TiddlyDesktop/PluginChooser/status",
+		text: text
+	}));
+}
+
+function _clearChooserTiddlers(prefixes) {
+	prefixes.forEach(function(prefix) {
+		$tw.wiki.filterTiddlers(
+			"[prefix[$:/temp/TiddlyDesktop/PluginChooser/" + prefix + "/]]"
+		).forEach(function(t) { $tw.wiki.deleteTiddler(t); });
+	});
+}
+
+function _closeChooser() {
+	$tw.wiki.deleteTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
+	$tw.wiki.deleteTiddler("$:/temp/TiddlyDesktop/PluginChooser/search");
+	$tw.wiki.deleteTiddler("$:/temp/TiddlyDesktop/PluginChooser/status");
+	_clearChooserTiddlers(["available", "selected"]);
+}
+
+// ── protected titles — never shown in chooser, never removed ─────────────────
+
+// Full plugin titles that must never be removed from any wiki.
+var _PROTECTED_TITLES = {
+	"$:/core": true
+};
+
+// Short names (as they appear in tiddlywiki.info) that must never be removed
+// from folder wikis — these are required for the TW server to function.
+var _PROTECTED_FOLDER_NAMES = {
+	"tiddlywiki/tiddlyweb": true,
+	"tiddlywiki/filesystem": true
+};
+
+// ── plugin enumeration ────────────────────────────────────────────────────────
+
+function _getAvailablePlugins(pluginPaths, fs, path) {
+	var plugins = [], seen = {};
+
+	function scanAuthorDir(authorDir, source) {
+		var entries;
+		try { entries = fs.readdirSync(authorDir); } catch(_e) { return; }
+		entries.forEach(function(name) {
+			var pluginDir  = path.join(authorDir, name);
+			var infoFile   = path.join(pluginDir, "plugin.info");
+			if(!_isDir(pluginDir, fs)) return;
+			if(!fs.existsSync(infoFile)) return;
+			try {
+				var info = JSON.parse(fs.readFileSync(infoFile, "utf8"));
+				if(!info.title || seen[info.title]) return;
+				// Skip protected and backstage-only plugins
+				if(_PROTECTED_TITLES[info.title]) return;
+				if(info.title === "$:/plugins/tiddlywiki/tiddlydesktop") return;
+				seen[info.title] = true;
+				var author = path.basename(authorDir);
+				plugins.push({
+					path: pluginDir,
+					name: author + "/" + name,
+					title: info.title,
+					description: info.description || "",
+					version: info.version || "",
+					"plugin-type": info["plugin-type"] || "plugin",
+					source: source
+				});
+			} catch(_e) {}
+		});
+	}
+
+	function scanPluginsRoot(rootDir, source) {
+		if(!fs.existsSync(rootDir)) return;
+		var entries;
+		try { entries = fs.readdirSync(rootDir); } catch(_e) { return; }
+		entries.forEach(function(author) {
+			var authorDir = path.join(rootDir, author);
+			if(_isDir(authorDir, fs)) { scanAuthorDir(authorDir, source); }
+		});
+	}
+
+	// pluginPaths already includes bundled plugins and TIDDLYWIKI_PLUGIN_PATH entries
+	// (computed by $tw.getLibraryItemSearchPaths in the startup function)
+	pluginPaths.forEach(function(rootDir, i) {
+		scanPluginsRoot(rootDir, i === 0 ? "bundled" : "external");
+	});
+
+	plugins.sort(function(a, b) { return a.title.localeCompare(b.title); });
+	return plugins;
+}
+
+function _isDir(p, fs) {
+	try { return fs.statSync(p).isDirectory(); } catch(_e) { return false; }
+}
+
+// ── installed-plugins query ───────────────────────────────────────────────────
+
+function _getInstalledPlugins(wikiUrl, fs, path) {
+	if(wikiUrl.startsWith("wikifile://")) {
+		return _getInstalledFromFile(wikiUrl.slice("wikifile://".length), fs);
+	} else {
+		return _getInstalledFromFolder(wikiUrl.slice("wikifolder://".length), fs, path);
+	}
+}
+
+function _getInstalledFromFile(filePath, fs) {
+	try {
+		var html  = fs.readFileSync(filePath, "utf8");
+		var match = html.match(/<script[^>]*class="tiddlywiki-tiddler-store"[^>]*>([\s\S]*?)<\/script>/);
+		if(!match) return [];
+		return JSON.parse(match[1])
+			.filter(function(t) { return !!t["plugin-type"]; })
+			.map(function(t) { return t.title; });
+	} catch(_e) {
+		return [];
+	}
+}
+
+function _getInstalledFromFolder(folderPath, fs, path) {
+	var infoPath = path.join(folderPath, "tiddlywiki.info");
+	try {
+		var info = JSON.parse(fs.readFileSync(infoPath, "utf8"));
+		return (info.plugins || []).map(function(p) { return "$:/plugins/" + p; });
+	} catch(_e) {
+		return [];
+	}
+}
+
+// ── apply changes ─────────────────────────────────────────────────────────────
+
+function _backupWikiFile(filePath, fs, path) {
+	if(!fs.existsSync(filePath)) return;
+	var backupTemplate = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath", "./$filename$_backup/");
+	var filename = path.basename(filePath);
+	var backupDir = backupTemplate
+		.replace(/\$filename\$/mgi, filename)
+		.replace(/\$filepath\$/mgi, filePath);
+	backupDir = path.resolve(path.dirname(filePath), backupDir);
+	var ext  = path.extname(filePath);
+	var base = path.basename(filePath, ext);
+	var ts   = $tw.utils.stringifyDate(fs.statSync(filePath).mtime || new Date());
+	var count = 0, backupPath;
+	do {
+		backupPath = path.join(backupDir, base + "." + ts + (count ? " " + count : "") + ext);
+		count++;
+	} while(fs.existsSync(backupPath));
+	$tw.utils.createDirectory(path.dirname(backupPath));
+	fs.writeFileSync(backupPath, fs.readFileSync(filePath));
+}
+
+function _applyFileChanges(wikiUrl, toInstall, toRemove, fs, path) {
+	var filePath = wikiUrl.slice("wikifile://".length);
+	_backupWikiFile(filePath, fs, path);
+	var html = fs.readFileSync(filePath, "utf8");
+
+	var storeRe = /(<script[^>]*class="tiddlywiki-tiddler-store"[^>]*>)([\s\S]*?)(<\/script>)/;
+	var match   = html.match(storeRe);
+	if(!match) throw new Error("Not a TiddlyWiki5 file — tiddler store not found.");
+
+	var tiddlers = JSON.parse(match[2]);
+
+	// Remove (never touch protected titles)
+	toRemove.forEach(function(title) {
+		if(_PROTECTED_TITLES[title]) return;
+		tiddlers = tiddlers.filter(function(t) { return t.title !== title; });
+	});
+
+	// Install — use TW's own loadPluginFolder so all file types are handled correctly
+	toInstall.forEach(function(pluginFields) {
+		var bundled = $tw.loadPluginFolder(pluginFields["plugin-path"]);
+		if(!bundled) return;
+		tiddlers = tiddlers.filter(function(t) { return t.title !== bundled.title; });
+		tiddlers.push(bundled);
+	});
+
+	// Escape </script> inside JSON so it doesn't end the script tag prematurely
+	var newStoreJson = JSON.stringify(tiddlers).replace(/<\/script>/gi, "<\\/script>");
+	// Use a function replacer so $ characters in newStoreJson are not interpreted
+	// as replacement pattern specifiers ($& $1 $` $' etc.) — plugin JS code is full of $
+	var newHtml = html.replace(storeRe, function() { return match[1] + newStoreJson + match[3]; });
+	fs.writeFileSync(filePath, newHtml, "utf8");
+}
+
+function _applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path) {
+	var folderPath = wikiUrl.slice("wikifolder://".length);
+	var infoPath   = path.join(folderPath, "tiddlywiki.info");
+	var info = {};
+	try { info = JSON.parse(fs.readFileSync(infoPath, "utf8")); } catch(_e) {}
+	info.plugins = info.plugins || [];
+
+	// Remove (never touch protected titles or required server plugins)
+	toRemove.forEach(function(title) {
+		if(_PROTECTED_TITLES[title]) return;
+		var name = title.replace(/^\$:\/plugins\//, "");
+		if(_PROTECTED_FOLDER_NAMES[name]) return;
+		info.plugins = info.plugins.filter(function(p) { return p !== name; });
+	});
+
+	// Install
+	toInstall.forEach(function(pluginFields) {
+		var name = pluginFields["plugin-name"];
+		if(name && info.plugins.indexOf(name) === -1) {
+			info.plugins.push(name);
+		}
+	});
+
+	fs.writeFileSync(infoPath, JSON.stringify(info, null, 4), "utf8");
+}
+

@@ -1,0 +1,31 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/ConflictDialog
+tags: $:/tags/AboveStory
+
+<$list filter="[prefix[$:/temp/collab/conflict/]]" variable="conflictTiddler">
+<div class="tc-collab-conflict-overlay">
+<div class="tc-collab-conflict-dialog">
+<h3 class="tc-collab-conflict-title">Merge Conflict</h3>
+<p>You have local changes to <strong><$text text={{{ [<conflictTiddler>get[tiddler-title]] }}}/></strong> that differ from the shared version already being edited by your collaborators.</p>
+<div class="tc-collab-conflict-panels">
+<div class="tc-collab-conflict-panel">
+<div class="tc-collab-conflict-panel-label">Your local version (first 2000 chars)</div>
+<pre class="tc-collab-conflict-content"><$text text={{{ [<conflictTiddler>get[local-content]] }}}/></pre>
+</div>
+<div class="tc-collab-conflict-panel">
+<div class="tc-collab-conflict-panel-label">Shared version (first 2000 chars)</div>
+<pre class="tc-collab-conflict-content"><$text text={{{ [<conflictTiddler>get[remote-content]] }}}/></pre>
+</div>
+</div>
+<div class="tc-collab-conflict-actions">
+<$button class="tc-btn-invisible tc-collab-btn-discard">
+<$action-setfield $tiddler=<<conflictTiddler>> resolution="use-shared"/>
+Discard my changes and use the shared version
+</$button>
+<$button class="tc-btn-invisible tc-collab-btn-keep">
+<$action-setfield $tiddler=<<conflictTiddler>> resolution="cancel"/>
+Keep my local version and edit independently
+</$button>
+</div>
+</div>
+</div>
+</$list>

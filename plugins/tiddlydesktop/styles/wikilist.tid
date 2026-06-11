@@ -106,3 +106,231 @@ tags: $:/tags/Stylesheet
 .td-wikilist-info .td-wiki-toolbar .tc-add-tag-name input {
 	border: none;
 }
+
+.td-wikilist .td-wikilist-button-plugins {
+	background-color: <<colour wikilist-button-background>>;
+}
+
+.td-wikilist .td-wikilist-button-plugins:hover {
+	background-color: <<colour wikilist-button-reveal>>;
+}
+
+.td-wikilist .td-wikilist-button-convert {
+	background-color: <<colour wikilist-button-background>>;
+}
+
+.td-wikilist .td-wikilist-button-convert:hover {
+	background-color: <<colour wikilist-button-reveal>>;
+}
+
+/* ── Plugin Chooser overlay ─────────────────────────────────────────────── */
+
+/* Collapse any <p> artifacts TW may inject between flex children */
+.td-plugin-dialog > p,
+.td-plugin-list > p {
+	margin: 0;
+	padding: 0;
+	line-height: 0;
+	font-size: 0;
+}
+
+.td-plugin-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.55);
+	z-index: 9000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.td-plugin-dialog {
+	background: <<colour page-background>>;
+	border-radius: 5px;
+	box-shadow: 0 8px 32px rgba(0,0,0,0.32);
+	width: 700px;
+	max-width: 94vw;
+	height: 85vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.td-plugin-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1em 1.2em 0.5em;
+	border-bottom: 1px solid <<colour tiddler-border>>;
+	flex-shrink: 0;
+}
+
+.td-plugin-heading {
+	margin: 0;
+	font-size: 1.2em;
+}
+
+.td-plugin-close-btn {
+	font-size: 1.1em;
+	opacity: 0.6;
+	padding: 2px 6px;
+}
+
+.td-plugin-close-btn:hover {
+	opacity: 1;
+}
+
+.td-plugin-wiki-url {
+	padding: 0.5em 1.2em;
+	font-size: 0.82em;
+	color: <<colour muted-foreground>>;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+.td-plugin-wiki-url svg {
+	width: 1em;
+	height: 1em;
+	flex-shrink: 0;
+}
+
+.td-plugin-wiki-url code {
+	word-break: break-all;
+}
+
+.td-plugin-open-warning {
+	margin: 0 1.2em 0.4em;
+	padding: 8px 12px;
+	background: #fff3cd;
+	border: 1px solid #ffc107;
+	border-radius: 4px;
+	color: #856404;
+	font-size: 0.88em;
+	flex-shrink: 0;
+}
+
+.td-plugin-search-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0.4em 1.2em;
+	flex-shrink: 0;
+}
+
+.td-plugin-search {
+	flex: 1;
+	padding: 5px 8px;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 3px;
+	background: <<colour tiddler-background>>;
+	color: <<colour foreground>>;
+	font-size: 0.9em;
+}
+
+.td-plugin-search-clear {
+	opacity: 0.5;
+	padding: 2px 5px;
+}
+
+.td-plugin-search-clear:hover {
+	opacity: 1;
+}
+
+.td-plugin-list {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 0.2em 1.2em;
+}
+
+.td-plugin-row {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	padding: 6px 0;
+	border-bottom: 1px solid <<colour tiddler-border>>;
+}
+
+.td-plugin-row:last-child {
+	border-bottom: none;
+}
+
+.td-plugin-checkbox {
+	flex-shrink: 0;
+	margin-top: 2px;
+}
+
+.td-plugin-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.td-plugin-title {
+	font-size: 0.85em;
+	font-family: monospace;
+	word-break: break-all;
+}
+
+.td-plugin-type-badge {
+	display: inline-block;
+	font-size: 0.72em;
+	padding: 1px 5px;
+	border-radius: 3px;
+	background: <<colour tag-background>>;
+	color: <<colour tag-foreground>>;
+	margin-left: 4px;
+	vertical-align: middle;
+}
+
+.td-plugin-desc {
+	font-size: 0.82em;
+	color: <<colour muted-foreground>>;
+}
+
+.td-plugin-version {
+	font-size: 0.75em;
+	color: <<colour muted-foreground>>;
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+.td-plugin-empty {
+	color: <<colour muted-foreground>>;
+	padding: 1em 0;
+	font-style: italic;
+	font-size: 0.9em;
+}
+
+.td-plugin-status {
+	margin: 0.5em 0 0;
+	padding: 8px 12px;
+	border-radius: 4px;
+	font-size: 0.88em;
+	background: <<colour tiddler-background>>;
+	border: 1px solid <<colour tiddler-border>>;
+}
+
+.td-plugin-actions {
+	display: flex;
+	gap: 0.8em;
+	padding: 0.8em 1.2em;
+	border-top: 1px solid <<colour tiddler-border>>;
+	flex-shrink: 0;
+}
+
+.td-plugin-btn-apply {
+	background-color: <<colour wikilist-button-open>>;
+	color: <<colour wikilist-button-foreground>>;
+}
+
+.td-plugin-btn-apply:hover {
+	background-color: <<colour wikilist-button-open-hover>>;
+}
+
+.td-plugin-btn-cancel {
+	background-color: <<colour wikilist-button-background>>;
+	color: <<colour wikilist-button-foreground>>;
+}

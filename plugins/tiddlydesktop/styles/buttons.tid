@@ -8,6 +8,6 @@ button.td-button {
 	border-radius: 3px;
 	border: none;
 	padding: 3px 7px;
-    color: <<colour wikilist-button-foreground>>;
-    fill: <<colour wikilist-button-foreground>>;
+	color: <<colour wikilist-button-foreground>>;
+	fill: <<colour wikilist-button-foreground>>;
 }

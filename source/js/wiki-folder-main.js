@@ -14,7 +14,11 @@ var $tw = {desktop: {
 	utils: {
 		devtools: require("../js/utils/devtools.js"),
 		dom: require("../js/utils/dom.js"),
-		menu: require("../js/utils/menu.js")
+		dragdrop: require("../js/utils/dragdrop.js"),
+		menu: require("../js/utils/menu.js"),
+		ws: require("ws"),
+		https: require("https"),
+		http: require("http")
 	}
 }};
 
@@ -56,3 +60,12 @@ console.log("Running tiddlywiki " + $tw.boot.argv.join(" "));
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
 
 $tw.wiki.addTiddler({title: "$:/status/IsReadOnly",text: "no"});
+
+// Intercept cross-browser drag-drop imports (same fix as wiki-file windows).
+// In the folder window the wiki document IS this window, so contentWindow
+// and the document are the window itself.
+$tw.desktop.utils.dragdrop.installImportInterceptor(
+	containerWindow.window.document,
+	containerWindow.window,
+	{parentWindow: containerWindow.window}
+);
