@@ -165,11 +165,51 @@ exports.startup = function() {
 	// windows. It is computed once here, so it stays stable across reconnects
 	// within this window (reconnecting rejoins as the same member, not a new one).
 	var deviceId = _generateDeviceId(nodeCrypto);
+	// Our collaboration plugin version, broadcast in member-info so peers can warn
+	// when versions differ (the wire protocol can change between builds).
+	var pluginVersion = (($tw.wiki.getTiddler("$:/plugins/tiddlywiki/codemirror-6-collab-nwjs") || {fields: {}}).fields.version) || "";
 	// Expose our ephemeral device ID for the diagnostics panel. Temp tiddler →
 	// not persisted, so it never gets saved into (and cloned with) the wiki.
 	$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/collab/device-id", text: deviceId}));
 
+	// One-time cleanup: older builds (and clones of them) could leave a device id
+	// stranded in the PERSISTED display-name config. That made every clone broadcast
+	// the same "nwjs-…" name, so peers appeared identical in the member list even
+	// though their real (routing) ids differ. A device id is never a valid name, so
+	// drop it — the name then falls back to this session's unique id.
+	(function() {
+		var dn = $tw.wiki.getTiddlerText("$:/config/codemirror-6-collab/device-name", "");
+		if(/^nwjs-[0-9a-f]{6,}$/i.test(dn)) {
+			$tw.wiki.deleteTiddler("$:/config/codemirror-6-collab/device-name");
+		}
+	}());
+
+	// The device-id tiddler and the member tiddlers are only DISPLAY mirrors of the
+	// in-memory state (routing uses the deviceId variable / memberInfo map), so
+	// deleting them can't break sync. But keep them honest: re-assert them if
+	// something deletes them, from the authoritative in-memory state.
+	$tw.wiki.addEventListener("change", function(changes) {
+		if(changes["$:/temp/collab/device-id"] && changes["$:/temp/collab/device-id"].deleted) {
+			$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/collab/device-id", text: deviceId}));
+		}
+		Object.keys(changes).forEach(function(t) {
+			if(!changes[t].deleted || t.indexOf("$:/temp/collab/members/") !== 0) { return; }
+			var mId = t.slice("$:/temp/collab/members/".length);
+			if(memberInfo[mId]) { _writeMember(mId, memberInfo[mId]); }
+		});
+	});
+
 	var authProvider;
+
+	// A stable, human-meaningful name for THIS machine — the OS hostname (from Node
+	// in folder wikis, or the parent bridge in single-file wikis). Distinct across
+	// machines even when the same wiki file is copied to both, and NOT stored in the
+	// wiki, so it can never be cloned. Empty if unavailable.
+	function _machineName() {
+		try { if(nodeOs && nodeOs.hostname) { return nodeOs.hostname(); } } catch(e) {}
+		try { if(window._nwjsHostname) { return String(window._nwjsHostname); } } catch(e) {}
+		return "";
+	}
 
 	function _readConfig() {
 		relayUrl     = _cfg("relay-url");
@@ -177,7 +217,12 @@ exports.startup = function() {
 		authToken    = _cfg("auth-token");
 		authProvider = _cfg("auth-provider");
 		roomToken    = _cfg("room-token");
-		deviceName   = _cfg("device-name") || deviceId;
+		deviceName   = _cfg("device-name");
+		// Never let a stranded device id masquerade as a display name (see cleanup
+		// above). Fall back to the machine hostname — stable and distinct per machine
+		// — and only to the opaque session id as a last resort.
+		if(/^nwjs-[0-9a-f]{6,}$/i.test(deviceName)) { deviceName = ""; }
+		deviceName   = deviceName || _machineName() || deviceId;
 		userName     = _cfg("user-name") || $tw.wiki.getTiddlerText("$:/temp/collab/auth-username", "") || $tw.wiki.getTiddlerText("$:/status/UserName") || "Anonymous";
 		userColor    = _cfg("user-color") || "";
 		relayOnly    = _cfg("relay-only") === "yes";
@@ -471,7 +516,7 @@ exports.startup = function() {
 	// Broadcast our display info, our membership cert, and our DM public key so
 	// peers can show/verify our identity and set up an exclusive 1:1 channel.
 	function _sendMemberInfo() {
-		_sendRelay({type: "member-info", deviceId: deviceId, deviceName: deviceName, userName: userName, userColor: userColor, cert: _myCert, dmPub: _dmKeyPair && _dmKeyPair.publicJwk});
+		_sendRelay({type: "member-info", deviceId: deviceId, deviceName: deviceName, userName: userName, userColor: userColor, cert: _myCert, dmPub: _dmKeyPair && _dmKeyPair.publicJwk, ver: pluginVersion});
 	}
 
 	// ── private (1:1) end-to-end messaging ──────────────────────────────────────
@@ -825,10 +870,32 @@ exports.startup = function() {
 				editing:       info.editing ? JSON.stringify(info.editing) : "",
 				// Relay-verified OAuth identity (empty until the cert verifies).
 				verified:      info.verified ? "yes" : "",
-				"auth-user":   info.authUser   || ""
+				"auth-user":   info.authUser   || "",
+				version:       info.ver || ""
 			}));
 		} else {
 			$tw.wiki.deleteTiddler(t);
+		}
+	}
+
+	// Warn (once, in the sidebar) when any connected peer runs a different plugin
+	// version than us — the wire protocol can change between builds.
+	function _updateVersionWarning() {
+		if(!pluginVersion) { return; }
+		var bad = [];
+		Object.keys(memberInfo).forEach(function(id) {
+			var v = memberInfo[id].ver;
+			if(v && v !== pluginVersion) {
+				bad.push((memberInfo[id].userName || memberInfo[id].deviceName || id) + " (v" + v + ")");
+			}
+		});
+		if(bad.length) {
+			$tw.wiki.addTiddler(new $tw.Tiddler({
+				title: "$:/temp/collab/version-warning",
+				text:  "Version mismatch — you have v" + pluginVersion + " but these peers differ: " + bad.join(", ") + ". Sync may be unreliable; update everyone to the same build."
+			}));
+		} else {
+			$tw.wiki.deleteTiddler("$:/temp/collab/version-warning");
 		}
 	}
 
@@ -922,6 +989,7 @@ exports.startup = function() {
 					if(mId && mId !== deviceId) {
 						liveIds[mId] = true;
 						var existing = memberInfo[mId] || {deviceId: mId, deviceName: mId, userName: "", userColor: ""};
+						if(!existing.addedAt) { existing.addedAt = Date.now(); }
 						memberInfo[mId] = existing;
 						_writeMember(mId, existing);
 					}
@@ -958,6 +1026,7 @@ exports.startup = function() {
 				var joinedId = msg.deviceId || (msg.member && msg.member.deviceId);
 				if(joinedId && joinedId !== deviceId) {
 					var joined = memberInfo[joinedId] || {deviceId: joinedId, deviceName: joinedId, userName: "", userColor: ""};
+					if(!joined.addedAt) { joined.addedAt = Date.now(); }
 					memberInfo[joinedId] = joined;
 					_writeMember(joinedId, joined);
 					_fire("collab-member-joined", {member: joined});
@@ -983,9 +1052,12 @@ exports.startup = function() {
 			case "member-info":
 				if(msg.deviceId && msg.deviceId !== deviceId) {
 					var info = memberInfo[msg.deviceId] || {deviceId: msg.deviceId};
+					info.heard      = true;   // a real, live peer (ghosts never send this)
 					info.deviceName = msg.deviceName || msg.deviceId;
 					info.userName   = msg.userName   || "";
 					info.userColor  = msg.userColor  || "";
+					info.ver        = msg.ver || "";
+					_updateVersionWarning();
 					// Peer's DM public key for exclusive 1:1 chat. If it changed (peer
 					// reconnected with a fresh key), drop the cached pairwise key.
 					if(msg.dmPub) {
@@ -1029,6 +1101,7 @@ exports.startup = function() {
 						_writeStatus();
 					}
 					_writeMember(leftId, null);
+					_updateVersionWarning();
 					_fire("collab-member-left", {deviceId: leftId});
 					_emit("member_left", {deviceId: leftId});
 					wasEditing.forEach(function(title) {
@@ -1400,6 +1473,30 @@ exports.startup = function() {
 	window.TiddlyDesktop        = window.TiddlyDesktop || {};
 	window.TiddlyDesktop.collab = collabAPI;
 	_fire("collab-sync-activated", {});
+
+	// Ghost-member reaper. The relay keeps a member in the room until its socket is
+	// reaped, so a session that ended uncleanly lingers and is handed to every new
+	// joiner — appearing as a peer that is really long gone (and, with ephemeral ids,
+	// never reused). A REAL peer always sends its E2E member-info within a second of
+	// joining; a ghost never can. So prune any member we've heard nothing from (no
+	// member-info, no LAN session) after a grace period.
+	var GHOST_GRACE_MS = 20000;
+	setInterval(function() {
+		if(!connected) { return; }
+		var now = Date.now();
+		Object.keys(memberInfo).forEach(function(id) {
+			var m = memberInfo[id];
+			if(m.heard || directPeers[id] || peerSessions[id]) { return; }
+			if(m.addedAt && (now - m.addedAt) > GHOST_GRACE_MS) {
+				console.warn("[collab] pruning ghost member (no member-info after grace): " + id);
+				delete memberInfo[id]; delete memberEditing[id];
+				delete peerSessions[id]; delete _dmKeys[id];
+				if(directPeers[id]) { try { directPeers[id].ws.terminate(); } catch(_) {} delete directPeers[id]; }
+				_writeMember(id, null);
+				_writeStatus();
+			}
+		});
+	}, 10000);
 
 	// Called by wiki-file-window.js after injecting the WS bridge into this iframe.
 	// If the user already clicked Connect before the bridge was ready, retry now.

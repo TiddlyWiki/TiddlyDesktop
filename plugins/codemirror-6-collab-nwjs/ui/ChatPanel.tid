@@ -4,23 +4,23 @@ title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/ChatPanel
 
 <$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
 <div class="tc-collab-chat-wrap">
-<$reveal type="match" state="$:/config/state/collab/chat-open" text="yes">
+<$reveal type="match" state="$:/temp/collab/state/chat-open" text="yes">
 <div class="tc-collab-chat-panel">
 <div class="tc-collab-chat-header">
-<span class="tc-collab-chat-title"><$list filter="[[$:/config/state/collab/chat-target]!field:text[]]" variable="_">🔒 </$list>Chat</span>
-<$select tiddler="$:/config/state/collab/chat-target" default="" class="tc-collab-chat-target" tooltip="Choose who you're chatting with">
+<span class="tc-collab-chat-title"><$list filter="[[$:/temp/collab/state/chat-target]!field:text[]]" variable="_">🔒 </$list>Chat</span>
+<$select tiddler="$:/temp/collab/state/chat-target" default="" class="tc-collab-chat-target" tooltip="Choose who you're chatting with">
 <option value="">Everyone</option>
 <$list filter="[prefix[$:/temp/collab/members/]sort[user-name]]">
 <option value={{{ [<currentTiddler>get[device-id]] }}}><$text text={{{ [<currentTiddler>get[user-name]] ~[<currentTiddler>get[device-name]] }}}/><$list filter="[<currentTiddler>get[device-id]addprefix[$:/temp/collab/chat/unread/]has[text]]" variable="_"> •</$list></option>
 </$list>
 </$select>
-<$button set="$:/config/state/collab/chat-open" setTo="no" class="tc-btn-invisible tc-collab-chat-close-btn">✕</$button>
+<$button set="$:/temp/collab/state/chat-open" setTo="no" class="tc-btn-invisible tc-collab-chat-close-btn">✕</$button>
 </div>
-<$list filter="[[$:/config/state/collab/chat-target]!field:text[]]" variable="_">
-<div class="tc-collab-chat-private-hint">🔒 Private — end-to-end encrypted, only <$text text={{{ [{$:/config/state/collab/chat-target}addprefix[$:/temp/collab/members/]get[user-name]] ~[{$:/config/state/collab/chat-target}addprefix[$:/temp/collab/members/]get[device-name]] }}}/> can read this.</div>
+<$list filter="[[$:/temp/collab/state/chat-target]!field:text[]]" variable="_">
+<div class="tc-collab-chat-private-hint">🔒 Private — end-to-end encrypted, only <$text text={{{ [{$:/temp/collab/state/chat-target}addprefix[$:/temp/collab/members/]get[user-name]] ~[{$:/temp/collab/state/chat-target}addprefix[$:/temp/collab/members/]get[device-name]] }}}/> can read this.</div>
 </$list>
 <div class="tc-collab-chat-messages">
-<$list filter="[prefix[$:/temp/collab/chat/msg/]field:peer{$:/config/state/collab/chat-target}sort[msg-sort]reverse[]]" emptyMessage="""<div class="tc-collab-chat-empty">No messages yet</div>""">
+<$list filter="[prefix[$:/temp/collab/chat/msg/]field:peer{$:/temp/collab/state/chat-target}sort[msg-sort]reverse[]]" emptyMessage="""<div class="tc-collab-chat-empty">No messages yet</div>""">
 <div class={{{ [<currentTiddler>get[is-local]match[yes]then[tc-collab-chat-msg tc-collab-chat-msg-local]else[tc-collab-chat-msg]] }}}>
 <span class="tc-collab-chat-meta"><$text text={{{ [<currentTiddler>get[sender-name]] }}}/><span class="tc-collab-chat-time"> <$text text={{{ [<currentTiddler>get[time-label]] }}}/></span></span>
 <span class="tc-collab-chat-text"><$text text={{{ [<currentTiddler>get[text]] }}}/></span>
@@ -32,8 +32,8 @@ title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/ChatPanel
 </div>
 </div>
 </$reveal>
-<$reveal type="nomatch" state="$:/config/state/collab/chat-open" text="yes">
-<$button class="tc-btn-invisible tc-collab-chat-toggle"><$action-setfield $tiddler="$:/config/state/collab/chat-open" text="yes"/><$list filter="[[$:/temp/collab/chat/unread]!field:text[0]!field:text[]]" variable="_"><span class="tc-collab-chat-badge"><$text text={{$:/temp/collab/chat/unread}}/></span></$list>Chat</$button>
+<$reveal type="nomatch" state="$:/temp/collab/state/chat-open" text="yes">
+<$button class="tc-btn-invisible tc-collab-chat-toggle"><$action-setfield $tiddler="$:/temp/collab/state/chat-open" text="yes"/><$list filter="[[$:/temp/collab/chat/unread]!field:text[0]!field:text[]]" variable="_"><span class="tc-collab-chat-badge"><$text text={{$:/temp/collab/chat/unread}}/></span></$list>Chat</$button>
 </$reveal>
 </div>
 </$reveal>

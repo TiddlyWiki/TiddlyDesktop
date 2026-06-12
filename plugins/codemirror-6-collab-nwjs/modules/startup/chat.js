@@ -10,7 +10,7 @@ Two conversation modes, both end-to-end encrypted:
   - 1:1: an exclusive private message to a single peer, encrypted with a pairwise
     key (ECDH) so no other room member can read it (transport.sendPrivate).
 
-The active conversation is $:/config/state/collab/chat-target ("" = Everyone, or
+The active conversation is $:/temp/collab/state/chat-target ("" = Everyone, or
 a peer deviceId). Messages carry a `peer` field naming their conversation ("" for
 room, the other device's id for a DM) so the panel can show one thread at a time.
 
@@ -37,8 +37,8 @@ exports.startup = function() {
 	var UNREAD_TITLE  = "$:/temp/collab/chat/unread";          // total (toggle badge)
 	var UNREAD_PREFIX = "$:/temp/collab/chat/unread/";          // per-conversation
 	var INPUT_TITLE   = "$:/temp/collab/chat/input";
-	var OPEN_TITLE    = "$:/config/state/collab/chat-open";
-	var TARGET_TITLE  = "$:/config/state/collab/chat-target";   // "" = Everyone, else peer deviceId
+	var OPEN_TITLE    = "$:/temp/collab/state/chat-open";
+	var TARGET_TITLE  = "$:/temp/collab/state/chat-target";   // "" = Everyone, else peer deviceId
 	var msgCounter    = 0;
 
 	function _send(msg)        { if(collab && collab.send) { collab.send(msg); } }

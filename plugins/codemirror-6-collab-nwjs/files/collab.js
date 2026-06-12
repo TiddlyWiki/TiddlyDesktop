@@ -31,6 +31,17 @@ try {
 }
 
 var Y = yjsLib.Y;
+
+// Shared safety guard (same rule the sharing protocol uses). Live field sync below
+// can introduce executable status — a module-type field, a $:/tags/RawMarkup tag, a
+// type change — so every remote field write must pass through this. Folder wikis
+// run with Node, so an unguarded write here would be remote code execution.
+var collabSafety;
+try {
+	collabSafety = require("$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/collab-safety.js");
+} catch(e) {
+	_clog("[Collab] collab-safety.js not available: " + (e && e.message));
+}
 // NOTE: We do NOT use yjsLib.yCollab. Its sync ViewPlugin (Pi) is a module-level
 // singleton created with the ViewPlugin class from yjs-collab.js's own import of
 // codemirror-view.js. If there's any module identity mismatch with the CM6 core's
@@ -351,6 +362,12 @@ function _ensureLifecycleListeners() {
 					var tid = $tw.wiki.getTiddler(state.tiddlerTitle);
 					var savedTitle = (tid && tid.fields["draft.title"]) || state.collabTitle;
 					_clog("[Collab] Broadcasting peer-saved: collabTitle=" + state.collabTitle + " savedTitle=" + savedTitle);
+					// Flush the draft's CURRENT fields into the Y.Map synchronously
+					// before encoding. A tag/field typed into the editor and committed
+					// only at save time lands in the draft via TW's DEFERRED change
+					// event, which would miss this teardown — so without this flush the
+					// last-moment fields never reach co-editing peers.
+					try { if(state._populateYmapFromDraft) { state._populateYmapFromDraft(); } } catch(_ep) {}
 					// Send final Y.Doc state so peers get any last changes
 					try {
 						var finalState = Y.encodeStateAsUpdate(state.doc);
@@ -1196,12 +1213,21 @@ function _connectTransport(engine, collab) {
 
 		_clog("[Collab] Y.Map remote change: " + JSON.stringify(Object.keys(changedFields)) + " for " + state.collabTitle);
 
+		// Compute the resulting tiddler and refuse it if a peer's field/tag change
+		// would make it executable (or a disallowed system tiddler). Without this,
+		// a co-editing peer could add module-type / a $:/tags/RawMarkup tag / change
+		// the type and get code to run with our (Node) privileges.
+		var newTid = new $tw.Tiddler(tid, changedFields, {modified: tid.fields.modified});
+		if(collabSafety && !collabSafety.acceptTiddler(state.collabTitle, newTid.fields)) {
+			_clog("[Collab] refused remote field change for " + state.collabTitle + " (executable or disallowed system tiddler)");
+			return;
+		}
+
 		// Suppress the echo in our draft change listener BEFORE addTiddler,
 		// since addTiddler enqueues a deferred change event.
 		state._ymapSuppressDraftListener = true;
 
 		// Use addTiddler (NOT silent store) so TW5 triggers a refresh cycle.
-		var newTid = new $tw.Tiddler(tid, changedFields, {modified: tid.fields.modified});
 		$tw.wiki.addTiddler(newTid);
 	};
 	ymap.observe(onYmapChange);

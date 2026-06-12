@@ -100,6 +100,48 @@ exports.startup = function() {
 		if(api && api.send) { api.send(msg); }
 	}
 
+	// Pairwise (1:1) send for asset bytes — encrypted exclusively for the recipient
+	// (pairwise ECDH) so megabytes aren't broadcast to the whole room. Falls back to
+	// a room send if the pairwise channel isn't available.
+	function _sendPrivate(to, msg) {
+		var api = window.TiddlyDesktop && window.TiddlyDesktop.collab;
+		if(to && api && api.sendPrivate) { return api.sendPrivate(to, msg); }
+		_send(msg);
+	}
+
+	var assetUtil = require("$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/asset-util.js");
+
+	// Asset chunking, paced under the relay's rate limit (~512 KB/s) so streaming a
+	// large file never trips the server's flood protection and drops the connection.
+	var ASSET_CHUNK_B64 = 256 * 1024;   // base64 chars per chunk
+	var ASSET_CHUNK_MS  = 1300;         // ms between chunks
+
+	// pendingAssetGets[requestId] = {title, dest}   (dest "" = embed inline)
+	// incomingAssets[requestId]   = {meta, chunks[], received}
+	var pendingAssetGets = {};
+	var incomingAssets   = {};
+	var assetGot         = {};   // titles whose asset we've fetched (UI "Saved" marker)
+
+	// Asset metadata for a tiddler we could share: {name, type} if it is a binary
+	// asset whose bytes a receiver may want to land on disk. Two forms qualify:
+	//   - a LOCAL _canonical_uri (external on our side) → bytes come from the file;
+	//   - an embedded binary tiddler (base64 text, no _canonical_uri) → bytes are
+	//     the text itself, so a receiver who prefers external attachments can still
+	//     re-materialise it as a file.
+	// The owner's storage form and the receiver's are independent.
+	function _assetInfo(title) {
+		var t = $tw.wiki.getTiddler(title);
+		if(!t) { return null; }
+		var uri = t.fields._canonical_uri;
+		if(uri && assetUtil.isLocalCanonicalUri(uri)) {
+			return {name: assetUtil.basename(uri), type: t.fields.type || ""};
+		}
+		if(!uri && assetUtil.isBinaryType(t.fields.type)) {
+			return {name: assetUtil.assetFileName(title, t.fields.type), type: t.fields.type};
+		}
+		return null;
+	}
+
 	function _safeJson(text) {
 		try { return JSON.parse(text || "[]"); } catch(_e) { return []; }
 	}
@@ -159,7 +201,11 @@ exports.startup = function() {
 				"owner-device-id": info.ownerDeviceId || "",
 				"owner-name":      info.ownerName || info.ownerDeviceId || "",
 				"shared-at":       String(info.sharedAt || 0),
-				subscribed:        (subscribedTiddlers[title] || ownedTiddlers[title]) ? "yes" : ""
+				subscribed:        (subscribedTiddlers[title] || ownedTiddlers[title]) ? "yes" : "",
+				asset:             info.assetName ? "yes" : "",
+				"asset-name":      info.assetName || "",
+				"asset-type":      info.assetType || "",
+				"asset-got":       (assetGot[title] || ownedTiddlers[title]) ? "yes" : ""
 			}));
 		} else {
 			$tw.wiki.deleteTiddler(AVAIL_PREFIX + title);
@@ -204,8 +250,27 @@ exports.startup = function() {
 		$tw.wiki.addEventListener("change", onChange);
 	}
 
+	// ── safety: what we will accept from a peer ────────────────────────────────
+	// Folder wikis run with full Node access, so applying a peer-provided tiddler
+	// that carries executable content is remote code execution — and executable-ness
+	// can be introduced after the fact (a tag, a field, a type change). The single
+	// source of truth lives in collab-safety.js and is shared with collab.js's
+	// live field sync, so no write path can re-open the hole.
+
+	var SYSTEM_PREFIX = "$:/";
+	var ALLOW_SYSTEM  = "$:/config/codemirror-6-collab/allow-system-tiddlers";
+	var _safety       = require("$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/collab-safety.js");
+
+	function _acceptTiddler(title, fields) {
+		return _safety.acceptTiddler(title, fields);
+	}
+
 	// Apply remote fields, suppressing the echo on the change listener.
 	function _applyRemote(title, fields) {
+		if(!_acceptTiddler(title, fields)) {
+			console.warn("[collab-sharing] refused remote tiddler (executable or disallowed system tiddler):", title);
+			return;
+		}
 		suppressEcho[title] = true;
 		try {
 			$tw.wiki.addTiddler(new $tw.Tiddler(fields));
@@ -232,9 +297,11 @@ exports.startup = function() {
 	_safeJson($tw.wiki.getTiddlerText(CONFIG_OWNED, "[]")).forEach(function(title) {
 		if(typeof title !== "string" || !title) return;
 		var now = Date.now();
+		var _oa = _assetInfo(title);
 		ownedTiddlers[title]      = {sharedAt: now};
 		subscribedTiddlers[title] = {ownerDeviceId: deviceId};
-		availableTiddlers[title]  = {ownerDeviceId: deviceId, ownerName: _myName(), sharedAt: now};
+		availableTiddlers[title]  = {ownerDeviceId: deviceId, ownerName: _myName(), sharedAt: now,
+			assetName: _oa ? _oa.name : "", assetType: _oa ? _oa.type : ""};
 		_writeOwned(title, ownedTiddlers[title]);
 		_writeAvailable(title, availableTiddlers[title]);
 	});
@@ -265,11 +332,14 @@ exports.startup = function() {
 
 	function _sendManifest() {
 		var manifest = Object.keys(ownedTiddlers).map(function(title) {
+			var asset = _assetInfo(title);
 			return {
 				title:         title,
 				ownerDeviceId: deviceId,
 				ownerName:     _myName(),
-				sharedAt:      ownedTiddlers[title].sharedAt
+				sharedAt:      ownedTiddlers[title].sharedAt,
+				assetName:     asset ? asset.name : "",
+				assetType:     asset ? asset.type : ""
 			};
 		});
 		// Send even when empty. A peer treats our manifest as authoritative for the
@@ -327,7 +397,9 @@ exports.startup = function() {
 			_claimAvailable(item.title, {
 				ownerDeviceId: senderDeviceId,
 				ownerName:     item.ownerName || senderName || senderDeviceId,
-				sharedAt:      item.sharedAt  || Date.now()
+				sharedAt:      item.sharedAt  || Date.now(),
+				assetName:     item.assetName || "",
+				assetType:     item.assetType || ""
 			});
 		});
 	}
@@ -345,9 +417,11 @@ exports.startup = function() {
 			return;
 		}
 		var now = Date.now();
+		var asset = _assetInfo(title);
 		ownedTiddlers[title]      = {sharedAt: now};
 		subscribedTiddlers[title] = {ownerDeviceId: deviceId};
-		availableTiddlers[title]  = {ownerDeviceId: deviceId, ownerName: _myName(), sharedAt: now};
+		availableTiddlers[title]  = {ownerDeviceId: deviceId, ownerName: _myName(), sharedAt: now,
+			assetName: asset ? asset.name : "", assetType: asset ? asset.type : ""};
 		_writeOwned(title, ownedTiddlers[title]);
 		_writeAvailable(title, availableTiddlers[title]);
 		_saveOwned();
@@ -357,7 +431,9 @@ exports.startup = function() {
 			ownerDeviceId: deviceId,
 			ownerName:     _myName(),
 			title:         title,
-			sharedAt:      now
+			sharedAt:      now,
+			assetName:     asset ? asset.name : "",
+			assetType:     asset ? asset.type : ""
 		});
 	}
 
@@ -430,10 +506,124 @@ exports.startup = function() {
 		if(ownedTiddlers[title] || subscribedTiddlers[title]) return;
 		var info = availableTiddlers[title];
 		if(!info) return;
+		if(title.indexOf(SYSTEM_PREFIX) === 0 && $tw.wiki.getTiddlerText(ALLOW_SYSTEM, "no") !== "yes") {
+			console.warn("[collab-sharing] system-tiddler sharing is off; ignoring Get for:", title);
+			return;
+		}
 		subscribedTiddlers[title] = {ownerDeviceId: info.ownerDeviceId, ownerName: info.ownerName || ""};
 		_writeAvailable(title, availableTiddlers[title]);
 		_saveSubscribed();
 		_requestFromOwner(title);
+	}
+
+	// ── asset transfer (external-attachment _canonical_uri files) ───────────────
+
+	function _assetError(text) {
+		$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/collab/error", text: text}));
+	}
+
+	// Getter: request the asset for `title`. destPath "" → embed inline; otherwise
+	// the bytes are saved there and _canonical_uri points at it.
+	function _getAsset(title, destPath) {
+		if(!availableTiddlers[title]) return;
+		if(title.indexOf(SYSTEM_PREFIX) === 0 && $tw.wiki.getTiddlerText(ALLOW_SYSTEM, "no") !== "yes") {
+			console.warn("[collab-asset] system-tiddler sharing off; not getting:", title);
+			return;
+		}
+		var requestId = Math.random().toString(36).slice(2);
+		pendingAssetGets[requestId] = {title: title, dest: destPath || ""};
+		_send({type: "collab-get-asset", requesterDeviceId: deviceId, title: title, requestId: requestId});
+	}
+
+	// Owner: stream the asset bytes pairwise to the requester (metadata + chunks).
+	// Bytes come from the file (local _canonical_uri) or straight from the base64
+	// text (embedded binary tiddler) — either way the receiver decides how to store.
+	function _serveAsset(title, requesterId, requestId) {
+		if(!requesterId || requesterId === deviceId) return;
+		if(!ownedTiddlers[title]) return;            // only the owner holds the original
+		var t = $tw.wiki.getTiddler(title);
+		if(!t) return;
+		var info = _assetInfo(title);
+		if(!info) return;
+		var uri = t.fields._canonical_uri;
+		if(uri && assetUtil.isLocalCanonicalUri(uri)) {
+			assetUtil.readAsset(uri, function(err, base64) {
+				if(err || !base64) {
+					console.warn("[collab-asset] read failed for " + title + ": " + err);
+					_sendPrivate(requesterId, {type: "collab-asset-error", requestId: requestId, message: "Owner could not read the asset file"});
+					return;
+				}
+				_serveAssetBytes(t, info, requesterId, requestId, base64);
+			});
+		} else {
+			_serveAssetBytes(t, info, requesterId, requestId, t.fields.text || "");
+		}
+	}
+
+	function _serveAssetBytes(t, info, requesterId, requestId, base64) {
+		if(Math.floor(base64.length * 3 / 4) > assetUtil.maxAssetBytes()) {
+			_sendPrivate(requesterId, {type: "collab-asset-error", requestId: requestId, message: "Asset exceeds the size limit"});
+			return;
+		}
+		var fields = _serialise(t);
+		delete fields._canonical_uri;   // the receiver records its own
+		delete fields.text;
+		var chunks = [];
+		for(var i = 0; i < base64.length; i += ASSET_CHUNK_B64) { chunks.push(base64.slice(i, i + ASSET_CHUNK_B64)); }
+		_sendPrivate(requesterId, {
+			type:        "collab-asset-meta",
+			requestId:   requestId,
+			title:       t.fields.title,
+			fields:      fields,
+			name:        info.name,
+			assetType:   t.fields.type || "",
+			size:        Math.floor(base64.length * 3 / 4),
+			totalChunks: chunks.length
+		});
+		_sendAssetChunks(requesterId, requestId, chunks, 0);
+	}
+
+	function _sendAssetChunks(to, requestId, chunks, i) {
+		if(i >= chunks.length) return;
+		_sendPrivate(to, {type: "collab-asset-chunk", requestId: requestId, index: i, data: chunks[i]});
+		setTimeout(function() { _sendAssetChunks(to, requestId, chunks, i + 1); }, ASSET_CHUNK_MS);
+	}
+
+	// Getter: all chunks in → save to disk (external) or embed (inline), then write
+	// the tiddler. Runs through the same safety guard as any other remote write.
+	function _finalizeAsset(requestId) {
+		var inc = incomingAssets[requestId], pending = pendingAssetGets[requestId];
+		delete incomingAssets[requestId];
+		delete pendingAssetGets[requestId];
+		if(!inc || !pending) return;
+		var base64 = inc.chunks.join("");
+		var meta   = inc.meta;
+		var title  = pending.title;
+		var fields = meta.fields || {};
+		fields.title = title;
+
+		function write() {
+			if(!_acceptTiddler(title, fields)) { console.warn("[collab-asset] refused:", title); return; }
+			suppressEcho[title] = true;
+			try { $tw.wiki.addTiddler(new $tw.Tiddler(fields)); }
+			finally { setTimeout(function() { delete suppressEcho[title]; }, 0); }
+			assetGot[title] = true;
+			if(availableTiddlers[title]) { _writeAvailable(title, availableTiddlers[title]); }
+		}
+
+		if(pending.dest && assetUtil.storeExternally()) {
+			assetUtil.writeAsset(pending.dest, base64, function(err, absPath) {
+				if(err) { console.warn("[collab-asset] write failed:", err); _assetError("Could not save the attachment: " + err); return; }
+				delete fields.text;
+				fields._canonical_uri = assetUtil.canonicalUriForPath(absPath || pending.dest);
+				write();
+			});
+		} else {
+			delete fields._canonical_uri;
+			fields.text = base64;
+			if(meta.assetType) { fields.type = meta.assetType; }
+			write();
+		}
 	}
 
 	// ── serving fetch requests (ownerless serving + owner re-sync) ──────────────
@@ -503,6 +693,9 @@ exports.startup = function() {
 			if(!ownedTiddlers[title] && !subscribedTiddlers[title]) return;
 			var tiddler = $tw.wiki.getTiddler(title);
 			if(!tiddler || tiddler.fields["draft.of"]) return;
+			// Binary assets aren't live-broadcast — they'd flood the room with base64
+			// and subscribers fetch them on demand (pairwise) via the asset flow.
+			if(_assetInfo(title)) return;
 			_send({
 				type:           "collab-tiddler-update",
 				senderDeviceId: deviceId,
@@ -544,7 +737,9 @@ exports.startup = function() {
 				_claimAvailable(msg.title, {
 					ownerDeviceId: msg.ownerDeviceId,
 					ownerName:     msg.ownerName || msg.ownerDeviceId,
-					sharedAt:      msg.sharedAt  || Date.now()
+					sharedAt:      msg.sharedAt  || Date.now(),
+					assetName:     msg.assetName || "",
+					assetType:     msg.assetType || ""
 				});
 			}
 			break;
@@ -622,6 +817,15 @@ exports.startup = function() {
 
 		case "collab-tiddler-rename":
 			if(msg.ownerDeviceId === deviceId || !msg.fromTitle || !msg.toTitle) break;
+			// Never let a rename move a shared tiddler into disallowed system space
+			// (e.g. clobbering $:/DefaultTiddlers or our protected collab config).
+			{
+				var _renameLocal = $tw.wiki.getTiddler(msg.fromTitle);
+				if(_renameLocal && !_acceptTiddler(msg.toTitle, _renameLocal.fields)) {
+					console.warn("[collab-sharing] refused rename into disallowed title:", msg.toTitle);
+					break;
+				}
+			}
 			// Update available entry regardless of whether we subscribed.
 			if(availableTiddlers[msg.fromTitle]) {
 				var renameAvail = availableTiddlers[msg.fromTitle];
@@ -650,6 +854,37 @@ exports.startup = function() {
 				}
 			}
 			break;
+
+		case "collab-get-asset":
+			_serveAsset(msg.title, msg.requesterDeviceId, msg.requestId);
+			break;
+
+		case "collab-asset-meta":
+			if(!pendingAssetGets[msg.requestId]) break;   // not our request
+			if(msg.size > assetUtil.maxAssetBytes()) {
+				delete pendingAssetGets[msg.requestId];
+				_assetError("Incoming attachment exceeds the size limit (" + Math.round((msg.size || 0) / 1048576) + " MB).");
+				break;
+			}
+			incomingAssets[msg.requestId] = {meta: msg, chunks: new Array(msg.totalChunks || 0), received: 0};
+			break;
+
+		case "collab-asset-chunk":
+			var _inc = incomingAssets[msg.requestId];
+			if(_inc && typeof msg.index === "number" && _inc.chunks[msg.index] === undefined) {
+				_inc.chunks[msg.index] = msg.data || "";
+				_inc.received++;
+				if(_inc.received >= _inc.meta.totalChunks) { _finalizeAsset(msg.requestId); }
+			}
+			break;
+
+		case "collab-asset-error":
+			if(pendingAssetGets[msg.requestId]) {
+				delete pendingAssetGets[msg.requestId];
+				delete incomingAssets[msg.requestId];
+				_assetError("Attachment transfer failed: " + (msg.message || "unknown error"));
+			}
+			break;
 		}
 	});
 
@@ -658,10 +893,13 @@ exports.startup = function() {
 	window.addEventListener("collab-connected", function() {
 		// Restore owned tiddlers in the available map.
 		Object.keys(ownedTiddlers).forEach(function(title) {
+			var _ca = _assetInfo(title);
 			availableTiddlers[title] = {
 				ownerDeviceId: deviceId,
 				ownerName:     _myName(),
-				sharedAt:      ownedTiddlers[title].sharedAt
+				sharedAt:      ownedTiddlers[title].sharedAt,
+				assetName:     _ca ? _ca.name : "",
+				assetType:     _ca ? _ca.type : ""
 			};
 			_writeAvailable(title, availableTiddlers[title]);
 		});
@@ -694,6 +932,14 @@ exports.startup = function() {
 		// via the usual catch-up resolution (newer-remote wins; conflict → dialog).
 		Object.keys(ownedTiddlers).forEach(function(title) {
 			_requestFromOwner(title);
+		});
+		// Catch-up: directly re-request every tiddler we subscribe to. A peer joining
+		// a room where the owner is already online (with a tiddler modified since) must
+		// pull the latest now, not wait for the manifest round-trip — which can race or
+		// be missed, especially over LAN. The owner answers immediately; conflicting
+		// states resolve by timestamp in the collab-tiddler-response handler.
+		Object.keys(subscribedTiddlers).forEach(function(title) {
+			if(!ownedTiddlers[title]) { _requestFromOwner(title); }
 		});
 	});
 
@@ -729,6 +975,20 @@ exports.startup = function() {
 	$tw.rootWidget.addEventListener("codemirror-6-collab-get-tiddler", function(ev) {
 		var title = ev.param || (ev.paramObject && ev.paramObject.title);
 		if(title) { _getTiddler(title); }
+		return false;
+	});
+
+	// Get an external-attachment asset. From a $browse "save as" the chosen path
+	// arrives on the event's file input; with no path we embed it inline.
+	$tw.rootWidget.addEventListener("codemirror-6-collab-get-asset", function(ev) {
+		var title = ev.param || (ev.paramObject && ev.paramObject.title);
+		var dest = "";
+		// From a $browse "save as", the chosen path arrives as ev.files[0].path;
+		// the inline $button has no files (dest stays "" → embed).
+		try {
+			if(ev.files && ev.files[0] && ev.files[0].path) { dest = ev.files[0].path; }
+		} catch(e) {}
+		if(title) { _getAsset(title, dest); }
 		return false;
 	});
 

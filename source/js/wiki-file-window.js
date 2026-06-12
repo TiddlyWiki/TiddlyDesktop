@@ -175,6 +175,44 @@ WikiFileWindow.prototype.onloadiframe = function() {
 		if(typeof self.iframe.contentWindow._nwjsHttpQueueReady === "function") {
 			self.iframe.contentWindow._nwjsHttpQueueReady();
 		}
+		// File read/write bridge for the collab asset-transfer feature. The nwdisable
+		// iframe can't use fs; the parent performs the op (relative paths resolved
+		// against the wiki's own directory) and returns the result via the same
+		// polled results-store pattern as the HTTP bridge.
+		var _fsMod = require("fs"), _pathMod = require("path");
+		var _wikiDir = _pathMod.dirname(self.pathname);
+		self.iframe.contentWindow._nwjsWikiDir      = _wikiDir;
+		// Machine hostname for a stable, clone-proof collab device name.
+		try { self.iframe.contentWindow._nwjsHostname = require("os").hostname(); } catch(_e) {}
+		self.iframe.contentWindow._nwjsFileCmdQueue = [];
+		self.iframe.contentWindow._nwjsFileResults  = {};
+		var _resolveAssetPath = function(p) {
+			p = String(p || "");
+			if((/^file:\/\//i).test(p)) { p = decodeURI(p.replace(/^file:\/\//i, "")); }
+			return _pathMod.isAbsolute(p) ? p : _pathMod.resolve(_wikiDir, p);
+		};
+		var _fileTimer = setInterval(function() {
+			try {
+				var cw = self.iframe.contentWindow;
+				var q = cw && cw._nwjsFileCmdQueue;
+				if(!q || !q.length) return;
+				var item = q.shift();
+				if(item.op === "read") {
+					_fsMod.readFile(_resolveAssetPath(item.path), function(err, buf) {
+						var r = cw._nwjsFileResults; if(!r) return;
+						r[item.id] = err ? {err: err.message} : {data: buf.toString("base64")};
+					});
+				} else if(item.op === "write") {
+					var dest = _resolveAssetPath(item.path);
+					try { _fsMod.mkdirSync(_pathMod.dirname(dest), {recursive: true}); } catch(_e) {}
+					_fsMod.writeFile(dest, Buffer.from(item.base64, "base64"), function(err) {
+						var r = cw._nwjsFileResults; if(!r) return;
+						r[item.id] = err ? {err: err.message} : {data: dest};
+					});
+				}
+			} catch(_e) {}
+		}, 100);
+		self.window_nwjs.once("close", function() { clearInterval(_fileTimer); });
 		// WebSocket bridge — same queue-drain pattern as the HTTP bridge above.
 		// All socket creation and event dispatch happen inside the parent's setInterval
 		// tick (browser context) to avoid NW.js cross-context callback issues.

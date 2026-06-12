@@ -27,6 +27,10 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <div class="tc-collab-error-notice">⚠ <$text text={{$:/temp/collab/error}}/></div>
 </$list>
 
+<$list filter="[[$:/temp/collab/version-warning]!is[missing]]" variable="_">
+<div class="tc-collab-version-warning">⚠ <$text text={{$:/temp/collab/version-warning}}/></div>
+</$list>
+
 <$list filter="[prefix[$:/temp/collab/members/]]" emptyMessage="""<div class="tc-collab-no-peers">No other users connected</div>""">
 <div class="tc-collab-member">
 <span class="tc-collab-member-name"><$text text={{{ [<currentTiddler>get[user-name]] ~[<currentTiddler>get[device-name]] }}}/></span>
@@ -113,15 +117,15 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 </$reveal>
 
 <div class="tc-collab-settings-toggle">
-<$reveal type="match" state="$:/config/state/collab/settings-open" text="no">
-<$button set="$:/config/state/collab/settings-open" setTo="yes" class="tc-btn-invisible tc-collab-settings-btn">{{$:/core/images/options-button}} Settings</$button>
+<$reveal type="match" state="$:/temp/collab/state/settings-open" text="no">
+<$button set="$:/temp/collab/state/settings-open" setTo="yes" class="tc-btn-invisible tc-collab-settings-btn">{{$:/core/images/options-button}} Settings</$button>
 </$reveal>
-<$reveal type="nomatch" state="$:/config/state/collab/settings-open" text="no">
-<$button set="$:/config/state/collab/settings-open" setTo="no" class="tc-btn-invisible tc-collab-settings-btn tc-collab-settings-btn-open">{{$:/core/images/options-button}} Settings ▲</$button>
+<$reveal type="nomatch" state="$:/temp/collab/state/settings-open" text="no">
+<$button set="$:/temp/collab/state/settings-open" setTo="no" class="tc-btn-invisible tc-collab-settings-btn tc-collab-settings-btn-open">{{$:/core/images/options-button}} Settings ▲</$button>
 </$reveal>
 </div>
 
-<$reveal type="nomatch" state="$:/config/state/collab/settings-open" text="no">
+<$reveal type="nomatch" state="$:/temp/collab/state/settings-open" text="no">
 <div class="tc-collab-settings-panel">
 <div class="tc-collab-settings-group">
 <div class="tc-collab-settings-label">Connection</div>
@@ -131,6 +135,7 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <tr class="tc-edit-field"><td class="tc-edit-field-name">Room token</td><td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/room-token" tag="input" placeholder="shared E2E secret"/></td></tr>
 </tbody></table>
 <div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/relay-only" field="text" checked="yes" unchecked="no" default="no"/> <span>Relay only — disable direct LAN</span></div>
+<div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/allow-system-tiddlers" field="text" checked="yes" unchecked="no" default="no"/> <span>Allow system (<code>$:/</code>) tiddlers — never executable; trusted rooms only</span></div>
 </div>
 <div class="tc-collab-settings-group">
 <div class="tc-collab-settings-label">Identity</div>
@@ -164,15 +169,15 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 </$reveal>
 
 <div class="tc-collab-diag-toggle">
-<$reveal type="nomatch" state="$:/config/state/collab/diag-open" text="yes">
-<$button set="$:/config/state/collab/diag-open" setTo="yes" class="tc-btn-invisible tc-collab-settings-btn">{{$:/core/images/info-button}} Diagnostics</$button>
+<$reveal type="nomatch" state="$:/temp/collab/state/diag-open" text="yes">
+<$button set="$:/temp/collab/state/diag-open" setTo="yes" class="tc-btn-invisible tc-collab-settings-btn">{{$:/core/images/info-button}} Diagnostics</$button>
 </$reveal>
-<$reveal type="match" state="$:/config/state/collab/diag-open" text="yes">
-<$button set="$:/config/state/collab/diag-open" setTo="no" class="tc-btn-invisible tc-collab-settings-btn">{{$:/core/images/info-button}} Diagnostics ▲</$button>
+<$reveal type="match" state="$:/temp/collab/state/diag-open" text="yes">
+<$button set="$:/temp/collab/state/diag-open" setTo="no" class="tc-btn-invisible tc-collab-settings-btn">{{$:/core/images/info-button}} Diagnostics ▲</$button>
 </$reveal>
 </div>
 
-<$reveal type="match" state="$:/config/state/collab/diag-open" text="yes">
+<$reveal type="match" state="$:/temp/collab/state/diag-open" text="yes">
 <div class="tc-collab-diag-panel">
 <table class="tc-collab-diag-table"><tbody>
 <tr><td>Status</td><td><$text text={{{ [[$:/temp/collab/status]get[status]] ~[[disconnected]] }}}/></td></tr>

@@ -12,11 +12,13 @@ caption: Collab share button
 </$button>
 </$list>
 <$list filter="[<isOwned>match[no]]" variable="_">
-<$list filter="[<currentTiddler>!prefix[$:/]]" variable="_">
-<$button message="codemirror-6-collab-share-tiddler" param=<<currentTiddler>> class="tc-btn-invisible tc-collab-share-btn" tooltip="Share this tiddler with room members">
+<$set name="isGot" value={{{ [<currentTiddler>addprefix[$:/temp/collab/share/available/]get[subscribed]match[yes]then[yes]else[no]] }}}>
+<$list filter="[<currentTiddler>!prefix[$:/]] ~[{$:/config/codemirror-6-collab/allow-system-tiddlers}match[yes]then<currentTiddler>]" variable="_">
+<$button message="codemirror-6-collab-share-tiddler" param=<<currentTiddler>> class={{{ [<isGot>match[yes]then[tc-btn-invisible tc-collab-share-btn tc-collab-share-btn-got]else[tc-btn-invisible tc-collab-share-btn]] }}} tooltip={{{ [<isGot>match[yes]then[Synced from a peer — you are subscribed to this tiddler]else[Share this tiddler with room members]] }}}>
 {{$:/core/images/plugin-generic-plugin}}
 </$button>
 </$list>
+</$set>
 </$list>
 </$set>
 </$list>

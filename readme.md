@@ -183,6 +183,58 @@ Instructions for Windows 10 64-bit (updates for other OSs welcome).
 * Modify the "main" field in the package.json file to "html/main.html"
 * Click 'Debug' and select nwjs to automatically create the configuration file laugh.json (no need to modify it). Then click Start to debug.
 
+# Real-time collaboration
+
+TiddlyDesktop includes an optional real-time collaboration plugin (CodeMirror 6 + Yjs). Peers in the same *room* edit shared tiddlers together, chat, and exchange attachments. All content is end-to-end encrypted; the relay server only ever sees ciphertext.
+
+## What you need
+
+* **The CodeMirror 6 editor** must be the active text editor (the collaboration plugin integrates with it).
+* **A relay server.** Peers discover each other through a small relay (a TiddlyDesktop-to-TiddlyDesktop WebSocket server). You can use a shared one or self-host (see the separate `tiddlydesktop-relay` project). On the same LAN, peers also connect **directly** (encrypted) for lower latency; the relay is the fallback.
+* **An OAuth sign-in** (GitHub / Google / GitLab / OIDC, depending on the relay). The relay only admits authenticated users, and peers cryptographically verify each other's identity.
+
+## Quick start
+
+1. Open the **Collab** tab in the sidebar and expand **Settings**.
+2. Set the **Relay server URL** (e.g. `wss://relay.example.com:8443/`).
+3. Sign in under **Account** with one of the offered providers.
+4. Set a **Room code** (a shared name) and, for true end-to-end privacy, a **Room token** (a shared secret that is *never* sent to the relay).
+5. Click **Connect**. The status bar (bottom-right) shows the connection state, a `🔒 end-to-end encrypted` badge when a room token is set, and `LAN ⚡` when a direct connection is active.
+
+To bring others in, click **Invite** to copy an invite code (it carries the room token out-of-band) and have them paste it into **Join**.
+
+## Sharing tiddlers
+
+* Each tiddler gains a **share** button (the plugin icon) in its toolbar while you're connected. Click it to share that tiddler with the room — you become its *owner*.
+* Other peers see shared tiddlers in the **Get** panel (top of the collaboration dock, bottom-right). Click **Get** to fetch a copy and subscribe to live updates. A tiddler you've Got shows its share button in **blue**.
+* Editing a shared tiddler in the CodeMirror 6 editor syncs character-by-character with anyone else editing it; the edit banner shows who else is in the tiddler.
+* **Attachments**: a tiddler backed by a file (`_canonical_uri`) or an embedded image/binary can be fetched as an attachment. If you have the **External Attachments** plugin enabled, **Get** offers a *save-as* dialog and stores the file on disk (recording the path per your External Attachments relative/absolute settings); otherwise it's embedded inline. Attachments stream privately to the requester only.
+
+## Chat
+
+The collaboration dock has a **Chat** panel:
+
+* **Everyone** — a room-wide message (encrypted with the room key).
+* **A single peer** — pick them from the selector for an *exclusive* 1:1 conversation, encrypted with a pairwise key so no other room member can read it.
+
+## Security notes
+
+* **End-to-end**: set a **Room token** for true privacy — the key is derived from it and never reaches the relay. Without a token, traffic is still encrypted, but with a key the relay knows (room-code mode).
+* **Peer authentication**: the relay signs a certificate for each connection; peers verify it, so in token mode you only ever exchange traffic with verified, OAuth-authenticated users.
+* **System tiddlers** (`$:/…`) are *not* shared or accepted by default. You can opt in ("Allow system tiddlers") to share things like palettes or macros, but **executable** tiddlers (JavaScript, raw markup, plugins) and your own collaboration/plugin configuration are *always* refused — a peer can never run code on your machine.
+* **Relay only**: tick this to disable the direct LAN channel (avoids opening a listening socket / firewall prompt); collaboration still works through the relay.
+
+## Settings reference
+
+All settings live in the **Collab** sidebar tab (and the Settings page):
+
+* Relay server URL, Room code, Room token, Display name, Colour
+* **Maximum attachment size (MB)** — attachments larger than this are refused
+* **Relay only** — disable direct LAN
+* **Allow system tiddlers** — opt in to sharing/getting `$:/…` tiddlers (never executable ones)
+
+If peers run different plugin builds, a **version mismatch** warning appears in the sidebar — keep everyone on the same build, as the wire protocol can change between versions.
+
 # Troubleshooting
 
 ## Linux: Wayland display issues (drag & drop, window frames, dialogs)

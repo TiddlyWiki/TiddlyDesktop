@@ -116,6 +116,16 @@ tags: $:/tags/Stylesheet
   font-size: 0.85em;
 }
 
+.tc-collab-version-warning {
+  margin-bottom: 0.75em;
+  padding: 6px 10px;
+  background: rgba(255, 152, 0, 0.16);
+  border: 1px solid rgba(255, 152, 0, 0.55);
+  border-radius: 4px;
+  color: <<colour foreground>>;
+  font-size: 0.85em;
+}
+
 .tc-collab-conflict-notice {
   margin-top: 1em;
   padding: 6px 10px;
@@ -463,6 +473,46 @@ tags: $:/tags/Stylesheet
   white-space: nowrap;
 }
 
+.tc-collab-shared-system-badge {
+  font-size: 0.72em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 152, 0, 0.22);
+  border: 1px solid rgba(255, 152, 0, 0.55);
+  color: <<colour foreground>>;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: help;
+}
+
+.tc-collab-shared-asset-badge {
+  font-size: 0.72em;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(33, 150, 243, 0.16);
+  border: 1px solid rgba(33, 150, 243, 0.45);
+  color: <<colour foreground>>;
+  white-space: nowrap;
+  max-width: 14em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: help;
+}
+
+.tc-collab-get-saved {
+  font-size: 0.75em;
+  color: #2e7d32;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Native file-input "save as" picker for attachments, made to read like a button. */
+.tc-collab-get-asset-browse {
+  font-size: 0.72em;
+  max-width: 8em;
+  color: <<colour primary>>;
+}
+
 .tc-collab-get-btn {
   font-size: 0.75em;
   padding: 2px 8px;
@@ -491,7 +541,6 @@ tags: $:/tags/Stylesheet
 /* -- Toolbar share button ---------------------------------------------------- */
 
 .tc-collab-share-btn {
-  padding: 2px 6px;
   opacity: 0.6;
 }
 
@@ -508,6 +557,17 @@ tags: $:/tags/Stylesheet
 .tc-tiddler-controls button.tc-collab-share-btn-active svg,
 .tc-tiddler-edit-controls button.tc-collab-share-btn-active svg {
   fill: #4caf50;
+}
+
+/* A tiddler you've Got (subscribed to) from a peer — distinct blue. */
+.tc-collab-share-btn-got {
+  opacity: 1;
+  color: #1976d2;
+}
+
+.tc-tiddler-controls button.tc-collab-share-btn-got svg,
+.tc-tiddler-edit-controls button.tc-collab-share-btn-got svg {
+  fill: #1976d2;
 }
 
 /* -- Shared edit banner ------------------------------------------------------ */
@@ -710,6 +770,31 @@ tags: $:/tags/Stylesheet
    panels' own contents are untouched. */
 .tc-collab-dock > * {
   margin: 0;
+}
+
+/* Hide/show the whole dock. */
+.tc-collab-dock-hidebar {
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: auto;
+}
+
+.tc-collab-dock-hide,
+.tc-collab-dock-show {
+  font-size: 0.7em;
+  padding: 1px 8px;
+  border-radius: 4px 0 0 0;
+  background: <<colour tiddler-background>>;
+  border-top: 1px solid <<colour tiddler-border>>;
+  border-left: 1px solid <<colour tiddler-border>>;
+  color: <<colour muted-foreground>>;
+  pointer-events: auto;
+}
+
+.tc-collab-dock-hide:hover,
+.tc-collab-dock-show:hover {
+  color: <<colour foreground>>;
+  background: <<colour page-background>>;
 }
 
 /* -- Status bar (bottom of the dock) --------------------------------------- */
