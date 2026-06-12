@@ -217,6 +217,10 @@ exports.startup = function() {
 	// parent our room key; _bridgeLanPeers mirrors the parent's LAN peer count.
 	var _lanBridge      = false;
 	var _bridgeLanPeers = 0;
+	// Throttle for reflex (counter-)announces, which re-establish the LAN handshake
+	// when we (re)join the LAN after a peer has already announced — e.g. after
+	// turning "Relay only" back off. peerId -> last reflex time.
+	var _lanReflexAt    = {};
 
 	// Deduplication: track recently seen msg_ids (from peers) to absorb relay+LAN duplicates
 	var seenMsgIds   = [];     // rolling array (oldest first)
@@ -621,6 +625,11 @@ exports.startup = function() {
 				lanPort      = p;
 				lanEndpoints = _getLocalIpEndpoints(p);
 				_setupServerHandlers(srv);
+				// If the server came up after the session was already connected (e.g.
+				// "Relay only" was just switched off), announce so peers can re-handshake
+				// the direct channel. At startup we aren't connected yet, so the normal
+				// members/member_joined announce covers it.
+				if(connected) { _sendLanAnnounce(); }
 			});
 		}(LAN_PORT_START));
 	}
@@ -1043,6 +1052,9 @@ exports.startup = function() {
 						// Single-file wiki: the parent LAN node connects on our behalf.
 						try { window._nwjsLanAddPeer(msg.deviceId, msg.pubkey, msg.endpoints); } catch(_e) {}
 					}
+					// Counter-announce so the peer gets our key too (needed when we just
+					// (re)joined the LAN, e.g. after switching "Relay only" back off).
+					_maybeReflexAnnounce(msg.deviceId);
 				}
 				break;
 
@@ -1195,6 +1207,21 @@ exports.startup = function() {
 			pubkey:    myKeyPair.pubKeyB64,
 			endpoints: lanEndpoints
 		});
+	}
+
+	// On hearing a peer's announce, make sure they have OUR key too: the LAN server
+	// handshake only accepts a peer once we hold their session key, so both sides
+	// must announce. Peers that announced before we joined the LAN (e.g. because we
+	// had "Relay only" on) won't re-announce on their own, so we counter-announce.
+	// Throttled per peer, and skipped once a direct connection exists, to bound the
+	// announce/counter-announce exchange.
+	function _maybeReflexAnnounce(peerId) {
+		if(relayOnly || !peerId) return;
+		if(nodeCrypto && directPeers[peerId]) return;   // already connected (folder)
+		var now = Date.now();
+		if(_lanReflexAt[peerId] && now - _lanReflexAt[peerId] < 3000) return;
+		_lanReflexAt[peerId] = now;
+		_sendLanAnnounce();
 	}
 
 	// ── relay WebSocket ────────────────────────────────────────────────────────
@@ -1446,6 +1473,7 @@ exports.startup = function() {
 		if(_lanBridge && typeof window._nwjsLanClose === "function") { try { window._nwjsLanClose(); } catch(_e) {} }
 		_lanBridge = false; _bridgeLanPeers = 0;
 		myKeyPair = null; lanPort = 0; lanEndpoints = [];
+		_lanReflexAt = {};
 		_writeStatus();
 	}
 

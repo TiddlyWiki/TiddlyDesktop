@@ -704,6 +704,14 @@ tags: $:/tags/Stylesheet
   pointer-events: none;
 }
 
+/* Block-mode transclusion wraps each child (Get/Chat/status) in a paragraph that
+   carries the theme's 1em margins; flex items don't collapse margins, so without
+   this the rows would be pushed ~50px apart. Zero the direct children only — the
+   panels' own contents are untouched. */
+.tc-collab-dock > * {
+  margin: 0;
+}
+
 /* -- Status bar (bottom of the dock) --------------------------------------- */
 
 .tc-collab-statusbar {
