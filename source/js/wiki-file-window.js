@@ -102,6 +102,19 @@ WikiFileWindow.prototype.onloadiframe = function() {
 			parentWindow: this.window_nwjs.window
 		}
 	);
+	// Browser-style find-in-page (Ctrl/Cmd+F). The bar lives in the outer wiki
+	// window and searches the iframe content; it defers to any focused editor that
+	// claims the shortcut (e.g. CodeMirror 6).
+	try {
+		$tw.desktop.utils.findbar.installFindBar({
+			hostWindow: this.window_nwjs.window,
+			hostDocument: this.window_nwjs.window.document,
+			getContentWindow: function() { return self.iframe.contentWindow; },
+			getContentDocument: function() { return self.iframe.contentDocument; }
+		});
+	} catch(e) {
+		console.error("[TiddlyDesktop] find bar install failed:",e);
+	}
 	// Observe mutations of the title element of the iframe
 	this.titleObserver = new MutationObserver(this.extractIframeTitle.bind(this));
 	var iframeTitleNode = this.iframe.contentDocument.getElementsByTagName("title")[0];
@@ -235,6 +248,72 @@ WikiFileWindow.prototype.onloadiframe = function() {
 		// Notify transport.js that the WebSocket bridge is ready.
 		if(typeof self.iframe.contentWindow._nwjsWsBridgeReady === "function") {
 			self.iframe.contentWindow._nwjsWsBridgeReady();
+		}
+		// ── LAN bridge ──
+		// The iframe (nwdisable) can't listen on a socket or run Node crypto, so the
+		// parent runs the LAN node (lan-node.js) on its behalf. The iframe pushes
+		// commands (init/addpeer/broadcast/close) to a queue and receives events
+		// (ready/message/peers); all socket + crypto work happens inside the parent's
+		// setInterval tick, never the iframe's call stack (which nwdisable suppresses).
+		var _lanNode = null;
+		self.iframe.contentWindow._nwjsLanCmdQueue   = [];
+		self.iframe.contentWindow._nwjsLanEventQueue = [];
+		var _lanTimer = setInterval(function() {
+			try {
+				var cw = self.iframe.contentWindow;
+				if(!cw) return;
+				var cmds = cw._nwjsLanCmdQueue;
+				while(cmds && cmds.length) {
+					var cmd = cmds.shift();
+					if(cmd.op === "init") {
+						if(_lanNode) { try { _lanNode.close(); } catch(_e) {} _lanNode = null; }
+						try {
+							_lanNode = require("../js/utils/lan-node.js").createLanNode({
+								deviceId: cmd.deviceId,
+								roomKey:  cmd.roomKeyHex ? Buffer.from(cmd.roomKeyHex, "hex") : null,
+								onReady:     function(pub, eps) { if(cw._nwjsLanEventQueue) cw._nwjsLanEventQueue.push({type: "ready",   pub: pub, eps: eps}); },
+								onMessage:   function(peerId, json) { if(cw._nwjsLanEventQueue) cw._nwjsLanEventQueue.push({type: "message", peerId: peerId, json: json}); },
+								onPeerCount: function(n)        { if(cw._nwjsLanEventQueue) cw._nwjsLanEventQueue.push({type: "peers",   n: n}); }
+							});
+						} catch(e) { console.error("[lan-bridge] init failed:", e && e.message); }
+					} else if(cmd.op === "addpeer") {
+						if(_lanNode) { _lanNode.addPeer(cmd.deviceId, cmd.pubKeyB64, cmd.endpoints); }
+					} else if(cmd.op === "broadcast") {
+						if(_lanNode) { _lanNode.broadcast(cmd.json); }
+					} else if(cmd.op === "close") {
+						if(_lanNode) { try { _lanNode.close(); } catch(_e) {} _lanNode = null; }
+					}
+				}
+				var evts = cw._nwjsLanEventQueue;
+				while(evts && evts.length) {
+					var ev = evts.shift();
+					try {
+						if(ev.type === "ready"   && typeof cw._nwjsLanOnReady   === "function") { cw._nwjsLanOnReady(ev.pub, ev.eps); }
+						else if(ev.type === "message" && typeof cw._nwjsLanOnMessage === "function") { cw._nwjsLanOnMessage(ev.peerId, ev.json); }
+						else if(ev.type === "peers"   && typeof cw._nwjsLanOnPeers   === "function") { cw._nwjsLanOnPeers(ev.n); }
+					} catch(_e) {}
+				}
+			} catch(_e) {}
+		}, 50);
+		self.window_nwjs.once("close", function() {
+			clearInterval(_lanTimer);
+			if(_lanNode) { try { _lanNode.close(); } catch(_e) {} _lanNode = null; }
+		});
+		self.iframe.contentWindow._nwjsLanInit = function(roomKeyHex, did) {
+			self.iframe.contentWindow._nwjsLanCmdQueue.push({op: "init", roomKeyHex: roomKeyHex, deviceId: did});
+		};
+		self.iframe.contentWindow._nwjsLanAddPeer = function(did, pubKeyB64, endpoints) {
+			self.iframe.contentWindow._nwjsLanCmdQueue.push({op: "addpeer", deviceId: did, pubKeyB64: pubKeyB64, endpoints: endpoints});
+		};
+		self.iframe.contentWindow._nwjsLanBroadcast = function(json) {
+			self.iframe.contentWindow._nwjsLanCmdQueue.push({op: "broadcast", json: json});
+		};
+		self.iframe.contentWindow._nwjsLanClose = function() {
+			self.iframe.contentWindow._nwjsLanCmdQueue.push({op: "close"});
+		};
+		// Notify transport.js that the LAN bridge is ready.
+		if(typeof self.iframe.contentWindow._nwjsLanBridgeReady === "function") {
+			self.iframe.contentWindow._nwjsLanBridgeReady();
 		}
 	} catch(_bridgeErr) {
 		console.error("[TiddlyDesktop] Bridge injection failed:", _bridgeErr);

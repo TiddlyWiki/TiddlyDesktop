@@ -30,6 +30,12 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <$list filter="[prefix[$:/temp/collab/members/]]" emptyMessage="""<div class="tc-collab-no-peers">No other users connected</div>""">
 <div class="tc-collab-member">
 <span class="tc-collab-member-name"><$text text={{{ [<currentTiddler>get[user-name]] ~[<currentTiddler>get[device-name]] }}}/></span>
+<$list filter="[<currentTiddler>get[verified]match[yes]]" variable="_">
+<span class="tc-collab-member-verified" title={{{ [<currentTiddler>get[auth-user]addprefix[Verified OAuth identity: ]] }}}>✓ <$text text={{{ [<currentTiddler>get[auth-user]] }}}/></span>
+</$list>
+<$list filter="[[$:/temp/collab/status]get[e2e]match[strong]] :filter[<currentTiddler>get[verified]!match[yes]]" variable="_">
+<span class="tc-collab-member-unverified" title="This peer has not presented a valid OAuth membership certificate — their traffic is being blocked.">⚠ unverified</span>
+</$list>
 <$list filter="[<currentTiddler>get[editing]!match[]]" variable="editingJson">
 <span class="tc-collab-member-editing"><$text text=" - editing "/><$text text=<<editingJson>>/></span>
 </$list>
@@ -124,6 +130,7 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <tr class="tc-edit-field"><td class="tc-edit-field-name">Room code</td><td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/room-code" tag="input" placeholder="shared-room-name"/></td></tr>
 <tr class="tc-edit-field"><td class="tc-edit-field-name">Room token</td><td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/room-token" tag="input" placeholder="shared E2E secret"/></td></tr>
 </tbody></table>
+<div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/relay-only" field="text" checked="yes" unchecked="no" default="no"/> <span>Relay only — disable direct LAN</span></div>
 </div>
 <div class="tc-collab-settings-group">
 <div class="tc-collab-settings-label">Identity</div>
@@ -153,6 +160,37 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <div class="tc-collab-auth-status"><$text text={{$:/temp/collab/auth-status}}/></div>
 </$list>
 </div>
+</div>
+</$reveal>
+
+<div class="tc-collab-diag-toggle">
+<$reveal type="nomatch" state="$:/config/state/collab/diag-open" text="yes">
+<$button set="$:/config/state/collab/diag-open" setTo="yes" class="tc-btn-invisible tc-collab-settings-btn">{{$:/core/images/info-button}} Diagnostics</$button>
+</$reveal>
+<$reveal type="match" state="$:/config/state/collab/diag-open" text="yes">
+<$button set="$:/config/state/collab/diag-open" setTo="no" class="tc-btn-invisible tc-collab-settings-btn">{{$:/core/images/info-button}} Diagnostics ▲</$button>
+</$reveal>
+</div>
+
+<$reveal type="match" state="$:/config/state/collab/diag-open" text="yes">
+<div class="tc-collab-diag-panel">
+<table class="tc-collab-diag-table"><tbody>
+<tr><td>Status</td><td><$text text={{{ [[$:/temp/collab/status]get[status]] ~[[disconnected]] }}}/></td></tr>
+<tr><td>Encryption</td><td><$list filter="[[$:/temp/collab/status]field:e2e[strong]]" variable="_">end-to-end (room token)</$list><$list filter="[[$:/temp/collab/status]field:e2e[room-code]]" variable="_">room-code only (relay can read)</$list><$list filter="[[$:/temp/collab/status]!field:e2e[strong]!field:e2e[room-code]]" variable="_">—</$list></td></tr>
+<tr><td>Room</td><td><code><$text text={{{ [[$:/config/codemirror-6-collab/room-code]get[text]] ~[[(none)]] }}}/></code></td></tr>
+<tr><td>LAN peers</td><td><$text text={{{ [[$:/temp/collab/status]get[lan-peers]] ~[[0]] }}}/></td></tr>
+<tr><td>Your ID</td><td><code class="tc-collab-diag-id"><$text text={{{ [[$:/temp/collab/device-id]get[text]] ~[[(not connected)]] }}}/></code></td></tr>
+</tbody></table>
+<div class="tc-collab-diag-subhead">Peers</div>
+<$list filter="[prefix[$:/temp/collab/members/]sort[device-id]]" emptyMessage="""<div class="tc-collab-diag-empty">No peers connected</div>""">
+<div class="tc-collab-diag-peer">
+<code class="tc-collab-diag-id"><$text text={{{ [<currentTiddler>get[device-id]] }}}/></code>
+<$list filter="[<currentTiddler>get[user-name]!match[]]" variable="u"><span class="tc-collab-diag-peer-name"><$text text=<<u>>/></span></$list>
+</div>
+</$list>
+<$list filter="[[$:/temp/collab/error]!is[missing]!field:text[]]" variable="_">
+<div class="tc-collab-diag-error"><$text text={{$:/temp/collab/error}}/></div>
+</$list>
 </div>
 </$reveal>
 

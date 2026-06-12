@@ -68,10 +68,12 @@ function tryDecodeTiddlerPayload(raw, type) {
 		if(!line || line.charAt(0) === "#") { continue; }
 		// Find a data:text/vnd.tiddler URI either as the entire line (text/uri-list,
 		// text/x-moz-url) or embedded inside markup (text/html). Match on the still-
-		// URI-encoded form so JSON %22 doesn't truncate the capture; the stop-class
-		// excludes characters that cannot legally appear in a URI-encoded payload.
+		// URI-encoded form so JSON %22 doesn't truncate the capture. The stop-class
+		// is only " < > — encodeURIComponent always percent-encodes those three, so
+		// they reliably bound the href value, while characters it leaves literal
+		// (notably ' and ) ) must NOT terminate the match or the payload truncates.
 		var encMatch = line.match(/^data:text\/vnd\.tiddler,(.*)$/i)
-			|| line.match(/data:text\/vnd\.tiddler,([^"'<>\s)]+)/i);
+			|| line.match(/data:text\/vnd\.tiddler,([^"<>]+)/i);
 		if(encMatch) {
 			try {
 				var parsed = JSON.parse(decodeURIComponent(encMatch[1]));
@@ -138,8 +140,14 @@ function findEventHandlerWidget(widget, eventType) {
 	return null;
 }
 
-function makeDropHandler(getContentWindow) {
+function makeDropHandler(getContentWindow, dragState) {
 	return function(event) {
+		// Leave intra-wiki drags alone. A drag that started inside this document
+		// (e.g. a TiddlyWiki <$draggable> dropped on a <$droppable>) carries the
+		// same tiddler payload, but it must be handled by TiddlyWiki's own widgets,
+		// not hijacked into an import. Only drags originating OUTSIDE the wiki
+		// (cross-app) fire no dragstart here, so dragState.internal stays false.
+		if(dragState && dragState.internal) { return; }
 		var target = event.target;
 		if(target && (target.tagName === "TEXTAREA" || target.tagName === "INPUT" || target.isContentEditable)) {
 			return;
@@ -166,17 +174,25 @@ function makeDropHandler(getContentWindow) {
 	};
 }
 
-function attachToDoc(doc, getContentWindow) {
+function attachToDoc(doc, getContentWindow, dragState) {
+	// Flag drags that start within this document as internal, so the drop handler
+	// can defer to TiddlyWiki's draggable/droppable widgets. dragstart fires before
+	// drop; dragend (which fires on completion or cancel, even when the drop landed
+	// in another window) clears it.
+	doc.addEventListener("dragstart", function() { dragState.internal = true; }, true);
+	doc.addEventListener("dragend", function() { dragState.internal = false; }, true);
 	doc.addEventListener("dragover", function(e) { e.preventDefault(); }, true);
-	doc.addEventListener("drop", makeDropHandler(getContentWindow), true);
+	doc.addEventListener("drop", makeDropHandler(getContentWindow, dragState), true);
 }
 
 exports.installImportInterceptor = function(doc, contentWindow, options) {
 	options = options || {};
 	if(!doc) { return; }
 	var get = function() { return contentWindow; };
+	// One internal-drag flag per window, shared by its document(s).
+	var dragState = {internal: false};
 	var attachIframe = function() {
-		try { attachToDoc(doc, get); } catch(e) {}
+		try { attachToDoc(doc, get, dragState); } catch(e) {}
 	};
 	if(doc.body) {
 		attachIframe();
@@ -187,6 +203,6 @@ exports.installImportInterceptor = function(doc, contentWindow, options) {
 		}
 	}
 	if(options.parentDocument) {
-		try { attachToDoc(options.parentDocument, get); } catch(e) {}
+		try { attachToDoc(options.parentDocument, get, dragState); } catch(e) {}
 	}
 };

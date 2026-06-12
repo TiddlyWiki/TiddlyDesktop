@@ -87,6 +87,7 @@ var $tw = {desktop: {
 		dom: require("../js/utils/dom.js"),
 		dragdrop: require("../js/utils/dragdrop.js"),
 		file: require("../js/utils/file.js"),
+		findbar: require("../js/utils/findbar.js"),
 		links: require("../js/utils/links.js"),
 		menu: require("../js/utils/menu.js"),
 		nwjs: require("../js/utils/nwjs.js"),

@@ -258,17 +258,9 @@ callback:  function(err) called on completion
 */
 WindowList.prototype.convertWiki = function(sourceUrl, destPath, callback) {
 	var self = this;
-	var childProcess = require("child_process");
 	var decodedSource = this.decodeUrl(sourceUrl);
 	var sourcePath = decodedSource.info.pathname;
 	var isFolder   = decodedSource.type === "folder";
-
-	// tiddlywiki.js lives one directory above the boot directory
-	var twJsPath = path.resolve($tw.boot.bootPath, "..", "tiddlywiki.js");
-	if(!fs.existsSync(twJsPath)) {
-		callback(new Error("Could not find tiddlywiki.js at " + twJsPath));
-		return;
-	}
 
 	var args;
 	if(isFolder) {
@@ -279,75 +271,73 @@ WindowList.prototype.convertWiki = function(sourceUrl, destPath, callback) {
 		args = ["--load", sourcePath, "--savewikifolder", destPath];
 	}
 
-	console.log("[TiddlyDesktop] convertWiki: forking",twJsPath,"args:",JSON.stringify(args),"execPath:",process.execPath);
+	// boot.js lives in the boot directory
+	var bootPath = path.resolve($tw.boot.bootPath, "boot.js");
+	if(!fs.existsSync(bootPath)) {
+		callback(new Error("Could not find TiddlyWiki boot.js at " + bootPath));
+		return;
+	}
+	var expectedOutput = isFolder ? destPath : path.join(destPath, "tiddlywiki.info");
 
-	// Guard against the callback firing twice (e.g. an "error" followed by "exit").
-	var settled = false,
-		timer = null;
+	console.log("[TiddlyDesktop] convertWiki: in-process boot, args:",JSON.stringify(args));
+
+	// Run the conversion in a throwaway TiddlyWiki instance inside this (Node)
+	// process. This avoids spawning the nw binary as a child, which in NW.js
+	// flashes a window and crashes on isolate teardown. The desktop's own $tw is
+	// untouched — TiddlyWiki()'s instances are independent.
+	var settled = false, timer = null, exitTrapped = false;
+	var realExit = process.exit;
+	function restoreExit() { if(process.exit !== realExit) { process.exit = realExit; } }
 	function finish(err) {
 		if(settled) { return; }
 		settled = true;
+		restoreExit();
 		if(timer) { clearTimeout(timer); timer = null; }
-		callback(err);
-	}
-
-	var proc;
-	try {
-		// Run tiddlywiki.js as a Node child. In NW.js fork() routes the child into
-		// Node mode via its IPC channel; execPath is the nw binary.
-		proc = childProcess.fork(twJsPath, args, {silent: true, cwd: path.dirname(twJsPath)});
-	} catch(e) {
-		finish(new Error("Could not start TiddlyWiki conversion process: " + e.message));
-		return;
-	}
-	var stderr = "", stdout = "";
-	if(proc.stderr) {
-		proc.stderr.on("data", function(data) { stderr += data.toString(); console.log("[TiddlyDesktop] convert stderr:",data.toString()); });
-	}
-	if(proc.stdout) {
-		proc.stdout.on("data", function(data) { stdout += data.toString(); console.log("[TiddlyDesktop] convert stdout:",data.toString()); });
-	}
-	// Safety net: if the child never reports exit or error (e.g. it failed to enter
-	// Node mode), don't hang silently — kill it and surface a diagnosable error.
-	// The expected artifact of a successful conversion. We judge success on this
-	// rather than on the child's exit code: NW.js runs tiddlywiki.js correctly as a
-	// Node child (the conversion really happens), but the nw process then crashes
-	// during isolate teardown and exits with a non-zero / null code. So a clean
-	// exit code is NOT a reliable success signal — the produced file/folder is.
-	var expectedOutput = isFolder ? destPath : path.join(destPath, "tiddlywiki.info");
-	function conversionSucceeded() {
-		try { return fs.existsSync(expectedOutput); } catch(_e) { return false; }
-	}
-	function completeOrFail(reason) {
-		if(conversionSucceeded()) {
-			// Add the converted wiki to the wiki list by opening it — the same path
-			// creating or cloning a wiki uses (the window's saveWikiListTiddler
-			// registers the list entry, which is how list entries are persisted).
-			// The original wiki is left untouched, both on disk and in the list.
+		// Judge success on the produced artifact, not on how boot returned.
+		var ok = !err;
+		try { if(!fs.existsSync(expectedOutput)) { ok = false; if(!err) { err = new Error("Conversion produced no output"); } } } catch(_e) {}
+		if(ok) {
+			// Register the converted wiki in the list by opening it (same path that
+			// creating/cloning uses). The original wiki is left untouched.
 			var newUrl = isFolder ? "wikifile://" + destPath : "wikifolder://" + destPath;
 			console.log("[TiddlyDesktop] convertWiki: opening converted wiki",newUrl);
 			self.openByUrl(newUrl);
-			finish(null);
+			callback(null);
 		} else {
-			finish(new Error(reason + (stderr ? ": " + stderr.slice(0, 300) : "")));
+			callback(err);
 		}
 	}
 
+	var convTw;
+	try {
+		convTw = require(bootPath).TiddlyWiki();
+	} catch(e) {
+		finish(new Error("Could not initialise TiddlyWiki for conversion: " + e.message));
+		return;
+	}
+	convTw.boot.argv = args;
+
+	// TiddlyWiki calls process.exit() on a fatal command error. Trap it so a failed
+	// conversion reports back instead of taking down the whole desktop app. Restored
+	// in finish() (success, error, or timeout).
+	process.exit = function(code) {
+		exitTrapped = true;
+		finish(code ? new Error("TiddlyWiki aborted the conversion (exit code " + code + ")") : null);
+	};
+
+	// Safety net in case boot never calls back.
 	timer = setTimeout(function() {
-		console.error("[TiddlyDesktop] convertWiki: timed out after 120s, killing child");
-		try { proc.kill(); } catch(_e) {}
-		completeOrFail("Conversion timed out after 120s");
+		console.error("[TiddlyDesktop] convertWiki: timed out after 120s");
+		finish(new Error("Conversion timed out after 120s"));
 	}, 120000);
-	// Fires if the process could not be spawned at all (bad executable, etc.).
-	proc.on("error", function(err) {
-		console.error("[TiddlyDesktop] convertWiki: spawn error",err);
-		// The child can still have produced the output before an error/teardown crash.
-		completeOrFail("TiddlyWiki conversion process error: " + err.message);
-	});
-	proc.on("exit", function(code) {
-		console.log("[TiddlyDesktop] convertWiki: child exited with code",code,"output exists:",conversionSucceeded());
-		completeOrFail("TiddlyWiki exited with code " + code + " and produced no output");
-	});
+
+	try {
+		convTw.boot.boot(function() {
+			if(!exitTrapped) { finish(null); }
+		});
+	} catch(e) {
+		finish(new Error("Conversion failed: " + e.message));
+	}
 };
 
 exports.WindowList = WindowList;

@@ -22,7 +22,7 @@ tags: $:/tags/Stylesheet
   height: 10px;
   border-radius: 50%;
   flex-shrink: 0;
-  background: #999;
+  background: <<colour muted-foreground>>;
 }
 
 .tc-collab-dot-connected    { background: #4caf50; }
@@ -37,8 +37,9 @@ tags: $:/tags/Stylesheet
   font-size: 0.82em;
   padding: 1px 6px;
   border-radius: 3px;
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: rgba(76, 175, 80, 0.18);
+  border: 1px solid rgba(76, 175, 80, 0.45);
+  color: <<colour foreground>>;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
@@ -54,24 +55,26 @@ tags: $:/tags/Stylesheet
 }
 
 .tc-collab-e2e-strong {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: rgba(76, 175, 80, 0.18);
+  border: 1px solid rgba(76, 175, 80, 0.45);
+  color: <<colour foreground>>;
 }
 
 .tc-collab-e2e-weak {
-  background: #fff3cd;
-  color: #856404;
+  background: rgba(255, 193, 7, 0.2);
+  border: 1px solid rgba(255, 193, 7, 0.55);
+  color: <<colour foreground>>;
 }
 
 .tc-collab-no-peers {
-  color: #888;
+  color: <<colour muted-foreground>>;
   font-style: italic;
   margin-bottom: 0.5em;
 }
 
 .tc-collab-member {
   padding: 4px 0;
-  border-bottom: 1px solid rgba(0,0,0,0.07);
+  border-bottom: 1px solid <<colour tiddler-border>>;
 }
 
 .tc-collab-member:last-child {
@@ -83,27 +86,43 @@ tags: $:/tags/Stylesheet
 }
 
 .tc-collab-member-editing {
-  color: #888;
+  color: <<colour muted-foreground>>;
   font-size: 0.85em;
+}
+
+.tc-collab-member-verified {
+  margin-left: 6px;
+  font-size: 0.8em;
+  color: #2e7d32;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.tc-collab-member-unverified {
+  margin-left: 6px;
+  font-size: 0.8em;
+  color: #c62828;
+  white-space: nowrap;
+  cursor: help;
 }
 
 .tc-collab-error-notice {
   margin-bottom: 0.75em;
   padding: 6px 10px;
-  background: #fdecea;
-  border: 1px solid #f44336;
+  background: rgba(244, 67, 54, 0.13);
+  border: 1px solid rgba(244, 67, 54, 0.5);
   border-radius: 4px;
-  color: #b71c1c;
+  color: <<colour foreground>>;
   font-size: 0.85em;
 }
 
 .tc-collab-conflict-notice {
   margin-top: 1em;
   padding: 6px 10px;
-  background: #fff3cd;
-  border: 1px solid #ffc107;
+  background: rgba(255, 193, 7, 0.16);
+  border: 1px solid rgba(255, 193, 7, 0.55);
   border-radius: 4px;
-  color: #856404;
+  color: <<colour foreground>>;
   font-size: 0.85em;
 }
 
@@ -177,6 +196,12 @@ tags: $:/tags/Stylesheet
 
 .tc-collab-settings-panel .tc-edit-fields {
   width: 100%;
+}
+
+.tc-collab-settings-checkrow {
+  margin-top: 6px;
+  font-size: 0.82em;
+  color: <<colour foreground>>;
 }
 
 .tc-collab-settings-panel .tc-edit-field-name {
@@ -490,6 +515,7 @@ tags: $:/tags/Stylesheet
 .tc-collab-edit-shared-banner {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
   padding: 4px 8px;
   margin-bottom: 4px;
@@ -497,8 +523,15 @@ tags: $:/tags/Stylesheet
   border: 1px solid rgba(76, 175, 80, 0.22);
   border-radius: 3px;
   font-size: 0.8em;
-  color: #2e7d32;
+  color: <<colour foreground>>;
   line-height: 1.4;
+}
+
+/* Not syncing right now (disconnected/connecting): amber, so the user knows
+   their edits aren't propagating yet. */
+.tc-collab-edit-shared-offline {
+  background: rgba(255, 193, 7, 0.12);
+  border-color: rgba(255, 193, 7, 0.5);
 }
 
 .tc-collab-edit-shared-dot {
@@ -508,6 +541,24 @@ tags: $:/tags/Stylesheet
   border-radius: 50%;
   background: #4caf50;
   flex-shrink: 0;
+}
+
+.tc-collab-edit-shared-offline .tc-collab-edit-shared-dot {
+  background: #c77700;
+}
+
+.tc-collab-edit-shared-sync {
+  color: <<colour muted-foreground>>;
+}
+
+.tc-collab-edit-shared-warn {
+  color: #c77700;
+  font-weight: 500;
+}
+
+.tc-collab-edit-shared-coediting {
+  color: <<colour muted-foreground>>;
+  font-style: italic;
 }
 
 .tc-collab-edit-shared-label {
@@ -524,7 +575,7 @@ tags: $:/tags/Stylesheet
 }
 
 .tc-collab-edit-shared-by {
-  color: #388e3c;
+  color: <<colour muted-foreground>>;
   font-size: 0.9em;
 }
 
@@ -541,7 +592,8 @@ tags: $:/tags/Stylesheet
 }
 
 .tc-collab-conflict-dialog {
-  background: #fff;
+  background: <<colour modal-background>>;
+  color: <<colour foreground>>;
   border-radius: 6px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.28);
   padding: 2em;
@@ -568,13 +620,14 @@ tags: $:/tags/Stylesheet
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #666;
+  color: <<colour muted-foreground>>;
   margin-bottom: 4px;
 }
 
 .tc-collab-conflict-content {
-  background: #f5f5f5;
-  border: 1px solid #ddd;
+  background: <<colour pre-background>>;
+  border: 1px solid <<colour pre-border>>;
+  color: <<colour foreground>>;
   border-radius: 4px;
   padding: 8px;
   font-size: 0.8em;
@@ -619,7 +672,7 @@ tags: $:/tags/Stylesheet
   width: 40px;
   height: 26px;
   padding: 1px 2px;
-  border: 1px solid #ccc;
+  border: 1px solid <<colour tiddler-border>>;
   border-radius: 3px;
   cursor: pointer;
   background: none;
@@ -633,13 +686,28 @@ tags: $:/tags/Stylesheet
   gap: 5px;
 }
 
-/* -- Status bar (fixed bottom-right) --------------------------------------- */
-
-.tc-collab-statusbar {
+/* -- Collab dock ----------------------------------------------------------- */
+/* One bottom-right column holding Get, Chat, and the status bar so they stack
+   reliably (top→bottom: Get, Chat, status bar) and never overlap or hide each
+   other — opening a panel grows the column upward while the status bar stays
+   pinned to the corner. The container is click-through; only its interactive
+   children (the Get/Chat wraps) capture pointer events. */
+.tc-collab-dock {
   position: fixed;
   bottom: 0;
   right: 0;
-  z-index: 900;
+  z-index: 901;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  pointer-events: none;
+}
+
+/* -- Status bar (bottom of the dock) --------------------------------------- */
+
+.tc-collab-statusbar {
+  position: static;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -720,13 +788,10 @@ tags: $:/tags/Stylesheet
 /* -- Chat panel (bottom-right, above status bar) ---------------------------- */
 
 .tc-collab-chat-wrap {
-  position: fixed;
-  bottom: 50px;
-  right: 0;
-  z-index: 901;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  pointer-events: auto;
 }
 
 .tc-collab-chat-toggle {
@@ -788,14 +853,43 @@ tags: $:/tags/Stylesheet
   user-select: none;
 }
 
+.tc-collab-chat-title {
+  flex-shrink: 0;
+}
+
+/* Recipient selector: Everyone (room) or a single peer (exclusive 1:1). */
+.tc-collab-chat-target {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0 6px;
+  max-width: 150px;
+  font-size: 0.92em;
+  padding: 1px 4px;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 3px;
+  background: <<colour page-background>>;
+  color: <<colour foreground>>;
+}
+
 .tc-collab-chat-close-btn {
   color: <<colour muted-foreground>>;
   font-size: 1em;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .tc-collab-chat-close-btn:hover {
   color: <<colour foreground>>;
+}
+
+/* Banner shown while a private 1:1 conversation is selected. */
+.tc-collab-chat-private-hint {
+  padding: 4px 10px;
+  font-size: 0.78em;
+  color: #2e7d32;
+  background: rgba(46, 125, 50, 0.1);
+  border-bottom: 1px solid <<colour tiddler-border>>;
+  line-height: 1.4;
 }
 
 .tc-collab-chat-messages {
@@ -900,13 +994,10 @@ tags: $:/tags/Stylesheet
 /* -- Get panel (shared tiddlers; sits directly above the Chat button) ------- */
 
 .tc-collab-get-wrap {
-  position: fixed;
-  bottom: 74px;
-  right: 0;
-  z-index: 901;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  pointer-events: auto;
 }
 
 .tc-collab-get-toggle {
@@ -1012,4 +1103,76 @@ tags: $:/tags/Stylesheet
   font-style: italic;
   padding: 10px;
   text-align: center;
+}
+
+/* -- Diagnostics panel ------------------------------------------------------- */
+
+.tc-collab-diag-toggle {
+  margin-top: 0.8em;
+}
+
+.tc-collab-diag-panel {
+  margin-top: 0.5em;
+  padding: 0.5em 0.7em;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px;
+  background: <<colour tiddler-background>>;
+  font-size: 0.82em;
+}
+
+.tc-collab-diag-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tc-collab-diag-table td {
+  padding: 2px 4px;
+  vertical-align: top;
+}
+
+.tc-collab-diag-table td:first-child {
+  color: <<colour muted-foreground>>;
+  white-space: nowrap;
+  width: 1%;
+  padding-right: 10px;
+}
+
+.tc-collab-diag-id {
+  word-break: break-all;
+  font-size: 0.95em;
+}
+
+.tc-collab-diag-subhead {
+  margin: 0.7em 0 0.3em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75em;
+  color: <<colour muted-foreground>>;
+}
+
+.tc-collab-diag-peer {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  padding: 2px 0;
+}
+
+.tc-collab-diag-peer-name {
+  color: <<colour muted-foreground>>;
+}
+
+.tc-collab-diag-empty {
+  color: <<colour muted-foreground>>;
+  font-style: italic;
+}
+
+.tc-collab-diag-error {
+  margin-top: 0.5em;
+  padding: 5px 8px;
+  background: rgba(244, 67, 54, 0.13);
+  border: 1px solid rgba(244, 67, 54, 0.5);
+  border-radius: 4px;
+  color: <<colour foreground>>;
 }

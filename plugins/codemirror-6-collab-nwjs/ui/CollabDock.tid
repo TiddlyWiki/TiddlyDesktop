@@ -1,0 +1,12 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/CollabDock
+tags: $:/tags/PageTemplate
+
+\whitespace trim
+
+<$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
+<div class="tc-collab-dock">
+<$transclude tiddler="$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/GetPanel" mode="block"/>
+<$transclude tiddler="$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/ChatPanel" mode="block"/>
+<$transclude tiddler="$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/StatusBar" mode="block"/>
+</div>
+</$reveal>

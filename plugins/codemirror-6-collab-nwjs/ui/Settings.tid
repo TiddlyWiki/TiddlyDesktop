@@ -28,6 +28,7 @@ title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/Settings
 </tr>
 </tbody>
 </table>
+<p><$checkbox tiddler="$:/config/codemirror-6-collab/relay-only" field="text" checked="yes" unchecked="no" default="no"/> <strong>Relay only</strong> — disable the direct LAN connection (avoids the listening socket and the firewall prompt; collaboration still works through the relay).</p>
 <div class="tc-collab-auth-section">
 <h3>Account</h3>
 <$reveal type="nomatch" state="$:/temp/collab/auth-username" text="">
@@ -38,7 +39,7 @@ title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/Settings
 <$reveal type="match" state="$:/temp/collab/auth-username" text="">
 <div class="tc-collab-signin-row">
 <$list filter="[prefix[$:/temp/collab/auth-providers/]sort[display-name]]">
-<$button message="codemirror-6-collab-oauth-start" param={{{ [<currentTiddler>get[name]] }}} class="tc-btn-invisible tc-collab-signin-btn">Sign in with <$text text={{{ [<currentTiddler>get[display-name]] }}}/></$button>
+<$button message="codemirror-6-collab-oauth-start" param={{{ [<currentTiddler>get[name]] }}} class="tc-btn-invisible tc-collab-signin-btn"><$text text="Sign in with "/><$text text={{{ [<currentTiddler>get[display-name]] }}}/></$button>
 </$list>
 <$list filter="[prefix[$:/temp/collab/auth-providers/]count[]compare:number:lt[1]]" variable="_">
 <em class="tc-collab-auth-hint">Set a relay server URL above to see sign-in options.</em>

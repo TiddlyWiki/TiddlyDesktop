@@ -93,6 +93,16 @@ function _getUserColor(userName) {
 	return _userColors[idx];
 }
 
+// Resolve the cursor colour pair: prefer the user's explicitly chosen colour
+// ($:/config/codemirror-6-collab/user-color), otherwise a deterministic colour
+// derived from the name. "light" is the same colour at ~20% alpha (selection bg).
+function _resolveUserColor(userName) {
+	var custom = "";
+	try { custom = ($tw.wiki.getTiddlerText("$:/config/codemirror-6-collab/user-color", "") || "").trim(); } catch(_e) {}
+	if(custom) { return { color: custom, light: custom + "33" }; }
+	return _getUserColor(userName);
+}
+
 // Get the display name for this user's collab cursors.
 // Prefers the collab-specific display name over the TiddlyWiki system user name.
 function _getUserName(context) {
@@ -279,11 +289,14 @@ function _ensureLifecycleListeners() {
 	if(!$tw || !$tw.wiki || !$tw.wiki.addEventListener) return;
 	_lifecycleListenersRegistered = true;
 
-	// Live-update awareness user name when collab display name changes.
+	// Live-update awareness cursor name/colour when the collab display name or
+	// chosen colour changes — applied to all open editors, no reconnect.
 	$tw.wiki.addEventListener("change", function(changes) {
-		if(changes["$:/config/codemirror-6-collab/user-name"]) {
-			var newName = $tw.wiki.getTiddlerText("$:/config/codemirror-6-collab/user-name", "").trim();
-			if(newName) { _updateAllUserNames(newName); }
+		if(changes["$:/config/codemirror-6-collab/user-name"] || changes["$:/config/codemirror-6-collab/user-color"]) {
+			var newName = ($tw.wiki.getTiddlerText("$:/config/codemirror-6-collab/user-name", "") || "").trim()
+				|| ($tw.wiki.getTiddlerText("$:/status/UserName", "") || "").trim()
+				|| "Anonymous";
+			_updateAllUserNames(newName);
 		}
 	});
 
@@ -1021,7 +1034,7 @@ function _setupCollabExtensions(context, core) {
 	// Create awareness for cursor/selection sharing
 	var awareness = new Awareness(doc);
 	var userName = _getUserName(context);
-	var userColor = _getUserColor(userName);
+	var userColor = _resolveUserColor(userName);
 	try {
 		awareness.setLocalStateField("user", {
 			name: userName,
@@ -1595,7 +1608,7 @@ function _connectTransport(engine, collab) {
 // Update the user name (and derived color) on all active Yjs awareness instances.
 // Called when $:/status/UserName changes mid-session so remote cursor labels update.
 function _updateAllUserNames(newName) {
-	var color = _getUserColor(newName);
+	var color = _resolveUserColor(newName);
 	for(var title in _collabStateByTitle) {
 		if(_collabStateByTitle.hasOwnProperty(title)) {
 			var state = _collabStateByTitle[title];

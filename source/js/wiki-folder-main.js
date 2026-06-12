@@ -69,3 +69,17 @@ $tw.desktop.utils.dragdrop.installImportInterceptor(
 	containerWindow.window,
 	{parentWindow: containerWindow.window}
 );
+
+// Browser-style find-in-page (Ctrl/Cmd+F). The folder wiki document IS this
+// window, so host and content are the same window. It defers to any focused
+// editor that claims the shortcut (e.g. CodeMirror 6).
+try {
+	$tw.desktop.utils.findbar.installFindBar({
+		hostWindow: containerWindow.window,
+		hostDocument: containerWindow.window.document,
+		getContentWindow: function() { return containerWindow.window; },
+		getContentDocument: function() { return containerWindow.window.document; }
+	});
+} catch(e) {
+	console.error("[TiddlyDesktop] find bar install failed:",e);
+}

@@ -272,7 +272,13 @@ exports.startup = function() {
 				sharedAt:      ownedTiddlers[title].sharedAt
 			};
 		});
-		if(!manifest.length) return;
+		// Send even when empty. A peer treats our manifest as authoritative for the
+		// tiddlers we own (_applyManifest removes any of our entries not listed), so
+		// an EMPTY manifest is how a peer that has unshared/deleted everything tells
+		// others to drop its stale entries. Without this, unshares done while a peer
+		// was offline could never be reconciled on reconnect (manifests were additive
+		// for the all-unshared case). The extra traffic for share-nothing peers is a
+		// single tiny message per connect/join/request.
 		_send({
 			type:           "collab-share-manifest",
 			senderDeviceId: deviceId,
@@ -430,6 +436,48 @@ exports.startup = function() {
 		_requestFromOwner(title);
 	}
 
+	// ── serving fetch requests (ownerless serving + owner re-sync) ──────────────
+
+	function _isMemberPresent(id) {
+		return !!(id && $tw.wiki.getTiddler("$:/temp/collab/members/" + id));
+	}
+
+	// Send our copy of `title` to a requester.
+	function _serveTiddler(title, requesterId, requestId) {
+		var tiddler = $tw.wiki.getTiddler(title);
+		if(tiddler && !tiddler.fields["draft.of"]) {
+			_send({
+				type:           "collab-tiddler-response",
+				targetDeviceId: requesterId,
+				title:          title,
+				requestId:      requestId,
+				fields:         _serialise(tiddler)
+			});
+		}
+	}
+
+	// Decide whether to answer a collab-get-tiddler:
+	//   - We own it → answer (authoritative).
+	//   - We're a subscriber and the OWNER is the requester → answer, so a
+	//     returning owner can adopt the latest state we hold (owner re-sync).
+	//   - We're a subscriber and the owner is ABSENT → answer, so a new joiner
+	//     can still fetch with the owner offline (ownerless serving).
+	//   - Otherwise (owner present, someone else asking) → stay quiet; the owner
+	//     answers.
+	// Subscriber answers are jittered so several holders don't all reply at once;
+	// the requester resolves duplicate/competing responses by timestamp anyway.
+	function _maybeServeTiddler(title, requesterId, requestId) {
+		if(!title || !requesterId || requesterId === deviceId) return;
+		if(!$tw.wiki.getTiddler(title)) return;
+		if(ownedTiddlers[title]) { _serveTiddler(title, requesterId, requestId); return; }
+		if(!subscribedTiddlers[title]) return;
+		var avail   = availableTiddlers[title];
+		var ownerId = avail && avail.ownerDeviceId;
+		var requesterIsOwner = ownerId && requesterId === ownerId;
+		if(!requesterIsOwner && ownerId && _isMemberPresent(ownerId)) { return; }
+		setTimeout(function() { _serveTiddler(title, requesterId, requestId); }, 120 + Math.floor(Math.random() * 380));
+	}
+
 	function _unsubscribeTiddler(title) {
 		if(!subscribedTiddlers[title] || ownedTiddlers[title]) return;
 		delete subscribedTiddlers[title];
@@ -510,21 +558,7 @@ exports.startup = function() {
 			break;
 
 		case "collab-get-tiddler":
-			// Only the owner responds to get requests.
-			if(msg.requesterDeviceId !== deviceId
-					&& msg.title
-					&& ownedTiddlers[msg.title]) {
-				var tiddler = $tw.wiki.getTiddler(msg.title);
-				if(tiddler && !tiddler.fields["draft.of"]) {
-					_send({
-						type:           "collab-tiddler-response",
-						targetDeviceId: msg.requesterDeviceId,
-						title:          msg.title,
-						requestId:      msg.requestId,
-						fields:         _serialise(tiddler)
-					});
-				}
-			}
+			_maybeServeTiddler(msg.title, msg.requesterDeviceId, msg.requestId);
 			break;
 
 		case "collab-tiddler-response":
@@ -653,6 +687,14 @@ exports.startup = function() {
 		// pushes manifests from existing peers to the newcomer, not the reverse —
 		// so its shares wouldn't appear until we reconnect.
 		_sendManifest();
+		// Owner re-sync: pull the latest of our OWN shared tiddlers from the room.
+		// While we were offline, present peers may have advanced them (edits sync
+		// peer-to-peer even without the owner). Holders answer because the requester
+		// is the owner; our collab-tiddler-response handler then adopts the newest
+		// via the usual catch-up resolution (newer-remote wins; conflict → dialog).
+		Object.keys(ownedTiddlers).forEach(function(title) {
+			_requestFromOwner(title);
+		});
 	});
 
 	window.addEventListener("collab-member-joined", function() {

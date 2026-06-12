@@ -31,6 +31,12 @@ END-TO-END ENCRYPTION
   envelope are dropped. Only relay-origin control frames (joined / members /
   member_joined / member_left / error) are accepted in cleartext.
 
+  Replay protection: each encrypted frame carries a monotonic per-sender sequence
+  number, bound into the AES-GCM AAD (so the relay can't forge or renumber it).
+  The receiver tracks the highest seq seen per sender and drops any frame at or
+  below it, so a malicious relay cannot replay old frames — closing the gap left
+  by the (bounded) msg_id dedup window for non-idempotent traffic like chat.
+
 Two delivery channels run simultaneously:
 
   Relay channel  - wss:// with Authorization: Bearer header. Always active.
@@ -79,6 +85,25 @@ RELAY COMPATIBILITY NOTE
   identity + room code; a relay that hard-requires X-Room-Token will reject
   these clients. Because content is E2E encrypted, an unauthorized peer who
   joins a room only ever receives ciphertext.
+
+PEER AUTHENTICATION (relay-signed membership certificates)
+  The relay validates an OAuth Bearer token at the WS upgrade, so every socket is
+  an authenticated user. To let peers verify that end-to-end — instead of merely
+  trusting the relay's routing — the relay also hands each connection a signed
+  membership certificate: a compact JWS (ES256 over P-256) binding
+  {room, user_id, username, provider, deviceId, iat, exp}. It travels in the
+  relay-origin "identity" frame along with the relay's public verification key.
+
+  Each client attaches its cert to the E2E-encrypted member-info it broadcasts;
+  peers verify the relay's signature and that room/deviceId/exp match the sender,
+  then mark that peer as a verified OAuth identity. When a room token is set
+  (strong E2E mode), collaboration traffic from a peer is DROPPED until that peer
+  is verified: a frame's sender deviceId is authenticated (relay AAD / LAN session
+  key), and only a holder of the room token can produce valid AEAD content, so a
+  malicious relay can neither forge a cert it could use nor splice in an
+  unauthenticated participant. In room-code-only mode the relay holds the content
+  key anyway, so certs are advisory (identities shown, not enforced); against an
+  older relay that issues no cert, enforcement transparently disables.
 \*/
 
 "use strict";
@@ -128,7 +153,7 @@ exports.startup = function() {
 
 	// ── config ─────────────────────────────────────────────────────────────────
 
-	var relayUrl, roomCode, authToken, roomToken, deviceName, userName, userColor;
+	var relayUrl, roomCode, authToken, roomToken, deviceName, userName, userColor, relayOnly;
 
 	// Fully-random, ephemeral device ID — generated fresh each time the wiki is
 	// opened and NEVER persisted into the wiki. This is deliberate: the ID used to
@@ -140,6 +165,9 @@ exports.startup = function() {
 	// windows. It is computed once here, so it stays stable across reconnects
 	// within this window (reconnecting rejoins as the same member, not a new one).
 	var deviceId = _generateDeviceId(nodeCrypto);
+	// Expose our ephemeral device ID for the diagnostics panel. Temp tiddler →
+	// not persisted, so it never gets saved into (and cloned with) the wiki.
+	$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/collab/device-id", text: deviceId}));
 
 	var authProvider;
 
@@ -152,6 +180,7 @@ exports.startup = function() {
 		deviceName   = _cfg("device-name") || deviceId;
 		userName     = _cfg("user-name") || $tw.wiki.getTiddlerText("$:/temp/collab/auth-username", "") || $tw.wiki.getTiddlerText("$:/status/UserName") || "Anonymous";
 		userColor    = _cfg("user-color") || "";
+		relayOnly    = _cfg("relay-only") === "yes";
 	}
 
 	// ── runtime state ──────────────────────────────────────────────────────────
@@ -183,6 +212,11 @@ exports.startup = function() {
 	var peerSessions = {};
 	// directPeers[deviceId]  = {ws: WebSocket}
 	var directPeers  = {};
+	// Single-file wikis (nwdisable iframe) run the LAN node in the parent process
+	// via the bridge in wiki-file-window.js. _lanBridge true once we've handed the
+	// parent our room key; _bridgeLanPeers mirrors the parent's LAN peer count.
+	var _lanBridge      = false;
+	var _bridgeLanPeers = 0;
 
 	// Deduplication: track recently seen msg_ids (from peers) to absorb relay+LAN duplicates
 	var seenMsgIds   = [];     // rolling array (oldest first)
@@ -201,9 +235,53 @@ exports.startup = function() {
 	var _recvChain   = Promise.resolve();  // serialises async relay decryption (preserves order)
 	var _decryptWarned = false;  // surface a "wrong token" hint at most once per session
 
+	// Replay protection for the relay channel: a monotonic per-sender sequence
+	// number, authenticated in the AES-GCM AAD so the relay cannot forge or
+	// renumber it. _sendSeq increments for every encrypted frame we send and is
+	// NOT reset across reconnects (deviceId is stable for the window's lifetime,
+	// so the counter stays monotonic). _peerSeq tracks the highest seq accepted
+	// from each sender; a frame at or below it is a replay and is dropped. This
+	// closes the gap left by the msg_id dedup window (which only covers the last
+	// DEDUP_WINDOW messages) against a relay replaying old chat/sharing frames.
+	var _sendSeq = 0;
+	var _peerSeq = {};
+
+	// ── peer authentication (relay-signed membership certificates) ──────────────
+	// The relay validates an OAuth token at the WS upgrade, so every socket is an
+	// authenticated user. To let peers verify that *without* trusting the relay's
+	// routing, the relay also issues each connection a signed certificate binding
+	// {room, user, deviceId} (ES256 over P-256). We attach ours to member-info and
+	// verify peers' certs against the relay's public key. In strong (room-token)
+	// mode the relay cannot forge a cert AND valid AEAD content, so this makes
+	// "only OAuth-authenticated peers exchange traffic" cryptographic, not trust.
+	var _myCert         = null;  // our cert (header.payload.sig), from the relay
+	var _relayVerifyKey = null;  // imported ECDSA P-256 WebCrypto key, or null
+	var _relayJwkRaw    = null;  // JSON of the imported JWK, to skip re-imports
+	var _relaySupportsCerts = false;            // relay issued an identity frame
+	var _relayKeyReady  = Promise.resolve();    // resolves once the key is imported
+
+	// ── private (1:1) messaging keys ────────────────────────────────────────────
+	// Room-wide traffic is E2E-encrypted with the shared room key. For exclusive
+	// 1:1 chat we additionally derive a PAIRWISE key via ECDH (P-256) between just
+	// the two devices, so only the addressee can decrypt — other room members,
+	// despite holding the room key, physically cannot read it. Each device makes an
+	// ephemeral ECDH keypair and advertises its public half in member-info.
+	var _dmKeyPair    = null;   // {privateKey: CryptoKey, publicJwk: {...}}
+	var _dmReady      = Promise.resolve();
+	var _dmGenerating = false;
+	var _dmKeys       = {};     // peerDeviceId -> Promise<AES-GCM CryptoKey>
+
+	// Message types exempt from the verified-sender requirement: relay-origin
+	// control frames, and the bootstrap frames that *establish* verification
+	// (member-info carries the cert; lan-announce only exchanges public keys).
+	var AUTH_EXEMPT = {
+		joined: 1, members: 1, member_joined: 1, member_left: 1, error: 1,
+		identity: 1, "member-info": 1, "lan-announce": 1
+	};
+
 	// Relay-origin control frames are produced by the relay itself (which has no
 	// key) and are therefore the only message types accepted in cleartext.
-	var RELAY_CONTROL = {joined: 1, members: 1, member_joined: 1, member_left: 1, error: 1};
+	var RELAY_CONTROL = {joined: 1, members: 1, member_joined: 1, member_left: 1, error: 1, identity: 1};
 
 	// ── crypto helpers ─────────────────────────────────────────────────────────
 
@@ -316,6 +394,140 @@ exports.startup = function() {
 		return u8;
 	}
 
+	// base64url (no padding) → Uint8Array, for the JWS-style membership certs.
+	function _unb64url(s) {
+		s = String(s).replace(/-/g, "+").replace(/_/g, "/");
+		while(s.length % 4) { s += "="; }
+		return _unb64(s);
+	}
+
+	// ── peer authentication helpers ─────────────────────────────────────────────
+
+	// Import the relay's public verification key (JWK, ECDSA P-256). Idempotent —
+	// only re-imports when the JWK actually changes.
+	function _importRelayKey(jwk) {
+		if(!jwk || !_subtle) { return; }
+		_relaySupportsCerts = true;
+		var serialized = JSON.stringify(jwk);
+		if(serialized === _relayJwkRaw && _relayVerifyKey) { return; }
+		_relayJwkRaw = serialized;
+		_relayKeyReady = _subtle.importKey("jwk", jwk, {name: "ECDSA", namedCurve: "P-256"}, false, ["verify"])
+			.then(function(key) { _relayVerifyKey = key; })
+			.catch(function(e) {
+				console.warn("[collab-auth] relay key import failed:", e && e.message);
+				_relayVerifyKey = null;
+			});
+	}
+
+	// Verify a relay-issued membership certificate (compact JWS, ES256). Resolves
+	// with the decoded payload when the signature and claims (room, deviceId, exp)
+	// are valid, else null. The relay's room id is base64url(roomCode), which is
+	// exactly what we put in the WS path, so we compare against _roomId(roomCode).
+	function _verifyCert(cert, expectDeviceId) {
+		if(!cert || !_subtle) { return Promise.resolve(null); }
+		var parts = String(cert).split(".");
+		if(parts.length !== 3) { return Promise.resolve(null); }
+		var payload, sig;
+		try {
+			payload = JSON.parse(new TextDecoder().decode(_unb64url(parts[1])));
+			sig = _unb64url(parts[2]);
+		} catch(_e) { return Promise.resolve(null); }
+		var data = new TextEncoder().encode(parts[0] + "." + parts[1]);
+		// Wait for the key import so verification never races the relay's identity
+		// frame, then verify the signature and the bound claims.
+		return _relayKeyReady.then(function() {
+			if(!_relayVerifyKey) { return null; }
+			return _subtle.verify({name: "ECDSA", hash: "SHA-256"}, _relayVerifyKey, sig, data)
+				.then(function(ok) {
+					if(!ok) { return null; }
+					var now = Math.floor(Date.now() / 1000);
+					if(payload.room !== _roomId(roomCode)) { return null; }
+					if(expectDeviceId && payload.did !== expectDeviceId) { return null; }
+					if(typeof payload.exp === "number" && payload.exp < now) { return null; }
+					return payload;
+				});
+		}).catch(function() { return null; });
+	}
+
+	// Enforce verified-peer-only traffic when we are in strong (room-token) E2E
+	// mode AND the relay issues certs. In room-code-only mode the relay holds the
+	// content key anyway, so dropping unverified traffic adds friction without
+	// real security; against an older relay (no cert) _relayVerifyKey is null, so
+	// enforcement transparently disables and behaviour is unchanged.
+	function _enforceAuth() { return !!roomToken && _relaySupportsCerts; }
+
+	function _isVerified(sid) { return !!(sid && memberInfo[sid] && memberInfo[sid].verified); }
+
+	// True if a message of this type from `sid` must be dropped because the sender
+	// is not (yet) a verified OAuth-authenticated peer.
+	function _blockUnverified(type, sid) {
+		return _enforceAuth() && !AUTH_EXEMPT[type] && !_isVerified(sid);
+	}
+
+	// Broadcast our display info, our membership cert, and our DM public key so
+	// peers can show/verify our identity and set up an exclusive 1:1 channel.
+	function _sendMemberInfo() {
+		_sendRelay({type: "member-info", deviceId: deviceId, deviceName: deviceName, userName: userName, userColor: userColor, cert: _myCert, dmPub: _dmKeyPair && _dmKeyPair.publicJwk});
+	}
+
+	// ── private (1:1) end-to-end messaging ──────────────────────────────────────
+
+	// Generate our ephemeral ECDH keypair once. Idempotent, so it survives
+	// reconnects (our advertised DM public key stays stable for the window).
+	function _initDmKeys() {
+		if(_dmKeyPair || _dmGenerating || !_subtle) { return _dmReady; }
+		_dmGenerating = true;
+		_dmReady = _subtle.generateKey({name: "ECDH", namedCurve: "P-256"}, false, ["deriveBits"])
+			.then(function(kp) {
+				return _subtle.exportKey("jwk", kp.publicKey).then(function(jwk) {
+					_dmKeyPair = {privateKey: kp.privateKey, publicJwk: {kty: jwk.kty, crv: jwk.crv, x: jwk.x, y: jwk.y}};
+					// If a peer already joined before our key was ready, re-announce.
+					if(connected) { _sendMemberInfo(); }
+				});
+			})
+			.catch(function(e) { console.warn("[collab-dm] keygen failed:", e && e.message); })
+			.then(function() { _dmGenerating = false; });
+		return _dmReady;
+	}
+
+	// Derive (and cache) the pairwise AES-GCM key shared with a peer: ECDH over the
+	// two devices' DM keys → HKDF (bound to the room). Only the two holders of the
+	// respective private keys can compute it. Resolves null if the peer hasn't
+	// advertised a DM key yet.
+	function _dmKeyFor(peerId) {
+		if(_dmKeys[peerId]) { return _dmKeys[peerId]; }
+		var info = memberInfo[peerId];
+		var theirJwk = info && info.dmPub;
+		if(!theirJwk || !_dmKeyPair || !_subtle) { return Promise.resolve(null); }
+		var enc = new TextEncoder();
+		var p = _subtle.importKey("jwk", theirJwk, {name: "ECDH", namedCurve: "P-256"}, false, [])
+			.then(function(theirPub) { return _subtle.deriveBits({name: "ECDH", public: theirPub}, _dmKeyPair.privateKey, 256); })
+			.then(function(shared) { return _subtle.importKey("raw", shared, "HKDF", false, ["deriveBits"]); })
+			.then(function(ikm) { return _subtle.deriveBits({name: "HKDF", hash: "SHA-256", salt: enc.encode("tiddlydesktop-collab-dm-v1"), info: enc.encode("room:" + roomCode)}, ikm, 256); })
+			.then(function(bits) { return _subtle.importKey("raw", bits, {name: "AES-GCM"}, false, ["encrypt", "decrypt"]); })
+			.catch(function(e) { console.warn("[collab-dm] key derivation failed for " + peerId + ":", e && e.message); delete _dmKeys[peerId]; return null; });
+		_dmKeys[peerId] = p;
+		return p;
+	}
+
+	// Send a message encrypted exclusively for one peer. The pairwise ciphertext is
+	// wrapped in the usual relay+LAN E2E layer too, so the relay sees only double
+	// ciphertext. Resolves true if it was sent. The from/to pair is bound as AAD.
+	function _sendPrivate(toDeviceId, obj) {
+		if(!_subtle) { return Promise.resolve(false); }
+		return _dmReady.then(function() { return _dmKeyFor(toDeviceId); }).then(function(key) {
+			if(!key) { return false; }
+			var enc = new TextEncoder();
+			var iv  = window.crypto.getRandomValues(new Uint8Array(12));
+			var aad = enc.encode(deviceId + ">" + toDeviceId);
+			return _subtle.encrypt({name: "AES-GCM", iv: iv, additionalData: aad, tagLength: 128}, key, enc.encode(JSON.stringify(obj)))
+				.then(function(ct) {
+					_send({type: "dm", to: toDeviceId, from: deviceId, iv: _b64(iv), ct: _b64(new Uint8Array(ct))});
+					return true;
+				});
+		}).catch(function(e) { console.warn("[collab-dm] send failed:", e && e.message); return false; });
+	}
+
 	// (Re)derive the room content key from the current config. Strong when a room
 	// token is set (never sent to the relay); room-code-derived otherwise.
 	// Stores a promise in _e2eReady that the send/receive paths await.
@@ -359,17 +571,22 @@ exports.startup = function() {
 	// Encrypt an arbitrary message object into a relay envelope. The sender
 	// deviceId travels in cleartext (the relay routes by it) and is bound as
 	// additional authenticated data so it cannot be reattributed.
+	// The sender deviceId AND the monotonic sequence number both travel in
+	// cleartext (the relay routes by deviceId) and are bound into the AAD, so the
+	// relay can neither reattribute a frame nor renumber it to bypass the replay
+	// check without breaking authentication.
 	function _encryptRelay(obj) {
+		var seq = _sendSeq++;   // grabbed synchronously, in _sendChain order
 		return _e2eReady.then(function() {
 			if(!_e2eKey) { throw new Error("no E2E key"); }
 			var enc = new TextEncoder();
 			var iv  = window.crypto.getRandomValues(new Uint8Array(12));
-			var aad = enc.encode(deviceId);
+			var aad = enc.encode(deviceId + ":" + seq);
 			return _subtle.encrypt(
 				{name: "AES-GCM", iv: iv, additionalData: aad, tagLength: 128},
 				_e2eKey, enc.encode(JSON.stringify(obj))
 			).then(function(ctBuf) {
-				return {type: "enc", v: 1, deviceId: deviceId, iv: _b64(iv), ct: _b64(new Uint8Array(ctBuf))};
+				return {type: "enc", v: 2, deviceId: deviceId, seq: seq, iv: _b64(iv), ct: _b64(new Uint8Array(ctBuf))};
 			});
 		});
 	}
@@ -378,7 +595,7 @@ exports.startup = function() {
 		return _e2eReady.then(function() {
 			if(!_e2eKey) { throw new Error("no E2E key"); }
 			var enc = new TextEncoder();
-			var aad = enc.encode(env.deviceId || "");
+			var aad = enc.encode((env.deviceId || "") + ":" + env.seq);
 			return _subtle.decrypt(
 				{name: "AES-GCM", iv: _unb64(env.iv), additionalData: aad, tagLength: 128},
 				_e2eKey, _unb64(env.ct)
@@ -535,6 +752,11 @@ exports.startup = function() {
 			var frame = rawData instanceof Buffer ? rawData : Buffer.from(rawData);
 			var plain = _decryptFrame(session.key, frame);
 			var msg   = JSON.parse(plain.toString("utf8"));
+			// peerId is the authenticated sender (its LAN session key decrypted this).
+			if(_blockUnverified(msg.type, peerId)) {
+				console.warn("[collab-auth] dropping LAN " + msg.type + " from unverified peer " + peerId);
+				return;
+			}
 			_handleMessage(msg);
 		} catch(e) {
 			// Auth tag mismatch = possible tampering → hard disconnect
@@ -577,7 +799,7 @@ exports.startup = function() {
 			title: "$:/temp/collab/status",
 			status: currentStatus,
 			"room-code": roomCode,
-			"lan-peers": String(Object.keys(directPeers).length),
+			"lan-peers": String(nodeCrypto ? Object.keys(directPeers).length : _bridgeLanPeers),
 			e2e: _e2eStrength
 		}));
 	}
@@ -591,8 +813,30 @@ exports.startup = function() {
 				"device-name": info.deviceName || info.device_name || dId,
 				"user-name":   info.userName   || info.user_name   || "",
 				"user-color":  info.userColor  || info.user_color  || "",
-				editing:       info.editing ? JSON.stringify(info.editing) : ""
+				editing:       info.editing ? JSON.stringify(info.editing) : "",
+				// Relay-verified OAuth identity (empty until the cert verifies).
+				verified:      info.verified ? "yes" : "",
+				"auth-user":   info.authUser   || ""
 			}));
+		} else {
+			$tw.wiki.deleteTiddler(t);
+		}
+	}
+
+	// Maintain $:/temp/collab/editing/<title> listing the OTHER members currently
+	// editing that tiddler, so the edit-view banner can show "also editing: …"
+	// without parsing per-member JSON. memberEditing only tracks peers (never
+	// self), so these names are exactly the co-editors.
+	function _writeEditingTitle(title) {
+		var names = [];
+		Object.keys(memberEditing).forEach(function(mId) {
+			if((memberEditing[mId] || []).indexOf(title) === -1) { return; }
+			var info = memberInfo[mId] || {};
+			names.push(info.userName || info.deviceName || mId);
+		});
+		var t = "$:/temp/collab/editing/" + title;
+		if(names.length) {
+			$tw.wiki.addTiddler(new $tw.Tiddler({title: t, "tiddler-title": title, names: names.join(", "), count: String(names.length)}));
 		} else {
 			$tw.wiki.deleteTiddler(t);
 		}
@@ -607,7 +851,28 @@ exports.startup = function() {
 		if(msg.type === "enc") {
 			_recvChain = _recvChain.then(function() {
 				return _decryptRelay(msg).then(function(inner) {
-					_handleMessage(inner);
+					// Replay protection: msg.seq was authenticated by the AAD during
+					// decryption, so it genuinely belongs to this sender. Reject any
+					// frame at or below the highest seq already accepted from them.
+					var sid = msg.deviceId, seq = msg.seq;
+					if(typeof seq === "number") {
+						var last = _peerSeq[sid];
+						if(last !== undefined && seq <= last) {
+							console.warn("[collab-e2e] dropping replayed/stale frame from " + sid + " seq=" + seq + " (last seen " + last + ")");
+							return;
+						}
+						_peerSeq[sid] = seq;
+					}
+					// Authenticated-peer enforcement: sid was bound into the AAD, so it
+					// genuinely identifies the sender. Drop collaboration traffic from a
+					// peer we have not verified as an OAuth-authenticated user.
+					if(_blockUnverified(inner.type, sid)) {
+						console.warn("[collab-auth] dropping relay " + inner.type + " from unverified peer " + sid);
+						return;
+					}
+					// Returned promise (member-info cert verification) is awaited by the
+					// chain, so a peer is verified before their next frame is gated.
+					return _handleMessage(inner);
 				}).catch(function(e) {
 					if(!_decryptWarned) {
 						_decryptWarned = true;
@@ -664,14 +929,17 @@ exports.startup = function() {
 							delete memberEditing[mId];
 							if(directPeers[mId]) { try { directPeers[mId].ws.terminate(); } catch(_) {} delete directPeers[mId]; }
 							delete peerSessions[mId];
+							delete _dmKeys[mId];
 							_writeMember(mId, null);
 						}
 					});
 				}
 				_fire("collab-connected", {members: msg.members || []});
+				// Send member-info (carrying our membership cert) FIRST, so peers can
+				// verify us before our request-state arrives — an enforcing peer would
+				// otherwise drop request-state from an as-yet-unverified sender.
+				_sendMemberInfo();
 				_sendRelay({type: "request-state", deviceId: deviceId});
-				// Broadcast our display info so peers can show our name/color.
-				_sendRelay({type: "member-info", deviceId: deviceId, deviceName: deviceName, userName: userName, userColor: userColor});
 				// Announce our LAN presence so existing peers can connect to us
 				_sendLanAnnounce();
 				break;
@@ -685,11 +953,22 @@ exports.startup = function() {
 					_writeMember(joinedId, joined);
 					_fire("collab-member-joined", {member: joined});
 					_emit("member_joined", {member: joined});
-					// Reply with our info so the newcomer can show our name/color.
-					_sendRelay({type: "member-info", deviceId: deviceId, deviceName: deviceName, userName: userName, userColor: userColor});
+					// Reply with our info + cert so the newcomer can show & verify us.
+					_sendMemberInfo();
 				}
 				// Re-announce so the new member learns our LAN endpoints
 				_sendLanAnnounce();
+				break;
+
+			case "identity":
+				// The relay handed us our own membership cert and its public
+				// verification key. Import the key (to verify peers) and re-broadcast
+				// member-info so peers receive our now-available cert.
+				if(msg.jwk) { _importRelayKey(msg.jwk); }
+				if(msg.cert) {
+					_myCert = msg.cert;
+					if(connected) { _sendMemberInfo(); }
+				}
 				break;
 
 			case "member-info":
@@ -698,8 +977,32 @@ exports.startup = function() {
 					info.deviceName = msg.deviceName || msg.deviceId;
 					info.userName   = msg.userName   || "";
 					info.userColor  = msg.userColor  || "";
+					// Peer's DM public key for exclusive 1:1 chat. If it changed (peer
+					// reconnected with a fresh key), drop the cached pairwise key.
+					if(msg.dmPub) {
+						if(JSON.stringify(info.dmPub || null) !== JSON.stringify(msg.dmPub)) {
+							delete _dmKeys[msg.deviceId];
+						}
+						info.dmPub = msg.dmPub;
+					}
 					memberInfo[msg.deviceId] = info;
 					_writeMember(msg.deviceId, info);
+					// Verify the relay-signed membership cert. Returned to the caller so
+					// the relay recv-chain awaits it: the peer is marked verified before
+					// any later frame from them is gated, closing the async-verify race.
+					if(msg.cert) {
+						var mId = msg.deviceId;
+						return _verifyCert(msg.cert, mId).then(function(payload) {
+							var cur = memberInfo[mId];
+							if(!cur) { return; }
+							cur.verified = !!payload;
+							cur.authUser = payload ? (payload.prov + ":" + payload.name) : "";
+							if(!payload) {
+								console.warn("[collab-auth] membership cert from " + mId + " did not verify");
+							}
+							_writeMember(mId, cur);
+						});
+					}
 				}
 				break;
 
@@ -710,6 +1013,7 @@ exports.startup = function() {
 					delete memberInfo[leftId];
 					delete memberEditing[leftId];
 					delete peerSessions[leftId];
+					delete _dmKeys[leftId];
 					if(directPeers[leftId]) {
 						try { directPeers[leftId].ws.terminate(); } catch(_) {}
 						delete directPeers[leftId];
@@ -719,6 +1023,7 @@ exports.startup = function() {
 					_fire("collab-member-left", {deviceId: leftId});
 					_emit("member_left", {deviceId: leftId});
 					wasEditing.forEach(function(title) {
+						_writeEditingTitle(title);
 						_emit("editing-stopped", {tiddler_title: title, device_id: leftId});
 					});
 				}
@@ -728,10 +1033,15 @@ exports.startup = function() {
 				// Peer has shared their X25519 public key and LAN endpoints via relay.
 				// Derive session key and attempt a direct encrypted connection.
 				if(msg.deviceId && msg.deviceId !== deviceId && msg.pubkey && msg.endpoints) {
-					var sessionKey = _deriveSessionKey(msg.pubkey);
-					if(sessionKey) {
-						peerSessions[msg.deviceId] = {key: sessionKey};
-						_tryLanConnect(msg.deviceId, msg.endpoints);
+					if(nodeCrypto) {
+						var sessionKey = _deriveSessionKey(msg.pubkey);
+						if(sessionKey) {
+							peerSessions[msg.deviceId] = {key: sessionKey};
+							_tryLanConnect(msg.deviceId, msg.endpoints);
+						}
+					} else if(_lanBridge && typeof window._nwjsLanAddPeer === "function") {
+						// Single-file wiki: the parent LAN node connects on our behalf.
+						try { window._nwjsLanAddPeer(msg.deviceId, msg.pubkey, msg.endpoints); } catch(_e) {}
 					}
 				}
 				break;
@@ -747,6 +1057,7 @@ exports.startup = function() {
 						memberInfo[esId].editing = memberEditing[esId];
 						_writeMember(esId, memberInfo[esId]);
 					}
+					_writeEditingTitle(msg.tiddler_title);
 					_emit("editing-started", msg);
 				}
 				break;
@@ -763,6 +1074,7 @@ exports.startup = function() {
 						memberInfo[stId].editing = memberEditing[stId] || [];
 						_writeMember(stId, memberInfo[stId]);
 					}
+					_writeEditingTitle(msg.tiddler_title);
 					_emit("editing-stopped", msg);
 				}
 				break;
@@ -778,6 +1090,24 @@ exports.startup = function() {
 				_userWantsConnected = false;
 				_terminalStatus = msg.message || "Connection rejected by server";
 				break;
+
+			case "dm":
+				// Exclusive 1:1 message, pairwise-encrypted so only the addressee can
+				// read it. If it isn't for us we can't (and shouldn't) decrypt it.
+				if(msg.to !== deviceId) { break; }
+				var dmFrom = msg.from;
+				return _dmKeyFor(dmFrom).then(function(key) {
+					if(!key) { console.warn("[collab-dm] no key to decrypt DM from " + dmFrom); return; }
+					var aad = new TextEncoder().encode(dmFrom + ">" + deviceId);
+					return _subtle.decrypt({name: "AES-GCM", iv: _unb64(msg.iv), additionalData: aad, tagLength: 128}, key, _unb64(msg.ct))
+						.then(function(pt) {
+							var inner = JSON.parse(new TextDecoder().decode(pt));
+							inner.private = true;
+							inner.peerDeviceId = dmFrom;
+							_fire("collab-sharing-message", inner);
+						})
+						.catch(function(e) { console.warn("[collab-dm] decrypt failed from " + dmFrom + ":", e && e.message); });
+				});
 
 			default:
 				// Forward unrecognised messages (e.g. sharing protocol) as a window event.
@@ -816,7 +1146,13 @@ exports.startup = function() {
 
 	// Encrypt and send binary to all established LAN peers.
 	function _sendLanAll(data) {
-		if(!nodeCrypto) return;
+		if(!nodeCrypto) {
+			// Single-file wiki: hand the message to the parent LAN node.
+			if(_lanBridge && typeof window._nwjsLanBroadcast === "function") {
+				try { window._nwjsLanBroadcast(JSON.stringify(data)); } catch(_e) {}
+			}
+			return;
+		}
 		var json = JSON.stringify(data);
 		Object.keys(directPeers).forEach(function(peerId) {
 			var peer    = directPeers[peerId];
@@ -918,7 +1254,7 @@ exports.startup = function() {
 		_writeStatus("connecting");
 
 		var wsUrl   = relayUrl.replace(/^http/, "ws").replace(/\/?$/, "") +
-		              "/room/" + encodeURIComponent(roomCode);
+		              "/room/" + _roomId(roomCode);
 		var headers = {};
 		if(authToken) {
 			headers["Authorization"] = "Bearer " + authToken;
@@ -1025,7 +1361,13 @@ exports.startup = function() {
 		getLanPeers:   function() { return Object.keys(directPeers); },
 		getDeviceId:   function() { return deviceId; },
 		// Send an arbitrary JSON message through the relay + LAN (adds msg_id).
-		send: function(data) { _send(data); }
+		send: function(data) { _send(data); },
+		// Send a message encrypted exclusively for one peer (pairwise E2E). Returns
+		// a promise resolving true if it was delivered (the peer must have advertised
+		// a DM key). Falls back to no-op false otherwise.
+		sendPrivate: function(toDeviceId, data) { return _sendPrivate(toDeviceId, data); },
+		// True if we have (or can derive) an exclusive channel with this peer.
+		canDm: function(toDeviceId) { var m = memberInfo[toDeviceId]; return !!(m && m.dmPub && _dmKeyPair); }
 	};
 
 	window.TiddlyDesktop        = window.TiddlyDesktop || {};
@@ -1040,6 +1382,73 @@ exports.startup = function() {
 		}
 	};
 
+	// ── LAN bridge (single-file wikis) ─────────────────────────────────────────
+	// The iframe can't listen or run Node crypto, so the parent runs the LAN node
+	// (wiki-file-window.js / lan-node.js). We hand it the room key and relay the
+	// announce/peer/data plumbing. Failsafe: any problem just leaves us relay-only.
+	function _initLanBridge() {
+		if(nodeCrypto) return;                                  // folder wikis use _startLanServer
+		if(destroyed || _lanBridge) return;
+		if(typeof window._nwjsLanInit !== "function") return;   // bridge not injected yet
+		if(!_e2eKeyRaw) return;                                 // need the room key first
+		_lanBridge = true;
+		var hex = "";
+		for(var i = 0; i < _e2eKeyRaw.length; i++) { hex += ("0" + _e2eKeyRaw[i].toString(16)).slice(-2); }
+		// Parent reports our pubkey + endpoints once its LAN server is listening.
+		window._nwjsLanOnReady = function(pubKeyB64, endpoints) {
+			if(!pubKeyB64) return;
+			myKeyPair    = {pubKeyB64: pubKeyB64};
+			lanEndpoints = endpoints || [];
+			lanPort      = (lanEndpoints[0] && lanEndpoints[0].port) || 1;
+			_sendLanAnnounce();
+		};
+		// A decrypted LAN data message from a peer (peerId = authenticated sender).
+		window._nwjsLanOnMessage = function(peerId, json) {
+			try {
+				var msg = JSON.parse(json);
+				if(_blockUnverified(msg.type, peerId)) {
+					console.warn("[collab-auth] dropping LAN " + msg.type + " from unverified peer " + peerId);
+					return;
+				}
+				_handleMessage(msg);
+			} catch(_e) {}
+		};
+		// LAN peer count changed.
+		window._nwjsLanOnPeers = function(n) {
+			_bridgeLanPeers = n | 0;
+			_writeStatus();
+		};
+		try { window._nwjsLanInit(hex, deviceId); } catch(_e) { _lanBridge = false; }
+	}
+
+	// Retry once the parent injects the LAN bridge (if Connect was clicked first).
+	window._nwjsLanBridgeReady = function() {
+		if(_userWantsConnected && !destroyed) { _e2eReady.then(_initLanBridge); }
+	};
+
+	// Start the LAN channel unless relay-only mode is enabled. Folder wikis run the
+	// server in-process; single-file wikis run it in the parent via the bridge.
+	function _startLanIfEnabled() {
+		if(relayOnly) { return; }
+		if(nodeCrypto) {
+			if(!lanServer) { myKeyPair = _generateKeyPair(); _startLanServer(); }
+		} else {
+			_e2eReady.then(_initLanBridge);
+		}
+	}
+
+	// Stop the LAN channel entirely (relay-only mode toggled on): close the server,
+	// drop direct peers, and tear down the single-file parent LAN node.
+	function _stopLan() {
+		if(lanServer) { try { lanServer.close(); } catch(_) {} lanServer = null; }
+		Object.keys(directPeers).forEach(function(pid) { try { directPeers[pid].ws.terminate(); } catch(_) {} });
+		directPeers = {}; peerSessions = {};
+		if(_lanBridge && typeof window._nwjsLanClose === "function") { try { window._nwjsLanClose(); } catch(_e) {} }
+		_lanBridge = false; _bridgeLanPeers = 0;
+		myKeyPair = null; lanPort = 0; lanEndpoints = [];
+		_writeStatus();
+	}
+
 	// ── teardown / reconnect ───────────────────────────────────────────────────
 
 	function _teardown() {
@@ -1052,10 +1461,23 @@ exports.startup = function() {
 		Object.keys(directPeers).forEach(function(peerId) {
 			try { directPeers[peerId].ws.terminate(); } catch(_) {}
 		});
+		// close the parent-hosted LAN node (single-file wikis); re-created with the
+		// fresh room key on the next _startSession.
+		if(_lanBridge && typeof window._nwjsLanClose === "function") {
+			try { window._nwjsLanClose(); } catch(_e) {}
+		}
+		_lanBridge = false; _bridgeLanPeers = 0;
 		// reset per-session state
 		memberEditing = {}; memberInfo = {};
 		peerSessions = {};  directPeers = {};
 		seenMsgIds = [];    seenMsgSet = {};
+		// Drop our membership cert + relay key; the relay reissues/re-advertises on
+		// the next connect, so capability is re-evaluated per session.
+		_myCert = null; _relaySupportsCerts = false; _relayVerifyKey = null;
+		_relayJwkRaw = null; _relayKeyReady = Promise.resolve();
+		// Drop cached pairwise DM keys (peers differ next session); keep our own
+		// keypair, which is ephemeral for the window's lifetime.
+		_dmKeys = {};
 		reconnectDelay = 1000;
 		connected = false;  currentStatus = "";
 		// reset E2E state (the key is re-derived on the next _startSession)
@@ -1063,7 +1485,7 @@ exports.startup = function() {
 		// clear status tiddlers
 		$tw.wiki.deleteTiddler("$:/temp/collab/status");
 		$tw.wiki.deleteTiddler("$:/temp/collab/error");
-		$tw.wiki.filterTiddlers("[prefix[$:/temp/collab/members/]]").forEach(function(t) {
+		$tw.wiki.filterTiddlers("[prefix[$:/temp/collab/members/]] [prefix[$:/temp/collab/editing/]]").forEach(function(t) {
 			$tw.wiki.deleteTiddler(t);
 		});
 	}
@@ -1072,7 +1494,14 @@ exports.startup = function() {
 		_readConfig();
 		if(!relayUrl || !roomCode) return;
 		if(!authToken) {
+			// Can't connect without an OAuth session. Surface it instead of failing
+			// silently: a transient notification plus a persistent sidebar error.
 			_writeStatus("disconnected");
+			$tw.wiki.addTiddler(new $tw.Tiddler({
+				title: "$:/temp/collab/error",
+				text:  "Not signed in — sign in via the Account section before connecting."
+			}));
+			try { $tw.notifier.display("$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/notify/NotSignedIn"); } catch(_e) {}
 			return;
 		}
 		// Refuse to operate without content encryption rather than fall back to
@@ -1091,37 +1520,55 @@ exports.startup = function() {
 		// Derive the room content key before connecting; the send/receive paths
 		// await _e2eReady, so this need not block the connect itself.
 		_deriveE2EKey();
-		if(nodeCrypto && !lanServer) {
-			myKeyPair = _generateKeyPair();
-			_startLanServer();
-		}
+		// Generate our pairwise (1:1) keypair so its public half rides along in the
+		// member-info we broadcast on connect.
+		_initDmKeys();
+		_startLanIfEnabled();
 		_connect();
 	}
 
-	// Watch config tiddlers - reconnect immediately when settings change, but only
-	// when the user has explicitly connected this session.
+	// Watch config tiddlers - react when settings change, but only when the user
+	// has explicitly connected this session. Connection-critical settings trigger
+	// a reconnect; display-only settings (name/colour) just re-announce presence.
 	$tw.wiki.addEventListener("change", function(changes) {
-		var watched = [
-			"$:/config/codemirror-6-collab/relay-url",
-			"$:/config/codemirror-6-collab/room-code",
-			"$:/config/codemirror-6-collab/auth-token",
-			"$:/config/codemirror-6-collab/auth-provider",
-			"$:/config/codemirror-6-collab/room-token",
-			"$:/config/codemirror-6-collab/user-name",
-			"$:/config/codemirror-6-collab/user-color",
-			"$:/config/codemirror-6-collab/device-name"
-		];
-		if(_userWantsConnected && watched.some(function(t) { return changes[t]; })) {
+		if(!_userWantsConnected) { return; }
+		var P = CONFIG_PREFIX;
+		var roomChanged    = !!changes[P + "room-code"];
+		var connChanged    = !!(changes[P + "relay-url"] || changes[P + "auth-token"]
+			|| changes[P + "auth-provider"] || changes[P + "room-token"]);
+		var displayChanged = !!(changes[P + "user-name"] || changes[P + "user-color"]
+			|| changes[P + "device-name"]);
+
+		// Relay-only toggle: start/stop the LAN channel in place, without dropping
+		// the relay connection. Handled independently of the reconnect branches.
+		if(changes[P + "relay-only"]) {
+			relayOnly = _cfg("relay-only") === "yes";
+			if(relayOnly) {
+				_stopLan();
+			} else if(connected || currentStatus === "connecting") {
+				_startLanIfEnabled();
+			}
+		}
+
+		if(roomChanged) {
 			// Changing the room code means leaving the current room - disconnect
 			// and require an explicit Connect click rather than auto-joining.
-			if(changes["$:/config/codemirror-6-collab/room-code"]) {
-				_userWantsConnected = false;
-				_teardown();
-			} else {
-				// A room-token change re-keys the E2E layer for the same room;
-				// reconnect transparently. _startSession re-derives the key.
-				_teardown();
-				_startSession();
+			_userWantsConnected = false;
+			_teardown();
+		} else if(connChanged) {
+			// Relay URL / auth / room token affect the connection or the E2E key,
+			// so reconnect transparently to the same room (_startSession re-reads
+			// config and re-derives the key).
+			_teardown();
+			_startSession();
+		} else if(displayChanged) {
+			// Display name / colour are cosmetic — do NOT disconnect. Just re-read
+			// config and re-announce our presence so peers' member lists update.
+			// (Yjs cursor names update separately via collab.js's own user-name
+			// watcher.)
+			_readConfig();
+			if(connected) {
+				_sendMemberInfo();
 			}
 		}
 	});
@@ -1152,6 +1599,10 @@ exports.startup = function() {
 			$tw.notifier.display("$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/notify/MissingRoomCode");
 			return false;
 		}
+		if(!authToken) {
+			$tw.notifier.display("$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/notify/NotSignedIn");
+			return false;
+		}
 		if(currentStatus === "connected" || currentStatus === "connecting") {
 			_userWantsConnected = false;
 			_teardown();
@@ -1170,6 +1621,21 @@ exports.startup = function() {
 
 function _cfg(key) {
 	return $tw.wiki.getTiddlerText("$:/config/codemirror-6-collab/" + key, "");
+}
+
+// Derive the relay room identifier from the human-readable room code: base64url
+// of its UTF-8 bytes. This is deterministic and identical on every client, so any
+// room code — spaces, apostrophes, unicode, "Simon's Room", emoji — maps to a
+// path segment the relay always accepts, regardless of the relay's own naming
+// rules. The readable code is still used for display and E2E key derivation.
+function _roomId(code) {
+	try {
+		var bytes = new TextEncoder().encode(String(code)), bin = "";
+		for(var i = 0; i < bytes.length; i++) { bin += String.fromCharCode(bytes[i]); }
+		return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+	} catch(_e) {
+		return encodeURIComponent(String(code));
+	}
 }
 
 // Generate a fresh, fully-random, ephemeral device ID (128 bits). NOT persisted:

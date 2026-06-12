@@ -204,10 +204,10 @@ tags: $:/tags/Stylesheet
 .td-plugin-open-warning {
 	margin: 0 1.2em 0.4em;
 	padding: 8px 12px;
-	background: #fff3cd;
-	border: 1px solid #ffc107;
+	background: rgba(255, 193, 7, 0.16);
+	border: 1px solid rgba(255, 193, 7, 0.55);
 	border-radius: 4px;
-	color: #856404;
+	color: <<colour foreground>>;
 	font-size: 0.88em;
 	flex-shrink: 0;
 }

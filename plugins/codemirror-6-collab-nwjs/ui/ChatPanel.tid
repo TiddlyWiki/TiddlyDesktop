@@ -1,5 +1,4 @@
 title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/ChatPanel
-tags: $:/tags/PageTemplate
 
 \whitespace trim
 
@@ -8,11 +7,20 @@ tags: $:/tags/PageTemplate
 <$reveal type="match" state="$:/config/state/collab/chat-open" text="yes">
 <div class="tc-collab-chat-panel">
 <div class="tc-collab-chat-header">
-<span>Chat</span>
+<span class="tc-collab-chat-title"><$list filter="[[$:/config/state/collab/chat-target]!field:text[]]" variable="_">🔒 </$list>Chat</span>
+<$select tiddler="$:/config/state/collab/chat-target" default="" class="tc-collab-chat-target" tooltip="Choose who you're chatting with">
+<option value="">Everyone</option>
+<$list filter="[prefix[$:/temp/collab/members/]sort[user-name]]">
+<option value={{{ [<currentTiddler>get[device-id]] }}}><$text text={{{ [<currentTiddler>get[user-name]] ~[<currentTiddler>get[device-name]] }}}/><$list filter="[<currentTiddler>get[device-id]addprefix[$:/temp/collab/chat/unread/]has[text]]" variable="_"> •</$list></option>
+</$list>
+</$select>
 <$button set="$:/config/state/collab/chat-open" setTo="no" class="tc-btn-invisible tc-collab-chat-close-btn">✕</$button>
 </div>
+<$list filter="[[$:/config/state/collab/chat-target]!field:text[]]" variable="_">
+<div class="tc-collab-chat-private-hint">🔒 Private — end-to-end encrypted, only <$text text={{{ [{$:/config/state/collab/chat-target}addprefix[$:/temp/collab/members/]get[user-name]] ~[{$:/config/state/collab/chat-target}addprefix[$:/temp/collab/members/]get[device-name]] }}}/> can read this.</div>
+</$list>
 <div class="tc-collab-chat-messages">
-<$list filter="[prefix[$:/temp/collab/chat/msg/]sort[msg-sort]reverse[]]" emptyMessage="""<div class="tc-collab-chat-empty">No messages yet</div>""">
+<$list filter="[prefix[$:/temp/collab/chat/msg/]field:peer{$:/config/state/collab/chat-target}sort[msg-sort]reverse[]]" emptyMessage="""<div class="tc-collab-chat-empty">No messages yet</div>""">
 <div class={{{ [<currentTiddler>get[is-local]match[yes]then[tc-collab-chat-msg tc-collab-chat-msg-local]else[tc-collab-chat-msg]] }}}>
 <span class="tc-collab-chat-meta"><$text text={{{ [<currentTiddler>get[sender-name]] }}}/><span class="tc-collab-chat-time"> <$text text={{{ [<currentTiddler>get[time-label]] }}}/></span></span>
 <span class="tc-collab-chat-text"><$text text={{{ [<currentTiddler>get[text]] }}}/></span>
@@ -25,7 +33,7 @@ tags: $:/tags/PageTemplate
 </div>
 </$reveal>
 <$reveal type="nomatch" state="$:/config/state/collab/chat-open" text="yes">
-<$button class="tc-btn-invisible tc-collab-chat-toggle"><$action-setfield $tiddler="$:/config/state/collab/chat-open" text="yes"/><$action-setfield $tiddler="$:/config/state/collab/get-open" text="no"/><$list filter="[[$:/temp/collab/chat/unread]!field:text[0]!field:text[]]" variable="_"><span class="tc-collab-chat-badge"><$text text={{$:/temp/collab/chat/unread}}/></span></$list>Chat</$button>
+<$button class="tc-btn-invisible tc-collab-chat-toggle"><$action-setfield $tiddler="$:/config/state/collab/chat-open" text="yes"/><$list filter="[[$:/temp/collab/chat/unread]!field:text[0]!field:text[]]" variable="_"><span class="tc-collab-chat-badge"><$text text={{$:/temp/collab/chat/unread}}/></span></$list>Chat</$button>
 </$reveal>
 </div>
 </$reveal>

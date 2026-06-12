@@ -53,8 +53,9 @@ notices.
 nw.js — https://github.com/nwjs/nw.js
 -------------------------------------------------------------------------------
 
-Copyright (c) 2012 Intel Corporation
-Copyright (c) nw.js contributors
+Copyright (c) 2011-2019 NW.js Authors
+Copyright (c) 2011-2019 The Chromium Authors
+Copyright (c) 2011-2018 Intel Corp
 
 Licensed under the MIT License:
 
@@ -108,10 +109,35 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 -------------------------------------------------------------------------------
-Yjs, y-codemirror.next, y-protocols — https://github.com/yjs
+Yjs, y-codemirror.next, y-protocols, lib0 — https://github.com/yjs
 -------------------------------------------------------------------------------
 
 The codemirror-6-collab-nwjs plugin bundles Yjs and related libraries
-(y-codemirror.next, y-protocols), each distributed under the MIT License.
-Copyright (c) Kevin Jahns and contributors. See the bundled
+(y-codemirror.next, y-protocols, and lib0), each distributed under the MIT
+License. Copyright (c) Kevin Jahns and contributors. See the bundled
 lib/yjs-collab.js header for details.
+
+-------------------------------------------------------------------------------
+CodeMirror — https://codemirror.net/
+-------------------------------------------------------------------------------
+
+The collaborative editor integrates with CodeMirror 6, which is redistributed
+as part of the bundled TiddlyWiki CodeMirror plugins.
+
+Copyright (c) by Marijn Haverbeke and others
+
+Distributed under the MIT License (same terms as the ws / nw.js notices above).
+
+===============================================================================
+BUILD-TIME DEPENDENCIES (not distributed)
+===============================================================================
+
+The following are used only when building TiddlyDesktop and are NOT included in
+the shipped application:
+
+-------------------------------------------------------------------------------
+resedit (resedit-js) — https://github.com/jet2jet/resedit-js
+-------------------------------------------------------------------------------
+
+Used by bld.sh to embed the application icon and version metadata into the
+Windows executable. Distributed under the MIT License. Copyright (c) jet.
