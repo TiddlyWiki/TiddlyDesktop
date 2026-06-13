@@ -44,12 +44,12 @@ remove
 </div>
 <div class="td-wiki-toolbar-item">
 <$list filter="[all[current]prefix[wikifile://]]" variable="ignore">
-<div class="td-file-input-wrapper">
+<$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/classic/$(currentTiddler)$""" text="yes" tag="div" class="td-file-input-wrapper">
 <$button class="tc-btn-invisible td-button td-wikilist-button-convert">
 {{$:/core/images/folder}} to folder
 </$button>
 <$browse nwdirectory message="tiddlydesktop-convert-wiki" param=<<currentTiddler>> tooltip="Choose (or create) an empty folder for the new wiki folder"/>
-</div>
+</$reveal>
 </$list>
 <$list filter="[all[current]prefix[wikifolder://]]" variable="ignore">
 <$set name="convertDefaultName" value={{{ [<currentTiddler>removeprefix[wikifolder://]split[/]last[]addsuffix[.html]] }}}>
@@ -71,9 +71,11 @@ remove
 </$reveal>
 </div>
 <div class="td-wiki-toolbar-item">
+<$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/classic/$(currentTiddler)$""" text="yes" tag="span">
 <$button message="tiddlydesktop-open-plugin-chooser" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-plugins">
 plugins
 </$button>
+</$reveal>
 </div>
 <div class="td-wiki-toolbar-item">
 <$let storyTiddler="$:/TiddlyDesktop/Config/wiki-tags/$(currentTiddler)$">

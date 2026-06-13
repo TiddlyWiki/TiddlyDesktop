@@ -2,6 +2,8 @@
 
 TiddlyDesktop is a special purpose web browser for working with locally stored TiddlyWikis. See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
+It works with both single-file wikis and TiddlyWiki folder (server) wikis, and supports both TiddlyWiki 5 and the classic 2.x.x version. This build adds real-time collaboration, per-wiki plugin management, single-file ⇄ folder conversion, serving folder wikis over the LAN, and window conveniences (fullscreen, zoom, find-in-page).
+
 See this video tutorial for an overview of installing and using TiddlyDesktop on Windows and OS X:
 
 https://www.youtube.com/watch?v=i3Bggkm7paA
@@ -164,6 +166,51 @@ chmod u+x tiddlydesktop-*-v*.AppImage
 
 # Usage
 
+## The wiki list
+
+The main window lists your wikis. Add one by dragging a `.html` file or a wiki folder onto
+the list, or with the **Create new wiki** / browse buttons. Each entry shows the wiki's
+favicon and title, and a toolbar:
+
+* **open** / **reveal** (show the file in your file manager) / **remove**.
+* **to folder** / **to file** — convert a single-file wiki into a TiddlyWiki folder wiki, or
+  vice versa. The original is left untouched; the title and favicon are carried over.
+* **plugins** — browse and enable/disable TiddlyWiki plugins for that wiki.
+* **advanced** — backup options for single-file wikis; for folder wikis, the server options
+  below.
+* **tags** — tag wikis and filter the list by tag.
+
+(Convert and plugins are hidden for TiddlyWiki Classic wikis, which are single-file only.)
+
+## Serving a folder wiki over the local network
+
+A wiki folder runs its own TiddlyWiki server. Open a folder wiki's **advanced** options and
+set:
+
+* **Host** — `127.0.0.1` for this machine only, or `0.0.0.0` to allow access from other
+  devices on your LAN.
+* **Port** — e.g. `8080` (use a different port per open wiki).
+
+Other devices can then open `http://<this-machine's-ip>:<port>/`. Further options
+(path prefix, root tiddler, anonymous username, gzip, and the `credentials`/`readers`/
+`writers` access settings) are available in the same panel. Changes take effect the next
+time the wiki folder is opened.
+
+To serve a *single-file* wiki on the LAN, convert it to a folder wiki first (or use the
+real-time collaboration feature below for multi-device editing).
+
+## Wiki window shortcuts
+
+In a wiki window (single-file or folder):
+
+* **Fullscreen** — `F11` (or TiddlyWiki's fullscreen button).
+* **Zoom** — `Ctrl`/`Cmd` `+` / `-` / `0`, or `Ctrl`/`Cmd` + mouse wheel. A reset control
+  appears top-left while the zoom isn't 100%.
+* **Find in page** — `Ctrl`/`Cmd` `F` opens a browser-style find bar (it leaves the shortcut
+  to a focused editor such as CodeMirror 6).
+
+Window position and size are remembered per wiki.
+
 ## Multiple Configurations
 
 To have separate mutliple instances of TiddlyDesktop (for example, separate Personal and Professional instances), you can pass the `--user-data-dir` argument.  e.g. `/opt/TiddlyDesktop/nw --user-data-dir=/mnt/data/TiddlyWiki/config`.  The property should be a directory to use for holding configuration data.
@@ -291,7 +338,8 @@ If TiddlyDesktop is behaving unexpectedly, you can start it against a clean conf
 
 # Building
 
-1. Run `download-nwjs.sh` to download the latest nw.js binaries
-2. Download the TiddlyWiki5 repo from https://github.com/Jermolene/TiddlyWiki5 to a sibling directory to the TiddlyDesktop repo called "TiddlyWiki5"
-3. Run `bld.sh`
-4. Execute `output/mac/TiddlyWiki.app` or `output/win/nw.exe` or `output/linux32/nw` or `output/linux64/nw`
+Building uses Node.js (the CI builds with Node.js 24).
+
+1. Run `download-nwjs.sh` to download the nw.js binaries. (The CI passes `PLATFORM`, `ARCH`, `EXT` and `NWJS_VERSION` in the environment to fetch a single target; set them to build just the platform you need.)
+2. Run `bld.sh`. It runs `npm install` — which pulls in TiddlyWiki5 as a dependency, so there is **no** separate TiddlyWiki5 clone to manage — then bundles the TiddlyDesktop plugins, propagates the version, and builds into `output/`.
+3. Run the build for your platform from `output/`, e.g. `output/linux64/`, `output/linuxarm64/`, `output/win64/`, `output/win32/`, `output/mac64/` or `output/macapplesilicon/`.

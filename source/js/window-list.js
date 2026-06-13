@@ -101,6 +101,9 @@ WindowList.prototype.open = function(WindowConstructor,info,options) {
 		// waiting for the wiki to boot. The window's live title extraction refines it
 		// afterwards (and matches this value, so there's no flicker).
 		this.seedTitleFromDisk(WindowConstructor,info);
+		// Flag TiddlyWiki Classic wikis so the list can hide the convert/plugins buttons
+		// (both are TW5-only). Read from disk at add/open time.
+		this.updateClassicFlag(WindowConstructor,info);
 	}
 };
 
@@ -188,6 +191,15 @@ WindowList.prototype.readTidFileText = function(filepath,defaultValue) {
 // whole (potentially huge) wiki. TiddlyWiki writes <title>{{$:/core/wiki/title}}</title>
 // at save time, so this is exactly the value the iframe later reports.
 WindowList.prototype.readSingleFileWikiTitle = function(pathname) {
+	var head = this.readFileHead(pathname);
+	if(!head) { return null; }
+	var m = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(head);
+	if(!m) { return null; }
+	return this.decodeHtmlEntities(m[1]).trim() || null;
+};
+
+// Read the first 64KB of a file as text (the <head> of a single-file wiki lives there).
+WindowList.prototype.readFileHead = function(pathname) {
 	var fd,
 		bytes = 0,
 		buf = Buffer.alloc(65536);
@@ -199,9 +211,32 @@ WindowList.prototype.readSingleFileWikiTitle = function(pathname) {
 		return null;
 	}
 	try { fs.closeSync(fd); } catch(e) {}
-	var m = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(buf.toString("utf8",0,bytes));
-	if(!m) { return null; }
-	return this.decodeHtmlEntities(m[1]).trim() || null;
+	return buf.toString("utf8",0,bytes);
+};
+
+// A single-file wiki is TiddlyWiki Classic (not TW5) when its <head> lacks the
+// tiddlywiki-version meta that every TW5 file declares. Classic wikis can't be converted
+// (the converter uses TW5's boot) and have no folder format, so the convert/plugins
+// buttons are hidden for them. An unreadable file is treated as not-Classic (the convert
+// path already errors gracefully).
+WindowList.prototype.isSingleFileClassic = function(pathname) {
+	var head = this.readFileHead(pathname);
+	if(!head) { return false; }
+	return !(/<meta[^>]+name=["']tiddlywiki-version["']/i).test(head);
+};
+
+// Set/clear the per-wiki "this is a Classic wiki" flag the wiki list reads. Only
+// single-file wikis can be Classic (folder wikis are always TW5).
+WindowList.prototype.updateClassicFlag = function(WindowConstructor,info) {
+	if(WindowConstructor !== WikiFileWindow) { return; }
+	try {
+		var configTitle = "$:/TiddlyDesktop/Config/classic/" + WindowConstructor.getIdentifierFromInfo(info);
+		if(this.isSingleFileClassic(info.pathname)) {
+			$tw.wiki.addTiddler(new $tw.Tiddler({title: configTitle, text: "yes"}));
+		} else {
+			$tw.wiki.deleteTiddler(configTitle);
+		}
+	} catch(e) {}
 };
 
 // Minimal HTML entity decode for titles read out of a saved wiki's <title> element.
@@ -268,6 +303,7 @@ WindowList.prototype.cleanupRemovedWiki = function(identifier) {
 	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/title/" + identifier);
 	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/favicon/" + identifier);
 	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/geometry/" + identifier);
+	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/classic/" + identifier);
 	try {
 		var stateFile = folderLiveStateFileFor(identifier);
 		if(fs.existsSync(stateFile)) { fs.unlinkSync(stateFile); }
