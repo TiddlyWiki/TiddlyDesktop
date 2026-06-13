@@ -11,7 +11,7 @@ var fs = require("fs"),
 
 var WikiFileWindow = require("./wiki-file-window.js").WikiFileWindow,
 	WikiFolderWindow = require("./wiki-folder-window.js").WikiFolderWindow,
-	folderTitleFileFor = require("./wiki-folder-window.js").titleFileFor,
+	folderLiveStateFileFor = require("./wiki-folder-window.js").liveStateFileFor,
 	BackstageWindow = require("./backstage-window.js").BackstageWindow;
 
 function WindowList(options) {
@@ -138,6 +138,23 @@ WindowList.prototype.writeFaviconConfig = function(identifier,text,type) {
 	$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),{title: "$:/TiddlyDesktop/Config/favicon/" + identifier, text: text, type: type || "image/x-icon"},$tw.wiki.getModificationFields()));
 };
 
+// Ensure a folder wiki's tiddlywiki.info declares the node-only plugins needed for
+// server-side saving. Adds tiddlywiki/filesystem and tiddlywiki/server if missing,
+// preserving any other plugins/fields. No-op if the info file can't be read.
+WindowList.prototype.ensureFolderWikiServerPlugins = function(folderPath) {
+	var infoPath = path.resolve(folderPath,"tiddlywiki.info"),
+		info;
+	try { info = JSON.parse(fs.readFileSync(infoPath,"utf8")); } catch(e) { return; }
+	if(!Array.isArray(info.plugins)) { info.plugins = []; }
+	var changed = false;
+	["tiddlywiki/filesystem","tiddlywiki/server"].forEach(function(name) {
+		if(info.plugins.indexOf(name) === -1) { info.plugins.push(name); changed = true; }
+	});
+	if(changed) {
+		try { fs.writeFileSync(infoPath,JSON.stringify(info,null,4),"utf8"); } catch(e) {}
+	}
+};
+
 // Build a folder wiki's window title the same way TiddlyWiki does ($:/core/wiki/title:
 // SiteTitle, then " — SiteSubtitle" when the subtitle is non-empty). Missing tiddler
 // files mean the wiki uses the core defaults, so we fall back to those.
@@ -230,15 +247,15 @@ WindowList.prototype.removeByUrl = function(url) {
 };
 
 // Remove the per-wiki artifacts tied to a wiki-list entry that's being deleted: the
-// cached title/favicon config tiddlers, and (for folder wikis) the live-title file the
+// cached title/favicon config tiddlers, and (for folder wikis) the live-state file the
 // folder window writes to. Safe for any entry type — single-file/URL wikis simply have
-// no title file, and a missing path is ignored.
+// no state file, and a missing path is ignored.
 WindowList.prototype.cleanupRemovedWiki = function(identifier) {
 	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/title/" + identifier);
 	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/favicon/" + identifier);
 	try {
-		var titleFile = folderTitleFileFor(identifier);
-		if(fs.existsSync(titleFile)) { fs.unlinkSync(titleFile); }
+		var stateFile = folderLiveStateFileFor(identifier);
+		if(fs.existsSync(stateFile)) { fs.unlinkSync(stateFile); }
 	} catch(e) {}
 };
 
@@ -437,6 +454,13 @@ WindowList.prototype.convertWiki = function(sourceUrl, destPath, callback) {
 				var faviconTiddler = convTw && convTw.wiki && convTw.wiki.getTiddler("$:/favicon.ico");
 				if(faviconTiddler) { self.writeFaviconConfig(newUrl,faviconTiddler.fields.text,faviconTiddler.fields.type); }
 			} catch(_e) {}
+			// When converting TO a folder, the (browser) single-file source has no node-only
+			// plugins, so savewikifolder's generated tiddlywiki.info lacks tiddlywiki/filesystem
+			// and tiddlywiki/server — without which the folder wiki can't run its server or
+			// save to disk. Add them so the converted folder is immediately usable.
+			if(!isFolder) {
+				try { self.ensureFolderWikiServerPlugins(destPath); } catch(_e) {}
+			}
 			console.log("[TiddlyDesktop] convertWiki: opening converted wiki",newUrl);
 			self.openByUrl(newUrl);
 			callback(null);

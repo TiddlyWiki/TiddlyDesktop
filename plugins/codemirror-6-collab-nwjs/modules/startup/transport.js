@@ -239,6 +239,9 @@ exports.startup = function() {
 	var destroyed      = true;  // _startSession() sets false
 	var connected      = false;
 	var currentStatus  = "";
+	// Wall-clock ms of the last frame/ping/pong heard from the relay. The liveness
+	// watchdog uses it to detect a dead half-open socket (no close event) and reconnect.
+	var lastRelayActivity = 0;
 	// Set to true only by explicit user action (Connect button / apply-invite).
 	// Kept false at startup so the wiki never auto-connects on load.
 	var _userWantsConnected = false;
@@ -1337,6 +1340,8 @@ exports.startup = function() {
 				(listeners["open"] || []).forEach(function(fn) { try { fn(); } catch(_e) {} });
 			} else if(type === "message") {
 				(listeners["message"] || []).forEach(function(fn) { try { fn(data); } catch(_e) {} });
+			} else if(type === "ping") {
+				(listeners["ping"] || []).forEach(function(fn) { try { fn(); } catch(_e) {} });
 			} else if(type === "close") {
 				socket.readyState = 3;
 				(listeners["close"] || []).forEach(function(fn) { try { fn(); } catch(_e) {} });
@@ -1387,6 +1392,7 @@ exports.startup = function() {
 		ws.on("open", function() {
 			if(myGen !== connectionGeneration) return;
 			console.log("[collab-transport] relay WS opened, sending join");
+			lastRelayActivity = Date.now();
 			reconnectDelay = 1000;
 			// Join is cleartext (the relay routes us by it) and carries no secrets
 			// or display names — those are broadcast E2E-encrypted via member-info.
@@ -1396,9 +1402,16 @@ exports.startup = function() {
 
 		ws.on("message", function(data) {
 			if(myGen !== connectionGeneration) return;
+			lastRelayActivity = Date.now();
 			var msg; try { msg = JSON.parse(data.toString()); } catch(_e) { return; }
 			_handleRelayFrame(msg);
 		});
+
+		// Liveness signals. The relay pings us periodically; ws auto-replies with a
+		// pong and emits these events (bridge sockets forward "ping" too). Tracking
+		// them lets the watchdog tell a live-but-idle link from a dead half-open one.
+		ws.on("ping", function() { if(myGen === connectionGeneration) { lastRelayActivity = Date.now(); } });
+		ws.on("pong", function() { if(myGen === connectionGeneration) { lastRelayActivity = Date.now(); } });
 
 		ws.on("close", function() {
 			if(myGen !== connectionGeneration) return; // stale socket - ignore
@@ -1497,6 +1510,50 @@ exports.startup = function() {
 			}
 		});
 	}, 10000);
+
+	// ── liveness watchdog: detect dead/half-open links and machine sleep ───────
+	// The relay idle-closes us after 60s of silence and pings every 20s; ws auto-pongs
+	// keep a live peer alive. But if the link goes half-open (sleep, NAT rebind, a brief
+	// network drop) our pongs stop reaching the relay AND we may never get the close
+	// event — leaving us "connected" with all sync dead and no reconnect. So we reconnect
+	// ourselves when (a) the relay's pings stop arriving, or (b) the machine clearly slept.
+	function _forceReconnect(reason) {
+		if(destroyed || !_userWantsConnected) { return; }
+		console.warn("[collab-transport] forcing reconnect: " + reason);
+		connected = false;
+		// _connect() bumps the generation and terminates the current socket (its stale
+		// close handler no-ops), then opens a fresh one — healing both coarse and Yjs
+		// sync, and re-firing collab-connected so subscriptions catch up.
+		clearTimeout(reconnectTimer);
+		reconnectDelay = 1000;
+		_connect();
+	}
+
+	var WATCHDOG_MS = 15000;
+	var STALE_MS    = 50000;             // <60s relay idle timeout; >2× the 20s ping
+	var SLEEP_GAP_MS = WATCHDOG_MS + 30000;
+	var lastWatchdogTick = Date.now();
+	setInterval(function() {
+		var now = Date.now();
+		// If far more wall-clock elapsed than our interval, the machine was suspended;
+		// sockets are very likely dead even without a close event. Reconnect on resume.
+		var slept = (now - lastWatchdogTick) > SLEEP_GAP_MS;
+		lastWatchdogTick = now;
+		if(destroyed || !_userWantsConnected) { return; }
+		if(slept && connected) { _forceReconnect("resumed from sleep/suspend"); return; }
+		// A live relay pings us every ~20s; total silence past STALE_MS = dead link.
+		if(connected && lastRelayActivity && (now - lastRelayActivity) > STALE_MS) {
+			_forceReconnect("no relay activity for " + Math.round((now - lastRelayActivity) / 1000) + "s");
+		}
+	}, WATCHDOG_MS);
+
+	// Network came back (e.g. after a drop or resume): the old socket is almost
+	// certainly stale, so reconnect promptly rather than waiting for the watchdog.
+	try {
+		window.addEventListener("online", function() {
+			if(_userWantsConnected && !destroyed) { _forceReconnect("network back online"); }
+		});
+	} catch(_e) {}
 
 	// Called by wiki-file-window.js after injecting the WS bridge into this iframe.
 	// If the user already clicked Connect before the bridge was ready, retry now.

@@ -84,30 +84,69 @@ try {
 	console.error("[TiddlyDesktop] find bar install failed:",e);
 }
 
-// Mirror this wiki's title to the file the backstage watches, so the wiki-list label
-// tracks $:/SiteTitle / $:/SiteSubtitle live. TiddlyWiki keeps document.title in sync
-// with those tiddlers; we observe the <title> element and write it (in place, so the
-// backstage's fs.watch keeps its inode), debounced and de-duplicated so the burst of
-// title changes during boot doesn't thrash the file.
+// Mirror this wiki's title and favicon to the file the backstage watches, so the
+// wiki-list entry tracks $:/SiteTitle / $:/SiteSubtitle / $:/favicon.ico live. TiddlyWiki
+// keeps document.title and the #faviconLink href in sync with those tiddlers; we observe
+// both and write a small JSON payload (in place, so the backstage's fs.watch keeps its
+// inode), debounced and de-duplicated so the burst of changes during boot doesn't thrash
+// the file.
 (function() {
-	var titleFile = queryObject.titleFile,
-		doc = containerWindow.window.document;
-	if(!titleFile) { return; }
+	var stateFile = queryObject.stateFile,
+		win = containerWindow.window,
+		doc = win.document;
+	if(!stateFile) { return; }
 	var lastWritten = null,
 		writeTimer = null;
-	function writeTitle() {
-		var title = doc.title || "";
-		if(title === lastWritten) { return; }
-		lastWritten = title;
-		try { fs.writeFileSync(titleFile,title,"utf8"); } catch(e) {}
+	function currentState() {
+		var title = doc.title || "",
+			faviconType = "",
+			faviconText = "",
+			faviconLink = doc.getElementById("faviconLink"),
+			href = faviconLink && faviconLink.getAttribute("href");
+		// faviconLink href is a data URI: "data:<type>;base64,<text>"
+		if(href && href.indexOf("data:") === 0) {
+			var posColon = href.indexOf(":"),
+				posSemiColon = href.indexOf(";"),
+				posComma = href.indexOf(",");
+			if(posSemiColon !== -1 && posComma !== -1) {
+				faviconType = href.substring(posColon + 1,posSemiColon);
+				faviconText = href.substring(posComma + 1);
+			}
+		}
+		return {title: title, faviconType: faviconType, faviconText: faviconText};
+	}
+	function writeState() {
+		var payload = JSON.stringify(currentState());
+		if(payload === lastWritten) { return; }
+		lastWritten = payload;
+		try { fs.writeFileSync(stateFile,payload,"utf8"); } catch(e) {}
 	}
 	function schedule() {
 		if(writeTimer) { clearTimeout(writeTimer); }
-		writeTimer = setTimeout(writeTitle,50);
+		writeTimer = setTimeout(writeState,50);
 	}
-	var titleNode = doc.getElementsByTagName("title")[0];
-	if(titleNode && containerWindow.window.MutationObserver) {
-		new containerWindow.window.MutationObserver(schedule).observe(titleNode,{childList: true, characterData: true, subtree: true});
+	if(win.MutationObserver) {
+		var titleNode = doc.getElementsByTagName("title")[0];
+		if(titleNode) {
+			new win.MutationObserver(schedule).observe(titleNode,{childList: true, characterData: true, subtree: true});
+		}
+		// The favicon <link> is created/updated by the core favicon startup; observe its
+		// href so a changed $:/favicon.ico is reflected. It may not exist yet at this point,
+		// so also watch <head> for it being added.
+		var faviconLink = doc.getElementById("faviconLink");
+		if(faviconLink) {
+			new win.MutationObserver(schedule).observe(faviconLink,{attributes: true, attributeFilter: ["href"]});
+		} else if(doc.head) {
+			var headObserver = new win.MutationObserver(function() {
+				var link = doc.getElementById("faviconLink");
+				if(link) {
+					headObserver.disconnect();
+					new win.MutationObserver(schedule).observe(link,{attributes: true, attributeFilter: ["href"]});
+					schedule();
+				}
+			});
+			headObserver.observe(doc.head,{childList: true});
+		}
 	}
 	schedule();
 }());

@@ -189,6 +189,10 @@ TiddlyDesktop includes an optional real-time collaboration plugin (CodeMirror 6 
 
 ## What you need
 
+* **Plugins.** For full collaboration functionality, install these TiddlyWiki plugins in each participating wiki:
+  * **CodeMirror 6 editor** — the collaboration plugin integrates with it for real-time character-level sync.
+  * **CodeMirror 6 edit-text** (`$:/plugins/tiddlywiki/codemirror-6-edit-text`) — routes the standard text editor through CodeMirror 6 so shared tiddlers co-edit live.
+  * **External Attachments** (`$:/plugins/tiddlywiki/external-attachments`) — lets received attachments be saved to disk (via a *save-as* dialog) and recorded as `_canonical_uri` instead of being embedded inline.
 * **The CodeMirror 6 editor** must be the active text editor (the collaboration plugin integrates with it).
 * **A relay server.** Peers discover each other through a small relay (a TiddlyDesktop-to-TiddlyDesktop WebSocket server). You can use a shared one or self-host (see the separate `tiddlydesktop-relay` project). On the same LAN, peers also connect **directly** (encrypted) for lower latency; the relay is the fallback.
 * **An OAuth sign-in** (GitHub / Google / GitLab / OIDC, depending on the relay). The relay only admits authenticated users, and peers cryptographically verify each other's identity.

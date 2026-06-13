@@ -9,13 +9,13 @@ var windowBase = require("../js/window-base.js"),
 	fs = require("fs"),
 	path = require("path");
 
-// Path of the per-wiki "live title" file for a given wiki identifier. A folder wiki
-// runs in its own process (new_instance), so the backstage can't observe its DOM the
-// way it does a single-file wiki's iframe; instead the folder window writes its current
-// title here and the backstage watches the file. Exported so window-list.js can clean
-// the file up when a wiki is removed from the list.
-function titleFileFor(identifier) {
-	return path.resolve($tw.desktop.gui.App.dataPath,"FolderWikiTitles",hash.simpleHash(identifier));
+// Path of the per-wiki "live state" file for a given wiki identifier. A folder wiki runs
+// in its own process (new_instance), so the backstage can't observe its DOM the way it
+// does a single-file wiki's iframe; instead the folder window writes its current title
+// and favicon here (as a small JSON payload) and the backstage watches the file. Exported
+// so window-list.js can clean the file up when a wiki is removed from the list.
+function liveStateFileFor(identifier) {
+	return path.resolve($tw.desktop.gui.App.dataPath,"FolderWikiState",hash.simpleHash(identifier));
 }
 
 // Constructor
@@ -29,14 +29,14 @@ function WikiFolderWindow(options) {
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Save the wiki list tiddler
 	this.saveWikiListTiddler();
-	// Compute (and pre-create) the file used to mirror this wiki's live title across the
-	// process boundary. We pass the exact path to the window so both sides agree even if
-	// data-path resolution differs in the new instance, and pre-create it so fs.watch has
-	// a stable inode to attach to before the folder window first writes.
-	this.titleFile = titleFileFor(this.getIdentifier());
+	// Compute (and pre-create) the file used to mirror this wiki's live title and favicon
+	// across the process boundary. We pass the exact path to the window so both sides agree
+	// even if data-path resolution differs in the new instance, and pre-create it so
+	// fs.watch has a stable inode to attach to before the folder window first writes.
+	this.stateFile = liveStateFileFor(this.getIdentifier());
 	try {
-		fs.mkdirSync(path.dirname(this.titleFile),{recursive: true});
-		if(!fs.existsSync(this.titleFile)) { fs.writeFileSync(this.titleFile,""); }
+		fs.mkdirSync(path.dirname(this.stateFile),{recursive: true});
+		if(!fs.existsSync(this.stateFile)) { fs.writeFileSync(this.stateFile,""); }
 	} catch(e) {}
 	// Get the host, port and credentials
 	var host = $tw.wiki.getTiddlerText(this.getConfigTitle("host"),""),
@@ -46,7 +46,7 @@ function WikiFolderWindow(options) {
 		writers = $tw.wiki.getTiddlerText(this.getConfigTitle("writers"),"(authenticated)");
 	// Open the window
 	$tw.desktop.gui.Window.open("html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname) + "&host=" + encodeURIComponent(host) + "&port=" + encodeURIComponent(port)
-			+ "&credentials=" + encodeURIComponent(credentials) + "&readers=" + encodeURIComponent(readers) + "&writers=" + encodeURIComponent(writers) + "&titleFile=" + encodeURIComponent(this.titleFile),{
+			+ "&credentials=" + encodeURIComponent(credentials) + "&readers=" + encodeURIComponent(readers) + "&writers=" + encodeURIComponent(writers) + "&stateFile=" + encodeURIComponent(this.stateFile),{
 		id: hash.simpleHash(this.getIdentifier()),
 		show: true,
 		new_instance: true,
@@ -54,7 +54,7 @@ function WikiFolderWindow(options) {
 	},function(win) {
 		self.window_nwjs = win;
 		self.window_nwjs.once("loaded",self.onloaded.bind(self));
-		self.window_nwjs.on("close",self.onclose.bind(self));		
+		self.window_nwjs.on("close",self.onclose.bind(self));
 	});
 }
 
@@ -83,27 +83,37 @@ WikiFolderWindow.prototype.getIdentifier = function() {
 // Load handler for window
 WikiFolderWindow.prototype.onloaded = function(event) {
 	var self = this;
-	// Mirror the folder window's live title into the wiki-list title config. The folder
-	// window writes its current title to this.titleFile whenever $:/SiteTitle /
-	// $:/SiteSubtitle change; we watch that file and react the moment it does — no polling.
-	this.readTitleFile();
+	// Mirror the folder window's live title and favicon into the wiki-list config. The
+	// folder window writes them to this.stateFile whenever they change ($:/SiteTitle /
+	// $:/SiteSubtitle / $:/favicon.ico); we watch that file and react immediately — no polling.
+	this.readStateFile();
 	try {
-		this.titleWatcher = fs.watch(this.titleFile,function() {
+		this.stateWatcher = fs.watch(this.stateFile,function() {
 			// fs.watch can fire several events per write; coalesce with a short debounce.
-			if(self.titleReadTimer) { clearTimeout(self.titleReadTimer); }
-			self.titleReadTimer = setTimeout(function() { self.readTitleFile(); },50);
+			if(self.stateReadTimer) { clearTimeout(self.stateReadTimer); }
+			self.stateReadTimer = setTimeout(function() { self.readStateFile(); },50);
 		});
-		this.titleWatcher.on("error",function() {});
+		this.stateWatcher.on("error",function() {});
 	} catch(e) {}
 };
 
-// Read the live-title file and, if it changed, push it to the wiki-list title config.
-WikiFolderWindow.prototype.readTitleFile = function() {
-	var title;
-	try { title = fs.readFileSync(this.titleFile,"utf8"); } catch(e) { return; }
-	if(title && title !== this.wikiTitle) {
-		this.wikiTitle = title;
+// Read the live-state file and push any changed title/favicon to the wiki-list config.
+WikiFolderWindow.prototype.readStateFile = function() {
+	var raw, state;
+	try { raw = fs.readFileSync(this.stateFile,"utf8"); } catch(e) { return; }
+	if(!raw) { return; }
+	try { state = JSON.parse(raw); } catch(e) { return; }
+	if(state.title && state.title !== this.wikiTitle) {
+		this.wikiTitle = state.title;
 		this.onTitleChange();
+	}
+	// Favicon is a {type, text} pair; only update when either side actually changes.
+	var favText = state.faviconText || "",
+		favType = state.faviconType || "";
+	if(favText && (favText !== this.wikiFavIconText || favType !== this.wikiFavIconType)) {
+		this.wikiFavIconText = favText;
+		this.wikiFavIconType = favType;
+		this.onFavIconChange();
 	}
 };
 
@@ -118,28 +128,28 @@ WikiFolderWindow.prototype.removeFromWikiListOnClose = function() {
 	$tw.desktop.windowList.openByUrl("backstage://Wiki Folder Warning");
 };
 
-// Get the wiki title (kept in sync from the live-title file by readTitleFile)
+// Get the wiki title (kept in sync from the live-state file by readStateFile)
 WikiFolderWindow.prototype.getWikiTitle = function() {
 	return this.wikiTitle || "";
 };
 
-// Extract the wiki favicon text
+// Get the wiki favicon text (kept in sync from the live-state file by readStateFile)
 WikiFolderWindow.prototype.getWikiFavIconText = function() {
-	return "";
+	return this.wikiFavIconText || "";
 };
 
-// Extract the wiki favicon type
+// Get the wiki favicon type (kept in sync from the live-state file by readStateFile)
 WikiFolderWindow.prototype.getWikiFavIconType = function() {
-	return "";
+	return this.wikiFavIconType || "";
 };
 
 // Close handler for window
 WikiFolderWindow.prototype.onclose = function(event) {
-	// Stop watching the live-title file
-	if(this.titleReadTimer) { clearTimeout(this.titleReadTimer); this.titleReadTimer = null; }
-	if(this.titleWatcher) {
-		try { this.titleWatcher.close(); } catch(e) {}
-		this.titleWatcher = null;
+	// Stop watching the live-state file
+	if(this.stateReadTimer) { clearTimeout(this.stateReadTimer); this.stateReadTimer = null; }
+	if(this.stateWatcher) {
+		try { this.stateWatcher.close(); } catch(e) {}
+		this.stateWatcher = null;
 	}
 	// Close the window, remove it from the window list
 	this.windowList.handleClose(this);
@@ -156,4 +166,4 @@ WikiFolderWindow.prototype.saveWikiListTiddler = function() {
 };
 
 exports.WikiFolderWindow = WikiFolderWindow;
-exports.titleFileFor = titleFileFor;
+exports.liveStateFileFor = liveStateFileFor;

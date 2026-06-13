@@ -241,6 +241,9 @@ WikiFileWindow.prototype.onloadiframe = function() {
 								_wsPool[id] = sock;
 								sock.on("open",    function()        { if(cw._nwjsWsEventQueue) cw._nwjsWsEventQueue.push({id: id, type: "open",    data: null}); });
 								sock.on("message", function(d, meta) { if(cw._nwjsWsEventQueue) cw._nwjsWsEventQueue.push({id: id, type: "message", data: (meta && meta.binary) ? d : d.toString("utf8")}); });
+								// Forward server pings so the iframe's transport has a liveness signal on
+								// an otherwise-idle room (ws auto-replies with a pong; we just observe).
+								sock.on("ping",    function()        { if(cw._nwjsWsEventQueue) cw._nwjsWsEventQueue.push({id: id, type: "ping",    data: null}); });
 								sock.on("close",   function()        { delete _wsPool[id]; if(cw._nwjsWsEventQueue) cw._nwjsWsEventQueue.push({id: id, type: "close",   data: null}); });
 								sock.on("error",   function(e)       { console.error("[ws-bridge] Error id=" + id + ":", e && e.message); if(cw._nwjsWsEventQueue) cw._nwjsWsEventQueue.push({id: id, type: "error",   data: e && e.message || ""}); });
 							} catch(e) {

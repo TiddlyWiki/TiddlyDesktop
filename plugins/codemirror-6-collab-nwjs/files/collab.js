@@ -1320,6 +1320,12 @@ function _connectTransport(engine, collab) {
 	// Helper: populate Y.Map from current draft fields (all non-hard-excluded)
 	state._populateYmapFromDraft = function() {
 		var tid = $tw.wiki.getTiddler(state.tiddlerTitle);
+		// On tm-save-tiddler, TW's navigator handles the message first (it bubbles up to
+		// our rootWidget handler), so by the time we flush, the draft has already been
+		// committed to the real tiddler and deleted. Fall back to the real tiddler so a
+		// tag/field typed-and-committed only at save time still reaches co-editing peers
+		// (without this fallback the flush silently no-ops and the change is lost to Yjs).
+		if(!tid) { tid = $tw.wiki.getTiddler(state.collabTitle); }
 		if(!tid) return;
 		var isBinary = _isBinaryTextField(tid.fields);
 		doc.transact(function() {

@@ -50,6 +50,10 @@ jobs:
     steps:
       - name: "💾 Checking out repository code..."
         uses: actions/checkout@v4
+      - name: "⬢ Setting up Node.js 24..."
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
       - name: "🔭 Looking up TiddlyDesktop version..."
         id: td-version
         run: |

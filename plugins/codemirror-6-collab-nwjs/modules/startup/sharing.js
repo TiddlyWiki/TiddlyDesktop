@@ -680,14 +680,20 @@ exports.startup = function() {
 	$tw.wiki.addEventListener("change", function(changes) {
 		Object.keys(changes).forEach(function(title) {
 			if(suppressEcho[title]) return;
-			// Owner deleted a tiddler they shared → unshare it: this drops it from
-			// the shared list and the persisted owned set (so it leaves future
-			// manifests) and broadcasts collab-unshare so peers remove it too.
-			// A rename moves the owned entry to the new title before this fires
-			// (via the th-renaming-tiddler hook), so this only matches genuine
-			// deletions of a still-owned tiddler.
-			if(changes[title].deleted && ownedTiddlers[title]) {
-				_unshareTiddler(title);
+			// Deletions NEVER propagate as deletions — a peer removing a tiddler must not
+			// delete it on anyone else. No inbound message type deletes a content tiddler
+			// (_applyRemote/asset writes only ever addTiddler), and locally:
+			//   - Owner deletes a tiddler they shared → unshare it: drops it from the shared
+			//     list and the persisted owned set (so it leaves future manifests) and
+			//     broadcasts collab-unshare, which only removes the entry on peers — their
+			//     copy of the tiddler is kept.
+			//   - Subscriber deletes their local copy → unsubscribe, so a later manifest or
+			//     reconnect catch-up doesn't silently re-fetch and resurrect it.
+			// A rename moves the owned/subscribed entry to the new title before this fires
+			// (via the th-renaming-tiddler hook), so this only matches genuine deletions.
+			if(changes[title].deleted) {
+				if(ownedTiddlers[title]) { _unshareTiddler(title); }
+				else if(subscribedTiddlers[title]) { _unsubscribeTiddler(title); }
 				return;
 			}
 			if(!ownedTiddlers[title] && !subscribedTiddlers[title]) return;

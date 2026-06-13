@@ -39,7 +39,7 @@ exports.maxAssetBytes = function() {
 // Store received assets as real files only when the External Attachments plugin is
 // installed AND enabled; otherwise embed them inline in the tiddler.
 exports.storeExternally = function() {
-	return !!$tw.wiki.getTiddler("$:/plugins/tiddlywiki/externalattachments")
+	return !!$tw.wiki.getTiddler("$:/plugins/tiddlywiki/external-attachments")
 		&& $tw.wiki.getTiddlerText(ENABLE, "no") === "yes";
 };
 

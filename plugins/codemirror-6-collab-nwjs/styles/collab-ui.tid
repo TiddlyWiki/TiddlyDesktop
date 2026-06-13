@@ -772,11 +772,21 @@ tags: $:/tags/Stylesheet
   margin: 0;
 }
 
+/* Block-mode transclusion also wraps the blank-line-separated inline content
+   *inside* the panels (e.g. the status bar's badges) in <p> elements that carry
+   the theme's 1em paragraph margins. The rule above only reaches the dock's direct
+   children, so zero these nested paragraphs too — they're layout glue here, not prose. */
+.tc-collab-dock p {
+  margin: 0;
+}
+
 /* Hide/show the whole dock. */
+/* The hidebar wrapper stays click-through; only its button captures events
+   (see .tc-collab-dock-hide/-show below), so the empty strip beside it doesn't
+   block the wiki content underneath. */
 .tc-collab-dock-hidebar {
   display: flex;
   justify-content: flex-end;
-  pointer-events: auto;
 }
 
 .tc-collab-dock-hide,
@@ -880,11 +890,12 @@ tags: $:/tags/Stylesheet
 
 /* -- Chat panel (bottom-right, above status bar) ---------------------------- */
 
+/* The wrap is click-through; only the toggle button and the open panel capture
+   pointer events, so the wrap's empty area never covers the content underneath. */
 .tc-collab-chat-wrap {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  pointer-events: auto;
 }
 
 .tc-collab-chat-toggle {
@@ -901,6 +912,7 @@ tags: $:/tags/Stylesheet
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .tc-collab-chat-toggle:hover {
@@ -924,6 +936,7 @@ tags: $:/tags/Stylesheet
   width: 300px;
   display: flex;
   flex-direction: column;
+  pointer-events: auto;
   background: <<colour tiddler-background>>;
   border-top: 1px solid <<colour tiddler-border>>;
   border-left: 1px solid <<colour tiddler-border>>;
@@ -1086,11 +1099,12 @@ tags: $:/tags/Stylesheet
 
 /* -- Get panel (shared tiddlers; sits directly above the Chat button) ------- */
 
+/* The wrap is click-through; only the toggle button and the open panel capture
+   pointer events, so the wrap's empty area never covers the content underneath. */
 .tc-collab-get-wrap {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  pointer-events: auto;
 }
 
 .tc-collab-get-toggle {
@@ -1107,6 +1121,7 @@ tags: $:/tags/Stylesheet
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .tc-collab-get-toggle:hover {
@@ -1130,6 +1145,7 @@ tags: $:/tags/Stylesheet
   width: 320px;
   display: flex;
   flex-direction: column;
+  pointer-events: auto;
   background: <<colour tiddler-background>>;
   border-top: 1px solid <<colour tiddler-border>>;
   border-left: 1px solid <<colour tiddler-border>>;
