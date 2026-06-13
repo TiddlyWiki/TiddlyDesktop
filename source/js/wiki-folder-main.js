@@ -83,3 +83,31 @@ try {
 } catch(e) {
 	console.error("[TiddlyDesktop] find bar install failed:",e);
 }
+
+// Mirror this wiki's title to the file the backstage watches, so the wiki-list label
+// tracks $:/SiteTitle / $:/SiteSubtitle live. TiddlyWiki keeps document.title in sync
+// with those tiddlers; we observe the <title> element and write it (in place, so the
+// backstage's fs.watch keeps its inode), debounced and de-duplicated so the burst of
+// title changes during boot doesn't thrash the file.
+(function() {
+	var titleFile = queryObject.titleFile,
+		doc = containerWindow.window.document;
+	if(!titleFile) { return; }
+	var lastWritten = null,
+		writeTimer = null;
+	function writeTitle() {
+		var title = doc.title || "";
+		if(title === lastWritten) { return; }
+		lastWritten = title;
+		try { fs.writeFileSync(titleFile,title,"utf8"); } catch(e) {}
+	}
+	function schedule() {
+		if(writeTimer) { clearTimeout(writeTimer); }
+		writeTimer = setTimeout(writeTitle,50);
+	}
+	var titleNode = doc.getElementsByTagName("title")[0];
+	if(titleNode && containerWindow.window.MutationObserver) {
+		new containerWindow.window.MutationObserver(schedule).observe(titleNode,{childList: true, characterData: true, subtree: true});
+	}
+	schedule();
+}());

@@ -11,6 +11,7 @@ var fs = require("fs"),
 
 var WikiFileWindow = require("./wiki-file-window.js").WikiFileWindow,
 	WikiFolderWindow = require("./wiki-folder-window.js").WikiFolderWindow,
+	folderTitleFileFor = require("./wiki-folder-window.js").titleFileFor,
 	BackstageWindow = require("./backstage-window.js").BackstageWindow;
 
 function WindowList(options) {
@@ -96,7 +97,106 @@ WindowList.prototype.open = function(WindowConstructor,info,options) {
 			mustQuitOnClose: options.mustQuitOnClose
 		});
 		this.windows.push(w);
+		// Seed the wiki-list label straight from disk so it shows immediately, without
+		// waiting for the wiki to boot. The window's live title extraction refines it
+		// afterwards (and matches this value, so there's no flicker).
+		this.seedTitleFromDisk(WindowConstructor,info);
 	}
+};
+
+// Read a wiki's title from disk at add-time and write it to the wiki-list title config,
+// unless we already have a label for this entry (e.g. from a previous session). Folder
+// wikis: read $:/SiteTitle / $:/SiteSubtitle tiddler files; single-file wikis: read the
+// saved <title>. Best-effort and fully guarded — any failure just leaves the boot-time
+// extraction to fill the label in.
+WindowList.prototype.seedTitleFromDisk = function(WindowConstructor,info) {
+	try {
+		var identifier = WindowConstructor.getIdentifierFromInfo(info);
+		if($tw.wiki.getTiddlerText("$:/TiddlyDesktop/Config/title/" + identifier,"")) { return; }
+		var type = (WindowConstructor === WikiFolderWindow) ? "folder" : (WindowConstructor === WikiFileWindow) ? "file" : null;
+		this.writeTitleConfig(identifier,this.readWikiTitleFromDisk(type,info.pathname));
+	} catch(e) {}
+};
+
+// Read a wiki's display title from disk for the given decoded type ("folder"/"file").
+WindowList.prototype.readWikiTitleFromDisk = function(type,pathname) {
+	if(type === "folder") { return this.readFolderWikiTitle(pathname); }
+	if(type === "file") { return this.readSingleFileWikiTitle(pathname); }
+	return null;
+};
+
+// Write the wiki-list title-config tiddler for an identifier, when we have a title.
+WindowList.prototype.writeTitleConfig = function(identifier,title) {
+	if(!title) { return; }
+	$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),{title: "$:/TiddlyDesktop/Config/title/" + identifier, text: title},$tw.wiki.getModificationFields()));
+};
+
+// Write the wiki-list favicon-config tiddler for an identifier (base64 text + mime
+// type), the same shape the live favicon extraction produces. No-op without data.
+WindowList.prototype.writeFaviconConfig = function(identifier,text,type) {
+	if(!text) { return; }
+	$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),{title: "$:/TiddlyDesktop/Config/favicon/" + identifier, text: text, type: type || "image/x-icon"},$tw.wiki.getModificationFields()));
+};
+
+// Build a folder wiki's window title the same way TiddlyWiki does ($:/core/wiki/title:
+// SiteTitle, then " — SiteSubtitle" when the subtitle is non-empty). Missing tiddler
+// files mean the wiki uses the core defaults, so we fall back to those.
+WindowList.prototype.readFolderWikiTitle = function(pathname) {
+	var tiddlersDir = path.resolve(pathname,"tiddlers"),
+		siteTitle = this.readTidFileText(path.resolve(tiddlersDir,"$__SiteTitle.tid"),"My TiddlyWiki"),
+		siteSubtitle = this.readTidFileText(path.resolve(tiddlersDir,"$__SiteSubtitle.tid"),"a non-linear personal web notebook");
+	if(!siteTitle) { return null; }
+	return (siteSubtitle && siteSubtitle.trim().length >= 1) ? (siteTitle + " — " + siteSubtitle) : siteTitle;
+};
+
+// Read the text field of a .tid file (the body after the blank line that separates the
+// header fields from the text). Returns defaultValue if the file can't be read.
+WindowList.prototype.readTidFileText = function(filepath,defaultValue) {
+	var content;
+	try {
+		content = fs.readFileSync(filepath,"utf8");
+	} catch(e) {
+		return defaultValue;
+	}
+	content = content.replace(/\r\n/g,"\n");
+	var idx = content.indexOf("\n\n");
+	return idx === -1 ? "" : content.slice(idx + 2).replace(/\n+$/,"");
+};
+
+// Extract a single-file wiki's title from its saved <title> element. The element lives
+// in <head> at the very top of the file, so we only read the first 64KB rather than the
+// whole (potentially huge) wiki. TiddlyWiki writes <title>{{$:/core/wiki/title}}</title>
+// at save time, so this is exactly the value the iframe later reports.
+WindowList.prototype.readSingleFileWikiTitle = function(pathname) {
+	var fd,
+		bytes = 0,
+		buf = Buffer.alloc(65536);
+	try {
+		fd = fs.openSync(pathname,"r");
+		bytes = fs.readSync(fd,buf,0,buf.length,0);
+	} catch(e) {
+		if(fd !== undefined) { try { fs.closeSync(fd); } catch(e2) {} }
+		return null;
+	}
+	try { fs.closeSync(fd); } catch(e) {}
+	var m = /<title[^>]*>([\s\S]*?)<\/title>/i.exec(buf.toString("utf8",0,bytes));
+	if(!m) { return null; }
+	return this.decodeHtmlEntities(m[1]).trim() || null;
+};
+
+// Minimal HTML entity decode for titles read out of a saved wiki's <title> element.
+WindowList.prototype.decodeHtmlEntities = function(s) {
+	return s
+		.replace(/&#x([0-9a-fA-F]+);/g,function(_,h) { return String.fromCodePoint(parseInt(h,16)); })
+		.replace(/&#(\d+);/g,function(_,d) { return String.fromCodePoint(parseInt(d,10)); })
+		.replace(/&mdash;/g,"—")
+		.replace(/&ndash;/g,"–")
+		.replace(/&nbsp;/g," ")
+		.replace(/&quot;/g,'"')
+		.replace(/&apos;/g,"'")
+		.replace(/&lt;/g,"<")
+		.replace(/&gt;/g,">")
+		.replace(/&amp;/g,"&");
 };
 
 WindowList.prototype.find = function(WindowConstructor,info) {
@@ -111,21 +211,41 @@ WindowList.prototype.find = function(WindowConstructor,info) {
 };
 
 WindowList.prototype.removeByUrl = function(url) {
-	// Find the window corresponding to this url
+	// Find the open window for this url, if any.
 	var decodedUrl = this.decodeUrl(url),
-		w = this.find(decodedUrl.WindowConstructor,decodedUrl.info);
+		w = decodedUrl.WindowConstructor && this.find(decodedUrl.WindowConstructor,decodedUrl.info);
 	if(w) {
-		// Close the window and remove it from the list
+		// Close the window and remove it from the list on close.
 		w.removeFromWikiListOnClose();
 		w.window_nwjs.close();
 	} else {
-		this.removeByInfo(decodedUrl.WindowConstructor,decodedUrl.info);
+		// No open window. The wiki-list entry's tiddler is titled by this url (it is
+		// the row's currentTiddler), so delete it directly. This is robust for URL
+		// wikis (http/https) and any malformed entry, whose scheme decodeUrl can't map
+		// to a window constructor — previously removeByInfo() dereferenced a null
+		// constructor and threw, leaving the entry unremovable.
+		$tw.wiki.deleteTiddler(url);
+		this.cleanupRemovedWiki(url);
 	}
+};
+
+// Remove the per-wiki artifacts tied to a wiki-list entry that's being deleted: the
+// cached title/favicon config tiddlers, and (for folder wikis) the live-title file the
+// folder window writes to. Safe for any entry type — single-file/URL wikis simply have
+// no title file, and a missing path is ignored.
+WindowList.prototype.cleanupRemovedWiki = function(identifier) {
+	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/title/" + identifier);
+	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/favicon/" + identifier);
+	try {
+		var titleFile = folderTitleFileFor(identifier);
+		if(fs.existsSync(titleFile)) { fs.unlinkSync(titleFile); }
+	} catch(e) {}
 };
 
 WindowList.prototype.removeByInfo = function(WindowConstructor,info) {
 	var wikiListTiddlerTitle = WindowConstructor.getIdentifierFromInfo(info);
 	$tw.wiki.deleteTiddler(wikiListTiddlerTitle);
+	this.cleanupRemovedWiki(wikiListTiddlerTitle);
 };
 
 WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
@@ -133,6 +253,7 @@ WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
 	if(removeFromWikiListOnClose) {
 		var wikiListTiddlerTitle = w.getIdentifier();
 		$tw.wiki.deleteTiddler(wikiListTiddlerTitle);
+		this.cleanupRemovedWiki(wikiListTiddlerTitle);
 	}
 	// Remove the window from the list
 	for(var t=this.windows.length-1; t>=0; t--) {
@@ -300,6 +421,22 @@ WindowList.prototype.convertWiki = function(sourceUrl, destPath, callback) {
 			// Register the converted wiki in the list by opening it (same path that
 			// creating/cloning uses). The original wiki is left untouched.
 			var newUrl = isFolder ? "wikifile://" + destPath : "wikifolder://" + destPath;
+			// Carry the wiki's title across the conversion. We read $:/SiteTitle /
+			// $:/SiteSubtitle from the (still-present) source — single-file via its
+			// <title>, folder via its tiddler files — and seed the new entry's label
+			// up-front, so the converted wiki shows its real title immediately and
+			// independently of how the conversion laid the output out on disk. This gives
+			// both directions (single->folder and folder->single) the same guarantee.
+			try { self.writeTitleConfig(newUrl,self.readWikiTitleFromDisk(decodedSource.type,sourcePath)); } catch(_e) {}
+			// Carry the favicon too. We read $:/favicon.ico from the just-loaded conversion
+			// instance, which holds it as a clean tiddler (base64 text + mime type) for
+			// both source forms — folders store it as a binary file + .meta, single-files
+			// embed it in the store area, but convTw normalises both. This matters most for
+			// folder destinations, whose windows don't extract a favicon live.
+			try {
+				var faviconTiddler = convTw && convTw.wiki && convTw.wiki.getTiddler("$:/favicon.ico");
+				if(faviconTiddler) { self.writeFaviconConfig(newUrl,faviconTiddler.fields.text,faviconTiddler.fields.type); }
+			} catch(_e) {}
 			console.log("[TiddlyDesktop] convertWiki: opening converted wiki",newUrl);
 			self.openByUrl(newUrl);
 			callback(null);
@@ -310,12 +447,22 @@ WindowList.prototype.convertWiki = function(sourceUrl, destPath, callback) {
 
 	var convTw;
 	try {
-		convTw = require(bootPath).TiddlyWiki();
+		// Build an isolated boot seed (NOT the desktop's own $tw) and set the
+		// conversion args BEFORE TiddlyWiki(). In NW.js both $tw.browser and $tw.node
+		// are set, so readBrowserTiddlers is false and the NODE boot path runs *during*
+		// the TiddlyWiki() call — it reads $tw.boot.argv.length, which throws
+		// "Cannot read properties of undefined (reading 'length')" unless argv already
+		// exists. suppressBoot stops the browser auto-boot so we drive boot() ourselves
+		// (below) for a completion callback; TiddlyWiki() then parses argv in place.
+		convTw = require(path.resolve($tw.boot.bootPath,"bootprefix.js")).bootprefix();
+		convTw.boot = convTw.boot || {};
+		convTw.boot.suppressBoot = true;
+		convTw.boot.argv = args;
+		require(bootPath).TiddlyWiki(convTw);
 	} catch(e) {
 		finish(new Error("Could not initialise TiddlyWiki for conversion: " + e.message));
 		return;
 	}
-	convTw.boot.argv = args;
 
 	// TiddlyWiki calls process.exit() on a fatal command error. Trap it so a failed
 	// conversion reports back instead of taking down the whole desktop app. Restored

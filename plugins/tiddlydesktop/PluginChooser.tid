@@ -13,7 +13,7 @@ title: $:/TiddlyDesktop/PluginChooser
 <div class="td-plugin-wiki-url">
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[file]]" variable="_">{{$:/core/images/file}}</$list>
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[folder]]" variable="_">{{$:/core/images/folder}}</$list>
-<code><$text text={{{ [{$:/temp/TiddlyDesktop/PluginChooser/target}text[]] }}}/></code>
+<code><$text text={{{ [[$:/temp/TiddlyDesktop/PluginChooser/target]get[text]] }}}/></code>
 </div>
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-open[yes]]" variable="_">
 <div class="td-plugin-open-warning">⚠ This wiki is currently open. Close its window first, then click Apply.</div>
@@ -25,7 +25,7 @@ title: $:/TiddlyDesktop/PluginChooser
 </$list>
 </div>
 <div class="td-plugin-list">
-<$let searchText={{{ [{$:/temp/TiddlyDesktop/PluginChooser/search}text[]] }}}>
+<$let searchText={{{ [[$:/temp/TiddlyDesktop/PluginChooser/search]get[text]] }}}>
 <$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]search:plugin-title,description<searchText>sort[plugin-title]]">
 <div class="td-plugin-row">
 <$let pluginTitle={{{ [<currentTiddler>get[plugin-title]] }}}>
@@ -45,7 +45,7 @@ title: $:/TiddlyDesktop/PluginChooser
 </$let>
 </div>
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/status]!field:text[]]" variable="_">
-<div class="td-plugin-status"><$text text={{{ [{$:/temp/TiddlyDesktop/PluginChooser/status}text[]] }}}/></div>
+<div class="td-plugin-status"><$text text={{{ [[$:/temp/TiddlyDesktop/PluginChooser/status]get[text]] }}}/></div>
 </$list>
 <div class="td-plugin-actions">
 <$button message="tiddlydesktop-apply-plugin-changes" class="tc-btn-invisible td-button td-plugin-btn-apply">Apply Changes</$button>
