@@ -136,7 +136,10 @@ var _lastCollabCompartment = null;
 // Fields excluded from Y.Map sync (handled separately or immutable)
 var _YMAP_EXCLUDED_FIELDS = {
 	"title": true, "created": true, "modified": true, "modifier": true,
-	"creator": true, "draft.of": true, "revision": true, "bag": true
+	"creator": true, "draft.of": true, "revision": true, "bag": true,
+	// _canonical_uri is a per-machine external reference (local-file read / SSRF on the
+	// viewer); it must never travel through the shared doc. Excluded from BOTH directions.
+	"_canonical_uri": true
 };
 
 // Check if a field is hard-excluded from Y.Map sync (immutable/internal fields).
@@ -1217,6 +1220,9 @@ function _connectTransport(engine, collab) {
 		// would make it executable (or a disallowed system tiddler). Without this,
 		// a co-editing peer could add module-type / a $:/tags/RawMarkup tag / change
 		// the type and get code to run with our (Node) privileges.
+		// A co-editing peer must not be able to plant a _canonical_uri via the live field
+		// sync (local-file read / SSRF on render); strip it before it touches our tiddler.
+		if(collabSafety && collabSafety.sanitizeIncomingFields) { collabSafety.sanitizeIncomingFields(changedFields); }
 		var newTid = new $tw.Tiddler(tid, changedFields, {modified: tid.fields.modified});
 		if(collabSafety && !collabSafety.acceptTiddler(state.collabTitle, newTid.fields)) {
 			_clog("[Collab] refused remote field change for " + state.collabTitle + " (executable or disallowed system tiddler)");

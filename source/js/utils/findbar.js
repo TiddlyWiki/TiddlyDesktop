@@ -109,6 +109,20 @@ exports.installFindBar = function(options) {
 	function scrollToCurrent() {
 		var r = allRanges[curIndex];
 		if(!r) { return; }
+		var w = cwin();
+		try {
+			// Scroll the content window so the MATCH ITSELF is centred, computed from the
+			// range's own rect. The old behaviour scrolled the match's parent element into
+			// view — for a huge container like <pre><code> that jumps to the middle of the
+			// block (the wrong place) and reflowing the whole element is what froze the UI.
+			var rect = r.getBoundingClientRect();
+			if(w && rect && (rect.height || rect.width || rect.top || rect.left)) {
+				var targetY = (w.scrollY || w.pageYOffset || 0) + rect.top - (w.innerHeight / 2) + (rect.height / 2);
+				w.scrollTo(w.scrollX || w.pageXOffset || 0, targetY > 0 ? targetY : 0);
+				return;
+			}
+		} catch(e) {}
+		// Fallback only when the range has no layout box (e.g. zero-size/hidden).
 		try {
 			var el = r.startContainer.parentElement || r.startContainer.parentNode;
 			if(el && el.scrollIntoView) { el.scrollIntoView({block: "center", inline: "nearest"}); }
@@ -226,6 +240,7 @@ exports.installFindBar = function(options) {
 
 	function close() {
 		panel.setAttribute("hidden", "");
+		if(searchDebounce) { clearTimeout(searchDebounce); searchDebounce = null; }
 		stopObserving();
 		clearHighlights();
 		renderCount();
@@ -233,7 +248,14 @@ exports.installFindBar = function(options) {
 	}
 
 	// ── events ──
-	input.addEventListener("input", function() { search(input.value); });
+	// Debounce the per-keystroke scan: on a long page (e.g. a big <pre><code>) walking
+	// the DOM and lower-casing huge text nodes on every keystroke causes visible stalls.
+	var searchDebounce = null;
+	input.addEventListener("input", function() {
+		var v = input.value;
+		if(searchDebounce) { clearTimeout(searchDebounce); }
+		searchDebounce = setTimeout(function() { searchDebounce = null; search(v); }, 120);
+	});
 	input.addEventListener("keydown", function(e) {
 		if(e.key === "Escape") { e.preventDefault(); close(); }
 		else if(e.key === "Enter") { e.preventDefault(); if(allRanges.length) { setCurrent(curIndex + (e.shiftKey ? -1 : 1)); } }

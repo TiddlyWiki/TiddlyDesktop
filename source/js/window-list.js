@@ -138,16 +138,19 @@ WindowList.prototype.writeFaviconConfig = function(identifier,text,type) {
 	$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),{title: "$:/TiddlyDesktop/Config/favicon/" + identifier, text: text, type: type || "image/x-icon"},$tw.wiki.getModificationFields()));
 };
 
-// Ensure a folder wiki's tiddlywiki.info declares the node-only plugins needed for
-// server-side saving. Adds tiddlywiki/filesystem and tiddlywiki/server if missing,
-// preserving any other plugins/fields. No-op if the info file can't be read.
-WindowList.prototype.ensureFolderWikiServerPlugins = function(folderPath) {
+// Ensure a folder wiki's tiddlywiki.info declares the plugins a server wiki needs to
+// save: tiddlywiki/filesystem (server-side persistence) and tiddlywiki/tiddlyweb (the
+// HTTP sync API + client syncadaptor) — the same set the stock server edition ships.
+// Added if missing, preserving any other plugins/fields. No-op if the info file can't
+// be read. Call this everywhere a folder wiki is created or converted into.
+WindowList.FOLDER_WIKI_PLUGINS = ["tiddlywiki/filesystem","tiddlywiki/tiddlyweb"];
+WindowList.prototype.ensureFolderWikiPlugins = function(folderPath) {
 	var infoPath = path.resolve(folderPath,"tiddlywiki.info"),
 		info;
 	try { info = JSON.parse(fs.readFileSync(infoPath,"utf8")); } catch(e) { return; }
 	if(!Array.isArray(info.plugins)) { info.plugins = []; }
 	var changed = false;
-	["tiddlywiki/filesystem","tiddlywiki/server"].forEach(function(name) {
+	WindowList.FOLDER_WIKI_PLUGINS.forEach(function(name) {
 		if(info.plugins.indexOf(name) === -1) { info.plugins.push(name); changed = true; }
 	});
 	if(changed) {
@@ -232,9 +235,20 @@ WindowList.prototype.removeByUrl = function(url) {
 	var decodedUrl = this.decodeUrl(url),
 		w = decodedUrl.WindowConstructor && this.find(decodedUrl.WindowConstructor,decodedUrl.info);
 	if(w) {
-		// Close the window and remove it from the list on close.
+		// Mark for removal, then close the window first — exactly like single-file wikis.
 		w.removeFromWikiListOnClose();
-		w.window_nwjs.close();
+		if(w instanceof WikiFolderWindow) {
+			// A folder wiki runs in its own process (new_instance), so closing its window
+			// doesn't fire a close event back to the backstage — which is why these used to
+			// stay in the list once opened. Run its close handler ourselves: it tears down
+			// the live-state watcher, then handleClose closes the window and removes the
+			// wiki-list entry (the same end result as a single-file wiki's own close event).
+			w.onclose();
+		} else {
+			// Single-file: closing fires the window's own close handler, which honours the
+			// remove-on-close flag (and may still prompt via onbeforeunload).
+			w.window_nwjs.close();
+		}
 	} else {
 		// No open window. The wiki-list entry's tiddler is titled by this url (it is
 		// the row's currentTiddler), so delete it directly. This is robust for URL
@@ -253,6 +267,7 @@ WindowList.prototype.removeByUrl = function(url) {
 WindowList.prototype.cleanupRemovedWiki = function(identifier) {
 	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/title/" + identifier);
 	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/favicon/" + identifier);
+	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/geometry/" + identifier);
 	try {
 		var stateFile = folderLiveStateFileFor(identifier);
 		if(fs.existsSync(stateFile)) { fs.unlinkSync(stateFile); }
@@ -266,6 +281,11 @@ WindowList.prototype.removeByInfo = function(WindowConstructor,info) {
 };
 
 WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
+	// Idempotent: a folder wiki's removal runs this directly (its window's close event
+	// never reaches the backstage), while single-file wikis run it from their own close
+	// handler — so guard against handling the same window twice.
+	if(w._closeHandled) { return; }
+	w._closeHandled = true;
 	// Remove from the wiki list if required
 	if(removeFromWikiListOnClose) {
 		var wikiListTiddlerTitle = w.getIdentifier();
@@ -317,12 +337,20 @@ WindowList.prototype.cloneToPath = function(source,dest) {
 	if(decodedSource.type === "folder") {
 		this.cloneFolderToPath(decodedSource.info.pathname,dest);
 	} else if(decodedSource.type === "file") {
-		this.cloneFileToPath(decodedSource.info.pathname,dest);
+		this.cloneFileToPath(decodedSource.info.pathname,this.ensureWikiFileExtension(dest));
 	} else if(decodedSource.type === "http" || decodedSource.type === "https") {
-		this.cloneWebToPath(decodedSource.info.url,dest);
+		this.cloneWebToPath(decodedSource.info.url,this.ensureWikiFileExtension(dest));
 	} else {
 		console.log("Cannot clone",source,dest);
 	}
+};
+
+// A single-file wiki must be saved with a .html / .htm extension; without one it is
+// written as an unrecognised file that opens to an unresponsive window. If the chosen
+// path doesn't already end in .html or .htm, append .html (this also covers a name with
+// some other extension, which TiddlyDesktop can't open as a wiki either).
+WindowList.prototype.ensureWikiFileExtension = function(dest) {
+	return (/\.html?$/i).test(String(dest)) ? dest : dest + ".html";
 };
 
 /*
@@ -332,6 +360,9 @@ dest: path of destination folder
 */
 WindowList.prototype.cloneFolderToPath = function(source,dest) {
 	$tw.utils.copyDirectory(source,dest);
+	// The clone is a folder wiki — make sure it can save even if the source's info was
+	// incomplete.
+	try { this.ensureFolderWikiPlugins(dest); } catch(e) {}
 	$tw.desktop.windowList.openByUrl("wikifolder://" + dest);
 };
 
@@ -379,7 +410,7 @@ WindowList.prototype.createWikiFolderAtPath = function(dest) {
 		path.join(dest,"tiddlywiki.info"),
 		JSON.stringify({
 			"description": "New TiddlyWiki",
-			"plugins": ["tiddlywiki/filesystem","tiddlywiki/server"],
+			"plugins": WindowList.FOLDER_WIKI_PLUGINS.slice(),
 			"themes": ["tiddlywiki/vanilla","tiddlywiki/snowwhite"]
 		},null,4),
 		"utf8"
@@ -400,10 +431,18 @@ WindowList.prototype.convertWiki = function(sourceUrl, destPath, callback) {
 	var sourcePath = decodedSource.info.pathname;
 	var isFolder   = decodedSource.type === "folder";
 
+	// folder -> single-file: the output is a wiki file, so it needs a .html/.htm extension.
+	if(isFolder) { destPath = this.ensureWikiFileExtension(destPath); }
+
 	var args;
 	if(isFolder) {
-		// folder wiki -> single-file wiki
-		args = [sourcePath, "--rendertiddler", "$:/core/save/all", destPath, "text/plain"];
+		// folder wiki -> single-file wiki. Strip the server-only plugins first: a
+		// single-file wiki has no server, and tiddlywiki/tiddlyweb's client syncadaptor
+		// would otherwise activate and try to sync to a server that isn't there. (server
+		// is included for folder wikis created by older builds.)
+		args = [sourcePath,
+			"--deletetiddlers", "[[$:/plugins/tiddlywiki/filesystem]] [[$:/plugins/tiddlywiki/tiddlyweb]] [[$:/plugins/tiddlywiki/server]]",
+			"--rendertiddler", "$:/core/save/all", destPath, "text/plain"];
 	} else {
 		// single-file wiki -> folder wiki
 		args = ["--load", sourcePath, "--savewikifolder", destPath];
@@ -454,12 +493,12 @@ WindowList.prototype.convertWiki = function(sourceUrl, destPath, callback) {
 				var faviconTiddler = convTw && convTw.wiki && convTw.wiki.getTiddler("$:/favicon.ico");
 				if(faviconTiddler) { self.writeFaviconConfig(newUrl,faviconTiddler.fields.text,faviconTiddler.fields.type); }
 			} catch(_e) {}
-			// When converting TO a folder, the (browser) single-file source has no node-only
+			// When converting TO a folder, the (browser) single-file source has no server
 			// plugins, so savewikifolder's generated tiddlywiki.info lacks tiddlywiki/filesystem
-			// and tiddlywiki/server — without which the folder wiki can't run its server or
+			// and tiddlywiki/tiddlyweb — without which the folder wiki can't run its server or
 			// save to disk. Add them so the converted folder is immediately usable.
 			if(!isFolder) {
-				try { self.ensureFolderWikiServerPlugins(destPath); } catch(_e) {}
+				try { self.ensureFolderWikiPlugins(destPath); } catch(_e) {}
 			}
 			console.log("[TiddlyDesktop] convertWiki: opening converted wiki",newUrl);
 			self.openByUrl(newUrl);

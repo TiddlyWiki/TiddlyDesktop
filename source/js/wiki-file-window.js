@@ -19,14 +19,15 @@ function WikiFileWindow(options) {
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	// Open the window
 	console.log("Opening window with id",this.getIdentifier());
-	$tw.desktop.gui.Window.open("html/wiki-file-window.html",{
+	$tw.desktop.gui.Window.open("html/wiki-file-window.html",this.applyGeometryToOpenOptions({
 		id: hash.simpleHash(this.getIdentifier()),
 		show: true,
 		icon: "images/app-icon256.png"
-	},function(win) {
+	}),function(win) {
 		self.window_nwjs = win;
 		self.window_nwjs.once("loaded",self.onloaded.bind(self));
 		self.window_nwjs.on("close",self.onclose.bind(self));
+		self.trackGeometry();
 	});
 }
 
@@ -114,6 +115,32 @@ WikiFileWindow.prototype.onloadiframe = function() {
 		});
 	} catch(e) {
 		console.error("[TiddlyDesktop] find bar install failed:",e);
+	}
+	// Fullscreen: F11 and the fullscreen page-control button toggle the native window.
+	// The wiki's tm-full-screen uses the HTML5 document API, which is blocked in this
+	// nwdisable iframe (no allowfullscreen); reroute it to the native window instead.
+	try {
+		require("./utils/fullscreen.js").install(
+			this.window_nwjs,
+			this.iframe.contentDocument,
+			function() {
+				var cw = self.iframe && self.iframe.contentWindow;
+				return cw && cw.$tw && cw.$tw.rootWidget;
+			}
+		);
+	} catch(e) {
+		console.error("[TiddlyDesktop] fullscreen install failed:",e);
+	}
+	// Page zoom: shortcuts bound on both the outer window and the iframe, with the reset
+	// control living in the outer window (outside the wiki content, like the find bar).
+	try {
+		require("./utils/zoom.js").install(
+			this.window_nwjs,
+			this.window_nwjs.window.document,
+			this.iframe.contentDocument
+		);
+	} catch(e) {
+		console.error("[TiddlyDesktop] zoom install failed:",e);
 	}
 	// Observe mutations of the title element of the iframe
 	this.titleObserver = new MutationObserver(this.extractIframeTitle.bind(this));
@@ -384,19 +411,22 @@ WikiFileWindow.prototype.getWikiTitle = function() {
 
 // Extract the iframe favicon
 WikiFileWindow.prototype.extractIframeFavicon = function() {
-	var faviconLink = this.iframe.contentDocument.getElementById("faviconLink");
-	if(faviconLink) {
+	var faviconLink = this.iframe.contentDocument.getElementById("faviconLink"),
+		href = faviconLink && faviconLink.getAttribute("href");
+	// Only a real data: URI is a favicon. A wiki with no $:/favicon.ico leaves the link at
+	// its static "favicon.ico" placeholder; writing that as the favicon config left a
+	// broken thumbnail in the wiki list instead of the missing-favicon placeholder. Clear
+	// it so the list falls back to the placeholder, like folder wikis already do.
+	if(href && href.indexOf("data:") === 0) {
 		// data URIs look like "data:<type>;base64,<text>"
-		var faviconDataUri = faviconLink.getAttribute("href"),
-			posColon = faviconDataUri.indexOf(":"),
-			posSemiColon = faviconDataUri.indexOf(";"),
-			posComma = faviconDataUri.indexOf(",");
-		this.wikiFavIconType = faviconDataUri.substring(posColon+1,posSemiColon),
-		this.wikiFavIconText = faviconDataUri.substring(posComma+1);
-		this.onFavIconChange();	
+		var posColon = href.indexOf(":"),
+			posSemiColon = href.indexOf(";"),
+			posComma = href.indexOf(",");
+		this.wikiFavIconType = href.substring(posColon+1,posSemiColon);
+		this.wikiFavIconText = href.substring(posComma+1);
+		this.onFavIconChange();
 	} else {
-		this.wikiFavIconText = "";
-		this.wikiFavIconType = "";
+		this.clearFavIcon();
 	}
 };
 

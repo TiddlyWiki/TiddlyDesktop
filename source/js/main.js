@@ -107,6 +107,13 @@ var backstageWikiFolder = $tw.desktop.utils.wiki.getBackstageWikiFolder(gui.App.
 // Show dev tools on F12
 $tw.desktop.utils.devtools.trapDevTools(backstageWindow,document);
 
+// Fullscreen on F11 (and the fullscreen button, should the UI gain one) for this window
+try {
+	require("./utils/fullscreen.js").install(backstageWindow,document,function() { return $tw.rootWidget; });
+} catch(e) {
+	console.error("[TiddlyDesktop] fullscreen install failed:",e);
+}
+
 
 // First part of boot process
 var _sjcl = require("../tiddlywiki/boot/sjcl.js");

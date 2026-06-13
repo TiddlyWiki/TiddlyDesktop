@@ -111,6 +111,24 @@ exports.isProtectedTitle = function(title) {
 	return false;
 };
 
+// Fields a peer must never set on OUR copy of a tiddler, even when everything else is
+// harmless. _canonical_uri is a URL/path resolved on the machine that RENDERS it, so a
+// peer-supplied one becomes a local-file read (file://, amplified by the app's
+// --allow-file-access flags) or an outbound request (http:// → SSRF / IP-leak / tracking)
+// on every viewer. The ONLY legitimate _canonical_uri is one WE set locally through the
+// explicit Get-attachment flow, after choosing the path ourselves — so it must never
+// arrive over sync. Mutates (strips) and returns the fields object. Every inbound write
+// path must run its fields through this:
+//   - sharing.js  _applyRemote()  and  _finalizeAsset()
+//   - collab.js   Y.Map field-sync observer
+var STRIP_INBOUND_FIELDS = ["_canonical_uri"];
+exports.sanitizeIncomingFields = function(fields) {
+	if(fields) {
+		STRIP_INBOUND_FIELDS.forEach(function(f) { delete fields[f]; });
+	}
+	return fields;
+};
+
 // True if a remote tiddler with these RESULTING fields may be written locally.
 exports.acceptTiddler = function(title, fields) {
 	if(exports.isExecutable(fields)) { return false; }

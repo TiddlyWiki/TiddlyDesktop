@@ -3,7 +3,7 @@ tags: toolbar
 
 \whitespace trim
 \define browse-button-file()
-<$browse message="tiddlydesktop-clone-wiki" accept=".html" nwsaveas="index" param=<<__param__>>/>
+<$browse message="tiddlydesktop-clone-wiki" accept=".html,.htm" nwsaveas="index.html" param=<<__param__>>/>
 \end
 
 \define browse-button-folder()

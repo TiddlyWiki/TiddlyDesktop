@@ -155,9 +155,14 @@ exports.startup = function() {
 	}
 
 	// Serialise tiddler fields for wire transmission (Date → ISO string).
+	// _canonical_uri is never transmitted: it is a per-machine external reference with no
+	// meaning on another peer, and sending it would let a viewer be pointed at a local
+	// file (file://) or an outbound URL (http:// → SSRF). The asset bytes travel through
+	// the explicit Get-attachment flow instead; receivers set their own _canonical_uri.
 	function _serialise(tiddler) {
 		var out = {};
 		Object.keys(tiddler.fields).forEach(function(f) {
+			if(f === "_canonical_uri") { return; }
 			var v = tiddler.fields[f];
 			out[f] = (v instanceof Date) ? v.toISOString() : v;
 		});
@@ -271,6 +276,9 @@ exports.startup = function() {
 			console.warn("[collab-sharing] refused remote tiddler (executable or disallowed system tiddler):", title);
 			return;
 		}
+		// Never let a peer plant a _canonical_uri on our copy (local-file read / SSRF on
+		// render). A legitimate attachment arrives only via the Get-attachment flow.
+		_safety.sanitizeIncomingFields(fields);
 		suppressEcho[title] = true;
 		try {
 			$tw.wiki.addTiddler(new $tw.Tiddler(fields));
@@ -535,9 +543,70 @@ exports.startup = function() {
 		_send({type: "collab-get-asset", requesterDeviceId: deviceId, title: title, requestId: requestId});
 	}
 
+	// ── owner consent gate ──────────────────────────────────────────────────────
+	// No file ever leaves this machine without the user's explicit OK. A collab-get-asset
+	// request does NOT serve immediately: it raises a prompt (the AssetRequestPrompt
+	// overlay) showing who is asking, which tiddler, and the exact local file path that
+	// would be sent. Allow → _doServeAsset streams it; Deny or timeout → declined.
+	var pendingServes   = {};        // requestId → {title, requesterId, timer}
+	var SERVE_CONSENT_MS = 120000;
+
+	function _requestAssetConsent(title, requesterId, requestId) {
+		if(!requesterId || requesterId === deviceId || !requestId) { return; }
+		if(!ownedTiddlers[title]) { return; }          // only the owner holds the original
+		var t = $tw.wiki.getTiddler(title);
+		if(!t) { return; }
+		var info = _assetInfo(title);
+		if(!info) { return; }
+		if(!_isMemberPresent(requesterId)) { return; } // must be a present (verified) member
+		if(pendingServes[requestId]) { return; }       // ignore duplicate request ids
+		var member = $tw.wiki.getTiddler("$:/temp/collab/members/" + requesterId);
+		var requesterName = (member && (member.fields["user-name"] || member.fields["device-name"])) || requesterId;
+		var uri = t.fields._canonical_uri;
+		var pathLabel = (uri && assetUtil.isLocalCanonicalUri(uri))
+			? assetUtil.resolveCanonical(uri)
+			: ("(embedded image in tiddler — " + info.name + ")");
+		var timer = setTimeout(function() { _denyAsset(requestId, true); }, SERVE_CONSENT_MS);
+		pendingServes[requestId] = {title: title, requesterId: requesterId, timer: timer};
+		$tw.wiki.addTiddler(new $tw.Tiddler({
+			title:            "$:/temp/collab/asset-request/" + requestId,
+			"request-id":     requestId,
+			"requester-id":   requesterId,
+			"requester-name": requesterName,
+			"tiddler-title":  title,
+			"asset-name":     info.name,
+			"asset-path":     pathLabel
+		}));
+	}
+
+	function _clearServeRequest(requestId) {
+		var pend = pendingServes[requestId];
+		if(pend && pend.timer) { clearTimeout(pend.timer); }
+		delete pendingServes[requestId];
+		$tw.wiki.deleteTiddler("$:/temp/collab/asset-request/" + requestId);
+	}
+
+	function _denyAsset(requestId, timedOut) {
+		var pend = pendingServes[requestId];
+		if(!pend) { return; }
+		var requesterId = pend.requesterId;
+		_clearServeRequest(requestId);
+		_sendPrivate(requesterId, {type: "collab-asset-error", requestId: requestId,
+			message: timedOut ? "The owner did not respond to the attachment request" : "The owner declined the attachment request"});
+	}
+
+	function _doServeAsset(requestId) {
+		var pend = pendingServes[requestId];
+		if(!pend) { return; }
+		var title = pend.title, requesterId = pend.requesterId;
+		_clearServeRequest(requestId);
+		_serveAsset(title, requesterId, requestId);    // the user approved — stream it
+	}
+
 	// Owner: stream the asset bytes pairwise to the requester (metadata + chunks).
 	// Bytes come from the file (local _canonical_uri) or straight from the base64
 	// text (embedded binary tiddler) — either way the receiver decides how to store.
+	// Only ever reached after explicit user consent (_doServeAsset).
 	function _serveAsset(title, requesterId, requestId) {
 		if(!requesterId || requesterId === deviceId) return;
 		if(!ownedTiddlers[title]) return;            // only the owner holds the original
@@ -591,8 +660,45 @@ exports.startup = function() {
 
 	// Getter: all chunks in → save to disk (external) or embed (inline), then write
 	// the tiddler. Runs through the same safety guard as any other remote write.
+	// Receiver-side inspection gate. When all bytes are in we DON'T write yet: we raise a
+	// prompt (the AssetRequestPrompt overlay) showing exactly what arrived — tiddler title,
+	// file name, type, size, where it will land (a disk path or inline), and which extra
+	// fields the sender attached — so the user can reject anything unexpected before it
+	// touches their wiki or disk. Accept → _finalizeAsset; Reject / timeout → _discardIncoming.
+	var RECV_CONSENT_MS = 120000;
+
+	function _raiseIncomingPrompt(requestId) {
+		var inc = incomingAssets[requestId], pending = pendingAssetGets[requestId];
+		if(!inc || !pending) { return; }
+		var meta = inc.meta || {};
+		var willStore = !!(pending.dest && assetUtil.storeExternally());
+		var fieldNames = Object.keys(meta.fields || {})
+			.filter(function(f) { return f !== "title" && f !== "text"; }).join(", ");
+		inc.timer = setTimeout(function() { _discardIncoming(requestId, true); }, RECV_CONSENT_MS);
+		$tw.wiki.addTiddler(new $tw.Tiddler({
+			title:           "$:/temp/collab/asset-incoming/" + requestId,
+			"request-id":     requestId,
+			"tiddler-title":  pending.title,
+			"asset-name":     meta.name || "",
+			"asset-type":     meta.assetType || (meta.fields && meta.fields.type) || "",
+			"asset-size":     String(meta.size || 0),
+			"asset-dest":     willStore ? (pending.dest || "") : "embedded inline in the tiddler",
+			"asset-fields":   fieldNames
+		}));
+	}
+
+	function _discardIncoming(requestId, silent) {
+		var inc = incomingAssets[requestId];
+		if(inc && inc.timer) { clearTimeout(inc.timer); }
+		delete incomingAssets[requestId];
+		delete pendingAssetGets[requestId];
+		$tw.wiki.deleteTiddler("$:/temp/collab/asset-incoming/" + requestId);
+	}
+
 	function _finalizeAsset(requestId) {
 		var inc = incomingAssets[requestId], pending = pendingAssetGets[requestId];
+		if(inc && inc.timer) { clearTimeout(inc.timer); }
+		$tw.wiki.deleteTiddler("$:/temp/collab/asset-incoming/" + requestId);
 		delete incomingAssets[requestId];
 		delete pendingAssetGets[requestId];
 		if(!inc || !pending) return;
@@ -601,6 +707,9 @@ exports.startup = function() {
 		var title  = pending.title;
 		var fields = meta.fields || {};
 		fields.title = title;
+		// Strip any _canonical_uri the sender included; only OUR locally-chosen path
+		// (set below for external storage) may end up on the tiddler.
+		_safety.sanitizeIncomingFields(fields);
 
 		function write() {
 			if(!_acceptTiddler(title, fields)) { console.warn("[collab-asset] refused:", title); return; }
@@ -862,7 +971,8 @@ exports.startup = function() {
 			break;
 
 		case "collab-get-asset":
-			_serveAsset(msg.title, msg.requesterDeviceId, msg.requestId);
+			// Don't serve straight away — ask the user first (owner consent gate).
+			_requestAssetConsent(msg.title, msg.requesterDeviceId, msg.requestId);
 			break;
 
 		case "collab-asset-meta":
@@ -880,14 +990,15 @@ exports.startup = function() {
 			if(_inc && typeof msg.index === "number" && _inc.chunks[msg.index] === undefined) {
 				_inc.chunks[msg.index] = msg.data || "";
 				_inc.received++;
-				if(_inc.received >= _inc.meta.totalChunks) { _finalizeAsset(msg.requestId); }
+				// All bytes in — don't write yet. Let the receiver inspect what arrived
+				// (name, type, size, destination, fields) and accept/reject it first.
+				if(_inc.received >= _inc.meta.totalChunks) { _raiseIncomingPrompt(msg.requestId); }
 			}
 			break;
 
 		case "collab-asset-error":
 			if(pendingAssetGets[msg.requestId]) {
-				delete pendingAssetGets[msg.requestId];
-				delete incomingAssets[msg.requestId];
+				_discardIncoming(msg.requestId, true);
 				_assetError("Attachment transfer failed: " + (msg.message || "unknown error"));
 			}
 			break;
@@ -995,6 +1106,30 @@ exports.startup = function() {
 			if(ev.files && ev.files[0] && ev.files[0].path) { dest = ev.files[0].path; }
 		} catch(e) {}
 		if(title) { _getAsset(title, dest); }
+		return false;
+	});
+
+	// Owner consent prompt actions: allow → stream the file; deny → decline.
+	$tw.rootWidget.addEventListener("codemirror-6-collab-allow-asset", function(ev) {
+		var id = ev.param || (ev.paramObject && ev.paramObject.requestId);
+		if(id) { _doServeAsset(id); }
+		return false;
+	});
+	$tw.rootWidget.addEventListener("codemirror-6-collab-deny-asset", function(ev) {
+		var id = ev.param || (ev.paramObject && ev.paramObject.requestId);
+		if(id) { _denyAsset(id, false); }
+		return false;
+	});
+
+	// Receiver inspection prompt actions: accept → write it; reject → discard.
+	$tw.rootWidget.addEventListener("codemirror-6-collab-accept-incoming", function(ev) {
+		var id = ev.param || (ev.paramObject && ev.paramObject.requestId);
+		if(id) { _finalizeAsset(id); }
+		return false;
+	});
+	$tw.rootWidget.addEventListener("codemirror-6-collab-reject-incoming", function(ev) {
+		var id = ev.param || (ev.paramObject && ev.paramObject.requestId);
+		if(id) { _discardIncoming(id, false); }
 		return false;
 	});
 

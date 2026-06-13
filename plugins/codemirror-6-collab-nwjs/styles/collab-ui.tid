@@ -807,6 +807,100 @@ tags: $:/tags/Stylesheet
   background: <<colour page-background>>;
 }
 
+/* -- Asset request / inspection prompt (modal, owner consent + receiver review) -- */
+
+.tc-collab-asset-prompt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+}
+
+.tc-collab-asset-prompt {
+  width: 460px;
+  max-width: 90vw;
+  background: <<colour modal-background>>;
+  color: <<colour foreground>>;
+  border: 1px solid <<colour modal-border>>;
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.tc-collab-asset-prompt-head {
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 1.05em;
+  background: <<colour modal-header-background>>;
+  border-bottom: 1px solid <<colour modal-border>>;
+}
+
+.tc-collab-asset-prompt-body {
+  padding: 14px 16px;
+  font-size: 0.92em;
+  line-height: 1.5;
+}
+
+.tc-collab-asset-prompt-body p { margin: 0 0 8px 0; }
+
+.tc-collab-asset-prompt-who { font-weight: 600; color: <<colour primary>>; }
+
+.tc-collab-asset-prompt-detail {
+  color: <<colour muted-foreground>>;
+  font-size: 0.9em;
+}
+
+.tc-collab-asset-prompt-path {
+  font-family: monospace;
+  font-size: 0.85em;
+  word-break: break-all;
+  background: <<colour page-background>>;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin-top: 4px;
+}
+
+.tc-collab-asset-prompt-meta { width: 100%; border-collapse: collapse; }
+.tc-collab-asset-prompt-meta td { padding: 3px 6px; vertical-align: top; word-break: break-all; }
+.tc-collab-asset-prompt-meta td:first-child {
+  color: <<colour muted-foreground>>;
+  white-space: nowrap;
+  width: 1%;
+  font-size: 0.88em;
+}
+
+.tc-collab-asset-prompt-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid <<colour modal-border>>;
+}
+
+.tc-collab-asset-prompt-allow,
+.tc-collab-asset-prompt-deny {
+  padding: 5px 14px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  border: 1px solid <<colour tiddler-border>>;
+}
+
+.tc-collab-asset-prompt-allow {
+  background: <<colour primary>>;
+  color: #fff;
+  border-color: <<colour primary>>;
+}
+
+.tc-collab-asset-prompt-deny {
+  background: <<colour tiddler-background>>;
+  color: <<colour foreground>>;
+}
+
 /* -- Status bar (bottom of the dock) --------------------------------------- */
 
 .tc-collab-statusbar {

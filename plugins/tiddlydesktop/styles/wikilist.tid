@@ -123,6 +123,108 @@ tags: $:/tags/Stylesheet
 	background-color: <<colour wikilist-button-reveal>>;
 }
 
+.td-wikilist .td-wikilist-button-advanced {
+	background-color: <<colour wikilist-button-background>>;
+}
+
+.td-wikilist .td-wikilist-button-advanced:hover {
+	background-color: <<colour wikilist-button-reveal>>;
+}
+
+.td-wikilist .td-wikilist-button-reveal-backups {
+	background-color: <<colour wikilist-button-background>>;
+}
+
+.td-wikilist .td-wikilist-button-reveal-backups:hover {
+	background-color: <<colour wikilist-button-reveal>>;
+}
+
+/* ── Advanced options panel ─────────────────────────────────────────────── */
+
+.td-wikilist .td-wiki-advanced {
+	margin-top: 0.85em;
+	padding: 0.9em 1em;
+	background: <<colour page-background>>;
+	border: 1px solid <<colour wikilist-item-border-hover>>;
+	border-radius: 5px;
+	font-size: 0.85em;
+}
+
+.td-wiki-advanced-note {
+	color: <<colour muted-foreground>>;
+	margin-bottom: 0.85em;
+	line-height: 1.45;
+}
+
+.td-wiki-advanced-section {
+	margin-bottom: 1em;
+}
+
+.td-wiki-advanced-section:last-child {
+	margin-bottom: 0;
+}
+
+.td-wiki-advanced-heading {
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-size: 0.78em;
+	color: <<colour muted-foreground>>;
+	margin-bottom: 0.55em;
+	padding-bottom: 0.3em;
+	border-bottom: 1px solid <<colour wikilist-item-border-hover>>;
+}
+
+.td-wiki-advanced-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.55em 1.1em;
+}
+
+.td-wiki-advanced-field {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	cursor: text;
+}
+
+.td-wiki-advanced-field > span {
+	font-size: 0.88em;
+	color: <<colour muted-foreground>>;
+}
+
+.td-wiki-advanced-field input {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 4px 7px;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 3px;
+	background: <<colour tiddler-background>>;
+	color: <<colour foreground>>;
+	font: inherit;
+}
+
+.td-wiki-advanced-field input:focus {
+	outline: none;
+	border-color: <<colour wikilist-item-border-hover>>;
+}
+
+.td-wiki-advanced-toggle {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin-top: 0.7em;
+	cursor: pointer;
+}
+
+.td-wiki-advanced-toggle input {
+	margin: 0;
+}
+
+.td-wiki-advanced-actions {
+	margin-top: 0.7em;
+}
+
 /* ── Plugin Chooser overlay ─────────────────────────────────────────────── */
 
 /* Collapse any <p> artifacts TW may inject between flex children */

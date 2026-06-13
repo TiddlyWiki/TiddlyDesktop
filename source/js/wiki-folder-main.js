@@ -52,6 +52,12 @@ $tw.boot.argv = [queryObject.pathname];
 
 if(queryObject.host && queryObject.port) {
 	$tw.boot.argv.push("--listen","host="+queryObject.host,"port="+queryObject.port,"credentials="+queryObject.credentials,"readers="+queryObject.readers,"writers="+queryObject.writers);
+	// Optional --listen server options (only passed when set, so empty values don't
+	// override TiddlyWiki's own defaults).
+	if(queryObject.pathprefix)   { $tw.boot.argv.push("path-prefix="+queryObject.pathprefix); }
+	if(queryObject.roottiddler)  { $tw.boot.argv.push("root-tiddler="+queryObject.roottiddler); }
+	if(queryObject.anonusername) { $tw.boot.argv.push("anon-username="+queryObject.anonusername); }
+	if(queryObject.gzip === "yes") { $tw.boot.argv.push("gzip=yes"); }
 }
 
 console.log("Running tiddlywiki " + $tw.boot.argv.join(" "));
@@ -150,3 +156,58 @@ try {
 	}
 	schedule();
 }());
+
+// External attachments for folder wikis. The stock external-attachments plugin only
+// activates when the wiki document is itself a file:// URL (single-file wikis) and
+// computes the path relative to document.location — neither holds for a folder wiki,
+// which renders from a fixed app page (html/wiki-folder-window.html), not the wiki file.
+// Here we have Node and the app's --allow-file-access flags, so we can reference the
+// dropped file in place via an ABSOLUTE file:// URI that the renderer loads directly —
+// no HTTP server needed. Honours the same Enable switch. We register this hook FIRST so
+// it authoritatively handles binary imports before the stock plugin (whose relative-path
+// logic would otherwise produce a broken _canonical_uri here).
+(function() {
+	if(!$tw.hooks || !$tw.hooks.addHook) { return; }
+	function folderExternalAttachmentHook(info) {
+		try {
+			if(info && info.isBinary && info.file && info.file.path &&
+					$tw.wiki.getTiddlerText("$:/config/ExternalAttachments/Enable","") === "yes") {
+				var p = String(info.file.path).replace(/\\/g,"/");
+				if(p.charAt(0) !== "/") { p = "/" + p; }   // -> file:///C:/... on Windows
+				info.callback([{
+					title: info.file.name,
+					type: info.type,
+					"_canonical_uri": "file://" + encodeURI(p)
+				}]);
+				return true;
+			}
+		} catch(e) {
+			console.error("[TiddlyDesktop] folder-wiki external attachment failed:",e);
+		}
+		return false;
+	}
+	var arr = $tw.hooks.names && $tw.hooks.names["th-importing-file"];
+	if(arr && typeof arr.unshift === "function") {
+		arr.unshift(folderExternalAttachmentHook);   // run before the stock plugin's hook
+	} else {
+		$tw.hooks.addHook("th-importing-file",folderExternalAttachmentHook);
+	}
+}());
+
+// Fullscreen: F11 and the fullscreen page-control button toggle the native window.
+try {
+	require("../js/utils/fullscreen.js").install(
+		containerWindow,
+		containerWindow.window.document,
+		function() { return $tw.rootWidget; }
+	);
+} catch(e) {
+	console.error("[TiddlyDesktop] fullscreen install failed:",e);
+}
+
+// Page zoom: Ctrl/Cmd +/-/0 and Ctrl/Cmd+wheel, with a reset control while not at 100%.
+try {
+	require("../js/utils/zoom.js").install(containerWindow,containerWindow.window.document);
+} catch(e) {
+	console.error("[TiddlyDesktop] zoom install failed:",e);
+}

@@ -38,23 +38,30 @@ function WikiFolderWindow(options) {
 		fs.mkdirSync(path.dirname(this.stateFile),{recursive: true});
 		if(!fs.existsSync(this.stateFile)) { fs.writeFileSync(this.stateFile,""); }
 	} catch(e) {}
-	// Get the host, port and credentials
+	// Get the host, port, credentials and other --listen server options
 	var host = $tw.wiki.getTiddlerText(this.getConfigTitle("host"),""),
 		port = $tw.wiki.getTiddlerText(this.getConfigTitle("port"),""),
 		credentials = $tw.wiki.getTiddlerText(this.getConfigTitle("credentials"),"users.csv"),
 		readers = $tw.wiki.getTiddlerText(this.getConfigTitle("readers"),"(anon)"),
-		writers = $tw.wiki.getTiddlerText(this.getConfigTitle("writers"),"(authenticated)");
+		writers = $tw.wiki.getTiddlerText(this.getConfigTitle("writers"),"(authenticated)"),
+		pathPrefix = $tw.wiki.getTiddlerText(this.getConfigTitle("path-prefix"),""),
+		rootTiddler = $tw.wiki.getTiddlerText(this.getConfigTitle("root-tiddler"),""),
+		anonUsername = $tw.wiki.getTiddlerText(this.getConfigTitle("anon-username"),""),
+		gzip = $tw.wiki.getTiddlerText(this.getConfigTitle("gzip"),"no");
 	// Open the window
 	$tw.desktop.gui.Window.open("html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname) + "&host=" + encodeURIComponent(host) + "&port=" + encodeURIComponent(port)
-			+ "&credentials=" + encodeURIComponent(credentials) + "&readers=" + encodeURIComponent(readers) + "&writers=" + encodeURIComponent(writers) + "&stateFile=" + encodeURIComponent(this.stateFile),{
+			+ "&credentials=" + encodeURIComponent(credentials) + "&readers=" + encodeURIComponent(readers) + "&writers=" + encodeURIComponent(writers)
+			+ "&pathprefix=" + encodeURIComponent(pathPrefix) + "&roottiddler=" + encodeURIComponent(rootTiddler) + "&anonusername=" + encodeURIComponent(anonUsername) + "&gzip=" + encodeURIComponent(gzip)
+			+ "&stateFile=" + encodeURIComponent(this.stateFile),this.applyGeometryToOpenOptions({
 		id: hash.simpleHash(this.getIdentifier()),
 		show: true,
 		new_instance: true,
 		icon: "images/app-icon256.png"
-	},function(win) {
+	}),function(win) {
 		self.window_nwjs = win;
 		self.window_nwjs.once("loaded",self.onloaded.bind(self));
 		self.window_nwjs.on("close",self.onclose.bind(self));
+		self.trackGeometry();
 	});
 }
 
@@ -107,26 +114,31 @@ WikiFolderWindow.prototype.readStateFile = function() {
 		this.wikiTitle = state.title;
 		this.onTitleChange();
 	}
-	// Favicon is a {type, text} pair; only update when either side actually changes.
+	// Favicon is a {type, text} pair; only update when either side actually changes. With
+	// no favicon, clear the config so the wiki list shows the missing-favicon placeholder
+	// rather than a stale/broken thumbnail.
 	var favText = state.faviconText || "",
 		favType = state.faviconType || "";
-	if(favText && (favText !== this.wikiFavIconText || favType !== this.wikiFavIconType)) {
-		this.wikiFavIconText = favText;
-		this.wikiFavIconType = favType;
-		this.onFavIconChange();
+	if(favText) {
+		if(favText !== this.wikiFavIconText || favType !== this.wikiFavIconType) {
+			this.wikiFavIconText = favText;
+			this.wikiFavIconType = favType;
+			this.onFavIconChange();
+		}
+	} else {
+		this.clearFavIcon();
 	}
 };
 
-// Reopen this window
+// Reopen this window — just focus it, like single-file wikis (a closed folder wiki is
+// re-opened by window-list.open() constructing a fresh window, so this only runs for an
+// already-open one).
 WikiFolderWindow.prototype.reopen = function() {
-	$tw.desktop.windowList.openByUrl("backstage://Wiki Folder Warning");
+	try { this.window_nwjs.focus(); } catch(e) {}
 };
 
-// Mark window to be removed from list on close
-WikiFolderWindow.prototype.removeFromWikiListOnClose = function() {
-	this.mustRemoveFromWikiListOnClose = true;
-	$tw.desktop.windowList.openByUrl("backstage://Wiki Folder Warning");
-};
+// removeFromWikiListOnClose() is inherited from window-base (just sets the flag); the
+// close handler below honours it, so removing a folder wiki works like a single-file one.
 
 // Get the wiki title (kept in sync from the live-state file by readStateFile)
 WikiFolderWindow.prototype.getWikiTitle = function() {
@@ -151,8 +163,9 @@ WikiFolderWindow.prototype.onclose = function(event) {
 		try { this.stateWatcher.close(); } catch(e) {}
 		this.stateWatcher = null;
 	}
-	// Close the window, remove it from the window list
-	this.windowList.handleClose(this);
+	// Close the window, removing it from the wiki list if it was marked for removal
+	// (same as single-file wikis).
+	this.windowList.handleClose(this,this.mustRemoveFromWikiListOnClose);
 };
 
 // Save a tiddler to the backstage wiki describing this wiki file
