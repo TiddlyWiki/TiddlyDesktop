@@ -70,21 +70,48 @@ exports.addBaseMethods = function(proto) {
 		return options;
 	};
 
-	// Persist the window's current position and size.
+	// Persist the window's current position and size. Skipped while fullscreen or
+	// maximized, so the stored x/y/width/height stay the "normal" (restore) bounds —
+	// the maximized state is recorded separately as a flag (see saveMaximizedFlag).
 	proto.saveGeometry = function() {
 		var win = this.window_nwjs;
 		if(!win) { return; }
 		try {
-			// Don't capture a transient fullscreen state as the restore geometry.
 			if(win.isFullscreen) { return; }
-			var g = {x: win.x, y: win.y, width: win.width, height: win.height};
+			if(win.__tdMaximized) { return; }
+			var prev = this.loadGeometry() || {};
+			var g = {x: win.x, y: win.y, width: win.width, height: win.height, maximized: false};
 			if(!isFinite(g.width) || !isFinite(g.height) || g.width < 1 || g.height < 1) { return; }
+			// Preserve a maximized flag set by saveMaximizedFlag if the window is, right now,
+			// genuinely maximized but __tdMaximized hasn't been observed yet (defensive).
+			void prev;
 			$tw.wiki.addTiddler(new $tw.Tiddler({title: this.getConfigTitle("geometry"),text: JSON.stringify(g)}));
 		} catch(e) {}
 	};
 
-	// Track move/resize (debounced) and persist the geometry. Call once after the
-	// window has opened.
+	// Persist ONLY the maximized flag, keeping the saved normal bounds untouched.
+	proto.saveMaximizedFlag = function(flag) {
+		try {
+			var g = this.loadGeometry() || {};
+			g.maximized = !!flag;
+			$tw.wiki.addTiddler(new $tw.Tiddler({title: this.getConfigTitle("geometry"),text: JSON.stringify(g)}));
+		} catch(e) {}
+	};
+
+	// After the window has opened, re-maximize it if it was maximized last time.
+	proto.restoreMaximizedState = function() {
+		var win = this.window_nwjs;
+		if(!win) { return; }
+		var g = this.loadGeometry();
+		if(g && g.maximized) {
+			win.__tdMaximized = true;
+			try { win.maximize(); } catch(e) {}
+		}
+	};
+
+	// Track move/resize/maximize (debounced for move/resize) and persist. Call once
+	// after the window has opened. NW.js exposes maximize/unmaximize as frame-level
+	// events, so this works for folder windows (separate process) too.
 	proto.trackGeometry = function() {
 		var self = this, win = this.window_nwjs, timer = null;
 		if(!win || !win.on) { return; }
@@ -94,6 +121,8 @@ exports.addBaseMethods = function(proto) {
 		}
 		try { win.on("move",schedule); } catch(e) {}
 		try { win.on("resize",schedule); } catch(e) {}
+		try { win.on("maximize",function() { win.__tdMaximized = true; self.saveMaximizedFlag(true); }); } catch(e) {}
+		try { win.on("unmaximize",function() { win.__tdMaximized = false; self.saveMaximizedFlag(false); schedule(); }); } catch(e) {}
 	};
 
 }

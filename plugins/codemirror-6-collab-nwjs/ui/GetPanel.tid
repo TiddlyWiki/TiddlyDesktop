@@ -8,7 +8,7 @@ title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/GetPanel
 <div class="tc-collab-get-panel">
 <div class="tc-collab-get-header">
 <span>Shared tiddlers</span>
-<$button set="$:/temp/collab/state/get-open" setTo="no" class="tc-btn-invisible tc-collab-get-close-btn">✕</$button>
+<$button set="$:/temp/collab/state/get-open" setTo="no" class="tc-btn-invisible tc-collab-get-close-btn" tooltip="Close">{{$:/core/images/close-button}}</$button>
 </div>
 <div class="tc-collab-get-list">
 <$list filter="[prefix[$:/temp/collab/share/available/]sort[tiddler-title]]" emptyMessage="""<div class="tc-collab-get-empty">No shared tiddlers available</div>""">
@@ -37,6 +37,9 @@ title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/GetPanel
 <$list filter="[<currentTiddler>get[asset]match[yes]]" variable="_">
 <$list filter="[<currentTiddler>get[asset-got]match[yes]]" variable="_">
 <span class="tc-collab-get-saved" title="Attachment saved to your wiki">✓ Saved</span>
+<$list filter="[<isSubscribed>match[yes]]" variable="_">
+<$button message="codemirror-6-collab-unsubscribe-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn tc-collab-get-btn-subscribed" tooltip="Stop receiving updates for this attachment tiddler">✓ Got</$button>
+</$list>
 </$list>
 <$list filter="[<currentTiddler>!field:asset-got[yes]]" variable="_">
 <$set name="extMode" value={{{ [[$:/plugins/tiddlywiki/external-attachments]is[tiddler]] :filter[[$:/config/ExternalAttachments/Enable]get[text]match[yes]] +[first[]] }}}>

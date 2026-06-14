@@ -1,0 +1,50 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Add wiki file
+Toolbar/AddWikiFolder: Add wiki folder
+Toolbar/Backstage: Backstage
+Toolbar/CreateWikiFolder: Create new wiki folder
+Toolbar/CreateWiki: Create new wiki
+Toolbar/CreateFromTemplate: Create from a template
+Toolbar/NoTemplates: No templates are defined -- see Settings
+Toolbar/From: from
+Toolbar/CloneExisting: Clone an existing wiki
+Toolbar/NoWikisToClone: No wikis available to clone
+Toolbar/Help: Help
+Toolbar/Settings: Settings
+Toolbar/Language: Language
+List/SearchPlaceholder: search
+List/ClearSearch: Clear search
+Row/Untitled: Untitled
+Row/Open: open
+Row/Reveal: reveal
+Row/Remove: remove
+Row/ToFolder: to folder
+Row/ToFile: to file
+Row/ToFolderTooltip: Choose (or create) an empty folder for the new wiki folder
+Row/ToFileTooltip: Choose where to save the new single-file wiki
+Row/Advanced: advanced
+Row/Plugins: plugins
+Advanced/Backups: Backups
+Advanced/SaveBackup: Save a backup on every save
+Advanced/RevealBackups: reveal backups
+Advanced/ServerNote: These options control how the wiki folder is served over HTTP. They take effect the next time the wiki folder is opened.
+Advanced/Server: Server
+Advanced/Host: Host
+Advanced/Port: Port
+Advanced/PathPrefix: Path prefix
+Advanced/RootTiddler: Root tiddler
+Advanced/Gzip: Compress responses (gzip)
+Advanced/Access: Access
+Advanced/Credentials: Credentials file
+Advanced/AnonUsername: Anonymous username
+Advanced/Readers: Readers
+Advanced/Writers: Writers
+PluginChooser/Heading: Manage Plugins
+PluginChooser/Close: Close
+PluginChooser/OpenWarning: This wiki is currently open. Close its window first, then click Apply.
+PluginChooser/FilterPlaceholder: Filter plugins…
+PluginChooser/Clear: Clear
+PluginChooser/NoMatch: No plugins match your filter.
+PluginChooser/Apply: Apply Changes
+PluginChooser/Cancel: Cancel

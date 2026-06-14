@@ -9,11 +9,22 @@ blocked outright. So we toggle the native NW.js window instead, and bind F11 to 
 
 "use strict";
 
-// Toggle the native fullscreen state of an nw.js Window.
+// Toggle the native fullscreen state of an nw.js Window. Leaving fullscreen restores
+// the maximized state the window had before going fullscreen (NW.js otherwise drops
+// back to normal bounds). The pre-fullscreen maximized state is read from __tdMaximized,
+// kept current by the maximize/unmaximize listeners in install().
 function toggle(win_nwjs) {
 	try {
-		if(win_nwjs.isFullscreen) { win_nwjs.leaveFullscreen(); }
-		else { win_nwjs.enterFullscreen(); }
+		if(win_nwjs.isFullscreen) {
+			var wasMaximized = win_nwjs.__tdMaxBeforeFs;
+			win_nwjs.leaveFullscreen();
+			win_nwjs.__tdMaxBeforeFs = false;
+			// leaveFullscreen needs a tick to settle before maximize takes effect.
+			if(wasMaximized) { setTimeout(function() { try { win_nwjs.maximize(); } catch(e) {} }, 60); }
+		} else {
+			win_nwjs.__tdMaxBeforeFs = !!win_nwjs.__tdMaximized;
+			win_nwjs.enterFullscreen();
+		}
 	} catch(e) {}
 }
 exports.toggle = toggle;
@@ -27,6 +38,12 @@ Wire fullscreen for a wiki window.
                    booting, so we retry); used to reroute the fullscreen button
 */
 exports.install = function(win_nwjs, doc, getRootWidget) {
+	// Track maximized state on this (local) window handle so toggle() can restore it
+	// after leaving fullscreen. For folder wikis this handle lives in the wiki's own
+	// process, distinct from the backstage-side handle window-base tracks, so we must
+	// observe the events here too.
+	try { win_nwjs.on("maximize",   function() { win_nwjs.__tdMaximized = true;  }); } catch(e) {}
+	try { win_nwjs.on("unmaximize", function() { win_nwjs.__tdMaximized = false; }); } catch(e) {}
 	function onKey(e) {
 		if(e.key === "F11" || e.keyCode === 122) {
 			e.preventDefault();

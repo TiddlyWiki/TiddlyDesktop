@@ -106,17 +106,47 @@ exports.installFindBar = function(options) {
 		prevBtn.disabled = noMatches; nextBtn.disabled = noMatches;
 	}
 
+	// The nearest ancestor that is itself a scroll container (overflow auto/scroll
+	// and actually overflowing). Returns null when the only scroller is the document
+	// (body/html) — that case is handled by the window-scroll branch below. A match
+	// can live inside a scrollable pane (the story river, a sidebar, a scrollable
+	// <pre>), where scrolling the window does nothing; we must scroll that pane.
+	function nearestScrollable(el, w) {
+		var d = cdoc();
+		for(var node = el; node && node.nodeType === 1; node = node.parentElement) {
+			if((d && node === d.body) || (d && node === d.documentElement)) { return null; }
+			var style; try { style = w.getComputedStyle(node); } catch(e) { continue; }
+			var oy = style.overflowY, ox = style.overflowX;
+			var scrollableY = (oy === "auto" || oy === "scroll" || oy === "overlay") && node.scrollHeight > node.clientHeight + 2;
+			var scrollableX = (ox === "auto" || ox === "scroll" || ox === "overlay") && node.scrollWidth  > node.clientWidth  + 2;
+			if(scrollableY || scrollableX) { return node; }
+		}
+		return null;
+	}
+
 	function scrollToCurrent() {
 		var r = allRanges[curIndex];
 		if(!r) { return; }
 		var w = cwin();
+		if(!w) { return; }
+		var el = r.startContainer.nodeType === 1 ? r.startContainer : (r.startContainer.parentElement || r.startContainer.parentNode);
+		// 1) Centre the match inside its nearest scrolling container, if any. Scrolling
+		//    the container directly (vs scrollIntoView on the match's parent) avoids
+		//    reflowing a huge block like <pre><code>, which is what used to freeze the UI.
 		try {
-			// Scroll the content window so the MATCH ITSELF is centred, computed from the
-			// range's own rect. The old behaviour scrolled the match's parent element into
-			// view — for a huge container like <pre><code> that jumps to the middle of the
-			// block (the wrong place) and reflowing the whole element is what froze the UI.
+			var sc = nearestScrollable(el, w);
+			if(sc) {
+				var scRect = sc.getBoundingClientRect(), mRect = r.getBoundingClientRect();
+				sc.scrollTop  += (mRect.top  + mRect.height / 2) - (scRect.top  + sc.clientHeight / 2);
+				sc.scrollLeft += (mRect.left + mRect.width  / 2) - (scRect.left + sc.clientWidth  / 2);
+			}
+		} catch(e) {}
+		// 2) Centre in the window too (re-measured after any container scroll), so a
+		//    match that scrolls the document — or a container that is itself offscreen —
+		//    still ends up in view.
+		try {
 			var rect = r.getBoundingClientRect();
-			if(w && rect && (rect.height || rect.width || rect.top || rect.left)) {
+			if(rect && (rect.height || rect.width || rect.top || rect.left)) {
 				var targetY = (w.scrollY || w.pageYOffset || 0) + rect.top - (w.innerHeight / 2) + (rect.height / 2);
 				w.scrollTo(w.scrollX || w.pageXOffset || 0, targetY > 0 ? targetY : 0);
 				return;
@@ -124,8 +154,8 @@ exports.installFindBar = function(options) {
 		} catch(e) {}
 		// Fallback only when the range has no layout box (e.g. zero-size/hidden).
 		try {
-			var el = r.startContainer.parentElement || r.startContainer.parentNode;
-			if(el && el.scrollIntoView) { el.scrollIntoView({block: "center", inline: "nearest"}); }
+			var pel = r.startContainer.parentElement || r.startContainer.parentNode;
+			if(pel && pel.scrollIntoView) { pel.scrollIntoView({block: "center", inline: "nearest"}); }
 		} catch(e) {}
 	}
 

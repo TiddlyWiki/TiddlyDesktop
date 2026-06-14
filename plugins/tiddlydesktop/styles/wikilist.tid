@@ -8,19 +8,39 @@ tags: $:/tags/Stylesheet
 	background: <<colour wikilist-background>>;
 	width: 100%;
 	margin: 0;
+	box-sizing: border-box;
+	/* Grow to fill the remaining window height inside the flex-column droplink, so
+	   the list's background spans the full window even with only a few wikis. Doesn't
+	   shrink below its content, so a long list still scrolls (the droplink scrolls). */
+	flex: 1 0 auto;
 }
 
 .td-wikilist .td-wikilist-item {
 	border: none;
-	border-left: 5px solid transparent;
-	margin: 0 0 1em 0;
-    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-    background: <<colour wikilist-item>>;
+	border-left: 4px solid transparent;
+	margin: 0 0 0.85em 0;
+	border-radius: 7px;
+	overflow: hidden;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+	background: <<colour wikilist-item>>;
+	transition: box-shadow 0.15s ease, border-left-color 0.15s ease;
 }
 
 .td-wikilist .td-wikilist-item:hover {
-	border-left: 5px solid <<colour wikilist-item-border-hover>>;
-    box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
+	border-left: 4px solid <<colour wikilist-item-border-hover>>;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+/* TiddlyWiki adds .tc-dragging to the row synchronously, just before it captures the
+   native drag image (setDragImage(rowNode)) — so this state is what the snapshot sees.
+   isolate gives the row its own stacking context ONLY during the drag, so the snapshot
+   is just that row and not every following sibling (setDragImage paints the node's
+   stacking-context subtree). It is deliberately NOT on the base rule: a permanent
+   stacking context traps a row's tags-dropdown popup beneath later rows. box-shadow is
+   dropped so its blur doesn't bleed past the border box in the ghost. */
+.td-wikilist .td-wikilist-item.tc-dragging {
+	isolation: isolate;
+	box-shadow: none;
 }
 
 .td-wikilist .td-wikilist-item .td-wikilist-thumbnail {
@@ -66,7 +86,25 @@ tags: $:/tags/Stylesheet
 	color: <<colour wikilist-url>>;
 }
 
+.td-language-switcher {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.td-language-switcher svg {
+	width: 1.2em;
+	height: 1.2em;
+	fill: currentColor;
+}
+
+.td-language-select {
+	font: inherit;
+}
+
 .td-wikilist .td-wikilist-item .td-wiki-toolbar {
+	display: flex;
+	align-items: center;
 	font-size: 0.8em;
 	margin-top: 0.5em;
 }

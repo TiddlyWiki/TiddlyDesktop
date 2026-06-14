@@ -236,6 +236,11 @@ exports.startup = function() {
 	var memberInfo     = {};
 	var ws             = null;
 	var reconnectDelay = 1000;
+	// Consecutive relay rejections (HTTP 401 at the WS upgrade). Reset to 0 on a
+	// successful open. Used to break the "reconnect forever with a dead OAuth token"
+	// loop after a machine sleep/long idle: past a few failures we stop and ask the
+	// user to sign in again instead of hammering the relay.
+	var _authFailures  = 0;
 	var destroyed      = true;  // _startSession() sets false
 	var connected      = false;
 	var currentStatus  = "";
@@ -1355,6 +1360,10 @@ exports.startup = function() {
 	function _connect() {
 		if(destroyed) return;
 		var myGen = ++connectionGeneration;
+		// Set by this socket's error handler on a 401 upgrade rejection, read by its
+		// close handler so we route a dead token through re-verification instead of
+		// blindly reconnecting. Scoped to this _connect() call (one socket).
+		var authFailedThisSocket = false;
 		console.log("[collab-transport] _connect() gen=" + myGen + " hasBridge=" + (typeof window._nwjsWsCreate === "function") + " WS=" + !!WS + " relayUrl=" + relayUrl + " roomCode=" + roomCode + " authToken=" + !!authToken);
 		_writeStatus("connecting");
 
@@ -1394,6 +1403,7 @@ exports.startup = function() {
 			console.log("[collab-transport] relay WS opened, sending join");
 			lastRelayActivity = Date.now();
 			reconnectDelay = 1000;
+			_authFailures = 0;   // a clean open clears any prior auth-failure streak
 			// Join is cleartext (the relay routes us by it) and carries no secrets
 			// or display names — those are broadcast E2E-encrypted via member-info.
 			_sendRelayRaw({type: "join", deviceId: deviceId});
@@ -1424,6 +1434,24 @@ exports.startup = function() {
 				_writeStatus("error");
 				$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/collab/error", text: errMsg}));
 				_fire("collab-disconnected", {});
+			} else if(authFailedThisSocket) {
+				// The relay rejected our OAuth token (401) at the upgrade. Reconnecting
+				// with the same dead token just spins (this is the post-sleep loop), so
+				// don't. Hand off to the auth layer: it re-verifies the token over HTTP
+				// and either reconnects (the 401 was transient) or signs out and prompts
+				// re-login (the token genuinely expired). After a few consecutive auth
+				// failures, stop entirely so a persistent problem can't loop forever.
+				_writeStatus("auth-failed");
+				_fire("collab-disconnected", {});
+				if(_authFailures <= 3) {
+					try { window.dispatchEvent(new CustomEvent("collab-auth-expired")); } catch(_e) {}
+				} else {
+					_userWantsConnected = false;
+					$tw.wiki.addTiddler(new $tw.Tiddler({
+						title: "$:/temp/collab/error",
+						text:  "Session expired — please sign in again via the Account section."
+					}));
+				}
 			} else {
 				_writeStatus("disconnected");
 				_fire("collab-disconnected", {});
@@ -1436,6 +1464,8 @@ exports.startup = function() {
 			var msg = (err && err.message) || "";
 			console.error("[collab-nwjs] Relay WebSocket error:", msg);
 			if(msg.indexOf("401") !== -1) {
+				authFailedThisSocket = true;
+				_authFailures++;
 				_writeStatus("auth-failed");
 			} else if(msg.indexOf("403") !== -1) {
 				_writeStatus("access-denied");
@@ -1546,6 +1576,35 @@ exports.startup = function() {
 			_forceReconnect("no relay activity for " + Math.round((now - lastRelayActivity) / 1000) + "s");
 		}
 	}, WATCHDOG_MS);
+
+	// ── LAN heal: re-announce while any live peer still has no direct link ──────
+	// A single lan-announce can be missed — the relay hiccups, a peer's LAN server
+	// wasn't listening yet when we announced, a reconnect dropped the handshake, or
+	// "Relay only" was toggled off after peers had already announced. Without a retry
+	// the affected pair stays relay-only forever (issue #11). So while our LAN channel
+	// is up, periodically re-announce as long as some known live peer is still not
+	// directly connected. It self-limits: a fully meshed room has nothing pending and
+	// sends nothing, and _tryLanConnect/_maybeReflexAnnounce no-op for peers already
+	// connected, so this can't storm.
+	var LAN_HEAL_MS = 12000;
+	setInterval(function() {
+		if(destroyed || !_userWantsConnected || relayOnly || !connected) { return; }
+		// LAN must be up: folder wikis need a listening server; single-file the bridge.
+		var lanUp = nodeCrypto ? (!!lanServer && !!lanPort) : _lanBridge;
+		if(!lanUp) { return; }
+		// Count live peers (those that sent member-info) and how many we have a direct
+		// link to. Folder wikis track sockets in directPeers; single-file wikis run the
+		// LAN node in the parent and only know the peer count (_bridgeLanPeers).
+		var liveMembers = 0, connectedDirect = 0;
+		Object.keys(memberInfo).forEach(function(id) {
+			if(id === deviceId) { return; }
+			var m = memberInfo[id];
+			if(m && m.heard) { liveMembers++; if(directPeers[id]) { connectedDirect++; } }
+		});
+		if(liveMembers === 0) { return; }
+		var pending = nodeCrypto ? (connectedDirect < liveMembers) : (_bridgeLanPeers < liveMembers);
+		if(pending) { _sendLanAnnounce(); }
+	}, LAN_HEAL_MS);
 
 	// Network came back (e.g. after a drop or resume): the old socket is almost
 	// certainly stale, so reconnect promptly rather than waiting for the watchdog.

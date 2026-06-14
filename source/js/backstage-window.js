@@ -18,15 +18,18 @@ function BackstageWindow(options) {
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	this.windowLoaded = false;
 	this.rendered = false;
-	// Open the window
-	$tw.desktop.gui.Window.open("html/backstage-tiddler-window.html",{
+	// Open the window. Persist and restore position/size + maximized state like the
+	// wiki windows do (the wiki list is itself a backstage window).
+	$tw.desktop.gui.Window.open("html/backstage-tiddler-window.html",this.applyGeometryToOpenOptions({
 		id: hash.simpleHash(this.getIdentifier()),
 		show: true,
 		icon: "images/app-icon256.png"
-	},function(win) {
+	}),function(win) {
 		self.window_nwjs = win;
 		self.window_nwjs.once("loaded",self.onloaded.bind(self));
 		self.window_nwjs.on("close",self.onclose.bind(self));
+		self.trackGeometry();
+		self.restoreMaximizedState();
 	});
 }
 

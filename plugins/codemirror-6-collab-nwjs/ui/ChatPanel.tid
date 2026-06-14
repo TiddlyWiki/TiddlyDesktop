@@ -14,7 +14,7 @@ title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/ChatPanel
 <option value={{{ [<currentTiddler>get[device-id]] }}}><$text text={{{ [<currentTiddler>get[user-name]] ~[<currentTiddler>get[device-name]] }}}/><$list filter="[<currentTiddler>get[device-id]addprefix[$:/temp/collab/chat/unread/]has[text]]" variable="_"> •</$list></option>
 </$list>
 </$select>
-<$button set="$:/temp/collab/state/chat-open" setTo="no" class="tc-btn-invisible tc-collab-chat-close-btn">✕</$button>
+<$button set="$:/temp/collab/state/chat-open" setTo="no" class="tc-btn-invisible tc-collab-chat-close-btn" tooltip="Close">{{$:/core/images/close-button}}</$button>
 </div>
 <$list filter="[[$:/temp/collab/state/chat-target]!field:text[]]" variable="_">
 <div class="tc-collab-chat-private-hint">🔒 Private — end-to-end encrypted, only <$text text={{{ [{$:/temp/collab/state/chat-target}addprefix[$:/temp/collab/members/]get[user-name]] ~[{$:/temp/collab/state/chat-target}addprefix[$:/temp/collab/members/]get[device-name]] }}}/> can read this.</div>

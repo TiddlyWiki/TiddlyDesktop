@@ -4,5 +4,5 @@ tags: toolbar
 <$button class="td-button">
 <$action-sendmessage $message="tiddlydesktop-open-backstage-wiki"/>
 {{$:/core/images/spiral}}
-Backstage
+{{$:/language/TiddlyDesktop/Toolbar/Backstage}}
 </$button>

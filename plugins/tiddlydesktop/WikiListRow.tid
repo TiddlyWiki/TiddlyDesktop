@@ -1,7 +1,15 @@
 title: WikiListRow
 
+\define drag-start-actions()
+<$action-setfield $tiddler="$:/temp/wikilistrow/dragging" text=<<tv-selectednode-height>>/>
+\end
+
+\define drag-end-actions()
+<$action-deletetiddler $tiddler="$:/temp/wikilistrow/dragging"/>
+\end
+
 \define wikilist-row()
-<$draggable tiddler=<<currentTiddler>> class="td-wikilist-item">
+<$draggable tiddler=<<currentTiddler>> class="td-wikilist-item" startactions=<<drag-start-actions>> endactions=<<drag-end-actions>>>
 <div class="td-wikilist-thumbnail">
 <$button message="tiddlydesktop-add-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible">
 <$list filter="[[$:/TiddlyDesktop/Config/favicon/$(currentTiddler)$]!is[missing]]" emptyMessage="""
@@ -20,7 +28,7 @@ title: WikiListRow
 {{$:/core/images/folder}}
 </$list>
 <$view tiddler="""$:/TiddlyDesktop/Config/title/$(currentTiddler)$""">
-Untitled
+{{$:/language/TiddlyDesktop/Row/Untitled}}
 </$view>
 </div>
 <div class="td-wiki-url">
@@ -29,51 +37,51 @@ Untitled
 <div class="td-wiki-toolbar">
 <div class="td-wiki-toolbar-item">
 <$button message="tiddlydesktop-add-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-open">
-open
+{{$:/language/TiddlyDesktop/Row/Open}}
 </$button>
 </div>
 <div class="td-wiki-toolbar-item">
 <$button message="tiddlydesktop-reveal-url-in-shell" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-reveal">
-reveal
+{{$:/language/TiddlyDesktop/Row/Reveal}}
 </$button>
 </div>
 <div class="td-wiki-toolbar-item">
 <$button message="tiddlydesktop-remove-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-remove">
-remove
+{{$:/language/TiddlyDesktop/Row/Remove}}
 </$button>
 </div>
 <div class="td-wiki-toolbar-item">
 <$list filter="[all[current]prefix[wikifile://]]" variable="ignore">
 <$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/classic/$(currentTiddler)$""" text="yes" tag="div" class="td-file-input-wrapper">
 <$button class="tc-btn-invisible td-button td-wikilist-button-convert">
-{{$:/core/images/folder}} to folder
+{{$:/core/images/folder}} {{$:/language/TiddlyDesktop/Row/ToFolder}}
 </$button>
-<$browse nwdirectory message="tiddlydesktop-convert-wiki" param=<<currentTiddler>> tooltip="Choose (or create) an empty folder for the new wiki folder"/>
+<$browse nwdirectory message="tiddlydesktop-convert-wiki" param=<<currentTiddler>> tooltip={{$:/language/TiddlyDesktop/Row/ToFolderTooltip}}/>
 </$reveal>
 </$list>
 <$list filter="[all[current]prefix[wikifolder://]]" variable="ignore">
 <$set name="convertDefaultName" value={{{ [<currentTiddler>removeprefix[wikifolder://]split[/]last[]addsuffix[.html]] }}}>
 <div class="td-file-input-wrapper">
 <$button class="tc-btn-invisible td-button td-wikilist-button-convert">
-{{$:/core/images/file}} to file
+{{$:/core/images/file}} {{$:/language/TiddlyDesktop/Row/ToFile}}
 </$button>
-<$browse nwsaveas=<<convertDefaultName>> accept=".html,.htm" message="tiddlydesktop-convert-wiki" param=<<currentTiddler>> tooltip="Choose where to save the new single-file wiki"/>
+<$browse nwsaveas=<<convertDefaultName>> accept=".html,.htm" message="tiddlydesktop-convert-wiki" param=<<currentTiddler>> tooltip={{$:/language/TiddlyDesktop/Row/ToFileTooltip}}/>
 </div>
 </$set>
 </$list>
 </div>
 <div class="td-wiki-toolbar-item">
 <$reveal type="match" state="""$:/temp/TiddlyDesktop/state/advanced/$(currentTiddler)$""" text="open" tag="span">
-<$button set="""$:/temp/TiddlyDesktop/state/advanced/$(currentTiddler)$""" setTo="" class="tc-btn-invisible td-button td-wikilist-button-advanced">advanced ▾</$button>
+<$button set="""$:/temp/TiddlyDesktop/state/advanced/$(currentTiddler)$""" setTo="" class="tc-btn-invisible td-button td-wikilist-button-advanced">{{$:/language/TiddlyDesktop/Row/Advanced}} ▾</$button>
 </$reveal>
 <$reveal type="nomatch" state="""$:/temp/TiddlyDesktop/state/advanced/$(currentTiddler)$""" text="open" tag="span">
-<$button set="""$:/temp/TiddlyDesktop/state/advanced/$(currentTiddler)$""" setTo="open" class="tc-btn-invisible td-button td-wikilist-button-advanced">advanced ▸</$button>
+<$button set="""$:/temp/TiddlyDesktop/state/advanced/$(currentTiddler)$""" setTo="open" class="tc-btn-invisible td-button td-wikilist-button-advanced">{{$:/language/TiddlyDesktop/Row/Advanced}} ▸</$button>
 </$reveal>
 </div>
 <div class="td-wiki-toolbar-item">
 <$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/classic/$(currentTiddler)$""" text="yes" tag="span">
 <$button message="tiddlydesktop-open-plugin-chooser" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-plugins">
-plugins
+{{$:/language/TiddlyDesktop/Row/Plugins}}
 </$button>
 </$reveal>
 </div>
@@ -89,38 +97,38 @@ plugins
 <div class="td-wiki-advanced">
 <$list filter="[all[current]prefix[wikifile://]]" variable="ignore">
 <div class="td-wiki-advanced-section">
-<div class="td-wiki-advanced-heading">Backups</div>
+<div class="td-wiki-advanced-heading">{{$:/language/TiddlyDesktop/Advanced/Backups}}</div>
 <label class="td-wiki-advanced-toggle">
 <$checkbox tiddler="""$:/TiddlyDesktop/Config/disable-backups/$(currentTiddler)$""" field="text" checked="no" unchecked="yes" default="no"/>
-<span>Save a backup on every save</span>
+<span>{{$:/language/TiddlyDesktop/Advanced/SaveBackup}}</span>
 </label>
 <div class="td-wiki-advanced-actions">
-<$button message="tiddlydesktop-reveal-backups-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-reveal-backups">reveal backups</$button>
+<$button message="tiddlydesktop-reveal-backups-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-reveal-backups">{{$:/language/TiddlyDesktop/Advanced/RevealBackups}}</$button>
 </div>
 </div>
 </$list>
 <$list filter="[all[current]prefix[wikifolder://]]" variable="ignore">
-<div class="td-wiki-advanced-note">These options control how the wiki folder is served over HTTP. They take effect the next time the wiki folder is opened.</div>
+<div class="td-wiki-advanced-note">{{$:/language/TiddlyDesktop/Advanced/ServerNote}}</div>
 <div class="td-wiki-advanced-section">
-<div class="td-wiki-advanced-heading">Server</div>
+<div class="td-wiki-advanced-heading">{{$:/language/TiddlyDesktop/Advanced/Server}}</div>
 <div class="td-wiki-advanced-grid">
-<label class="td-wiki-advanced-field"><span>Host</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/host/$(currentTiddler)$""" default=""/></label>
-<label class="td-wiki-advanced-field"><span>Port</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/port/$(currentTiddler)$""" default=""/></label>
-<label class="td-wiki-advanced-field"><span>Path prefix</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/path-prefix/$(currentTiddler)$""" default=""/></label>
-<label class="td-wiki-advanced-field"><span>Root tiddler</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/root-tiddler/$(currentTiddler)$""" default=""/></label>
+<label class="td-wiki-advanced-field"><span>{{$:/language/TiddlyDesktop/Advanced/Host}}</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/host/$(currentTiddler)$""" default=""/></label>
+<label class="td-wiki-advanced-field"><span>{{$:/language/TiddlyDesktop/Advanced/Port}}</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/port/$(currentTiddler)$""" default=""/></label>
+<label class="td-wiki-advanced-field"><span>{{$:/language/TiddlyDesktop/Advanced/PathPrefix}}</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/path-prefix/$(currentTiddler)$""" default=""/></label>
+<label class="td-wiki-advanced-field"><span>{{$:/language/TiddlyDesktop/Advanced/RootTiddler}}</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/root-tiddler/$(currentTiddler)$""" default=""/></label>
 </div>
 <label class="td-wiki-advanced-toggle">
 <$checkbox tiddler="""$:/TiddlyDesktop/Config/gzip/$(currentTiddler)$""" field="text" checked="yes" unchecked="no" default="no"/>
-<span>Compress responses (gzip)</span>
+<span>{{$:/language/TiddlyDesktop/Advanced/Gzip}}</span>
 </label>
 </div>
 <div class="td-wiki-advanced-section">
-<div class="td-wiki-advanced-heading">Access</div>
+<div class="td-wiki-advanced-heading">{{$:/language/TiddlyDesktop/Advanced/Access}}</div>
 <div class="td-wiki-advanced-grid">
-<label class="td-wiki-advanced-field"><span>Credentials file</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/credentials/$(currentTiddler)$""" default="users.csv"/></label>
-<label class="td-wiki-advanced-field"><span>Anonymous username</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/anon-username/$(currentTiddler)$""" default=""/></label>
-<label class="td-wiki-advanced-field"><span>Readers</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/readers/$(currentTiddler)$""" default="(anon)"/></label>
-<label class="td-wiki-advanced-field"><span>Writers</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/writers/$(currentTiddler)$""" default="(authenticated)"/></label>
+<label class="td-wiki-advanced-field"><span>{{$:/language/TiddlyDesktop/Advanced/Credentials}}</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/credentials/$(currentTiddler)$""" default="users.csv"/></label>
+<label class="td-wiki-advanced-field"><span>{{$:/language/TiddlyDesktop/Advanced/AnonUsername}}</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/anon-username/$(currentTiddler)$""" default=""/></label>
+<label class="td-wiki-advanced-field"><span>{{$:/language/TiddlyDesktop/Advanced/Readers}}</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/readers/$(currentTiddler)$""" default="(anon)"/></label>
+<label class="td-wiki-advanced-field"><span>{{$:/language/TiddlyDesktop/Advanced/Writers}}</span><$edit-text tag="input" tiddler="""$:/TiddlyDesktop/Config/writers/$(currentTiddler)$""" default="(authenticated)"/></label>
 </div>
 </div>
 </$list>

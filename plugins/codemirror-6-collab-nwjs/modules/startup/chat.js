@@ -109,6 +109,47 @@ exports.startup = function() {
 		$tw.wiki.addTiddler(new $tw.Tiddler({title: TARGET_TITLE, text: ""}));
 	}
 
+	// ── incoming-message sound (opt-in) ──────────────────────────────────────────
+	// Synthesised with the Web Audio API so no binary asset is needed. Off unless the
+	// user ticks $:/config/codemirror-6-collab/chat-sound.
+	var SOUND_TITLE = "$:/config/codemirror-6-collab/chat-sound";
+	var _audioCtx = null;
+	function _playBlip() {
+		try {
+			var AC = window.AudioContext || window.webkitAudioContext;
+			if(!AC) { return; }
+			if(!_audioCtx) { _audioCtx = new AC(); }
+			var ctx = _audioCtx;
+			if(ctx.state === "suspended") { try { ctx.resume(); } catch(e) {} }
+			var t = ctx.currentTime;
+			var gain = ctx.createGain();
+			gain.connect(ctx.destination);
+			gain.gain.setValueAtTime(0.0001, t);
+			gain.gain.exponentialRampToValueAtTime(0.16, t + 0.01);
+			gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
+			var osc = ctx.createOscillator();
+			osc.type = "sine";
+			osc.frequency.setValueAtTime(660, t);
+			osc.frequency.setValueAtTime(880, t + 0.09);   // gentle two-note blip
+			osc.connect(gain);
+			osc.start(t);
+			osc.stop(t + 0.26);
+		} catch(e) {}
+	}
+	// Config is read fresh per message, so the toggle already applies on the fly. The
+	// change listener additionally primes the AudioContext the moment the user enables
+	// the setting: that change is dispatched within the checkbox click (a user gesture),
+	// and browsers gate audio behind a gesture — resuming here unlocks later playback and
+	// the confirmation blip tells the user the sound works.
+	function _playChatSound() {
+		if($tw.wiki.getTiddlerText(SOUND_TITLE, "no") !== "yes") { return; }
+		_playBlip();
+	}
+	$tw.wiki.addEventListener("change", function(changes) {
+		if(!changes[SOUND_TITLE]) { return; }
+		if($tw.wiki.getTiddlerText(SOUND_TITLE, "no") === "yes") { _playBlip(); }
+	});
+
 	// ── events ──────────────────────────────────────────────────────────────────
 
 	window.addEventListener("collab-sharing-message", function(ev) {
@@ -119,6 +160,7 @@ exports.startup = function() {
 		// belongs to the 1:1 conversation with that sender. Room messages have none.
 		var peerKey = msg.private ? (msg.peerDeviceId || msg.senderDeviceId) : "";
 		_addMessage(msg.senderName || msg.senderDeviceId || "Anonymous", msg.text || "", false, msg.timestamp, peerKey);
+		_playChatSound();
 	});
 
 	// Clear history at the start of each new session so stale messages don't appear.

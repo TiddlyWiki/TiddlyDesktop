@@ -279,6 +279,13 @@ exports.startup = function() {
 		// Never let a peer plant a _canonical_uri on our copy (local-file read / SSRF on
 		// render). A legitimate attachment arrives only via the Get-attachment flow.
 		_safety.sanitizeIncomingFields(fields);
+		// Preserve OUR locally-set _canonical_uri (e.g. an attachment we saved to disk): a
+		// peer never provides ours, and applying a full field set would otherwise drop it,
+		// breaking the saved-attachment reference on every subsequent update/catch-up.
+		var _localCu = $tw.wiki.getTiddler(title);
+		if(_localCu && _localCu.fields._canonical_uri && !fields._canonical_uri) {
+			fields._canonical_uri = _localCu.fields._canonical_uri;
+		}
 		suppressEcho[title] = true;
 		try {
 			$tw.wiki.addTiddler(new $tw.Tiddler(fields));
@@ -527,7 +534,15 @@ exports.startup = function() {
 	// ── asset transfer (external-attachment _canonical_uri files) ───────────────
 
 	function _assetError(text) {
-		$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/collab/error", text: text}));
+		// Tag it so we only clear OUR errors — $:/temp/collab/error is shared with the
+		// transport (connection/relay errors) and must not be wiped by an attachment retry.
+		$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/collab/error", text: text, source: "asset"}));
+	}
+
+	// Clear the shared error tiddler only if the current error is an attachment error.
+	function _clearAssetError() {
+		var err = $tw.wiki.getTiddler("$:/temp/collab/error");
+		if(err && err.fields.source === "asset") { $tw.wiki.deleteTiddler("$:/temp/collab/error"); }
 	}
 
 	// Getter: request the asset for `title`. destPath "" → embed inline; otherwise
@@ -538,6 +553,8 @@ exports.startup = function() {
 			console.warn("[collab-asset] system-tiddler sharing off; not getting:", title);
 			return;
 		}
+		// Clear any error from a previous failed attempt; it reappears only if this one fails.
+		_clearAssetError();
 		var requestId = Math.random().toString(36).slice(2);
 		pendingAssetGets[requestId] = {title: title, dest: destPath || ""};
 		_send({type: "collab-get-asset", requesterDeviceId: deviceId, title: title, requestId: requestId});
@@ -717,6 +734,15 @@ exports.startup = function() {
 			try { $tw.wiki.addTiddler(new $tw.Tiddler(fields)); }
 			finally { setTimeout(function() { delete suppressEcho[title]; }, 0); }
 			assetGot[title] = true;
+			_clearAssetError();   // a success clears any prior attachment error
+			// Getting an attachment also subscribes you to the tiddler (so it shows as "Got"
+			// and survives reconnects), unless you already own or subscribe to it. The
+			// tiddler was just written above with our locally-chosen _canonical_uri.
+			if(!ownedTiddlers[title] && !subscribedTiddlers[title]) {
+				var _av = availableTiddlers[title] || {};
+				subscribedTiddlers[title] = {ownerDeviceId: _av.ownerDeviceId || "", ownerName: _av.ownerName || ""};
+				_saveSubscribed();
+			}
 			if(availableTiddlers[title]) { _writeAvailable(title, availableTiddlers[title]); }
 		}
 
@@ -748,6 +774,7 @@ exports.startup = function() {
 			_send({
 				type:           "collab-tiddler-response",
 				targetDeviceId: requesterId,
+				senderDeviceId: deviceId,   // lets the requester tell an owner's answer from a subscriber's
 				title:          title,
 				requestId:      requestId,
 				fields:         _serialise(tiddler)
@@ -893,22 +920,43 @@ exports.startup = function() {
 					_pushLocal(msg.title);
 
 				} else {
-					// Same (or absent) timestamp: compare text to detect a true conflict.
+					// Equal (or absent) timestamps. A genuine coarse edit bumps `modified`,
+					// so a timestamp tie with divergent text almost always means one side
+					// missed the other's Yjs character-level edits (Yjs deliberately does NOT
+					// bump `modified`) — i.e. staleness, not a concurrent coarse edit. Popping
+					// a conflict dialog here was the "out-of-sync limbo" only escapable via
+					// unshare+delete+get. Since a shared tiddler always has an authoritative
+					// owner, resolve by ownership instead:
 					var localText  = local.fields.text  || "";
 					var remoteText = msg.fields.text || "";
 					if(localText === remoteText) {
 						// Identical content - nothing to do.
 						break;
 					}
-					// Genuinely diverged with equal timestamps - ask the user.
-					_showConflict(msg.title, local, msg.fields, function(resolution, remoteFields) {
-						if(resolution === "use-shared") {
-							_applyRemote(msg.title, remoteFields);
-						} else {
-							// User keeps local; push it so peers receive the definitive version.
-							_pushLocal(msg.title);
-						}
-					});
+					var ownerId   = availableTiddlers[msg.title] && availableTiddlers[msg.title].ownerDeviceId;
+					var iAmOwner  = !!ownedTiddlers[msg.title];
+					var fromOwner = msg.senderDeviceId && ownerId && msg.senderDeviceId === ownerId;
+					if(fromOwner && !iAmOwner) {
+						// The owner answered and we only subscribe → adopt the owner's copy
+						// as authoritative, silently. This heals a stale subscriber.
+						_applyRemote(msg.title, msg.fields);
+					} else if(iAmOwner) {
+						// We own it (owner re-sync after reconnect): our copy is the source of
+						// truth. Keep it and re-push so subscribers converge onto it.
+						_pushLocal(msg.title);
+					} else {
+						// Ownerless, or the owner is unknown to us (e.g. answered by another
+						// subscriber while the owner is offline): we genuinely cannot decide,
+						// so fall back to asking the user.
+						_showConflict(msg.title, local, msg.fields, function(resolution, remoteFields) {
+							if(resolution === "use-shared") {
+								_applyRemote(msg.title, remoteFields);
+							} else {
+								// User keeps local; push it so peers receive the definitive version.
+								_pushLocal(msg.title);
+							}
+						});
+					}
 				}
 			}
 			// Ensure the subscription record is up-to-date.

@@ -1,10 +1,10 @@
 title: WikiList
 
 <p class="td-search">
-<$edit-text tiddler=<<qualify '$:/temp/WikiList/search'>> tag="input" class="tc-edit-texteditor" placeholder="search"/>
+<$edit-text tiddler=<<qualify '$:/temp/WikiList/search'>> tag="input" class="tc-edit-texteditor" placeholder={{$:/language/TiddlyDesktop/List/SearchPlaceholder}}/>
 
 <$list filter="[<qualify '$:/temp/WikiList/search'>get[text]minlength[1]]">
-<$button class="tc-btn-invisible" tooltip="Clear search" set=<<qualify '$:/temp/WikiList/search'>> setTo="">{{$:/core/images/close-button}}</$button>
+<$button class="tc-btn-invisible" tooltip={{$:/language/TiddlyDesktop/List/ClearSearch}} set=<<qualify '$:/temp/WikiList/search'>> setTo="">{{$:/core/images/close-button}}</$button>
 </$list>
 </p>
     
@@ -27,7 +27,5 @@ filter={{{ [<input>minlength[3]]:map[search<beginfilter>then<filtersearch>else<t
 >
 
 <div class="td-wikilist">
-<$macrocall $name="list-tagged-draggable" tag="wikilist" subFilter="all[tiddlers]subfilter<filter>unique[]" itemTemplate="WikiListRow" emptyMessage="Add a ~TiddlyWiki file or folder to get started.
-
-Click the buttons above to browse, or drag and drop from your file Explorer/Finder"/>
+<$macrocall $name="list-tagged-draggable" tag="wikilist" subFilter="all[tiddlers]subfilter<filter>unique[]" itemTemplate="WikiListRow" emptyMessage={{$:/language/TiddlyDesktop/List/EmptyMessage}}/>
 </div>

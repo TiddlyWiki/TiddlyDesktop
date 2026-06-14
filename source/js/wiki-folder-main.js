@@ -15,6 +15,7 @@ var $tw = {desktop: {
 		devtools: require("../js/utils/devtools.js"),
 		dom: require("../js/utils/dom.js"),
 		dragdrop: require("../js/utils/dragdrop.js"),
+		findbar: require("../js/utils/findbar.js"),
 		menu: require("../js/utils/menu.js"),
 		ws: require("ws"),
 		https: require("https"),
@@ -54,7 +55,13 @@ if(queryObject.host && queryObject.port) {
 	$tw.boot.argv.push("--listen","host="+queryObject.host,"port="+queryObject.port,"credentials="+queryObject.credentials,"readers="+queryObject.readers,"writers="+queryObject.writers);
 	// Optional --listen server options (only passed when set, so empty values don't
 	// override TiddlyWiki's own defaults).
-	if(queryObject.pathprefix)   { $tw.boot.argv.push("path-prefix="+queryObject.pathprefix); }
+	if(queryObject.pathprefix) {
+		// TiddlyWiki matches path-prefix as a literal prefix of the (leading-slash)
+		// request path, so it must start with "/" — normalise it for the user.
+		var _pp = queryObject.pathprefix.replace(/\/+$/,"");
+		if(_pp.charAt(0) !== "/") { _pp = "/" + _pp; }
+		$tw.boot.argv.push("path-prefix=" + _pp);
+	}
 	if(queryObject.roottiddler)  { $tw.boot.argv.push("root-tiddler="+queryObject.roottiddler); }
 	if(queryObject.anonusername) { $tw.boot.argv.push("anon-username="+queryObject.anonusername); }
 	if(queryObject.gzip === "yes") { $tw.boot.argv.push("gzip=yes"); }
@@ -62,8 +69,13 @@ if(queryObject.host && queryObject.port) {
 
 console.log("Running tiddlywiki " + $tw.boot.argv.join(" "));
 
-// Main part of boot process
+// Main part of boot process — timed so a slow folder-wiki load can be localised in the
+// devtools console (F12): a big "TiddlyWiki() sync" number points at boot/startup work
+// (wiki size, plugin startups), a big gap to "first tick" points at the async render.
+var _tdBootStart = Date.now();
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
+console.log("[TiddlyDesktop] folder wiki: TiddlyWiki() sync took " + (Date.now() - _tdBootStart) + "ms");
+setTimeout(function() { console.log("[TiddlyDesktop] folder wiki: first tick at " + (Date.now() - _tdBootStart) + "ms"); }, 0);
 
 $tw.wiki.addTiddler({title: "$:/status/IsReadOnly",text: "no"});
 

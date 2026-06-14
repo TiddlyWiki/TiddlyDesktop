@@ -60,6 +60,13 @@ exports.startup = function() {
 	// auto-connect on startup and reconnects after token/config changes).
 	window.addEventListener("collab-relay-opened", function() { _verifyAuth(); });
 
+	// Transport gave up reconnecting because the relay rejected our token (401 at the
+	// WS upgrade — typically after the machine slept and the OAuth session lapsed).
+	// Re-verify over HTTP: if the token is in fact still valid, the 401 was transient
+	// so reconnect; if it's truly expired, sign out and prompt re-login (which, on a
+	// fresh token, reconnects automatically via transport's auth-token watcher).
+	window.addEventListener("collab-auth-expired", function() { _handleAuthExpired(); });
+
 	// Single-file wiki: wiki-file-window.js calls this after initialising the queue.
 	window._nwjsHttpQueueReady = function() {
 		// Start polling _nwjsHttpResults written by the parent queue processor.
@@ -298,6 +305,46 @@ function _verifyAuth() {
 				_signOut();
 				_setStatus("Session expired - please sign in again.");
 			}
+		});
+}
+
+// Recover from transport's 401 reconnect bail-out (see the collab-auth-expired
+// listener above). Distinguish a transient relay 401 from a genuinely expired token
+// by re-checking over HTTP, and act accordingly.
+function _handleAuthExpired() {
+	var relayUrl  = _cfg("relay-url");
+	var authToken = _cfg("auth-token");
+	var authProvider = _cfg("auth-provider");
+	if(!relayUrl || !authToken) { return; }
+	var apiBase = _relayHttpBase(relayUrl);
+	var headers = {"Authorization": "Bearer " + authToken};
+	if(authProvider) { headers["X-Auth-Provider"] = authProvider; }
+	_fetchJson(apiBase + "/api/auth/user", headers)
+		.then(function(data) {
+			// Token still accepted over HTTP → the WS 401 was transient (e.g. a relay
+			// restart racing the reconnect). Reconnect to the same room.
+			if(data && data.username) {
+				$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/collab/auth-username", text: data.username}));
+			}
+			$tw.wiki.deleteTiddler("$:/temp/collab/error");
+			setTimeout(function() {
+				$tw.rootWidget.dispatchEvent({type: "codemirror-6-collab-connect"});
+			}, 500);
+		})
+		.catch(function(err) {
+			var msg = (err && err.message) ? err.message : String(err);
+			if(msg.indexOf("401") !== -1 || msg.indexOf("Unauthorized") !== -1) {
+				// Token genuinely expired. Sign out and prompt re-login; transport has
+				// already stopped reconnecting, so there is no loop to break here.
+				_signOut();
+				_setStatus("Session expired — please sign in again.");
+				$tw.wiki.addTiddler(new $tw.Tiddler({
+					title: "$:/temp/collab/error",
+					text:  "Session expired — please sign in again via the Account section."
+				}));
+			}
+			// Any other error (relay unreachable) is left alone: the user can retry
+			// Connect once the relay is back.
 		});
 }
 

@@ -6,7 +6,7 @@ description: Toggle real-time collaboration connection
 \whitespace trim
 
 <$set name="collabStatus" value={{{ [[$:/temp/collab/status]get[status]] ~disconnected }}}>
-<$button message="codemirror-6-collab-pagecontrols-click" tooltip={{{ [<collabStatus>addprefix[Collab - ]] }}} aria-label="Collab" class=`$(tv-config-toolbar-class)$ tc-collab-pagecontrols-btn`>
+<$button message="codemirror-6-collab-pagecontrols-click" tooltip={{{ [<collabStatus>addprefix[Collab - ]] }}} aria-label="Collab" class=`$(tv-config-toolbar-class)$ tc-collab-pagecontrols-btn tc-collab-pc-$(collabStatus)$`>
 <span class={{{ [<collabStatus>addprefix[tc-collab-dot tc-collab-dot-]] }}}></span><%if [<tv-config-toolbar-icons>match[yes]] %>{{$:/core/images/plugin-generic-plugin}}<%endif%><%if [<tv-config-toolbar-text>match[yes]] %><span class="tc-btn-text">Collab</span><%endif%>
 </$button>
 </$set>

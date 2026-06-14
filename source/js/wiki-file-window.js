@@ -28,6 +28,7 @@ function WikiFileWindow(options) {
 		self.window_nwjs.once("loaded",self.onloaded.bind(self));
 		self.window_nwjs.on("close",self.onclose.bind(self));
 		self.trackGeometry();
+		self.restoreMaximizedState();
 	});
 }
 

@@ -570,6 +570,20 @@ tags: $:/tags/Stylesheet
   fill: #1976d2;
 }
 
+/* Colour the share/Get icon on hover — `color` alone doesn't tint an SVG. */
+.tc-tiddler-controls button.tc-collab-share-btn:hover svg,
+.tc-tiddler-edit-controls button.tc-collab-share-btn:hover svg {
+  fill: <<colour primary>>;
+}
+
+/* Tint the Collab page-control icon with the connection status colour
+   (the dot already shows it; this colours the SVG too). disconnected = default. */
+.tc-collab-pc-connected svg     { fill: #4caf50; }
+.tc-collab-pc-connecting svg    { fill: #ff9800; }
+.tc-collab-pc-error svg,
+.tc-collab-pc-auth-failed svg,
+.tc-collab-pc-access-denied svg { fill: #f44336; }
+
 /* -- Shared edit banner ------------------------------------------------------ */
 
 .tc-collab-edit-shared-banner {
@@ -760,15 +774,25 @@ tags: $:/tags/Stylesheet
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 3px;
   pointer-events: none;
+}
+
+/* The actual Get/Chat/Status rows live inside the (un-hidden) dock's $reveal, not as
+   direct children of .tc-collab-dock — so the column layout and gap must be on this
+   wrapper for them to stack and space correctly. */
+.tc-collab-dock-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
 }
 
 /* Block-mode transclusion wraps each child (Get/Chat/status) in a paragraph that
    carries the theme's 1em margins; flex items don't collapse margins, so without
-   this the rows would be pushed ~50px apart. Zero the direct children only — the
-   panels' own contents are untouched. */
-.tc-collab-dock > * {
+   this the rows would be pushed ~50px apart. Zero the direct children — the panels'
+   own contents are untouched. */
+.tc-collab-dock > *,
+.tc-collab-dock-stack > * {
   margin: 0;
 }
 
@@ -915,8 +939,6 @@ tags: $:/tags/Stylesheet
   border-radius: 4px 0 0 0;
   font-size: 0.76em;
   color: <<colour foreground>>;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   user-select: none;
   pointer-events: none;
   line-height: 1.6;
@@ -1003,8 +1025,6 @@ tags: $:/tags/Stylesheet
   border-radius: 4px 0 0 0;
   font-size: 0.76em;
   color: <<colour foreground>>;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   cursor: pointer;
   pointer-events: auto;
 }
@@ -1027,7 +1047,7 @@ tags: $:/tags/Stylesheet
 }
 
 .tc-collab-chat-panel {
-  width: 300px;
+  width: 320px;   /* keep in sync with .tc-collab-get-panel */
   display: flex;
   flex-direction: column;
   pointer-events: auto;
@@ -1036,8 +1056,6 @@ tags: $:/tags/Stylesheet
   border-left: 1px solid <<colour tiddler-border>>;
   border-radius: 4px 0 0 0;
   box-shadow: -3px -3px 10px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   font-size: 0.82em;
   color: <<colour foreground>>;
 }
@@ -1072,14 +1090,23 @@ tags: $:/tags/Stylesheet
 }
 
 .tc-collab-chat-close-btn {
-  color: <<colour muted-foreground>>;
-  font-size: 1em;
-  line-height: 1;
+  color: <<colour foreground>>;
+  fill: <<colour foreground>>;
+  opacity: 0.65;
+  line-height: 0;
+  padding: 2px;
+  border-radius: 3px;
   flex-shrink: 0;
 }
 
+.tc-collab-chat-close-btn svg {
+  width: 1.1em;
+  height: 1.1em;
+}
+
 .tc-collab-chat-close-btn:hover {
-  color: <<colour foreground>>;
+  opacity: 1;
+  background: rgba(127, 127, 127, 0.18);
 }
 
 /* Banner shown while a private 1:1 conversation is selected. */
@@ -1212,8 +1239,6 @@ tags: $:/tags/Stylesheet
   border-radius: 4px 0 0 0;
   font-size: 0.76em;
   color: <<colour foreground>>;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   cursor: pointer;
   pointer-events: auto;
 }
@@ -1245,8 +1270,6 @@ tags: $:/tags/Stylesheet
   border-left: 1px solid <<colour tiddler-border>>;
   border-radius: 4px 0 0 0;
   box-shadow: -3px -3px 10px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   font-size: 0.82em;
   color: <<colour foreground>>;
 }
@@ -1263,13 +1286,23 @@ tags: $:/tags/Stylesheet
 }
 
 .tc-collab-get-close-btn {
-  color: <<colour muted-foreground>>;
-  font-size: 1em;
-  line-height: 1;
+  color: <<colour foreground>>;
+  fill: <<colour foreground>>;
+  opacity: 0.65;
+  line-height: 0;
+  padding: 2px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.tc-collab-get-close-btn svg {
+  width: 1.1em;
+  height: 1.1em;
 }
 
 .tc-collab-get-close-btn:hover {
-  color: <<colour foreground>>;
+  opacity: 1;
+  background: rgba(127, 127, 127, 0.18);
 }
 
 .tc-collab-get-list {
@@ -1378,4 +1411,77 @@ tags: $:/tags/Stylesheet
   border: 1px solid rgba(244, 67, 54, 0.5);
   border-radius: 4px;
   color: <<colour foreground>>;
+}
+
+/* ── small literal gaps ─────────────────────────────────────────────────────
+   \whitespace trim collapses the space between a widget and adjacent text, so
+   where a gap is needed we mark it with one of these instead of a bare space. */
+.tc-tiny-gap-right { margin-right: 0.35em; }
+.tc-tiny-gap-left  { margin-left: 0.35em; }
+
+/* ── framed status panel (connected / LAN / e2e on their own lines) ───────── */
+.tc-collab-statuspanel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 1em;
+  padding: 7px 10px;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 6px;
+  background: <<colour tiddler-background>>;
+}
+
+.tc-collab-statuspanel-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.tc-collab-statuspanel-line {
+  display: flex;
+}
+
+/* ── room action row (Connect/Disconnect · Invite · Leave) ────────────────── */
+.tc-collab-room-name-row {
+  margin-bottom: 5px;
+}
+
+.tc-collab-room-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ── collapsible Get section with a count badge ───────────────────────────── */
+.tc-collab-get-toggle {
+  margin: 0.4em 0;
+}
+
+.tc-collab-get-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px 2px;
+  font-weight: 600;
+  color: <<colour foreground>>;
+}
+
+.tc-collab-get-badge {
+  display: inline-block;
+  min-width: 1.4em;
+  text-align: center;
+  font-size: 0.78em;
+  font-weight: 700;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: rgba(76, 175, 80, 0.85);
+  color: #fff;
+}
+
+.tc-collab-get-badge-zero {
+  background: <<colour muted-foreground>>;
+  opacity: 0.6;
 }

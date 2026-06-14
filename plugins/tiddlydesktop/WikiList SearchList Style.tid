@@ -15,5 +15,14 @@ padding-top:0;
 
 .td-search .tc-edit-texteditor{
 flex:1;
-border:none;
+border:1px solid <<colour tiddler-border>>;
+border-radius:4px;
+padding:6px 9px;
+background:<<colour tiddler-background>>;
+color:<<colour foreground>>;
+}
+
+.td-search .tc-edit-texteditor:focus{
+outline:none;
+border-color:<<colour wikilist-item-border-hover>>;
 }

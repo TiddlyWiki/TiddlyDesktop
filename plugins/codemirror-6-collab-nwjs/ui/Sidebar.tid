@@ -5,20 +5,22 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 \whitespace trim
 <div class="tc-collab-sidebar">
 
-<div class="tc-collab-status-row">
+<div class="tc-collab-statuspanel">
 <$set name="collabStatus" value={{{ [[$:/temp/collab/status]get[status]] }}}>
+<div class="tc-collab-statuspanel-main">
 <span class={{{ [<collabStatus>addprefix[tc-collab-dot tc-collab-dot-]] }}}></span>
 <$text text=<<collabStatus>>/>
+</div>
 </$set>
 <$list filter="[[$:/temp/collab/status]has[lan-peers]!field:lan-peers[0]]" variable="_">
-&ensp;· <span class="tc-collab-lan-badge" title="Direct encrypted LAN connection active">LAN ⚡ <$text text={{{ [[$:/temp/collab/status]get[lan-peers]] }}}/></span>
+<div class="tc-collab-statuspanel-line"><span class="tc-collab-lan-badge" title="Direct encrypted LAN connection active">LAN ⚡ <$text text={{{ [[$:/temp/collab/status]get[lan-peers]] }}}/></span></div>
 </$list>
 <$list filter="[[$:/temp/collab/status]field:status[connected]]" variable="_">
 <$list filter="[[$:/temp/collab/status]field:e2e[strong]]" variable="_">
-&ensp;· <span class="tc-collab-e2e-badge tc-collab-e2e-strong" title="End-to-end encrypted: the key is derived from your room token, which is never sent to the relay. Not even the relay can read your content.">🔒 end-to-end encrypted</span>
+<div class="tc-collab-statuspanel-line"><span class="tc-collab-e2e-badge tc-collab-e2e-strong" title="End-to-end encrypted: the key is derived from your room token, which is never sent to the relay. Not even the relay can read your content.">🔒 end-to-end encrypted</span></div>
 </$list>
 <$list filter="[[$:/temp/collab/status]field:e2e[room-code]]" variable="_">
-&ensp;· <span class="tc-collab-e2e-badge tc-collab-e2e-weak" title="Encrypted with a key derived from the room code, which the relay also knows. Set a room token for true end-to-end privacy from the relay.">🔓 encrypted (room code) — set a room token for E2E</span>
+<div class="tc-collab-statuspanel-line"><span class="tc-collab-e2e-badge tc-collab-e2e-weak" title="Encrypted with a key derived from the room code, which the relay also knows. Set a room token for true end-to-end privacy from the relay.">🔓 encrypted (room code) — set a room token for E2E</span></div>
 </$list>
 </$list>
 </div>
@@ -50,6 +52,19 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <div class="tc-collab-conflict-notice">{{$:/core/images/warning}} Conflict: <$text text={{{ [<currentTiddler>get[tiddler-title]] }}}/></div>
 </$list>
 
+<$list filter="[prefix[$:/temp/collab/share/available/]limit[1]]" variable="_">
+<$set name="getCount" value={{{ [prefix[$:/temp/collab/share/available/]!field:subscribed[yes]count[]] }}}>
+<div class="tc-collab-get-toggle">
+<$reveal type="nomatch" state="$:/temp/collab/state/get-open" text="yes" tag="div">
+<$button set="$:/temp/collab/state/get-open" setTo="yes" class="tc-btn-invisible tc-collab-get-header">{{$:/core/images/right-arrow}}<span>Shared tiddlers</span><span class={{{ [<getCount>match[0]then[tc-collab-get-badge tc-collab-get-badge-zero]else[tc-collab-get-badge]] }}}><$text text=<<getCount>>/></span></$button>
+</$reveal>
+<$reveal type="match" state="$:/temp/collab/state/get-open" text="yes" tag="div">
+<$button set="$:/temp/collab/state/get-open" setTo="no" class="tc-btn-invisible tc-collab-get-header">{{$:/core/images/down-arrow}}<span>Shared tiddlers</span><span class={{{ [<getCount>match[0]then[tc-collab-get-badge tc-collab-get-badge-zero]else[tc-collab-get-badge]] }}}><$text text=<<getCount>>/></span></$button>
+</$reveal>
+</div>
+</$set>
+</$list>
+<$reveal type="match" state="$:/temp/collab/state/get-open" text="yes">
 <$list filter="[prefix[$:/temp/collab/share/available/]sort[tiddler-title]]" emptyMessage="">
 <$set name="sharedTitle" value={{{ [<currentTiddler>get[tiddler-title]] }}}>
 <$set name="isSubscribed" value={{{ [<currentTiddler>get[subscribed]] }}}>
@@ -59,30 +74,57 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <$list filter="[<isOwned>!match[yes]]" variable="_">
 <span class="tc-collab-shared-by"><$text text="by "/><$text text={{{ [<currentTiddler>get[owner-name]] }}}/></span>
 </$list>
+<$list filter="[<currentTiddler>field:asset[yes]]" variable="_">
+<span class="tc-collab-shared-asset-badge" title="Attachment file"><$text text="📎 "/><$text text={{{ [<currentTiddler>get[asset-name]] }}}/></span>
+</$list>
 <$list filter="[<isOwned>match[yes]]" variable="_">
 <span class="tc-collab-shared-owner-badge">yours</span>
 </$list>
-<$list filter="[<isSubscribed>match[yes]]" variable="_">
 <$list filter="[<isOwned>!match[yes]]" variable="_">
+
+<$list filter="[<currentTiddler>field:asset[yes]]" variable="_">
+<$list filter="[<currentTiddler>field:asset-got[yes]]" variable="_">
+<span class="tc-collab-get-saved" title="Attachment saved to your wiki">✓ Saved</span>
+<$list filter="[<isSubscribed>match[yes]]" variable="_">
+<$button message="codemirror-6-collab-unsubscribe-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn tc-collab-get-btn-subscribed" tooltip="Stop receiving updates for this attachment tiddler">✓ Got</$button>
+</$list>
+</$list>
+<$list filter="[<currentTiddler>!field:asset-got[yes]]" variable="_">
+<$set name="extMode" value={{{ [[$:/plugins/tiddlywiki/external-attachments]is[tiddler]] :filter[[$:/config/ExternalAttachments/Enable]get[text]match[yes]] +[first[]] }}}>
+<$list filter="[<extMode>!match[]]" variable="_">
+<$browse nwsaveas={{{ [<currentTiddler>get[asset-name]] }}} message="codemirror-6-collab-get-asset" param=<<sharedTitle>> class="tc-collab-get-asset-browse" tooltip="Save this attachment to a file on disk"/>
+</$list>
+<$list filter="[<extMode>match[]]" variable="_">
+<$button message="codemirror-6-collab-get-asset" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn" tooltip="Embed this attachment in your wiki">Get</$button>
+</$list>
+</$set>
+</$list>
+</$list>
+
+<$list filter="[<currentTiddler>!field:asset[yes]]" variable="_">
+<$list filter="[<isSubscribed>match[yes]]" variable="_">
 <$button message="codemirror-6-collab-unsubscribe-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn tc-collab-get-btn-subscribed" tooltip="Stop receiving updates for this tiddler">✓ Got</$button>
 </$list>
-</$list>
 <$list filter="[<isSubscribed>!match[yes]]" variable="_">
-<$list filter="[<isOwned>!match[yes]]" variable="_">
 <$button message="codemirror-6-collab-get-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn" tooltip="Get this tiddler and subscribe to updates">Get</$button>
 </$list>
+</$list>
+
 </$list>
 </div>
 </$set>
 </$set>
 </$set>
 </$list>
+</$reveal>
 
 <$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
 <div class="tc-collab-room-panel">
 <$reveal type="nomatch" state="$:/config/codemirror-6-collab/room-code" text="">
-<div class="tc-collab-in-room-row">
+<div class="tc-collab-room-name-row">
 <span class="tc-collab-room-name">Room: <code><$text text={{$:/config/codemirror-6-collab/room-code}}/></code></span>
+</div>
+<div class="tc-collab-room-actions">
 <$reveal type="match" state="$:/temp/collab/status!!status" text="connected">
 <$button message="codemirror-6-collab-disconnect" class="tc-btn-invisible tc-collab-disconnect-btn">Disconnect</$button>
 </$reveal>
@@ -94,7 +136,12 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <$button message="codemirror-6-collab-connect" class="tc-btn-invisible tc-collab-connect-btn">Connect</$button>
 </$reveal>
 </$reveal>
-<$button message="codemirror-6-collab-generate-invite" class="tc-btn-invisible tc-collab-invite-btn">Invite</$button>
+<$reveal type="match" state="$:/temp/collab/invite-code" text="">
+<$button message="codemirror-6-collab-generate-invite" class="tc-btn-invisible tc-collab-invite-btn" tooltip="Generate and show an invite code">Invite</$button>
+</$reveal>
+<$reveal type="nomatch" state="$:/temp/collab/invite-code" text="">
+<$button set="$:/temp/collab/invite-code" setTo="" class="tc-btn-invisible tc-collab-invite-btn tc-collab-invite-btn-open" tooltip="Hide the invite code">Invite ▲</$button>
+</$reveal>
 <$button message="codemirror-6-collab-leave-room" class="tc-btn-invisible tc-collab-leave-btn">Leave</$button>
 </div>
 <$reveal type="nomatch" state="$:/temp/collab/invite-code" text="">
@@ -134,8 +181,9 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <tr class="tc-edit-field"><td class="tc-edit-field-name">Room code</td><td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/room-code" tag="input" placeholder="shared-room-name"/></td></tr>
 <tr class="tc-edit-field"><td class="tc-edit-field-name">Room token</td><td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/room-token" tag="input" placeholder="shared E2E secret"/></td></tr>
 </tbody></table>
-<div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/relay-only" field="text" checked="yes" unchecked="no" default="no"/> <span>Relay only — disable direct LAN</span></div>
-<div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/allow-system-tiddlers" field="text" checked="yes" unchecked="no" default="no"/> <span>Allow system (<code>$:/</code>) tiddlers — never executable; trusted rooms only</span></div>
+<div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/relay-only" field="text" checked="yes" unchecked="no" default="no"/><span class="tc-tiny-gap-left">Relay only — disable direct LAN</span></div>
+<div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/allow-system-tiddlers" field="text" checked="yes" unchecked="no" default="no"/><span class="tc-tiny-gap-left">Allow system (<code>$:/</code>) tiddlers — never executable; trusted rooms only</span></div>
+<div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/chat-sound" field="text" checked="yes" unchecked="no" default="no"/><span class="tc-tiny-gap-left">Play a sound when a chat message arrives</span></div>
 </div>
 <div class="tc-collab-settings-group">
 <div class="tc-collab-settings-label">Identity</div>
@@ -154,7 +202,7 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <$reveal type="match" state="$:/temp/collab/auth-username" text="">
 <div class="tc-collab-signin-row">
 <$list filter="[prefix[$:/temp/collab/auth-providers/]sort[display-name]]">
-<$button message="codemirror-6-collab-oauth-start" param={{{ [<currentTiddler>get[name]] }}} class="tc-btn-invisible tc-collab-signin-btn">Sign in with <$text text={{{ [<currentTiddler>get[display-name]] }}}/></$button>
+<$button message="codemirror-6-collab-oauth-start" param={{{ [<currentTiddler>get[name]] }}} class="tc-btn-invisible tc-collab-signin-btn"><span class="tc-tiny-gap-right">Sign in with</span><$text text={{{ [<currentTiddler>get[display-name]] }}}/></$button>
 </$list>
 <$list filter="[[$:/config/codemirror-6-collab/relay-url]!has[text]]" variable="_">
 <em class="tc-collab-auth-hint">Set a relay URL above to see sign-in options.</em>
