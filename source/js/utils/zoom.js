@@ -52,6 +52,11 @@ exports.install = function(win_nwjs, hostDoc, contentDoc) {
 		} else {
 			btn.textContent = levelToPercent(lvl) + "%  ⟳";
 			btn.removeAttribute("hidden");
+			// win.zoomLevel scales the whole page, including this fixed control. Counter-
+			// scale by the inverse zoom factor so the reset panel keeps a constant size and
+			// font-size. (transform-origin top-left keeps it pinned in its corner.)
+			btn.style.transformOrigin = "top left";
+			btn.style.transform = "scale(" + Math.pow(1.2, -lvl) + ")";
 		}
 	}
 
@@ -84,7 +89,7 @@ function injectStyle(doc) {
 	var s = doc.createElement("style");
 	s.id = "td-zoom-style";
 	s.textContent = [
-		".td-zoom-reset{position:fixed;top:0;left:18px;z-index:2147483646;",
+		".td-zoom-reset{position:fixed;top:0;left:0;z-index:2147483646;transform-origin:top left;",
 		"display:inline-flex;align-items:center;gap:4px;",
 		"background:#fff;color:#202124;border:1px solid #c7c7c7;border-top:none;",
 		"border-radius:0 0 8px 8px;box-shadow:0 2px 9px rgba(0,0,0,0.25);",

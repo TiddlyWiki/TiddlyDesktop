@@ -5,6 +5,7 @@ tags: $:/tags/Stylesheet
 
 .td-wikilist {
 	padding: 1em;
+	padding-top: 0;
 	background: <<colour wikilist-background>>;
 	width: 100%;
 	margin: 0;

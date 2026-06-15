@@ -4,6 +4,34 @@ Base class methods for TiddlyDesktop window objects
 
 "use strict";
 
+// ── screen awareness (multi-monitor) ───────────────────────────────────────────
+// Saved geometry uses GLOBAL x/y, so it already encodes which monitor a window was on.
+// But a monitor that's since been removed/rearranged would restore it off-screen
+// (invisible), so we validate the saved position against the currently connected screens.
+var _gui = null;
+try { _gui = require("nw.gui"); } catch(e) {}
+var _screenInited = false;
+function _screens() {
+	try {
+		if(!_gui || !_gui.Screen) { return []; }
+		if(!_screenInited) { try { _gui.Screen.Init(); } catch(e) {} _screenInited = true; }
+		return _gui.Screen.screens || [];
+	} catch(e) { return []; }
+}
+// True if the rect shows a meaningful chunk on some connected screen.
+function _rectOnAScreen(x, y, w, h) {
+	var screens = _screens();
+	if(!screens.length) { return true; }   // can't enumerate → trust the saved coords
+	for(var i = 0; i < screens.length; i++) {
+		var b = screens[i].bounds || screens[i].work_area;
+		if(!b) { continue; }
+		var ox = Math.max(0, Math.min(x + w, b.x + b.width)  - Math.max(x, b.x));
+		var oy = Math.max(0, Math.min(y + h, b.y + b.height) - Math.max(y, b.y));
+		if(ox >= 80 && oy >= 40) { return true; }   // enough to grab the title bar
+	}
+	return false;
+}
+
 exports.addBaseMethods = function(proto) {
 
 	proto.getConfigTitle = function(type,identifier) {
@@ -58,14 +86,20 @@ exports.addBaseMethods = function(proto) {
 		return null;
 	};
 
-	// Merge any saved geometry into an nw.js Window.open options object.
+	// Merge any saved geometry into an nw.js Window.open options object. The window's
+	// position is restored only if it still lands on a connected screen — the global x/y
+	// place it back on the same monitor, and an unplugged monitor falls back to the OS
+	// default (NW.js centres it) instead of opening off-screen.
 	proto.applyGeometryToOpenOptions = function(options) {
 		var g = this.loadGeometry();
 		if(g) {
-			if(isFinite(g.x)) { options.x = g.x; }
-			if(isFinite(g.y)) { options.y = g.y; }
 			if(isFinite(g.width)) { options.width = g.width; }
 			if(isFinite(g.height)) { options.height = g.height; }
+			var w = isFinite(g.width) ? g.width : 800, h = isFinite(g.height) ? g.height : 600;
+			if(isFinite(g.x) && isFinite(g.y) && _rectOnAScreen(g.x, g.y, w, h)) {
+				options.x = g.x;
+				options.y = g.y;
+			}
 		}
 		return options;
 	};

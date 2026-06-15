@@ -1,0 +1,21 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/EditToolbarResyncButton
+tags: $:/tags/EditToolbar
+caption: Collab resolve conflict
+list-before: $:/core/ui/EditToolbar/delete
+
+\whitespace trim
+<$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
+<$list filter="[[$:/temp/collab/status]get[status]match[connected]]" variable="_">
+<$set name="realTitle" value={{{ [<currentTiddler>get[draft.of]] }}}>
+<$list filter="[<realTitle>!match[]]" variable="_">
+<$set name="availTiddler" value={{{ [<realTitle>addprefix[$:/temp/collab/share/available/]] }}}>
+<$list filter="[<availTiddler>get[diverged]match[yes]]" variable="_">
+<$button message="codemirror-6-collab-resolve-tiddler" param=<<realTitle>> class="tc-btn-invisible tc-collab-share-btn tc-collab-resolve-toolbar-btn" tooltip="The live tiddler diverged from the room — review and resolve">
+{{$:/core/images/warning}}
+</$button>
+</$list>
+</$set>
+</$list>
+</$set>
+</$list>
+</$reveal>

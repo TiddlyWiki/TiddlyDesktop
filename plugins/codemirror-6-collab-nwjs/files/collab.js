@@ -193,6 +193,25 @@ function _diffYText(ytext, oldStr, newStr) {
 var _activeEngines = {};
 var _lifecycleListenersRegistered = false;
 
+// Tell the sharing layer the live text of a tiddler currently open in a CM6 editor (or
+// null if it isn't being edited). Lets sharing.js distinguish a co-editor's already-synced
+// save from a conflicting coarse change that would otherwise be lost when we save.
+(function() {
+	if(typeof window === "undefined") { return; }
+	window.TiddlyDesktop = window.TiddlyDesktop || {};
+	window.TiddlyDesktop.collabEditor = window.TiddlyDesktop.collabEditor || {};
+	window.TiddlyDesktop.collabEditor.editingTextOf = function(collabTitle) {
+		for(var key in _activeEngines) {
+			if(!_activeEngines.hasOwnProperty(key)) { continue; }
+			var st = _activeEngines[key] && _activeEngines[key]._collabState;
+			if(!st || st.destroyed || st.collabTitle !== collabTitle) { continue; }
+			var draft = $tw.wiki.getTiddler(st.tiddlerTitle);   // the draft we're editing
+			return draft ? (draft.fields.text || "") : "";
+		}
+		return null;
+	};
+}());
+
 // Module-level registry of collab state by collabTitle (the original tiddler name).
 // When TiddlyWiki recreates an editor widget (e.g., during refresh), we reuse the
 // existing Y.Doc rather than creating a fresh one. This avoids duplicate text,

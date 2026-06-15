@@ -538,6 +538,50 @@ tags: $:/tags/Stylesheet
   color: #fff;
 }
 
+/* Subscribed but the content hasn't arrived yet (owner offline / awaiting response). */
+.tc-collab-getting-btn {
+  border-color: <<colour muted-foreground>>;
+  color: <<colour muted-foreground>>;
+}
+
+.tc-collab-getting-btn:hover {
+  background: <<colour muted-foreground>>;
+  color: <<colour background>>;
+}
+
+/* -- Attachment download progress -------------------------------------------- */
+
+.tc-collab-asset-progress {
+  position: relative;
+  flex: 0 0 auto;
+  width: 90px;
+  height: 18px;
+  border: 1px solid <<colour muted-foreground>>;
+  border-radius: 4px;
+  overflow: hidden;
+  background: <<colour background>>;
+}
+
+.tc-collab-asset-progress-bar {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 0;
+  background: <<colour primary>>;
+  opacity: 0.35;
+  transition: width 0.3s ease;
+}
+
+.tc-collab-asset-progress-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7em;
+  color: <<colour foreground>>;
+}
+
 /* -- Toolbar share button ---------------------------------------------------- */
 
 .tc-collab-share-btn {
@@ -574,6 +618,13 @@ tags: $:/tags/Stylesheet
 .tc-tiddler-controls button.tc-collab-share-btn:hover svg,
 .tc-tiddler-edit-controls button.tc-collab-share-btn:hover svg {
   fill: <<colour primary>>;
+}
+
+/* Toolbar Resolve (divergence) button — shown only when a shared tiddler diverged. */
+.tc-collab-resolve-toolbar-btn { opacity: 1; }
+.tc-tiddler-controls button.tc-collab-resolve-toolbar-btn svg,
+.tc-tiddler-edit-controls button.tc-collab-resolve-toolbar-btn svg {
+  fill: #e65100;
 }
 
 /* Tint the Collab page-control icon with the connection status colour
@@ -682,34 +733,80 @@ tags: $:/tags/Stylesheet
   font-size: 1.2em;
 }
 
-.tc-collab-conflict-panels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1em;
-  margin: 1em 0;
-}
-
-.tc-collab-conflict-panel-label {
+.tc-collab-conflict-diff-label {
   font-size: 0.8em;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: <<colour muted-foreground>>;
-  margin-bottom: 4px;
+  margin: 1em 0 4px;
 }
 
-.tc-collab-conflict-content {
+.tc-collab-conflict-diff {
   background: <<colour pre-background>>;
   border: 1px solid <<colour pre-border>>;
-  color: <<colour foreground>>;
   border-radius: 4px;
   padding: 8px;
-  font-size: 0.8em;
+  font-size: 0.85em;
+  max-height: 320px;
+  overflow: auto;
+  margin-bottom: 0.5em;
+}
+
+.tc-collab-conflict-diff pre,
+.tc-collab-conflict-diff code {
   white-space: pre-wrap;
   word-break: break-word;
-  max-height: 200px;
-  overflow-y: auto;
   margin: 0;
+  background: none;
+  border: none;
+}
+
+.tc-collab-conflict-diff .tc-diff-insert { background: rgba(76,175,80,0.30); text-decoration: none; }
+.tc-collab-conflict-diff .tc-diff-delete { background: rgba(244,67,54,0.28); }
+
+.tc-collab-conflict-merge-editor {
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 180px;
+  font-family: monospace;
+  font-size: 0.85em;
+  padding: 8px;
+  border: 1px solid <<colour tiddler-border>>;
+  border-radius: 4px;
+  background: <<colour tiddler-background>>;
+  color: <<colour foreground>>;
+  margin-bottom: 0.5em;
+}
+
+.tc-collab-conflict-note {
+  margin: 0.8em 0 0.5em;
+  padding: 6px 10px;
+  font-size: 0.9em;
+  color: <<colour muted-foreground>>;
+  background: <<colour pre-background>>;
+  border-radius: 4px;
+}
+
+.tc-collab-conflict-fields {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+  margin-bottom: 0.5em;
+}
+
+.tc-collab-conflict-fields th,
+.tc-collab-conflict-fields td {
+  border: 1px solid <<colour tiddler-border>>;
+  padding: 4px 8px;
+  text-align: left;
+  vertical-align: top;
+  word-break: break-word;
+}
+
+.tc-collab-conflict-fields th {
+  background: rgba(127, 127, 127, 0.14);
+  font-weight: 600;
 }
 
 .tc-collab-conflict-actions {
@@ -738,6 +835,46 @@ tags: $:/tags/Stylesheet
 
 .tc-collab-btn-keep:hover {
   background: #1565c0;
+}
+
+.tc-collab-btn-merge {
+  background: <<colour tiddler-controls-foreground>>;
+  color: <<colour background>>;
+  border-radius: 4px;
+  padding: 8px 16px;
+}
+
+.tc-collab-btn-merge:hover {
+  opacity: 0.85;
+}
+
+/* Re-sync / Resolve controls on a Got tiddler in the share list */
+.tc-collab-resync-btn {
+  color: <<colour muted-foreground>>;
+  fill: <<colour muted-foreground>>;
+  padding: 1px 4px;
+  flex-shrink: 0;
+}
+
+.tc-collab-resync-btn svg {
+  width: 0.95em;
+  height: 0.95em;
+}
+
+.tc-collab-resync-btn:hover {
+  color: <<colour foreground>>;
+  fill: <<colour foreground>>;
+}
+
+.tc-collab-resolve-btn {
+  border-color: #ff9800;
+  color: #e65100;
+  font-weight: 600;
+}
+
+.tc-collab-resolve-btn:hover {
+  background: #ff9800;
+  color: #fff;
 }
 
 /* -- Colour picker ---------------------------------------------------------- */
@@ -784,7 +921,28 @@ tags: $:/tags/Stylesheet
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 3px;
+  gap: 0;
+}
+
+/* The three collapsed dock buttons (hide ⌄ / Get / Chat) share one width and sit
+   flush against each other (no gap above). Expanded panels size themselves. */
+.tc-collab-dock-stack .tc-collab-dock-hide,
+.tc-collab-dock-stack .tc-collab-get-toggle,
+.tc-collab-dock-stack .tc-collab-chat-toggle {
+  width: 92px;
+  box-sizing: border-box;
+  display: flex;
+  /* Label at the inline-start edge: left for LTR, right for RTL (flex-start follows
+     the writing direction). */
+  justify-content: flex-start;
+  text-align: start;
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Only the hide button keeps a rounded top-inline-start corner. */
+.tc-collab-dock-stack .tc-collab-dock-hide {
+  border-top-left-radius: 4px;
 }
 
 /* Block-mode transclusion wraps each child (Get/Chat/status) in a paragraph that

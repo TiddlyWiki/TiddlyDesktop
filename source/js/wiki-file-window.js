@@ -143,6 +143,13 @@ WikiFileWindow.prototype.onloadiframe = function() {
 	} catch(e) {
 		console.error("[TiddlyDesktop] zoom install failed:",e);
 	}
+	// Grey out permalink/permaview — no shareable URL in a desktop wiki window. The wiki
+	// renders inside the iframe, so the style goes into the iframe's document.
+	try {
+		require("./utils/disable-permalinks.js").install(this.iframe.contentDocument);
+	} catch(e) {
+		console.error("[TiddlyDesktop] disable-permalinks install failed:",e);
+	}
 	// Observe mutations of the title element of the iframe
 	this.titleObserver = new MutationObserver(this.extractIframeTitle.bind(this));
 	var iframeTitleNode = this.iframe.contentDocument.getElementsByTagName("title")[0];

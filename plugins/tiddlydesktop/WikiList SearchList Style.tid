@@ -13,6 +13,10 @@ padding-bottom:0;
 padding-top:0;
 }
 
+.td-tags{
+margin:0;
+}
+
 .td-search .tc-edit-texteditor{
 flex:1;
 border:1px solid <<colour tiddler-border>>;

@@ -223,3 +223,10 @@ try {
 } catch(e) {
 	console.error("[TiddlyDesktop] zoom install failed:",e);
 }
+
+// Grey out permalink/permaview — no shareable URL in a desktop wiki window.
+try {
+	require("../js/utils/disable-permalinks.js").install(containerWindow.window.document);
+} catch(e) {
+	console.error("[TiddlyDesktop] disable-permalinks install failed:",e);
+}

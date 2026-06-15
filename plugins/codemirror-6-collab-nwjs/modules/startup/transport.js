@@ -886,6 +886,23 @@ exports.startup = function() {
 		}
 	}
 
+	// Self-heal the temp tiddlers the UI and the sharing layer depend on (status drives
+	// every "connected" gate; members/<id> is how sharing reads peer presence) if a user
+	// deletes them mid-session. They only mirror our in-memory state — the live
+	// connection is unaffected. Gated on !destroyed so a real teardown (which clears the
+	// state then deletes the tiddlers) isn't undone.
+	$tw.wiki.addEventListener("change", function(changes) {
+		if(destroyed) { return; }
+		var s = changes["$:/temp/collab/status"];
+		if(s && s.deleted && currentStatus) { _writeStatus(); }
+		var prefix = "$:/temp/collab/members/";
+		Object.keys(changes).forEach(function(title) {
+			if(!changes[title].deleted || title.indexOf(prefix) !== 0) { return; }
+			var id = title.slice(prefix.length);
+			if(memberInfo[id]) { _writeMember(id, memberInfo[id]); }
+		});
+	});
+
 	// Warn (once, in the sidebar) when any connected peer runs a different plugin
 	// version than us — the wire protocol can change between builds.
 	function _updateVersionWarning() {

@@ -79,6 +79,9 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 </$list>
 <$list filter="[<isOwned>match[yes]]" variable="_">
 <span class="tc-collab-shared-owner-badge">yours</span>
+<$list filter="[<currentTiddler>field:diverged[yes]]" variable="_">
+<$button message="codemirror-6-collab-resolve-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn tc-collab-resolve-btn" tooltip="Edited in two places — review and resolve the conflict">⚠ Resolve</$button>
+</$list>
 </$list>
 <$list filter="[<isOwned>!match[yes]]" variable="_">
 
@@ -103,7 +106,16 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 
 <$list filter="[<currentTiddler>!field:asset[yes]]" variable="_">
 <$list filter="[<isSubscribed>match[yes]]" variable="_">
+<$list filter="[<currentTiddler>field:diverged[yes]]" variable="_">
+<$button message="codemirror-6-collab-resolve-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn tc-collab-resolve-btn" tooltip="Edited in two places — review and resolve the conflict">⚠ Resolve</$button>
+</$list>
+<$button message="codemirror-6-collab-resync-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-resync-btn" tooltip="Re-fetch the latest shared version">{{$:/core/images/refresh-button}}</$button>
+<$list filter="[<currentTiddler>field:have[yes]]" variable="_">
 <$button message="codemirror-6-collab-unsubscribe-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn tc-collab-get-btn-subscribed" tooltip="Stop receiving updates for this tiddler">✓ Got</$button>
+</$list>
+<$list filter="[<currentTiddler>!field:have[yes]]" variable="_">
+<$button message="codemirror-6-collab-unsubscribe-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn tc-collab-getting-btn" tooltip="Waiting for the owner to send this tiddler — click to stop waiting">⌛ Getting…</$button>
+</$list>
 </$list>
 <$list filter="[<isSubscribed>!match[yes]]" variable="_">
 <$button message="codemirror-6-collab-get-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn" tooltip="Get this tiddler and subscribe to updates">Get</$button>

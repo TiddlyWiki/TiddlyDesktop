@@ -56,8 +56,13 @@ exports.after       = ["codemirror-6-collab-nwjs-transport", "startup", "rootwid
 exports.synchronous = true;
 exports.platforms   = ["browser"];
 
-var CONFIG_OWNED      = "$:/config/codemirror-6-collab/owned-tiddlers";
-var CONFIG_SUBSCRIBED = "$:/config/codemirror-6-collab/subscribed-tiddlers";
+var CONFIG_OWNED      = "$:/config/codemirror-6-collab/owned-tiddlers";        // legacy (pre per-room), migrated on first run
+var CONFIG_SUBSCRIBED = "$:/config/codemirror-6-collab/subscribed-tiddlers";   // legacy
+// Per-room share state: JSON { "<roomCode>": { owned:[titles], subscribed:[{title,...}] } }.
+// Owned/subscribed are scoped to the room they were made in, so switching rooms doesn't
+// carry your shares/subscriptions across. (Manifests + temp tiddlers are already per
+// connection, hence per room.)
+var CONFIG_ROOMS      = "$:/config/codemirror-6-collab/rooms";
 var AVAIL_PREFIX      = "$:/temp/collab/share/available/";
 var OWNED_PREFIX      = "$:/temp/collab/share/owned/";
 
@@ -78,12 +83,52 @@ exports.startup = function() {
 	// Invariant: for any title, exactly one ownerDeviceId can hold the claim.
 	var availableTiddlers = {};
 
+	// The room code the current in-memory owned/subscribed sets belong to (so we persist
+	// them under the right room even after $:/config room-code has already changed).
+	var _stateRoom = "";
+
 	// Titles currently being written from a peer update - suppresses echo.
 	var suppressEcho = {};
 
 	// Titles being renamed programmatically (subscriber auto-follow) - prevents
 	// th-renaming-tiddler re-entry.
 	var suppressRenameHook = {};
+
+	// Last content we were in agreement on, per title — the "base" for 3-way conflict
+	// detection. In-memory (re-established on the next sync after a reload). Lets us tell
+	// "I didn't change it, so adopt theirs" from "we both changed it → real conflict".
+	var syncedText = {};
+
+	// title -> remote fields, kept while a tiddler is flagged diverged so Resolve can
+	// apply "theirs" without re-fetching.
+	var divergedRemote = {};
+
+	// requestId -> title for a user-triggered Re-sync, so we can resolve its response
+	// the same way as a background catch-up (it just guarantees a round-trip).
+	var manualResync = {};
+
+	// Record the content we're now in sync on (the 3-way base) for `title`.
+	function _markSynced(title) {
+		var t = $tw.wiki.getTiddler(title);
+		syncedText[title] = t ? _contentString(_serialise(t)) : "";
+	}
+
+	// Flag/unflag a tiddler as diverged (both sides edited since the last common base).
+	// Drives the "Resolve" affordance in the Get list; remembers the remote version.
+	function _setDiverged(title, remoteFields) {
+		divergedRemote[title] = remoteFields;
+		if(availableTiddlers[title]) {
+			availableTiddlers[title].diverged = true;
+			_writeAvailable(title, availableTiddlers[title]);
+		}
+	}
+	function _clearDiverged(title) {
+		delete divergedRemote[title];
+		if(availableTiddlers[title] && availableTiddlers[title].diverged) {
+			delete availableTiddlers[title].diverged;
+			_writeAvailable(title, availableTiddlers[title]);
+		}
+	}
 
 	// Always use the transport's ephemeral session ID (this module loads after the
 	// transport). Never fall back to the persisted device-id config tiddler — on
@@ -98,6 +143,15 @@ exports.startup = function() {
 	function _send(msg) {
 		var api = window.TiddlyDesktop && window.TiddlyDesktop.collab;
 		if(api && api.send) { api.send(msg); }
+	}
+
+	// True while we have a live relay connection. Used to gate base advancement: an edit
+	// made while disconnected reached no one, so it must NOT become the 3-way base — else
+	// on reconnect "local == base" makes us silently adopt a peer's concurrent edit instead
+	// of flagging the genuine conflict.
+	function _isConnected() {
+		var api = window.TiddlyDesktop && window.TiddlyDesktop.collab;
+		try { return !!(api && api.getStatus && api.getStatus() === "connected"); } catch(e) { return false; }
 	}
 
 	// Pairwise (1:1) send for asset bytes — encrypted exclusively for the recipient
@@ -171,47 +225,143 @@ exports.startup = function() {
 
 	// ── persistence ────────────────────────────────────────────────────────────
 
-	function _saveOwned() {
-		$tw.wiki.addTiddler(new $tw.Tiddler({
-			title: CONFIG_OWNED,
-			text:  JSON.stringify(Object.keys(ownedTiddlers))
-		}));
+	function _currentRoom() {
+		return $tw.wiki.getTiddlerText("$:/config/codemirror-6-collab/room-code", "") || "";
 	}
 
-	function _saveSubscribed() {
-		var items = Object.keys(subscribedTiddlers)
+	function _loadRoomsStore() {
+		var obj = _safeJson($tw.wiki.getTiddlerText(CONFIG_ROOMS, "{}"));
+		return (obj && typeof obj === "object" && !Array.isArray(obj)) ? obj : {};
+	}
+
+	function _writeRoomsStore(store) {
+		// Idempotent: skip the write (and the change event that would dirty the wiki) when
+		// the persisted JSON is unchanged — manifests can call _saveSubscribed frequently.
+		var text = JSON.stringify(store);
+		if($tw.wiki.getTiddlerText(CONFIG_ROOMS, "") === text) { return; }
+		$tw.wiki.addTiddler(new $tw.Tiddler({title: CONFIG_ROOMS, text: text}));
+	}
+
+	// Persist the current in-memory owned/subscribed sets under the room they belong to
+	// (_stateRoom). Both _saveOwned and _saveSubscribed funnel here.
+	function _persistRoomState() {
+		var store = _loadRoomsStore();
+		var owned = Object.keys(ownedTiddlers);
+		var subscribed = Object.keys(subscribedTiddlers)
 			.filter(function(title) { return !ownedTiddlers[title]; })
 			.map(function(title) {
-				var sub   = subscribedTiddlers[title];
-				var avail = availableTiddlers[title] || {};
+				var sub = subscribedTiddlers[title], avail = availableTiddlers[title] || {};
 				return {
 					title:         title,
 					ownerDeviceId: sub.ownerDeviceId || avail.ownerDeviceId || "",
 					ownerName:     avail.ownerName || sub.ownerName || ""
 				};
 			});
-		$tw.wiki.addTiddler(new $tw.Tiddler({
-			title: CONFIG_SUBSCRIBED,
-			text:  JSON.stringify(items)
-		}));
+		if(owned.length || subscribed.length) { store[_stateRoom] = {owned: owned, subscribed: subscribed}; }
+		else { delete store[_stateRoom]; }
+		_writeRoomsStore(store);
+	}
+
+	function _saveOwned()      { _persistRoomState(); }
+	function _saveSubscribed() { _persistRoomState(); }
+
+	// Drop all in-memory share state and its temp projections (used when switching rooms).
+	function _resetSharingState() {
+		ownedTiddlers = {}; subscribedTiddlers = {}; availableTiddlers = {};
+		syncedText = {}; divergedRemote = {}; assetGot = {};
+		$tw.wiki.filterTiddlers("[prefix[" + OWNED_PREFIX + "]] [prefix[" + AVAIL_PREFIX + "]]").forEach(function(t) {
+			$tw.wiki.deleteTiddler(t);
+		});
+	}
+
+	// Load a room's persisted owned/subscribed sets into memory and write their UI
+	// projections. One-time migration: if there's no per-room store yet but the legacy
+	// global config exists, adopt it for this room (it was the last room used).
+	function _loadRoomState(room) {
+		var store = _loadRoomsStore();
+		var entry = store[room];
+		if(!entry && Object.keys(store).length === 0) {
+			var oldOwned = _safeJson($tw.wiki.getTiddlerText(CONFIG_OWNED, "[]"));
+			var oldSub   = _safeJson($tw.wiki.getTiddlerText(CONFIG_SUBSCRIBED, "[]"));
+			if((oldOwned && oldOwned.length) || (oldSub && oldSub.length)) {
+				entry = {owned: oldOwned || [], subscribed: oldSub || []};
+				store[room] = entry; _writeRoomsStore(store);
+				$tw.wiki.deleteTiddler(CONFIG_OWNED);
+				$tw.wiki.deleteTiddler(CONFIG_SUBSCRIBED);
+			}
+		}
+		entry = entry || {owned: [], subscribed: []};
+		(entry.owned || []).forEach(function(title) {
+			if(typeof title !== "string" || !title) return;
+			var now = Date.now(), _oa = _assetInfo(title);
+			ownedTiddlers[title]      = {sharedAt: now};
+			subscribedTiddlers[title] = {ownerDeviceId: deviceId};
+			availableTiddlers[title]  = {ownerDeviceId: deviceId, ownerName: _myName(), sharedAt: now,
+				assetName: _oa ? _oa.name : "", assetType: _oa ? _oa.type : ""};
+			_writeOwned(title, ownedTiddlers[title]);
+			_writeAvailable(title, availableTiddlers[title]);
+		});
+		(entry.subscribed || []).forEach(function(item) {
+			var title         = typeof item === "string" ? item : (item && item.title);
+			var ownerDeviceId = (item && typeof item === "object") ? (item.ownerDeviceId || "") : "";
+			var ownerName     = (item && typeof item === "object") ? (item.ownerName     || "") : "";
+			if(typeof title !== "string" || !title) return;
+			if(ownedTiddlers[title]) return;
+			subscribedTiddlers[title] = {ownerDeviceId: ownerDeviceId, ownerName: ownerName};
+			if(!availableTiddlers[title]) {
+				availableTiddlers[title] = {ownerDeviceId: ownerDeviceId, ownerName: ownerName, sharedAt: 0};
+			}
+			_writeAvailable(title, availableTiddlers[title]);
+		});
 	}
 
 	// ── temp tiddler writers (drive sidebar UI) ────────────────────────────────
 
+	// Write a generated tiddler only if it actually changed, so repeated identical writes
+	// (e.g. from the periodic manifest) don't churn change events and dirty the wiki.
+	function _addIfChanged(fields) {
+		var existing = $tw.wiki.getTiddler(fields.title);
+		if(existing) {
+			var same = true, keys = Object.keys(fields), i, k, ev, nv;
+			for(i = 0; i < keys.length; i++) {
+				k = keys[i];
+				ev = existing.fields[k]; ev = (ev === undefined || ev === null) ? "" : String(ev);
+				nv = fields[k];          nv = (nv === undefined || nv === null) ? "" : String(nv);
+				if(ev !== nv) { same = false; break; }
+			}
+			if(same) {
+				var ek = Object.keys(existing.fields);   // existing must not carry extra fields
+				for(i = 0; i < ek.length; i++) {
+					if(ek[i] === "created" || ek[i] === "modified") { continue; }
+					if(fields[ek[i]] === undefined) { same = false; break; }
+				}
+			}
+			if(same) { return; }
+		}
+		$tw.wiki.addTiddler(new $tw.Tiddler(fields));
+	}
+
 	function _writeAvailable(title, info) {
 		if(info) {
-			$tw.wiki.addTiddler(new $tw.Tiddler({
+			_addIfChanged({
 				title:             AVAIL_PREFIX + title,
 				"tiddler-title":   title,
 				"owner-device-id": info.ownerDeviceId || "",
 				"owner-name":      info.ownerName || info.ownerDeviceId || "",
 				"shared-at":       String(info.sharedAt || 0),
 				subscribed:        (subscribedTiddlers[title] || ownedTiddlers[title]) ? "yes" : "",
+				// Whether we ACTUALLY hold the content (vs merely subscribed/intending to):
+				// owned, an attachment we've fetched, or a subscribed tiddler that exists
+				// locally. Lets the UI show "Got" only when the content arrived — clicking
+				// Get on a tiddler whose owner is offline stays "Getting…", not "Got".
+				have:              (ownedTiddlers[title] || assetGot[title]
+				                     || (subscribedTiddlers[title] && $tw.wiki.tiddlerExists(title))) ? "yes" : "",
 				asset:             info.assetName ? "yes" : "",
 				"asset-name":      info.assetName || "",
 				"asset-type":      info.assetType || "",
-				"asset-got":       (assetGot[title] || ownedTiddlers[title]) ? "yes" : ""
-			}));
+				"asset-got":       (assetGot[title] || ownedTiddlers[title]) ? "yes" : "",
+				diverged:          info.diverged ? "yes" : ""
+			});
 		} else {
 			$tw.wiki.deleteTiddler(AVAIL_PREFIX + title);
 		}
@@ -231,17 +381,51 @@ exports.startup = function() {
 
 	// ── conflict dialog ────────────────────────────────────────────────────────
 
-	// Reuses the existing ConflictDialog.tid / $:/tags/AboveStory overlay.
-	// onResolve is called with "use-shared" or "cancel".
+	// Display string for a single field value (arrays joined, dates ISO).
+	function _fieldValStr(v) {
+		if(v === undefined || v === null) { return ""; }
+		if(Array.isArray(v)) { return v.join(" "); }
+		if(v instanceof Date) { return v.toISOString(); }
+		return String(v);
+	}
+
+	// Drives ConflictDialog.tid ($:/tags/AboveStory). Shows a text diff of local vs remote
+	// AND a table of any non-text fields that differ (so a field-only conflict isn't an
+	// empty diff), and resolves to "use-mine" | "use-theirs" | "merge" (with an edited
+	// merged-text). onResolve(resolution, remoteFields, merged).
+	var CONFLICT_TEXT_CAP = 50000;
+	var CONFLICT_FIELD_EXCLUDE = {text:1, title:1, modified:1, created:1, _canonical_uri:1, bag:1, revision:1};
 	function _showConflict(title, localTiddler, remoteFields, onResolve) {
 		var conflictTiddler = "$:/temp/collab/conflict/" + title;
+		var fieldsTiddler   = "$:/temp/collab/conflict-fields/" + title;
+		var localText  = (localTiddler.fields.text || "").slice(0, CONFLICT_TEXT_CAP);
+		var remoteText = (remoteFields.text       || "").slice(0, CONFLICT_TEXT_CAP);
+		// Collect non-text fields that differ, for the field-diff table.
+		var names = {}, fieldDiffs = [];
+		Object.keys(localTiddler.fields).forEach(function(k) { names[k] = 1; });
+		Object.keys(remoteFields).forEach(function(k) { names[k] = 1; });
+		Object.keys(names).sort().forEach(function(k) {
+			if(CONFLICT_FIELD_EXCLUDE[k]) { return; }
+			var mine = _fieldValStr(localTiddler.fields[k]), theirs = _fieldValStr(remoteFields[k]);
+			if(mine !== theirs) { fieldDiffs.push({field: k, mine: mine, theirs: theirs}); }
+		});
 		$tw.wiki.addTiddler(new $tw.Tiddler({
 			title:            conflictTiddler,
 			"tiddler-title":  title,
-			"local-content":  (localTiddler.fields.text  || "").slice(0, 2000),
-			"remote-content": (remoteFields.text || "").slice(0, 2000),
+			"local-content":  localText,
+			"remote-content": remoteText,
+			"merged-text":    localText,   // seed the merge editor with the local version
+			"text-differs":   localText !== remoteText ? "yes" : "",
+			"field-count":    String(fieldDiffs.length),
 			resolution:       ""
 		}));
+		if(fieldDiffs.length) {
+			$tw.wiki.addTiddler(new $tw.Tiddler({
+				title: fieldsTiddler, type: "application/json", text: JSON.stringify(fieldDiffs)
+			}));
+		} else {
+			$tw.wiki.deleteTiddler(fieldsTiddler);
+		}
 
 		var onChange = function(changes) {
 			if(!changes[conflictTiddler]) return;
@@ -249,8 +433,10 @@ exports.startup = function() {
 			var resolution = tid ? (tid.fields.resolution || "") : "";
 			if(!resolution) return;
 			$tw.wiki.removeEventListener("change", onChange);
+			var mergedText = tid ? (tid.fields["merged-text"] || "") : "";
 			$tw.wiki.deleteTiddler(conflictTiddler);
-			onResolve(resolution, remoteFields);
+			$tw.wiki.deleteTiddler(fieldsTiddler);
+			onResolve(resolution, remoteFields, mergedText);
 		};
 		$tw.wiki.addEventListener("change", onChange);
 	}
@@ -292,48 +478,47 @@ exports.startup = function() {
 		} finally {
 			setTimeout(function() { delete suppressEcho[title]; }, 0);
 		}
+		// We now hold the remote content — that's the new common base, and any prior
+		// divergence is resolved.
+		_markSynced(title);
+		_clearDiverged(title);
 	}
 
 	// Push the current local version of title to the room.
 	function _pushLocal(title) {
 		var t = $tw.wiki.getTiddler(title);
-		if(t && !t.fields["draft.of"]) {
+		// Never live-broadcast a binary asset (would flood the room with base64); peers
+		// fetch it on demand via the pairwise asset flow.
+		if(t && !t.fields["draft.of"] && !_assetInfo(title)) {
 			_send({
 				type:           "collab-tiddler-update",
 				senderDeviceId: deviceId,
 				title:          title,
 				fields:         _serialise(t)
 			});
+			// Our pushed content is now the common base; clears any prior divergence.
+			_markSynced(title);
+			_clearDiverged(title);
 		}
 	}
 
-	// ── restore persisted state on startup ─────────────────────────────────────
+	// ── restore persisted state on startup (for the current room) ───────────────
 
-	_safeJson($tw.wiki.getTiddlerText(CONFIG_OWNED, "[]")).forEach(function(title) {
-		if(typeof title !== "string" || !title) return;
-		var now = Date.now();
-		var _oa = _assetInfo(title);
-		ownedTiddlers[title]      = {sharedAt: now};
-		subscribedTiddlers[title] = {ownerDeviceId: deviceId};
-		availableTiddlers[title]  = {ownerDeviceId: deviceId, ownerName: _myName(), sharedAt: now,
-			assetName: _oa ? _oa.name : "", assetType: _oa ? _oa.type : ""};
-		_writeOwned(title, ownedTiddlers[title]);
-		_writeAvailable(title, availableTiddlers[title]);
-	});
+	_stateRoom = _currentRoom();
+	_loadRoomState(_stateRoom);
 
-	_safeJson($tw.wiki.getTiddlerText(CONFIG_SUBSCRIBED, "[]")).forEach(function(item) {
-		// Support both old format (plain string) and new format ({title, ownerDeviceId, ownerName}).
-		var title         = typeof item === "string" ? item : (item && item.title);
-		var ownerDeviceId = (item && typeof item === "object") ? (item.ownerDeviceId || "") : "";
-		var ownerName     = (item && typeof item === "object") ? (item.ownerName     || "") : "";
-		if(typeof title !== "string" || !title) return;
-		if(ownedTiddlers[title]) return; // already restored above
-		// Store ownerName in subscribedTiddlers so it survives disconnect/reconnect cycles.
-		subscribedTiddlers[title] = {ownerDeviceId: ownerDeviceId, ownerName: ownerName};
-		if(!availableTiddlers[title]) {
-			availableTiddlers[title] = {ownerDeviceId: ownerDeviceId, ownerName: ownerName, sharedAt: 0};
-		}
-		_writeAvailable(title, availableTiddlers[title]);
+	// Switching rooms swaps the persisted share state: the old room's sets are already
+	// saved (on every mutation), so persist once more under it, drop the in-memory state
+	// and its projections, then load the new room's. The transport reconnects separately;
+	// manifests/temp tiddlers repopulate from the new room on connect.
+	$tw.wiki.addEventListener("change", function(changes) {
+		if(!changes["$:/config/codemirror-6-collab/room-code"]) return;
+		var newRoom = _currentRoom();
+		if(newRoom === _stateRoom) return;
+		_persistRoomState();
+		_resetSharingState();
+		_stateRoom = newRoom;
+		_loadRoomState(newRoom);
 	});
 
 	// ── manifest helpers ───────────────────────────────────────────────────────
@@ -345,6 +530,38 @@ exports.startup = function() {
 			|| deviceId;
 	}
 
+	// Canonical string over a tiddler's full SERIALISED field set (sorted keys, arrays
+	// joined, dates already normalised to ISO by _serialise, _canonical_uri already
+	// excluded as a per-machine ref). This is the single definition of a tiddler's
+	// "content identity" — both the checksum and _reconcile's equality test use it, so
+	// they can never disagree. Includes every shared field (text, tags, type, modified,
+	// custom fields…), so divergence in ANY field is detected.
+	function _contentString(serialised) {
+		if(!serialised) { return ""; }
+		var keys = Object.keys(serialised).sort(), parts = [];
+		for(var i = 0; i < keys.length; i++) {
+			var v = serialised[keys[i]];
+			parts.push(keys[i] + "\x00" + (Array.isArray(v) ? v.join("\x01") : String(v)));
+		}
+		return parts.join("\x02");
+	}
+
+	// Cheap checksum (djb2 xor + length) of a content string.
+	function _fp(s) {
+		s = s || "";
+		var h = 5381, i = s.length;
+		while(i) { h = (h * 33) ^ s.charCodeAt(--i); }
+		return (h >>> 0).toString(36) + ":" + s.length;
+	}
+
+	// Content fingerprint of a live tiddler (or "" if absent / an asset, which sync via
+	// the pairwise byte flow, not by text).
+	function _tiddlerFp(title) {
+		if(_assetInfo(title)) { return ""; }
+		var t = $tw.wiki.getTiddler(title);
+		return t ? _fp(_contentString(_serialise(t))) : "";
+	}
+
 	function _sendManifest() {
 		var manifest = Object.keys(ownedTiddlers).map(function(title) {
 			var asset = _assetInfo(title);
@@ -354,7 +571,9 @@ exports.startup = function() {
 				ownerName:     _myName(),
 				sharedAt:      ownedTiddlers[title].sharedAt,
 				assetName:     asset ? asset.name : "",
-				assetType:     asset ? asset.type : ""
+				assetType:     asset ? asset.type : "",
+				// Content checksum so subscribers detect drift without a full re-fetch.
+				fp:            _tiddlerFp(title)
 			};
 		});
 		// Send even when empty. A peer treats our manifest as authoritative for the
@@ -380,8 +599,11 @@ exports.startup = function() {
 	function _claimAvailable(title, info) {
 		var existing = availableTiddlers[title];
 		if(existing && existing.ownerDeviceId && existing.ownerDeviceId !== info.ownerDeviceId) {
-			// Title already claimed by a different peer - do not overwrite.
-			return false;
+			// Title claimed by a different peer. Refuse only if that peer is actually
+			// PRESENT; deviceIds are ephemeral, so a title can otherwise get stuck under a
+			// dead id (an owner that reconnected with a new id, or a peer that has left) and
+			// the live owner could never re-advertise it. A live claimant takes it over.
+			if(_isMemberPresent(existing.ownerDeviceId)) { return false; }
 		}
 		availableTiddlers[title] = info;
 		_writeAvailable(title, info);
@@ -399,23 +621,40 @@ exports.startup = function() {
 	}
 
 	function _applyManifest(manifest, senderDeviceId, senderName) {
-		// Refresh sender's entries: remove stale, re-add current.
-		// Entries owned by other peers are untouched.
+		// Diff against the sender's current entries — only REMOVE titles that left the
+		// manifest and only (idempotently) write the rest. Re-deleting + re-adding every
+		// entry on each periodic manifest would otherwise churn temp tiddlers and dirty the
+		// wiki every interval. Entries owned by other peers are untouched.
+		var listed = {};
+		(manifest || []).forEach(function(item) { if(item && item.title) { listed[item.title] = item; } });
 		Object.keys(availableTiddlers).forEach(function(title) {
-			if(availableTiddlers[title].ownerDeviceId === senderDeviceId) {
+			if(availableTiddlers[title].ownerDeviceId === senderDeviceId && !listed[title]) {
 				delete availableTiddlers[title];
 				if(!ownedTiddlers[title]) { $tw.wiki.deleteTiddler(AVAIL_PREFIX + title); }
 			}
 		});
-		(manifest || []).forEach(function(item) {
-			if(!item || !item.title) return;
-			_claimAvailable(item.title, {
+		Object.keys(listed).forEach(function(title) {
+			var item = listed[title];
+			_claimAvailable(title, {
 				ownerDeviceId: senderDeviceId,
 				ownerName:     item.ownerName || senderName || senderDeviceId,
-				sharedAt:      item.sharedAt  || Date.now(),
+				sharedAt:      item.sharedAt  || 0,
 				assetName:     item.assetName || "",
 				assetType:     item.assetType || ""
 			});
+		});
+	}
+
+	// Drop advertised entries whose owner is no longer present and that we neither own nor
+	// subscribe to, so the Get list never shows a tiddler no present peer is sharing.
+	// Subscribed entries are kept (we want to resume automatically when the owner returns).
+	function _pruneAbsentAvailable() {
+		Object.keys(availableTiddlers).forEach(function(title) {
+			if(ownedTiddlers[title] || subscribedTiddlers[title]) { return; }
+			if(!_isMemberPresent(availableTiddlers[title].ownerDeviceId)) {
+				delete availableTiddlers[title];
+				$tw.wiki.deleteTiddler(AVAIL_PREFIX + title);
+			}
 		});
 	}
 
@@ -433,6 +672,7 @@ exports.startup = function() {
 		}
 		var now = Date.now();
 		var asset = _assetInfo(title);
+		_markSynced(title);
 		ownedTiddlers[title]      = {sharedAt: now};
 		subscribedTiddlers[title] = {ownerDeviceId: deviceId};
 		availableTiddlers[title]  = {ownerDeviceId: deviceId, ownerName: _myName(), sharedAt: now,
@@ -469,40 +709,52 @@ exports.startup = function() {
 		var wasSubscribed = !wasOwned && !!subscribedTiddlers[fromTitle];
 		if(!wasOwned && !wasSubscribed) return;
 
-		// Transfer owned state.
 		if(wasOwned) {
+			// The OWNER renamed the shared tiddler: carry all share state to the new title
+			// and tell the room, so it stays shared under the new name.
 			var ownedInfo = ownedTiddlers[fromTitle];
 			delete ownedTiddlers[fromTitle];
 			ownedTiddlers[toTitle] = ownedInfo;
 			_writeOwned(fromTitle, null);
 			_writeOwned(toTitle, ownedInfo);
-		}
 
-		// Transfer subscribed state.
-		var subInfo = subscribedTiddlers[fromTitle] || {ownerDeviceId: deviceId};
-		delete subscribedTiddlers[fromTitle];
-		subscribedTiddlers[toTitle] = subInfo;
+			var subInfo = subscribedTiddlers[fromTitle] || {ownerDeviceId: deviceId};
+			delete subscribedTiddlers[fromTitle];
+			subscribedTiddlers[toTitle] = subInfo;
 
-		// Transfer available state.
-		var avail = availableTiddlers[fromTitle];
-		if(avail) {
-			delete availableTiddlers[fromTitle];
-			availableTiddlers[toTitle] = avail;
-			_writeAvailable(fromTitle, null);
-			_writeAvailable(toTitle, availableTiddlers[toTitle]);
-		}
+			var avail = availableTiddlers[fromTitle];
+			if(avail) {
+				delete availableTiddlers[fromTitle];
+				availableTiddlers[toTitle] = avail;
+				_writeAvailable(fromTitle, null);
+				_writeAvailable(toTitle, availableTiddlers[toTitle]);
+			}
+			if(typeof syncedText[fromTitle] === "string") { syncedText[toTitle] = syncedText[fromTitle]; }
+			delete syncedText[fromTitle];
+			_clearDiverged(fromTitle);
 
-		_saveOwned();
-		_saveSubscribed();
+			_saveOwned();
+			_saveSubscribed();
 
-		// Only the owner broadcasts the rename; subscribers just update locally.
-		if(wasOwned) {
 			_send({
 				type:          "collab-tiddler-rename",
 				ownerDeviceId: deviceId,
+				ownerName:     _myName(),
 				fromTitle:     fromTitle,
 				toTitle:       toTitle
 			});
+			// The new-title tiddler was created before it became owned, so its content
+			// change wasn't broadcast; push it now so a rename-with-edits stays in sync.
+			_pushLocal(toTitle);
+		} else {
+			// A SUBSCRIBER renamed a tiddler it Got. It can't rename someone else's shared
+			// tiddler for them, so treat this as a LOCAL FORK: unsubscribe the original
+			// (it returns to the Get list, still advertised by its owner and fully
+			// functional — including the Get-attachment button) and leave the new title as
+			// an ordinary local tiddler.
+			delete syncedText[fromTitle];
+			_clearDiverged(fromTitle);
+			_unsubscribeTiddler(fromTitle);
 		}
 	}
 
@@ -529,6 +781,118 @@ exports.startup = function() {
 		_writeAvailable(title, availableTiddlers[title]);
 		_saveSubscribed();
 		_requestFromOwner(title);
+	}
+
+	// ── reconciliation / conflict resolution ───────────────────────────────────
+
+	// The live editor text for a tiddler open in CM6 (or null if not being edited).
+	function _editingTextOf(title) {
+		var api = window.TiddlyDesktop && window.TiddlyDesktop.collabEditor;
+		try { return (api && api.editingTextOf) ? api.editingTextOf(title) : null; } catch(_e) { return null; }
+	}
+
+	// A coarse update arrived for a tiddler we're editing and it differs from our live
+	// text. Don't decide immediately: a co-editor's normal save also sends a coarse
+	// update, and its final Yjs delta may land a tick later — so re-check shortly. Then:
+	// editor closed → reconcile against the saved tiddler; now matches → adopt; still
+	// differs → flag diverged so saving prompts to Resolve instead of silently winning.
+	var editingConflictTimers = {};
+	function _scheduleEditingConflict(title, remoteFields) {
+		if(editingConflictTimers[title]) { clearTimeout(editingConflictTimers[title]); }
+		editingConflictTimers[title] = setTimeout(function() {
+			delete editingConflictTimers[title];
+			var et = _editingTextOf(title);
+			if(et === null) { _reconcile(title, remoteFields); return; }
+			if((remoteFields.text || "") === et) { _applyRemote(title, remoteFields); return; }
+			if(!divergedRemote[title]) { _setDiverged(title, remoteFields); }
+		}, 800);
+	}
+
+	// Decide what to do with a peer's copy of `title`, using the 3-way base in
+	// syncedText so we never silently clobber edits: adopt the side that changed when
+	// only one did, and flag a true both-sides-changed divergence for the user to
+	// Resolve. Ownership is irrelevant here — what matters is who actually edited.
+	function _reconcile(title, remoteFields) {
+		var local = $tw.wiki.getTiddler(title);
+		if(!local) { _applyRemote(title, remoteFields); return; }
+		var localMs    = _parseMs(local.fields.modified),
+			remoteMs   = _parseMs(remoteFields.modified),
+			localC     = _contentString(_serialise(local)),
+			remoteC    = _contentString(remoteFields);
+		if(localC === remoteC) { _markSynced(title); _clearDiverged(title); return; }
+		// Once flagged diverged, NOTHING auto-applies or auto-pushes — not even another
+		// peer's newer version or resolution. A diverged peer holds un-pushed edits, and
+		// with 3+ peers silently adopting someone else's copy would lose them (and could
+		// flip-flop between several divergent answers). We only track the newest competing
+		// remote for the Resolve dialog; divergence clears when the user resolves, or when
+		// a remote equal to our local arrives (handled above — the room converged on ours).
+		if(divergedRemote[title]) {
+			if(remoteMs >= _parseMs(divergedRemote[title].modified)) { divergedRemote[title] = remoteFields; }
+			return;
+		}
+		// If this tiddler is open in an editor, a coarse change must not silently overwrite
+		// our live edits (we'd lose it on save). Matches what we're editing (e.g. a
+		// co-editor's save we already have via Yjs) → adopt; otherwise flag for Resolve.
+		var editingText = _editingTextOf(title);
+		if(editingText !== null) {
+			if((remoteFields.text || "") === editingText) { _applyRemote(title, remoteFields); }
+			else { _scheduleEditingConflict(title, remoteFields); }
+			return;
+		}
+		// Consult the 3-way base BEFORE timestamps: it's authoritative about WHO changed.
+		// If only one side changed since the last common base, adopt that side; if BOTH
+		// changed it's a genuine conflict — regardless of which has the newer `modified`
+		// (e.g. two peers editing the same tiddler while disconnected). A resolution still
+		// propagates: an in-sync recipient has localC==base, so it adopts the pushed copy.
+		var base = syncedText[title];
+		if(typeof base === "string") {
+			if(localC === base)  { _applyRemote(title, remoteFields); return; }  // we didn't change it → take theirs
+			if(remoteC === base) { _pushLocal(title); return; }                  // they didn't change it → keep ours
+			_setDiverged(title, remoteFields); return;                            // both changed → conflict
+		}
+		// No base (e.g. after a reload, so we can't tell who changed): fall back to
+		// last-write-wins by modified, flagging a conflict only on a timestamp tie.
+		if(remoteMs > localMs) { _applyRemote(title, remoteFields); return; }
+		if(localMs > remoteMs) { _pushLocal(title); return; }
+		_setDiverged(title, remoteFields);
+	}
+
+	// User asked to re-pull a shared tiddler from the room (the owner answers, or any
+	// holder while the owner is offline). The response runs through _reconcile.
+	function _resyncTiddler(title) {
+		if(!subscribedTiddlers[title] && !ownedTiddlers[title]) { return; }
+		var requestId = Math.random().toString(36).slice(2);
+		manualResync[requestId] = title;
+		// Don't leak the marker if nobody answers (owner offline and no holder).
+		setTimeout(function() { delete manualResync[requestId]; }, 15000);
+		_send({type: "collab-get-tiddler", requesterDeviceId: deviceId, title: title, requestId: requestId});
+	}
+
+	// Open the diff/merge dialog for a diverged tiddler and apply the chosen resolution.
+	function _openResolveDialog(title) {
+		var remoteFields = divergedRemote[title];
+		var local = $tw.wiki.getTiddler(title);
+		if(!remoteFields || !local) { return; }
+		_showConflict(title, local, remoteFields, function(resolution, rf, mergedText) {
+			if(resolution === "use-theirs")    { _applyRemote(title, rf); }
+			else if(resolution === "use-mine") { _resolveWithText(title, (local.fields.text || "")); }
+			else if(resolution === "merge")    { _resolveWithText(title, mergedText); }
+			_clearDiverged(title);
+		});
+	}
+
+	// Write `text` locally with a bumped `modified` (so peers adopt this as the newest)
+	// and broadcast it, making the chosen resolution the room's definitive version.
+	function _resolveWithText(title, text) {
+		var t = $tw.wiki.getTiddler(title);
+		var fields = t ? _serialise(t) : {title: title};
+		fields.title    = title;
+		fields.text     = text;
+		fields.modified = new Date();
+		suppressEcho[title] = true;
+		try { $tw.wiki.addTiddler(new $tw.Tiddler(fields)); }
+		finally { setTimeout(function() { delete suppressEcho[title]; }, 0); }
+		_pushLocal(title);   // broadcasts and marks synced
 	}
 
 	// ── asset transfer (external-attachment _canonical_uri files) ───────────────
@@ -705,17 +1069,37 @@ exports.startup = function() {
 	}
 
 	function _discardIncoming(requestId, silent) {
-		var inc = incomingAssets[requestId];
+		var inc = incomingAssets[requestId], pending = pendingAssetGets[requestId];
 		if(inc && inc.timer) { clearTimeout(inc.timer); }
+		if(pending) { _clearAssetProgress(pending.title); }
 		delete incomingAssets[requestId];
 		delete pendingAssetGets[requestId];
 		$tw.wiki.deleteTiddler("$:/temp/collab/asset-incoming/" + requestId);
+	}
+
+	// Live download progress for an incoming attachment, keyed by its tiddler title so the
+	// Get list can show a bar while bytes stream in (chunks arrive ~1/s). Cleared when the
+	// transfer finishes, is rejected, or fails.
+	var ASSET_PROGRESS_PREFIX = "$:/temp/collab/asset-progress/";
+	function _writeAssetProgress(title, received, total) {
+		var pct = total > 0 ? Math.min(100, Math.round((received / total) * 100)) : 0;
+		$tw.wiki.addTiddler(new $tw.Tiddler({
+			title:           ASSET_PROGRESS_PREFIX + title,
+			"tiddler-title":  title,
+			received:        String(received),
+			total:           String(total),
+			pct:             String(pct)
+		}));
+	}
+	function _clearAssetProgress(title) {
+		$tw.wiki.deleteTiddler(ASSET_PROGRESS_PREFIX + title);
 	}
 
 	function _finalizeAsset(requestId) {
 		var inc = incomingAssets[requestId], pending = pendingAssetGets[requestId];
 		if(inc && inc.timer) { clearTimeout(inc.timer); }
 		$tw.wiki.deleteTiddler("$:/temp/collab/asset-incoming/" + requestId);
+		if(pending) { _clearAssetProgress(pending.title); }
 		delete incomingAssets[requestId];
 		delete pendingAssetGets[requestId];
 		if(!inc || !pending) return;
@@ -730,6 +1114,11 @@ exports.startup = function() {
 
 		function write() {
 			if(!_acceptTiddler(title, fields)) { console.warn("[collab-asset] refused:", title); return; }
+			// A freshly dropped external attachment often carries neither created nor
+			// modified, so the received tiddler would have none. Keep the owner's
+			// timestamps if they sent them; otherwise stamp now so the tiddler is dated.
+			fields.modified = fields.modified ? new Date(fields.modified) : new Date();
+			fields.created  = fields.created  ? new Date(fields.created)  : fields.modified;
 			suppressEcho[title] = true;
 			try { $tw.wiki.addTiddler(new $tw.Tiddler(fields)); }
 			finally { setTimeout(function() { delete suppressEcho[title]; }, 0); }
@@ -813,7 +1202,22 @@ exports.startup = function() {
 
 	// ── change listener ───────────────────────────────────────────────────────
 
+	// draft.of -> draft.title, learned from live drafts. A rename saves as "create new
+	// title + delete old title"; the th-renaming-tiddler hook only fires when relink runs
+	// (relinkOnRename), so on the default path the old-title deletion would otherwise be
+	// mistaken for an unshare. Watching the draft (which carries both fields and updates as
+	// the user types the new title) lets us detect the rename independent of hook/event order.
+	var pendingRenames = {};
+
 	$tw.wiki.addEventListener("change", function(changes) {
+		// First pass: learn rename intents from any draft present in this change batch.
+		Object.keys(changes).forEach(function(title) {
+			var dt = $tw.wiki.getTiddler(title);
+			if(dt && dt.fields["draft.of"] && dt.fields["draft.title"]
+					&& dt.fields["draft.of"] !== dt.fields["draft.title"]) {
+				pendingRenames[dt.fields["draft.of"]] = dt.fields["draft.title"];
+			}
+		});
 		Object.keys(changes).forEach(function(title) {
 			if(suppressEcho[title]) return;
 			// Deletions NEVER propagate as deletions — a peer removing a tiddler must not
@@ -825,9 +1229,31 @@ exports.startup = function() {
 			//     copy of the tiddler is kept.
 			//   - Subscriber deletes their local copy → unsubscribe, so a later manifest or
 			//     reconnect catch-up doesn't silently re-fetch and resurrect it.
-			// A rename moves the owned/subscribed entry to the new title before this fires
-			// (via the th-renaming-tiddler hook), so this only matches genuine deletions.
 			if(changes[title].deleted) {
+				// Self-heal our temp UI projections if a user deletes one: the in-memory
+				// maps are the source of truth, so re-write whatever entry they still hold.
+				if(title.indexOf(AVAIL_PREFIX) === 0) {
+					var _at = title.slice(AVAIL_PREFIX.length);
+					if(availableTiddlers[_at]) { _writeAvailable(_at, availableTiddlers[_at]); }
+					return;
+				}
+				if(title.indexOf(OWNED_PREFIX) === 0) {
+					var _ot = title.slice(OWNED_PREFIX.length);
+					if(ownedTiddlers[_ot]) { _writeOwned(_ot, ownedTiddlers[_ot]); }
+					return;
+				}
+				// A rename (create new + delete old) must KEEP the tiddler shared: move the
+				// owned/subscribed entry to the new title (the owner also broadcasts the
+				// rename) instead of unsharing. The new title must actually exist, else this
+				// was a cancelled-rename draft and the deletion is genuine.
+				if(pendingRenames[title]) {
+					var newTitle = pendingRenames[title];
+					delete pendingRenames[title];
+					if((ownedTiddlers[title] || subscribedTiddlers[title]) && $tw.wiki.tiddlerExists(newTitle)) {
+						_renameTiddler(title, newTitle);
+						return;
+					}
+				}
 				if(ownedTiddlers[title]) { _unshareTiddler(title); }
 				else if(subscribedTiddlers[title]) { _unsubscribeTiddler(title); }
 				return;
@@ -844,6 +1270,11 @@ exports.startup = function() {
 				title:          title,
 				fields:         _serialise(tiddler)
 			});
+			// Our edit is the common base ONLY if it actually went out — peers converge on
+			// what they received. While disconnected the send is a no-op, so we must keep the
+			// prior base: a concurrent peer edit then surfaces as a conflict on reconnect
+			// (both sides differ from base) instead of being silently adopted.
+			if(_isConnected()) { _markSynced(title); }
 		});
 	});
 
@@ -862,14 +1293,24 @@ exports.startup = function() {
 		case "collab-share-manifest":
 			if(msg.senderDeviceId !== deviceId) {
 				_applyManifest(msg.manifest, msg.senderDeviceId, msg.senderName);
-				// Re-request any subscribed tiddlers the sender now advertises.
+				// For each tiddler we subscribe to, compare the owner's content checksum
+				// with our local one — only re-fetch (→ _reconcile, which auto-detects/flags
+				// divergence) when they differ. A match means we're in sync, so just record
+				// the base. This is how silent drift is caught cheaply on every manifest.
 				(msg.manifest || []).forEach(function(item) {
-					if(item && item.title
-							&& subscribedTiddlers[item.title]
-							&& !ownedTiddlers[item.title]) {
-						_requestFromOwner(item.title);
+					if(!item || !item.title) return;
+					if(!subscribedTiddlers[item.title] || ownedTiddlers[item.title]) return;
+					if(item.assetName) return;   // assets sync via the pairwise byte flow
+					if(item.fp && _tiddlerFp(item.title) === item.fp) {
+						_markSynced(item.title); _clearDiverged(item.title);   // in sync with the owner
+						return;
 					}
+					_requestFromOwner(item.title);
 				});
+				// A present peer just told us authoritatively what it shares; drop any
+				// now-orphaned advertisements (owner left, never subscribed) so the Get
+				// list stays current.
+				_pruneAbsentAvailable();
 			}
 			break;
 
@@ -901,64 +1342,14 @@ exports.startup = function() {
 		case "collab-tiddler-response":
 			// Only the intended recipient resolves this.
 			if(msg.targetDeviceId !== deviceId || !msg.title || !msg.fields) break;
-
-			var local = $tw.wiki.getTiddler(msg.title);
-
-			if(!local) {
-				// Tiddler does not exist locally - apply unconditionally.
-				_applyRemote(msg.title, msg.fields);
-			} else {
-				var localMs  = _parseMs(local.fields.modified);
-				var remoteMs = _parseMs(msg.fields.modified);
-
-				if(remoteMs > localMs) {
-					// Remote is strictly newer - apply silently.
-					_applyRemote(msg.title, msg.fields);
-
-				} else if(localMs > remoteMs) {
-					// Local is strictly newer - keep it and push to room so peers catch up.
-					_pushLocal(msg.title);
-
-				} else {
-					// Equal (or absent) timestamps. A genuine coarse edit bumps `modified`,
-					// so a timestamp tie with divergent text almost always means one side
-					// missed the other's Yjs character-level edits (Yjs deliberately does NOT
-					// bump `modified`) — i.e. staleness, not a concurrent coarse edit. Popping
-					// a conflict dialog here was the "out-of-sync limbo" only escapable via
-					// unshare+delete+get. Since a shared tiddler always has an authoritative
-					// owner, resolve by ownership instead:
-					var localText  = local.fields.text  || "";
-					var remoteText = msg.fields.text || "";
-					if(localText === remoteText) {
-						// Identical content - nothing to do.
-						break;
-					}
-					var ownerId   = availableTiddlers[msg.title] && availableTiddlers[msg.title].ownerDeviceId;
-					var iAmOwner  = !!ownedTiddlers[msg.title];
-					var fromOwner = msg.senderDeviceId && ownerId && msg.senderDeviceId === ownerId;
-					if(fromOwner && !iAmOwner) {
-						// The owner answered and we only subscribe → adopt the owner's copy
-						// as authoritative, silently. This heals a stale subscriber.
-						_applyRemote(msg.title, msg.fields);
-					} else if(iAmOwner) {
-						// We own it (owner re-sync after reconnect): our copy is the source of
-						// truth. Keep it and re-push so subscribers converge onto it.
-						_pushLocal(msg.title);
-					} else {
-						// Ownerless, or the owner is unknown to us (e.g. answered by another
-						// subscriber while the owner is offline): we genuinely cannot decide,
-						// so fall back to asking the user.
-						_showConflict(msg.title, local, msg.fields, function(resolution, remoteFields) {
-							if(resolution === "use-shared") {
-								_applyRemote(msg.title, remoteFields);
-							} else {
-								// User keeps local; push it so peers receive the definitive version.
-								_pushLocal(msg.title);
-							}
-						});
-					}
-				}
-			}
+			var wasManual = !!manualResync[msg.requestId];
+			if(wasManual) { delete manualResync[msg.requestId]; }
+			// Base-aware 3-way reconcile: adopt the side that changed, or flag a true
+			// conflict for the user to resolve (never silently clobber).
+			_reconcile(msg.title, msg.fields);
+			// A user-triggered Re-sync that turned up a genuine conflict opens the diff
+			// dialog straight away (a background catch-up just leaves the Resolve badge).
+			if(wasManual && divergedRemote[msg.title]) { _openResolveDialog(msg.title); }
 			// Ensure the subscription record is up-to-date.
 			if(!subscribedTiddlers[msg.title]) {
 				subscribedTiddlers[msg.title] = {ownerDeviceId: ""};
@@ -967,19 +1358,28 @@ exports.startup = function() {
 			break;
 
 		case "collab-tiddler-update":
-			// Runtime update from any subscribed peer - last-write-wins.
-			// Simultaneous editing is handled by CM6/Yjs; this path is for
-			// passive receivers and course-grained saves.
+			// Runtime update from any subscribed peer. Goes through the same base-aware
+			// reconcile so a coarse save while we hold un-pushed edits flags a conflict
+			// instead of clobbering us. (Live character editing is handled by CM6/Yjs.)
 			if(msg.senderDeviceId !== deviceId
 					&& msg.title
 					&& msg.fields
 					&& (subscribedTiddlers[msg.title] || ownedTiddlers[msg.title])) {
-				_applyRemote(msg.title, msg.fields);
+				_reconcile(msg.title, msg.fields);
 			}
 			break;
 
 		case "collab-tiddler-rename":
 			if(msg.ownerDeviceId === deviceId || !msg.fromTitle || !msg.toTitle) break;
+			// Only a title's known owner may rename it. If we already track an owner for
+			// fromTitle, the rename's claimed owner must match it — defence-in-depth so a
+			// member can't rename a tiddler it doesn't own. (All senders are already
+			// OAuth+cert verified by the transport; this guards intent, not authentication.)
+			if(availableTiddlers[msg.fromTitle] && availableTiddlers[msg.fromTitle].ownerDeviceId
+					&& availableTiddlers[msg.fromTitle].ownerDeviceId !== msg.ownerDeviceId) {
+				console.warn("[collab-sharing] ignoring rename of '" + msg.fromTitle + "' from a non-owner");
+				break;
+			}
 			// Never let a rename move a shared tiddler into disallowed system space
 			// (e.g. clobbering $:/DefaultTiddlers or our protected collab config).
 			{
@@ -1002,6 +1402,11 @@ exports.startup = function() {
 				var renameSub = subscribedTiddlers[msg.fromTitle];
 				delete subscribedTiddlers[msg.fromTitle];
 				subscribedTiddlers[msg.toTitle] = renameSub;
+				// Carry the 3-way base to the new title so post-rename updates reconcile
+				// correctly instead of looking like a fresh divergence.
+				if(typeof syncedText[msg.fromTitle] === "string") { syncedText[msg.toTitle] = syncedText[msg.fromTitle]; }
+				delete syncedText[msg.fromTitle];
+				_clearDiverged(msg.fromTitle);
 				_saveSubscribed();
 				suppressEcho[msg.fromTitle] = true;
 				suppressEcho[msg.toTitle]   = true;
@@ -1015,6 +1420,17 @@ exports.startup = function() {
 						delete suppressEcho[msg.toTitle];
 					}, 0);
 				}
+				// Tell the user their Got tiddler was renamed by the owner (it stays
+				// subscribed and keeps syncing under the new title — shown as "Got").
+				try {
+					$tw.notifier.display("$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/notify/RenamedTiddler", {
+						variables: {
+							renameBy:   msg.ownerName || "A collaborator",
+							renameFrom: msg.fromTitle,
+							renameTo:   msg.toTitle
+						}
+					});
+				} catch(_e) {}
 			}
 			break;
 
@@ -1031,6 +1447,7 @@ exports.startup = function() {
 				break;
 			}
 			incomingAssets[msg.requestId] = {meta: msg, chunks: new Array(msg.totalChunks || 0), received: 0};
+			_writeAssetProgress(pendingAssetGets[msg.requestId].title, 0, msg.totalChunks || 0);
 			break;
 
 		case "collab-asset-chunk":
@@ -1038,6 +1455,8 @@ exports.startup = function() {
 			if(_inc && typeof msg.index === "number" && _inc.chunks[msg.index] === undefined) {
 				_inc.chunks[msg.index] = msg.data || "";
 				_inc.received++;
+				var _pend = pendingAssetGets[msg.requestId];
+				if(_pend) { _writeAssetProgress(_pend.title, _inc.received, _inc.meta.totalChunks || 0); }
 				// All bytes in — don't write yet. Let the receiver inspect what arrived
 				// (name, type, size, destination, fields) and accept/reject it first.
 				if(_inc.received >= _inc.meta.totalChunks) { _raiseIncomingPrompt(msg.requestId); }
@@ -1113,6 +1532,12 @@ exports.startup = function() {
 		_sendManifest();
 	});
 
+	window.addEventListener("collab-member-left", function() {
+		// A peer left — drop any advertisements only it was offering (that we don't own
+		// or subscribe to) so the Get list doesn't keep showing unshareable tiddlers.
+		_pruneAbsentAvailable();
+	});
+
 	window.addEventListener("collab-disconnected", function() {
 		// Clear peer-owned entries; ours stay visible in the sidebar.
 		Object.keys(availableTiddlers).forEach(function(title) {
@@ -1122,6 +1547,23 @@ exports.startup = function() {
 			}
 		});
 	});
+
+	// Periodic backstop. Live edits sync instantly and connect/join already exchange
+	// manifests; this only re-advertises our owned tiddlers' checksums so a peer that
+	// SILENTLY drifted (a lost, never-redelivered update) catches up within one interval.
+	// Cheap: recipients just compare checksums and re-fetch only on a mismatch. Gated to
+	// when we're connected, actually own something, and a peer is present — so a quiet or
+	// solo session sends nothing. 20s is a safety net, not the sync path (don't shorten to
+	// sub-second: it would recompute+broadcast every owned checksum many times a second
+	// through the relay's rate limit for an event that's already handled instantly live).
+	var MANIFEST_REVERIFY_MS = 20000;
+	setInterval(function() {
+		var st = $tw.wiki.getTiddler("$:/temp/collab/status");
+		if(!st || st.fields.status !== "connected") { return; }
+		if(!Object.keys(ownedTiddlers).length) { return; }
+		if($tw.wiki.filterTiddlers("[prefix[$:/temp/collab/members/]first[]]").length === 0) { return; }
+		_sendManifest();
+	}, MANIFEST_REVERIFY_MS);
 
 	// ── widget message handlers ───────────────────────────────────────────────
 
@@ -1140,6 +1582,20 @@ exports.startup = function() {
 	$tw.rootWidget.addEventListener("codemirror-6-collab-get-tiddler", function(ev) {
 		var title = ev.param || (ev.paramObject && ev.paramObject.title);
 		if(title) { _getTiddler(title); }
+		return false;
+	});
+
+	// Re-pull a shared tiddler from the room (heals "Got but missing changes").
+	$tw.rootWidget.addEventListener("codemirror-6-collab-resync-tiddler", function(ev) {
+		var title = ev.param || (ev.paramObject && ev.paramObject.title);
+		if(title) { _resyncTiddler(title); }
+		return false;
+	});
+
+	// Open the diff/merge dialog for a tiddler flagged diverged.
+	$tw.rootWidget.addEventListener("codemirror-6-collab-resolve-tiddler", function(ev) {
+		var title = ev.param || (ev.paramObject && ev.paramObject.title);
+		if(title) { _openResolveDialog(title); }
 		return false;
 	});
 
