@@ -4,8 +4,8 @@ tags: $:/tags/Stylesheet
 <$list filter="[[$:/temp/wikilistrow/dragging]!is[missing]]" variable="_">
 
 .tc-tagged-draggable-list .tc-droppable-placeholder {
-height: {{$:/temp/wikilistrow/dragging}}px;
-margin-bottom: 1em;
+	height: {{$:/temp/wikilistrow/dragging}}px;
+	margin-bottom: 1em;
 }
 
 </$list>

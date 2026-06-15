@@ -133,17 +133,25 @@ exports.installFindBar = function(options) {
 		// 1) Centre the match inside its nearest scrolling container, if any. Scrolling
 		//    the container directly (vs scrollIntoView on the match's parent) avoids
 		//    reflowing a huge block like <pre><code>, which is what used to freeze the UI.
-		try {
-			var sc = nearestScrollable(el, w);
-			if(sc) {
+		var sc = null;
+		try { sc = nearestScrollable(el, w); } catch(e) {}
+		if(sc) {
+			try {
 				var scRect = sc.getBoundingClientRect(), mRect = r.getBoundingClientRect();
 				sc.scrollTop  += (mRect.top  + mRect.height / 2) - (scRect.top  + sc.clientHeight / 2);
 				sc.scrollLeft += (mRect.left + mRect.width  / 2) - (scRect.left + sc.clientWidth  / 2);
-			}
-		} catch(e) {}
-		// 2) Centre in the window too (re-measured after any container scroll), so a
-		//    match that scrolls the document — or a container that is itself offscreen —
-		//    still ends up in view.
+			} catch(e) {}
+			// Having scrolled the pane, only touch the document if the match is STILL
+			// outside the viewport (e.g. the pane itself is partly off-screen). A match in
+			// a scrollable sidebar — which TiddlyWiki positions `fixed` — is now visible, so
+			// we stop here instead of scrolling the page body for nothing.
+			try {
+				var vr = r.getBoundingClientRect();
+				if(vr.top >= 0 && vr.left >= 0 && vr.bottom <= w.innerHeight && vr.right <= w.innerWidth) { return; }
+			} catch(e) { return; }
+		}
+		// 2) No scrolling pane (or the match is still off-screen): centre it in the window,
+		//    so a match that scrolls the document still ends up in view.
 		try {
 			var rect = r.getBoundingClientRect();
 			if(rect && (rect.height || rect.width || rect.top || rect.left)) {
