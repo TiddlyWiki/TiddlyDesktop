@@ -42,6 +42,7 @@ tags: $:/tags/Stylesheet
   color: <<colour foreground>>;
   font-weight: 600;
   letter-spacing: 0.02em;
+  cursor: help;
 }
 
 .tc-collab-e2e-badge {
@@ -134,6 +135,48 @@ tags: $:/tags/Stylesheet
   border-radius: 4px;
   color: <<colour foreground>>;
   font-size: 0.85em;
+}
+
+/* Conflict count badge in the sidebar tab caption — instantly visible even when the
+   Collab tab isn't open. */
+.tc-collab-conflict-badge {
+  display: inline-block;
+  background: #d93025;
+  color: #fff;
+  border-radius: 9px;
+  padding: 0 6px;
+  margin-inline-start: 4px;
+  font-size: 0.75em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Prominent conflict button on the in-window dock — opens the Get panel to resolve. */
+.tc-collab-dock-conflict {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 4px;
+  padding: 3px 10px;
+  background: #d93025;
+  color: #fff;
+  border-radius: 4px 0 0 4px;
+  font-size: 0.76em;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tc-collab-dock-conflict:hover {
+  background: #b3261c;
+  color: #fff;
+}
+
+.tc-collab-dock-conflict svg {
+  width: 1em;
+  height: 1em;
+  fill: currentColor;
 }
 
 .tc-collab-setup-prompt {
@@ -1610,6 +1653,10 @@ tags: $:/tags/Stylesheet
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
+}
+
+.tc-collab-room-actions button {
+  height: 2em;
 }
 
 /* ── collapsible Get section with a count badge ───────────────────────────── */

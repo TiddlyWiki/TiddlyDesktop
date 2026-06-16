@@ -114,7 +114,6 @@ try {
 	console.error("[TiddlyDesktop] fullscreen install failed:",e);
 }
 
-
 // First part of boot process
 var _sjcl = require("../tiddlywiki/boot/sjcl.js");
 global.sjcl = _sjcl;

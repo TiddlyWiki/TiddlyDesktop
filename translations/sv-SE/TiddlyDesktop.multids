@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Lägg till wiki-fil
+Toolbar/AddWikiFolder: Lägg till wiki-mapp
+Toolbar/Backstage: Backstage
+Toolbar/CreateWikiFolder: Skapa ny wiki-mapp
+Toolbar/CreateWiki: Skapa ny wiki
+Toolbar/CreateFromTemplate: Skapa från en mall
+Toolbar/NoTemplates: Inga mallar definierade – se Inställningar
+Toolbar/From: från
+Toolbar/CloneExisting: Klona en befintlig wiki
+Toolbar/NoWikisToClone: Inga wikier tillgängliga att klona
+Toolbar/Help: Hjälp
+Toolbar/Settings: Inställningar
+Toolbar/Language: Språk
+List/SearchPlaceholder: sök
+List/ClearSearch: Rensa sökning
+Row/Untitled: Namnlös
+Row/Open: öppna
+Row/Reveal: visa
+Row/Remove: ta bort
+Row/ToFolder: till mapp
+Row/ToFile: till fil
+Row/ToFolderTooltip: Välj (eller skapa) en tom mapp för den nya wiki-mappen
+Row/ToFileTooltip: Välj var den nya enkelfils-wikin ska sparas
+Row/Advanced: avancerat
+Row/Plugins: tillägg
+Advanced/Backups: Säkerhetskopior
+Advanced/SaveBackup: Spara en säkerhetskopia vid varje sparning
+Advanced/RevealBackups: visa säkerhetskopior
+Advanced/ServerNote: Dessa alternativ styr hur wiki-mappen serveras över HTTP. De träder i kraft nästa gång wiki-mappen öppnas.
+Advanced/Server: Server
+Advanced/Host: Värd
+Advanced/Port: Port
+Advanced/PathPrefix: Sökvägsprefix
+Advanced/RootTiddler: Rot-tiddler
+Advanced/Gzip: Komprimera svar (gzip)
+Advanced/Access: Åtkomst
+Advanced/Credentials: Autentiseringsfil
+Advanced/AnonUsername: Anonymt användarnamn
+Advanced/Readers: Läsare
+Advanced/Writers: Skribenter
+PluginChooser/Heading: Hantera tillägg
+PluginChooser/Close: Stäng
+PluginChooser/OpenWarning: Den här wikin är öppen just nu. Stäng först dess fönster och klicka sedan på Tillämpa.
+PluginChooser/FilterPlaceholder: Filtrera tillägg…
+PluginChooser/Clear: Rensa
+PluginChooser/NoMatch: Inga tillägg matchar ditt filter.
+PluginChooser/Apply: Tillämpa ändringar
+PluginChooser/Cancel: Avbryt
+PluginChooser/Update: Uppdatera
+PluginChooser/UpdateAvailable: En nyare version medföljer — klicka för att uppdatera
+PluginChooser/Updated: Uppdaterad
+Row/PluginUpdates: Tilläggsuppdateringar tillgängliga

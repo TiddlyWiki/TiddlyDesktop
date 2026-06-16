@@ -2,7 +2,7 @@ title: WikiList
 
 \whitespace trim
 <p class="td-search">
-<$edit-text tiddler=<<qualify '$:/temp/WikiList/search'>> tag="input" class="tc-edit-texteditor" placeholder={{$:/language/TiddlyDesktop/List/SearchPlaceholder}}/>
+<$edit-text tiddler=<<qualify '$:/temp/WikiList/search'>> tag="input" class="tc-edit-texteditor td-wikilist-search-input" placeholder={{$:/language/TiddlyDesktop/List/SearchPlaceholder}}/>
 <$list filter="[<qualify '$:/temp/WikiList/search'>get[text]minlength[1]]">
 <$button class="tc-btn-invisible" tooltip={{$:/language/TiddlyDesktop/List/ClearSearch}} set=<<qualify '$:/temp/WikiList/search'>> setTo="">{{$:/core/images/close-button}}</$button>
 </$list>

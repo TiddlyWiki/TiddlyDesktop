@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Добавить файл вики
+Toolbar/AddWikiFolder: Добавить папку вики
+Toolbar/Backstage: Закулисье
+Toolbar/CreateWikiFolder: Создать новую папку вики
+Toolbar/CreateWiki: Создать новую вики
+Toolbar/CreateFromTemplate: Создать из шаблона
+Toolbar/NoTemplates: Шаблоны не заданы — см. Настройки
+Toolbar/From: из
+Toolbar/CloneExisting: Клонировать существующую вики
+Toolbar/NoWikisToClone: Нет вики для клонирования
+Toolbar/Help: Справка
+Toolbar/Settings: Настройки
+Toolbar/Language: Язык
+List/SearchPlaceholder: поиск
+List/ClearSearch: Очистить поиск
+Row/Untitled: Без названия
+Row/Open: открыть
+Row/Reveal: показать
+Row/Remove: удалить
+Row/ToFolder: в папку
+Row/ToFile: в файл
+Row/ToFolderTooltip: Выберите (или создайте) пустую папку для новой папки вики
+Row/ToFileTooltip: Выберите, куда сохранить новую вики в одном файле
+Row/Advanced: дополнительно
+Row/Plugins: плагины
+Advanced/Backups: Резервные копии
+Advanced/SaveBackup: Сохранять резервную копию при каждом сохранении
+Advanced/RevealBackups: показать резервные копии
+Advanced/ServerNote: Эти параметры определяют, как папка вики раздаётся по HTTP. Они вступают в силу при следующем открытии папки вики.
+Advanced/Server: Сервер
+Advanced/Host: Хост
+Advanced/Port: Порт
+Advanced/PathPrefix: Префикс пути
+Advanced/RootTiddler: Корневой tiddler
+Advanced/Gzip: Сжимать ответы (gzip)
+Advanced/Access: Доступ
+Advanced/Credentials: Файл учётных данных
+Advanced/AnonUsername: Анонимное имя пользователя
+Advanced/Readers: Читатели
+Advanced/Writers: Авторы
+PluginChooser/Heading: Управление плагинами
+PluginChooser/Close: Закрыть
+PluginChooser/OpenWarning: Эта вики сейчас открыта. Сначала закройте её окно, затем нажмите Применить.
+PluginChooser/FilterPlaceholder: Фильтр плагинов…
+PluginChooser/Clear: Очистить
+PluginChooser/NoMatch: Нет плагинов, соответствующих фильтру.
+PluginChooser/Apply: Применить изменения
+PluginChooser/Cancel: Отмена
+PluginChooser/Update: Обновить
+PluginChooser/UpdateAvailable: В комплекте есть более новая версия — нажмите, чтобы обновить
+PluginChooser/Updated: Обновлено
+Row/PluginUpdates: Доступны обновления плагинов

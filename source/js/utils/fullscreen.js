@@ -26,16 +26,24 @@ function _isMaximized(win) {
 	return !!win.__tdMaximized;
 }
 
-// Toggle the native fullscreen state of an nw.js Window. Entering stores the current
-// maximized state (so leaving can restore it — NW.js otherwise drops back to normal
-// bounds). The actual re-maximize happens on the leave-fullscreen event (wired in
-// install()), which fires when the transition has settled — including an Esc-exit.
+// Toggle the native fullscreen state of an nw.js Window. Entering snapshots the window's
+// current bounds, the screen it's on, and its maximized state — because NW.js native
+// fullscreen otherwise drops back to default bounds on leave, and on multi-monitor it can
+// move the window to the primary screen and leave it there. The restore happens on the
+// leave-fullscreen event (wired in install()), which fires once the transition has settled
+// (including an Esc-exit).
 function toggle(win_nwjs) {
 	try {
 		if(win_nwjs.isFullscreen) {
 			win_nwjs.leaveFullscreen();
 		} else {
-			win_nwjs.__tdMaxBeforeFs = _isMaximized(win_nwjs);
+			win_nwjs.__tdPreFs = {
+				x:         win_nwjs.x,
+				y:         win_nwjs.y,
+				width:     win_nwjs.width,
+				height:    win_nwjs.height,
+				maximized: _isMaximized(win_nwjs)
+			};
 			win_nwjs.enterFullscreen();
 		}
 	} catch(e) {}
@@ -57,14 +65,25 @@ exports.install = function(win_nwjs, doc, getRootWidget) {
 	// observe the events here too.
 	try { win_nwjs.on("maximize",   function() { win_nwjs.__tdMaximized = true;  }); } catch(e) {}
 	try { win_nwjs.on("unmaximize", function() { win_nwjs.__tdMaximized = false; }); } catch(e) {}
-	// Restore the pre-fullscreen maximized state once the leave-fullscreen transition has
-	// settled (more reliable than a timer, and also covers exiting fullscreen via Esc).
+	// Restore the pre-fullscreen bounds, screen and maximized state once the leave-fullscreen
+	// transition has settled (covers an Esc-exit too). We move the window back to where it
+	// was FIRST — so it lands on the original screen — then re-maximize there (maximize()
+	// always acts on the window's current screen, so the move must come first).
 	try {
 		win_nwjs.on("leave-fullscreen", function() {
-			if(win_nwjs.__tdMaxBeforeFs) {
-				win_nwjs.__tdMaxBeforeFs = false;
-				setTimeout(function() { try { win_nwjs.maximize(); } catch(e) {} }, 30);
-			}
+			var pre = win_nwjs.__tdPreFs;
+			win_nwjs.__tdPreFs = null;
+			if(!pre) { return; }
+			setTimeout(function() {
+				try {
+					win_nwjs.moveTo(pre.x, pre.y);
+					win_nwjs.resizeTo(pre.width, pre.height);
+					if(pre.maximized) {
+						win_nwjs.__tdMaximized = true;
+						setTimeout(function() { try { win_nwjs.maximize(); } catch(e) {} }, 40);
+					}
+				} catch(e) {}
+			}, 40);
 		});
 	} catch(e) {}
 	function onKey(e) {

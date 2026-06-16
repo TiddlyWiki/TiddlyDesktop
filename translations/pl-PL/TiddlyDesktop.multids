@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Dodaj plik wiki
+Toolbar/AddWikiFolder: Dodaj folder wiki
+Toolbar/Backstage: Zaplecze
+Toolbar/CreateWikiFolder: Utwórz nowy folder wiki
+Toolbar/CreateWiki: Utwórz nowe wiki
+Toolbar/CreateFromTemplate: Utwórz z szablonu
+Toolbar/NoTemplates: Nie zdefiniowano szablonów – zobacz Ustawienia
+Toolbar/From: z
+Toolbar/CloneExisting: Sklonuj istniejące wiki
+Toolbar/NoWikisToClone: Brak wiki do sklonowania
+Toolbar/Help: Pomoc
+Toolbar/Settings: Ustawienia
+Toolbar/Language: Język
+List/SearchPlaceholder: szukaj
+List/ClearSearch: Wyczyść wyszukiwanie
+Row/Untitled: Bez tytułu
+Row/Open: otwórz
+Row/Reveal: pokaż
+Row/Remove: usuń
+Row/ToFolder: do folderu
+Row/ToFile: do pliku
+Row/ToFolderTooltip: Wybierz (lub utwórz) pusty folder dla nowego folderu wiki
+Row/ToFileTooltip: Wybierz, gdzie zapisać nowe wiki jednoplikowe
+Row/Advanced: zaawansowane
+Row/Plugins: wtyczki
+Advanced/Backups: Kopie zapasowe
+Advanced/SaveBackup: Zapisuj kopię zapasową przy każdym zapisie
+Advanced/RevealBackups: pokaż kopie zapasowe
+Advanced/ServerNote: Te opcje określają, jak folder wiki jest udostępniany przez HTTP. Zaczynają obowiązywać przy następnym otwarciu folderu wiki.
+Advanced/Server: Serwer
+Advanced/Host: Host
+Advanced/Port: Port
+Advanced/PathPrefix: Prefiks ścieżki
+Advanced/RootTiddler: Tiddler główny
+Advanced/Gzip: Kompresuj odpowiedzi (gzip)
+Advanced/Access: Dostęp
+Advanced/Credentials: Plik poświadczeń
+Advanced/AnonUsername: Anonimowa nazwa użytkownika
+Advanced/Readers: Czytelnicy
+Advanced/Writers: Piszący
+PluginChooser/Heading: Zarządzaj wtyczkami
+PluginChooser/Close: Zamknij
+PluginChooser/OpenWarning: To wiki jest obecnie otwarte. Najpierw zamknij jego okno, a następnie kliknij Zastosuj.
+PluginChooser/FilterPlaceholder: Filtruj wtyczki…
+PluginChooser/Clear: Wyczyść
+PluginChooser/NoMatch: Żadna wtyczka nie pasuje do filtra.
+PluginChooser/Apply: Zastosuj zmiany
+PluginChooser/Cancel: Anuluj
+PluginChooser/Update: Aktualizuj
+PluginChooser/UpdateAvailable: Dołączono nowszą wersję — kliknij, aby zaktualizować
+PluginChooser/Updated: Zaktualizowano
+Row/PluginUpdates: Dostępne aktualizacje wtyczek

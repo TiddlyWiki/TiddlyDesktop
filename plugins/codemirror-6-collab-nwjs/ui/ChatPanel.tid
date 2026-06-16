@@ -17,7 +17,7 @@ title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/ChatPanel
 <$button set="$:/temp/collab/state/chat-open" setTo="no" class="tc-btn-invisible tc-collab-chat-close-btn" tooltip="Close">{{$:/core/images/close-button}}</$button>
 </div>
 <$list filter="[[$:/temp/collab/state/chat-target]!field:text[]]" variable="_">
-<div class="tc-collab-chat-private-hint">🔒 Private — end-to-end encrypted, only <$text text={{{ [{$:/temp/collab/state/chat-target}addprefix[$:/temp/collab/members/]get[user-name]] ~[{$:/temp/collab/state/chat-target}addprefix[$:/temp/collab/members/]get[device-name]] }}}/> can read this.</div>
+<div class="tc-collab-chat-private-hint">🔒 Private — end-to-end encrypted, only&#32;<$text text={{{ [{$:/temp/collab/state/chat-target}addprefix[$:/temp/collab/members/]get[user-name]] ~[{$:/temp/collab/state/chat-target}addprefix[$:/temp/collab/members/]get[device-name]] }}}/>&#32;can read this.</div>
 </$list>
 <div class="tc-collab-chat-messages">
 <$list filter="[prefix[$:/temp/collab/chat/msg/]field:peer{$:/temp/collab/state/chat-target}sort[msg-sort]reverse[]]" emptyMessage="""<div class="tc-collab-chat-empty">No messages yet</div>""">
@@ -33,7 +33,7 @@ title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/ChatPanel
 </div>
 </$reveal>
 <$reveal type="nomatch" state="$:/temp/collab/state/chat-open" text="yes">
-<$button class="tc-btn-invisible tc-collab-chat-toggle"><$action-setfield $tiddler="$:/temp/collab/state/chat-open" text="yes"/><$list filter="[[$:/temp/collab/chat/unread]!field:text[0]!field:text[]]" variable="_"><span class="tc-collab-chat-badge"><$text text={{$:/temp/collab/chat/unread}}/></span></$list>Chat</$button>
+<$button class="tc-btn-invisible tc-collab-chat-toggle"><$action-setfield $tiddler="$:/temp/collab/state/chat-open" text="yes"/><$list filter="[[$:/temp/collab/chat/unread]has[text]!field:text[0]]" variable="_"><span class="tc-collab-chat-badge"><$text text={{$:/temp/collab/chat/unread}}/></span></$list>Chat</$button>
 </$reveal>
 </div>
 </$reveal>

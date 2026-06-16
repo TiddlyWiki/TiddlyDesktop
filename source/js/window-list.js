@@ -161,6 +161,73 @@ WindowList.prototype.ensureFolderWikiPlugins = function(folderPath) {
 	}
 };
 
+// Recursively delete a directory (the exploded copy of a plugin we're about to reference by
+// name instead). Tolerant of the various fs APIs across Node versions; never throws.
+function removeDirRecursive(dir) {
+	try {
+		if(typeof fs.rmSync === "function") { fs.rmSync(dir,{recursive: true, force: true}); return; }
+		if(typeof fs.rmdirSync === "function") { fs.rmdirSync(dir,{recursive: true}); return; }
+	} catch(e) {}
+}
+
+// After --savewikifolder, every plugin/theme/language the source single-file wiki carried is
+// exploded into the new folder. But any of them the FOLDER wiki can resolve by name at boot —
+// because it's bundled OR on TIDDLYWIKI_PLUGIN_PATH / _THEME_PATH / _LANGUAGE_PATH — needs no
+// private copy: a copy only bloats the folder and silently shadows (freezing) the
+// bundled/updatable version. So we prune each resolvable one and reference it by name in
+// tiddlywiki.info, leaving only genuinely custom items on disk. TiddlyWiki's own savewikifolder
+// only checks the bundled library folder, not the env paths — and we can't patch core here
+// (source/tiddlywiki is rebuilt from upstream each build), so we post-process the output.
+WindowList.LIBRARY_KINDS = [
+	{dir: "plugins",   infoKey: "plugins",   prefix: "$:/plugins/",   pathKey: "pluginsPath",   envKey: "pluginsEnvVar"},
+	{dir: "themes",    infoKey: "themes",    prefix: "$:/themes/",    pathKey: "themesPath",    envKey: "themesEnvVar"},
+	{dir: "languages", infoKey: "languages", prefix: "$:/languages/", pathKey: "languagesPath", envKey: "languagesEnvVar"}
+];
+WindowList.prototype.pruneResolvablePluginsFromFolder = function(folderPath) {
+	// Needs the Node-boot library helpers (present in this app's $tw); skip quietly otherwise.
+	if(typeof $tw.getLibraryItemSearchPaths !== "function" || typeof $tw.findLibraryItem !== "function") { return; }
+	var infoPath = path.resolve(folderPath,"tiddlywiki.info"),
+		info;
+	try { info = JSON.parse(fs.readFileSync(infoPath,"utf8")); } catch(e) { return; }
+	var changed = false;
+	WindowList.LIBRARY_KINDS.forEach(function(kind) {
+		var typeDir = path.resolve(folderPath,kind.dir),
+			searchPaths;
+		try { searchPaths = $tw.getLibraryItemSearchPaths($tw.config[kind.pathKey],$tw.config[kind.envKey]); } catch(e) { return; }
+		// Collect every exploded item (a directory containing a plugin.info) under this kind's dir.
+		var pluginDirs = [];
+		(function walk(dir) {
+			var entries;
+			try { entries = fs.readdirSync(dir,{withFileTypes: true}); } catch(e) { return; }
+			if(entries.some(function(en) { return en.isFile() && en.name === "plugin.info"; })) {
+				pluginDirs.push(dir);   // a plugin folder — don't descend into its own tiddlers
+				return;
+			}
+			entries.forEach(function(en) { if(en.isDirectory()) { walk(path.resolve(dir,en.name)); } });
+		}(typeDir));
+		pluginDirs.forEach(function(pluginDir) {
+			var meta;
+			try { meta = JSON.parse(fs.readFileSync(path.resolve(pluginDir,"plugin.info"),"utf8")); } catch(e) { return; }
+			var title = meta && meta.title;
+			if(!title || title.indexOf(kind.prefix) !== 0) { return; }
+			var name = title.slice(kind.prefix.length);
+			if(!name) { return; }
+			// Resolvable by the folder wiki at boot (bundled or on the env path)?
+			var found = null;
+			try { found = $tw.findLibraryItem(name,searchPaths); } catch(e) {}
+			if(!found) { return; }
+			// Reference it by name and drop the private copy.
+			if(!Array.isArray(info[kind.infoKey])) { info[kind.infoKey] = []; }
+			if(info[kind.infoKey].indexOf(name) === -1) { info[kind.infoKey].push(name); }
+			removeDirRecursive(pluginDir);
+			changed = true;
+		});
+	});
+	if(changed) {
+		try { fs.writeFileSync(infoPath,JSON.stringify(info,null,4),"utf8"); } catch(e) {}
+	}
+};
+
 // Build a folder wiki's window title the same way TiddlyWiki does ($:/core/wiki/title:
 // SiteTitle, then " — SiteSubtitle" when the subtitle is non-empty). Missing tiddler
 // files mean the wiki uses the core defaults, so we fall back to those.
@@ -535,6 +602,10 @@ WindowList.prototype.convertWiki = function(sourceUrl, destPath, callback) {
 			// save to disk. Add them so the converted folder is immediately usable.
 			if(!isFolder) {
 				try { self.ensureFolderWikiPlugins(destPath); } catch(_e) {}
+				// Don't keep private copies of plugins the folder wiki can resolve by name
+				// (bundled or on TIDDLYWIKI_PLUGIN_PATH etc.) — reference them in tiddlywiki.info
+				// instead, leaving only genuinely custom plugins in the folder.
+				try { self.pruneResolvablePluginsFromFolder(destPath); } catch(_e) {}
 			}
 			console.log("[TiddlyDesktop] convertWiki: opening converted wiki",newUrl);
 			self.openByUrl(newUrl);

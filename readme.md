@@ -211,6 +211,54 @@ In a wiki window (single-file or folder):
 
 Window position and size are remembered per wiki.
 
+## Embedded media (videos, maps, …)
+
+Wikis can embed external media with an `<iframe>` (a YouTube video, a Vimeo clip, an
+OpenStreetMap map, and so on). TiddlyDesktop makes these play reliably and safely:
+
+* Only embeds whose host is on an **allowlist** are loaded. Any other external iframe is
+  blocked and replaced with a small note, so a tiddler can't quietly beacon to an arbitrary
+  server just by being rendered.
+* Allowlisted media is routed through a tiny local `http://127.0.0.1` helper so the provider
+  sees a real web origin and plays — single-file wikis are `file://` pages, which players
+  like YouTube otherwise reject (error 153). The wiki file itself stays `file://`; the helper
+  is bound to localhost only, only ever loads allowlisted hosts, and serves no files.
+
+### Hosts allowed by default
+
+Sub-domains are included automatically (e.g. `youtube.com` also allows `www.youtube.com`):
+
+* **YouTube** — `youtube.com`, `youtube-nocookie.com`, `youtu.be`
+* **Vimeo** — `vimeo.com`, `player.vimeo.com`
+* **Dailymotion** — `dailymotion.com`
+* **Spotify** — `open.spotify.com`
+* **SoundCloud** — `soundcloud.com`, `w.soundcloud.com`
+* **Bandcamp** — `bandcamp.com`
+* **Twitch** — `player.twitch.tv`, `clips.twitch.tv`
+* **Apple Music** — `embed.music.apple.com`
+* **OpenStreetMap** — `openstreetmap.org`
+* **Google Maps** — `google.com`
+* **CodePen** — `codepen.io`
+* **CodeSandbox** — `codesandbox.io`
+* **JSFiddle** — `jsfiddle.net`
+* **Internet Archive** — `archive.org`
+
+### Adding your own domains
+
+The allowlist is configured **per wiki**. In the wiki you want to allow extra embeds in,
+create a tiddler titled `$:/config/TiddlyDesktop/EmbedHosts` and list the additional hosts in
+its text, one per line (spaces or commas also work). They are *added* to the defaults above:
+
+```
+vimeo.com
+my.cdn.example
+videos.example.org
+```
+
+Give just the host name — any `http(s)://` prefix or path is ignored, and sub-domains of what
+you list are included. The change takes effect immediately (no restart needed). Removing a
+host from the list (or deleting the tiddler) reverts to the built-in defaults.
+
 ## Multiple Configurations
 
 To have separate mutliple instances of TiddlyDesktop (for example, separate Personal and Professional instances), you can pass the `--user-data-dir` argument.  e.g. `/opt/TiddlyDesktop/nw --user-data-dir=/mnt/data/TiddlyWiki/config`.  The property should be a directory to use for holding configuration data.

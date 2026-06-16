@@ -110,7 +110,13 @@ exports.startup = function() {
 	// Record the content we're now in sync on (the 3-way base) for `title`.
 	function _markSynced(title) {
 		var t = $tw.wiki.getTiddler(title);
-		syncedText[title] = t ? _contentString(_serialise(t)) : "";
+		// Store the content CHECKSUM as the 3-way base (not the full text), so the whole base
+		// set can be cheaply PERSISTED across reloads. That persistence is what makes an
+		// offline edit + a concurrent remote edit reliably flag a conflict on reconnect even
+		// if the wiki was reloaded meanwhile — an in-memory-only base would be lost and we'd
+		// silently last-write-wins. Debounced so a manifest's burst of matches writes once.
+		syncedText[title] = t ? _fp(_contentString(_serialise(t))) : "";
+		_persistRoomStateSoon();
 	}
 
 	// Flag/unflag a tiddler as diverged (both sides edited since the last common base).
@@ -216,9 +222,19 @@ exports.startup = function() {
 	function _serialise(tiddler) {
 		var out = {};
 		Object.keys(tiddler.fields).forEach(function(f) {
+			// _canonical_uri is a per-machine file reference — never shared, never part of
+			// the content identity/checksum (so an attachment with different local paths on
+			// two peers is NOT seen as diverged).
 			if(f === "_canonical_uri") { return; }
 			var v = tiddler.fields[f];
-			out[f] = (v instanceof Date) ? v.toISOString() : v;
+			// Dates MUST be serialised in TiddlyWiki's own format (YYYYMMDDHHMMSSmmm), the
+			// same as getFieldString. A receiver builds the tiddler with `new $tw.Tiddler`,
+			// whose modified/created parsing expects exactly this; an ISO string would be
+			// mis-parsed (e.g. 2026-06-15 → 2026-01-01), so the round-tripped date would
+			// differ from the owner's, the content checksum would never match, and every
+			// periodic manifest would re-fetch and re-write the tiddler — dirtying the wiki
+			// every 20s. TW format round-trips losslessly, so modified/created stay in sync.
+			out[f] = (v instanceof Date) ? $tw.utils.stringifyDate(v) : v;
 		});
 		return out;
 	}
@@ -242,8 +258,10 @@ exports.startup = function() {
 		$tw.wiki.addTiddler(new $tw.Tiddler({title: CONFIG_ROOMS, text: text}));
 	}
 
-	// Persist the current in-memory owned/subscribed sets under the room they belong to
-	// (_stateRoom). Both _saveOwned and _saveSubscribed funnel here.
+	// Persist the current in-memory owned/subscribed sets — AND the 3-way base checksums
+	// (syncedText) — under the room they belong to (_stateRoom). Both _saveOwned and
+	// _saveSubscribed funnel here. Persisting the bases lets conflict detection survive a
+	// reload: without it the base is lost and a concurrent edit silently last-write-wins.
 	function _persistRoomState() {
 		var store = _loadRoomsStore();
 		var owned = Object.keys(ownedTiddlers);
@@ -257,9 +275,32 @@ exports.startup = function() {
 					ownerName:     avail.ownerName || sub.ownerName || ""
 				};
 			});
-		if(owned.length || subscribed.length) { store[_stateRoom] = {owned: owned, subscribed: subscribed}; }
+		var bases = {};
+		Object.keys(syncedText).forEach(function(title) {
+			if((ownedTiddlers[title] || subscribedTiddlers[title]) && syncedText[title]) {
+				// Only persist a base that DIFFERS from the tiddler's current saved content —
+				// i.e. a pending edit not yet reconciled (typically made offline). When the base
+				// equals the current content (the common case right after a sync or save), it's
+				// re-derivable on load from the tiddler itself (see _loadRoomState), so writing
+				// it here would only rewrite this config tiddler ~1s after every save of a shared
+				// tiddler — turning the save button red again right after saving. Skipping the
+				// trivial case keeps that write (and the false "dirty") from happening.
+				var _bt = $tw.wiki.getTiddler(title);
+				var _curFp = _bt ? _fp(_contentString(_serialise(_bt))) : "";
+				if(syncedText[title] !== _curFp) { bases[title] = syncedText[title]; }
+			}
+		});
+		if(owned.length || subscribed.length) { store[_stateRoom] = {owned: owned, subscribed: subscribed, bases: bases}; }
 		else { delete store[_stateRoom]; }
 		_writeRoomsStore(store);
+	}
+
+	// Debounced persist — _markSynced can fire many times in one manifest pass; batch them
+	// into a single (idempotent) write rather than re-serialising the store each time.
+	var _persistTimer = null;
+	function _persistRoomStateSoon() {
+		if(_persistTimer) { return; }
+		_persistTimer = setTimeout(function() { _persistTimer = null; _persistRoomState(); }, 1000);
 	}
 
 	function _saveOwned()      { _persistRoomState(); }
@@ -308,10 +349,35 @@ exports.startup = function() {
 			if(typeof title !== "string" || !title) return;
 			if(ownedTiddlers[title]) return;
 			subscribedTiddlers[title] = {ownerDeviceId: ownerDeviceId, ownerName: ownerName};
+			// An attachment we already hold locally counts as "got" even after a restart —
+			// assetGot is in-memory and otherwise lost, which made the Get list offer the file
+			// chooser again for files already saved/embedded. Derive it from the wiki instead.
+			if($tw.wiki.tiddlerExists(title) && _assetInfo(title)) { assetGot[title] = true; }
 			if(!availableTiddlers[title]) {
 				availableTiddlers[title] = {ownerDeviceId: ownerDeviceId, ownerName: ownerName, sharedAt: 0};
 			}
 			_writeAvailable(title, availableTiddlers[title]);
+		});
+		// Restore the persisted 3-way base checksums so conflict detection works immediately
+		// after a reload (an offline edit since then will diverge from this base, not be
+		// silently overwritten by a concurrent remote edit on reconnect).
+		if(entry.bases && typeof entry.bases === "object") {
+			Object.keys(entry.bases).forEach(function(title) {
+				if(typeof entry.bases[title] === "string" && (ownedTiddlers[title] || subscribedTiddlers[title])) {
+					syncedText[title] = entry.bases[title];
+				}
+			});
+		}
+		// Only PENDING bases (base != content) are persisted now, to avoid dirtying the wiki on
+		// every save (see _persistRoomState). For every other owned/subscribed tiddler the base
+		// equalled its content at last sync, so reconstruct it from the tiddler's current content
+		// here. This keeps conflict detection working after a reload without the persistence
+		// write: a since-made offline edit will diverge from this derived base, and a tiddler
+		// with a persisted (pending) base keeps it (set above, not overwritten here).
+		Object.keys(subscribedTiddlers).forEach(function(title) {
+			if(syncedText[title]) { return; }
+			var _dt = $tw.wiki.getTiddler(title);
+			if(_dt) { syncedText[title] = _fp(_contentString(_serialise(_dt))); }
 		});
 	}
 
@@ -844,11 +910,11 @@ exports.startup = function() {
 		// changed it's a genuine conflict — regardless of which has the newer `modified`
 		// (e.g. two peers editing the same tiddler while disconnected). A resolution still
 		// propagates: an in-sync recipient has localC==base, so it adopts the pushed copy.
-		var base = syncedText[title];
-		if(typeof base === "string") {
-			if(localC === base)  { _applyRemote(title, remoteFields); return; }  // we didn't change it → take theirs
-			if(remoteC === base) { _pushLocal(title); return; }                  // they didn't change it → keep ours
-			_setDiverged(title, remoteFields); return;                            // both changed → conflict
+		var base = syncedText[title];   // a content checksum (see _markSynced)
+		if(typeof base === "string" && base) {
+			if(_fp(localC) === base)  { _applyRemote(title, remoteFields); return; }  // we didn't change it → take theirs
+			if(_fp(remoteC) === base) { _pushLocal(title); return; }                  // they didn't change it → keep ours
+			_setDiverged(title, remoteFields); return;                                // both changed → conflict
 		}
 		// No base (e.g. after a reload, so we can't tell who changed): fall back to
 		// last-write-wins by modified, flagging a conflict only on a timestamp tie.
@@ -1273,8 +1339,11 @@ exports.startup = function() {
 			// Our edit is the common base ONLY if it actually went out — peers converge on
 			// what they received. While disconnected the send is a no-op, so we must keep the
 			// prior base: a concurrent peer edit then surfaces as a conflict on reconnect
-			// (both sides differ from base) instead of being silently adopted.
+			// (both sides differ from base) instead of being silently adopted. But the tiddler
+			// now DIVERGES from that kept base, so the base is no longer re-derivable from the
+			// saved content — persist it (now non-trivial) so the divergence survives a reload.
 			if(_isConnected()) { _markSynced(title); }
+			else { _persistRoomStateSoon(); }
 		});
 	});
 

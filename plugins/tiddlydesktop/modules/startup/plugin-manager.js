@@ -38,16 +38,22 @@ exports.startup = function() {
 		$tw.config.pluginsEnvVar
 	);
 
+	// Bundled plugins don't change during a session, so enumerate them once and reuse for
+	// the chooser AND the background "updates available" scan.
+	var available = _getAvailablePlugins(pluginPaths, fs, path);
+	var availableByTitle = {};
+	available.forEach(function(p) { availableByTitle[p.title] = p; });
+
 	// ── open chooser ──────────────────────────────────────────────────────────
 
 	$tw.rootWidget.addEventListener("tiddlydesktop-open-plugin-chooser", function(event) {
 		var wikiUrl = event.param;
 		if(!wikiUrl) return false;
 
-		var isOpen    = _isWikiOpen(wikiUrl);
-		var isFile    = wikiUrl.startsWith("wikifile://");
-		var installed = _getInstalledPlugins(wikiUrl, fs, path);
-		var available = _getAvailablePlugins(pluginPaths, fs, path);
+		var isOpen            = _isWikiOpen(wikiUrl);
+		var isFile            = wikiUrl.startsWith("wikifile://");
+		var installed         = _getInstalledPlugins(wikiUrl, fs, path);
+		var installedVersions = _getInstalledVersions(wikiUrl, fs, path);
 
 		// Target tiddler
 		$tw.wiki.addTiddler(new $tw.Tiddler({
@@ -74,6 +80,11 @@ exports.startup = function() {
 
 		// Populate one tiddler per available plugin
 		available.forEach(function(plugin) {
+			var isInstalled    = installed.indexOf(plugin.title) !== -1;
+			var installedVer   = installedVersions[plugin.title] || "";
+			// A newer bundled version than the embedded one (single-file wikis only — folder
+			// wikis load the bundled copy at boot, so they're always current).
+			var updateAvailable = isFile && isInstalled && _semverGt(plugin.version, installedVer);
 			$tw.wiki.addTiddler(new $tw.Tiddler({
 				title: "$:/temp/TiddlyDesktop/PluginChooser/available/" + plugin.title,
 				tags: ["$:/temp/TiddlyDesktop/PluginChooser/available"],
@@ -83,15 +94,49 @@ exports.startup = function() {
 				"plugin-type": plugin["plugin-type"] || "plugin",
 				description: plugin.description,
 				version: plugin.version,
+				"installed-version": installedVer,
+				"update-available": updateAvailable ? "yes" : "",
 				source: plugin.source
 			}));
 			// Initialise selection from installed state
 			$tw.wiki.addTiddler(new $tw.Tiddler({
 				title: "$:/temp/TiddlyDesktop/PluginChooser/selected/" + plugin.title,
-				text: installed.indexOf(plugin.title) !== -1 ? "yes" : "no"
+				text: isInstalled ? "yes" : "no"
 			}));
 		});
 
+		return false;
+	});
+
+	// ── update a single outdated plugin to the bundled version ──────────────────
+	$tw.rootWidget.addEventListener("tiddlydesktop-update-plugin", function(event) {
+		var pluginTitle = event.param;
+		var target = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
+		if(!pluginTitle || !target) return false;
+		var wikiUrl = target.fields.text;
+		if(target.fields["wiki-open"] === "yes") {
+			_setStatus("✗ " + $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/PluginChooser/OpenWarning", "Close the wiki first."));
+			return false;
+		}
+		var availTiddler = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/available/" + pluginTitle);
+		if(!availTiddler) return false;
+		try {
+			// Re-installing the bundled plugin replaces the wiki's older embedded copy.
+			if(wikiUrl.startsWith("wikifile://")) {
+				_applyFileChanges(wikiUrl, [availTiddler.fields], [], fs, path);
+			} else {
+				_applyFolderChanges(wikiUrl, [availTiddler.fields], [], fs, path);
+			}
+			// Reflect the new state in the chooser without reopening it.
+			$tw.wiki.addTiddler(new $tw.Tiddler(availTiddler.fields, {
+				"installed-version": availTiddler.fields.version,
+				"update-available": ""
+			}));
+			_setStatus("✓ " + $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/PluginChooser/Updated", "Updated") + " " + pluginTitle);
+			_scanUpdatesForWiki(wikiUrl, availableByTitle, fs, path);
+		} catch(e) {
+			_setStatus("✗ Error: " + e.message);
+		}
 		return false;
 	});
 
@@ -136,6 +181,7 @@ exports.startup = function() {
 			} else {
 				_applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path);
 			}
+			_scanUpdatesForWiki(wikiUrl, availableByTitle, fs, path);
 			_closeChooser();
 		} catch(e) {
 			_setStatus("✗ Error: " + e.message);
@@ -149,6 +195,21 @@ exports.startup = function() {
 	$tw.rootWidget.addEventListener("tiddlydesktop-close-plugin-chooser", function(event) {
 		_closeChooser();
 		return false;
+	});
+
+	// Background pass: flag wikis with outdated embedded plugins so the wiki list can badge
+	// their Plugins button. Deferred so it never blocks boot; re-runs when the list changes.
+	setTimeout(function() { _scanAllUpdates(availableByTitle, fs, path); }, 1500);
+	$tw.wiki.addEventListener("change", function(changes) {
+		var rescan = false;
+		Object.keys(changes).forEach(function(title) {
+			var t = $tw.wiki.getTiddler(title);
+			if((t && t.fields.tags && t.fields.tags.indexOf("wikilist") !== -1) ||
+					(changes[title].deleted && title.indexOf("wikifile://") === 0)) {
+				rescan = true;
+			}
+		});
+		if(rescan) { setTimeout(function() { _scanAllUpdates(availableByTitle, fs, path); }, 200); }
 	});
 };
 
@@ -285,6 +346,65 @@ function _getInstalledFromFolder(folderPath, fs, path) {
 	} catch(_e) {
 		return [];
 	}
+}
+
+// ── update detection (single-file wikis only) ──────────────────────────────────
+// Folder wikis reference plugins by name and load the bundled copy at boot, so they are
+// always current; only single-file wikis embed a plugin (with its version) that can lag.
+
+// title -> embedded version, for the plugins baked into a single-file wiki.
+function _getInstalledVersions(wikiUrl, fs, path) {
+	if(!wikiUrl.startsWith("wikifile://")) { return {}; }
+	try {
+		var html  = fs.readFileSync(wikiUrl.slice("wikifile://".length), "utf8");
+		var match = html.match(/<script[^>]*class="tiddlywiki-tiddler-store"[^>]*>([\s\S]*?)<\/script>/);
+		if(!match) { return {}; }
+		var map = {};
+		JSON.parse(match[1]).forEach(function(t) {
+			if(t["plugin-type"] && t.title) { map[t.title] = t.version || ""; }
+		});
+		return map;
+	} catch(_e) {
+		return {};
+	}
+}
+
+// True if version a is strictly newer than version b (numeric dotted compare). Returns
+// false if either is missing, so an unknown version never falsely claims an update.
+function _semverGt(a, b) {
+	if(!a || !b) { return false; }
+	var pa = String(a).split("."), pb = String(b).split(".");
+	for(var i = 0; i < Math.max(pa.length, pb.length); i++) {
+		var x = parseInt(pa[i], 10) || 0, y = parseInt(pb[i], 10) || 0;
+		if(x > y) { return true; }
+		if(x < y) { return false; }
+	}
+	return false;
+}
+
+// Count this wiki's outdated plugins and write the count to a temp tiddler that the wiki
+// list row reads to show a badge on its Plugins button (deleted when nothing is outdated).
+function _scanUpdatesForWiki(wikiUrl, availableByTitle, fs, path) {
+	var stateTitle = "$:/temp/TiddlyDesktop/plugin-updates/" + wikiUrl;
+	var count = 0;
+	if(wikiUrl.startsWith("wikifile://")) {
+		var versions = _getInstalledVersions(wikiUrl, fs, path);
+		Object.keys(versions).forEach(function(title) {
+			var avail = availableByTitle[title];
+			if(avail && _semverGt(avail.version, versions[title])) { count++; }
+		});
+	}
+	if(count > 0) {
+		$tw.wiki.addTiddler(new $tw.Tiddler({title: stateTitle, text: String(count)}));
+	} else {
+		$tw.wiki.deleteTiddler(stateTitle);
+	}
+}
+
+function _scanAllUpdates(availableByTitle, fs, path) {
+	$tw.wiki.filterTiddlers("[tag[wikilist]]").forEach(function(wikiUrl) {
+		try { _scanUpdatesForWiki(wikiUrl, availableByTitle, fs, path); } catch(_e) {}
+	});
 }
 
 // ── apply changes ─────────────────────────────────────────────────────────────

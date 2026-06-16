@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Tilføj wiki-fil
+Toolbar/AddWikiFolder: Tilføj wiki-mappe
+Toolbar/Backstage: Backstage
+Toolbar/CreateWikiFolder: Opret ny wiki-mappe
+Toolbar/CreateWiki: Opret ny wiki
+Toolbar/CreateFromTemplate: Opret ud fra en skabelon
+Toolbar/NoTemplates: Ingen skabeloner defineret – se Indstillinger
+Toolbar/From: fra
+Toolbar/CloneExisting: Klon en eksisterende wiki
+Toolbar/NoWikisToClone: Ingen wikier tilgængelige at klone
+Toolbar/Help: Hjælp
+Toolbar/Settings: Indstillinger
+Toolbar/Language: Sprog
+List/SearchPlaceholder: søg
+List/ClearSearch: Ryd søgning
+Row/Untitled: Uden titel
+Row/Open: åbn
+Row/Reveal: vis
+Row/Remove: fjern
+Row/ToFolder: til mappe
+Row/ToFile: til fil
+Row/ToFolderTooltip: Vælg (eller opret) en tom mappe til den nye wiki-mappe
+Row/ToFileTooltip: Vælg, hvor den nye enkeltfils-wiki skal gemmes
+Row/Advanced: avanceret
+Row/Plugins: plugins
+Advanced/Backups: Sikkerhedskopier
+Advanced/SaveBackup: Gem en sikkerhedskopi ved hver lagring
+Advanced/RevealBackups: vis sikkerhedskopier
+Advanced/ServerNote: Disse indstillinger styrer, hvordan wiki-mappen serveres over HTTP. De træder i kraft, næste gang wiki-mappen åbnes.
+Advanced/Server: Server
+Advanced/Host: Vært
+Advanced/Port: Port
+Advanced/PathPrefix: Sti-præfiks
+Advanced/RootTiddler: Rod-tiddler
+Advanced/Gzip: Komprimér svar (gzip)
+Advanced/Access: Adgang
+Advanced/Credentials: Loginfil
+Advanced/AnonUsername: Anonymt brugernavn
+Advanced/Readers: Læsere
+Advanced/Writers: Skribenter
+PluginChooser/Heading: Administrer plugins
+PluginChooser/Close: Luk
+PluginChooser/OpenWarning: Denne wiki er åben i øjeblikket. Luk først dens vindue, og klik derefter på Anvend.
+PluginChooser/FilterPlaceholder: Filtrér plugins…
+PluginChooser/Clear: Ryd
+PluginChooser/NoMatch: Ingen plugins matcher dit filter.
+PluginChooser/Apply: Anvend ændringer
+PluginChooser/Cancel: Annullér
+PluginChooser/Update: Opdatér
+PluginChooser/UpdateAvailable: En nyere version er inkluderet — klik for at opdatere
+PluginChooser/Updated: Opdateret
+Row/PluginUpdates: Plugin-opdateringer tilgængelige

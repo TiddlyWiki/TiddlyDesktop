@@ -20,7 +20,6 @@ tags: $:/tags/Stylesheet
 	border-left: 4px solid transparent;
 	margin: 0 0 0.85em 0;
 	border-radius: 7px;
-	overflow: hidden;
 	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
 	background: <<colour wikilist-item>>;
 	transition: box-shadow 0.15s ease, border-left-color 0.15s ease;
@@ -104,6 +103,7 @@ tags: $:/tags/Stylesheet
 
 .td-wikilist .td-wikilist-item .td-wiki-toolbar {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
 	font-size: 0.8em;
 	margin-top: 0.5em;
@@ -435,6 +435,37 @@ tags: $:/tags/Stylesheet
 	color: <<colour muted-foreground>>;
 	flex-shrink: 0;
 	white-space: nowrap;
+}
+
+.td-plugin-version-outdated {
+	color: #b3261c;
+	font-weight: 600;
+}
+
+.td-plugin-btn-update {
+	flex-shrink: 0;
+	background-color: #1a73e8;
+	color: #fff;
+	white-space: nowrap;
+}
+
+.td-plugin-btn-update:hover {
+	background-color: #1666c1;
+}
+
+/* Count badge on the wiki-list Plugins button when a wiki has outdated plugins. */
+.td-plugin-update-badge {
+	display: inline-block;
+	min-width: 1.3em;
+	margin-inline-start: 4px;
+	padding: 0 4px;
+	border-radius: 9px;
+	background: #1a73e8;
+	color: #fff;
+	font-size: 0.85em;
+	font-weight: 700;
+	text-align: center;
+	line-height: 1.4;
 }
 
 .td-plugin-empty {

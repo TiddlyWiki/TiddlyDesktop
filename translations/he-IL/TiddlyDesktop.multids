@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: הוסף קובץ ויקי
+Toolbar/AddWikiFolder: הוסף תיקיית ויקי
+Toolbar/Backstage: מאחורי הקלעים
+Toolbar/CreateWikiFolder: צור תיקיית ויקי חדשה
+Toolbar/CreateWiki: צור ויקי חדש
+Toolbar/CreateFromTemplate: צור מתבנית
+Toolbar/NoTemplates: לא הוגדרו תבניות – ראו הגדרות
+Toolbar/From: מתוך
+Toolbar/CloneExisting: שכפל ויקי קיים
+Toolbar/NoWikisToClone: אין ויקי זמין לשכפול
+Toolbar/Help: עזרה
+Toolbar/Settings: הגדרות
+Toolbar/Language: שפה
+List/SearchPlaceholder: חיפוש
+List/ClearSearch: נקה חיפוש
+Row/Untitled: ללא כותרת
+Row/Open: פתח
+Row/Reveal: הצג
+Row/Remove: הסר
+Row/ToFolder: לתיקייה
+Row/ToFile: לקובץ
+Row/ToFolderTooltip: בחרו (או צרו) תיקייה ריקה עבור תיקיית הויקי החדשה
+Row/ToFileTooltip: בחרו היכן לשמור את הויקי החדש כקובץ יחיד
+Row/Advanced: מתקדם
+Row/Plugins: תוספים
+Advanced/Backups: גיבויים
+Advanced/SaveBackup: שמור גיבוי בכל שמירה
+Advanced/RevealBackups: הצג גיבויים
+Advanced/ServerNote: אפשרויות אלה קובעות כיצד תיקיית הויקי מוגשת באמצעות HTTP. הן ייכנסו לתוקף בפעם הבאה שתיקיית הויקי תיפתח.
+Advanced/Server: שרת
+Advanced/Host: מארח
+Advanced/Port: פורט
+Advanced/PathPrefix: קידומת נתיב
+Advanced/RootTiddler: טידלר שורש
+Advanced/Gzip: דחוס תגובות (gzip)
+Advanced/Access: גישה
+Advanced/Credentials: קובץ אישורים
+Advanced/AnonUsername: שם משתמש אנונימי
+Advanced/Readers: קוראים
+Advanced/Writers: כותבים
+PluginChooser/Heading: ניהול תוספים
+PluginChooser/Close: סגור
+PluginChooser/OpenWarning: ויקי זה פתוח כעת. סגרו תחילה את חלונו ואז לחצו על החל.
+PluginChooser/FilterPlaceholder: סנן תוספים…
+PluginChooser/Clear: נקה
+PluginChooser/NoMatch: אין תוספים התואמים את הסינון.
+PluginChooser/Apply: החל שינויים
+PluginChooser/Cancel: ביטול
+PluginChooser/Update: עדכן
+PluginChooser/UpdateAvailable: כלולה גרסה חדשה יותר — לחצו לעדכון
+PluginChooser/Updated: עודכן
+Row/PluginUpdates: קיימים עדכוני תוספים

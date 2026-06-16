@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: إضافة ملف ويكي
+Toolbar/AddWikiFolder: إضافة مجلد ويكي
+Toolbar/Backstage: الكواليس
+Toolbar/CreateWikiFolder: إنشاء مجلد ويكي جديد
+Toolbar/CreateWiki: إنشاء ويكي جديد
+Toolbar/CreateFromTemplate: إنشاء من قالب
+Toolbar/NoTemplates: لا توجد قوالب معرّفة – راجع الإعدادات
+Toolbar/From: من
+Toolbar/CloneExisting: استنساخ ويكي موجود
+Toolbar/NoWikisToClone: لا توجد ويكي متاحة للاستنساخ
+Toolbar/Help: مساعدة
+Toolbar/Settings: الإعدادات
+Toolbar/Language: اللغة
+List/SearchPlaceholder: بحث
+List/ClearSearch: مسح البحث
+Row/Untitled: بدون عنوان
+Row/Open: فتح
+Row/Reveal: إظهار
+Row/Remove: إزالة
+Row/ToFolder: إلى مجلد
+Row/ToFile: إلى ملف
+Row/ToFolderTooltip: اختر (أو أنشئ) مجلدًا فارغًا لمجلد الويكي الجديد
+Row/ToFileTooltip: اختر مكان حفظ الويكي الجديد كملف واحد
+Row/Advanced: متقدم
+Row/Plugins: الإضافات
+Advanced/Backups: النسخ الاحتياطية
+Advanced/SaveBackup: حفظ نسخة احتياطية عند كل حفظ
+Advanced/RevealBackups: إظهار النسخ الاحتياطية
+Advanced/ServerNote: تتحكم هذه الخيارات في كيفية تقديم مجلد الويكي عبر HTTP. تصبح سارية المفعول في المرة القادمة التي يُفتح فيها مجلد الويكي.
+Advanced/Server: الخادم
+Advanced/Host: المضيف
+Advanced/Port: المنفذ
+Advanced/PathPrefix: بادئة المسار
+Advanced/RootTiddler: تيدلر الجذر
+Advanced/Gzip: ضغط الاستجابات (gzip)
+Advanced/Access: الوصول
+Advanced/Credentials: ملف بيانات الاعتماد
+Advanced/AnonUsername: اسم مستخدم مجهول
+Advanced/Readers: القُرّاء
+Advanced/Writers: الكُتّاب
+PluginChooser/Heading: إدارة الإضافات
+PluginChooser/Close: إغلاق
+PluginChooser/OpenWarning: هذا الويكي مفتوح حاليًا. أغلق نافذته أولًا ثم انقر على تطبيق.
+PluginChooser/FilterPlaceholder: تصفية الإضافات…
+PluginChooser/Clear: مسح
+PluginChooser/NoMatch: لا توجد إضافات تطابق عامل التصفية.
+PluginChooser/Apply: تطبيق التغييرات
+PluginChooser/Cancel: إلغاء
+PluginChooser/Update: تحديث
+PluginChooser/UpdateAvailable: يتوفّر إصدار أحدث — انقر للتحديث
+PluginChooser/Updated: تم التحديث
+Row/PluginUpdates: تتوفّر تحديثات للإضافات

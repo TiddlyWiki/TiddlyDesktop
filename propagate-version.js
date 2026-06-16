@@ -28,13 +28,7 @@ fs.writeFileSync("./source/tiddlywiki/plugins/tiddlywiki/tiddlydesktop/plugin.in
 // Create $:/plugins/tiddlywiki/tiddlydesktop/version
 fs.writeFileSync("./source/tiddlywiki/plugins/tiddlywiki/tiddlydesktop/system/version.txt",packageInfo.version);
 
-// Stamp the collaborative-editing plugin with the same version, so that two
-// wikis carrying different builds of it are distinguishable (the version was
-// previously pinned at 0.0.1 and never changed, which hid build skew between
-// wikis and made collab bugs hard to diagnose).
-var collabPluginInfoPath = "./source/tiddlywiki/plugins/tiddlywiki/codemirror-6-collab-nwjs/plugin.info";
-if(fs.existsSync(collabPluginInfoPath)) {
-	var collabPluginInfo = JSON.parse(fs.readFileSync(collabPluginInfoPath,"utf8") || {});
-	collabPluginInfo.version = packageInfo.version;
-	fs.writeFileSync(collabPluginInfoPath,JSON.stringify(collabPluginInfo,null,4));
-}
+// NOTE: the collaborative-editing plugin keeps its OWN independent version (see its
+// plugin.info), bumped by the pre-push hook (bin/hooks/pre-push) whenever its source
+// changes. We deliberately no longer overwrite it with the app version here, so that a
+// wiki can detect a newer bundled collab plugin and offer to update it.

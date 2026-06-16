@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Añadir archivo wiki
+Toolbar/AddWikiFolder: Añadir carpeta wiki
+Toolbar/Backstage: Bastidores
+Toolbar/CreateWikiFolder: Crear nueva carpeta wiki
+Toolbar/CreateWiki: Crear nuevo wiki
+Toolbar/CreateFromTemplate: Crear a partir de una plantilla
+Toolbar/NoTemplates: No hay plantillas definidas: consulta Ajustes
+Toolbar/From: de
+Toolbar/CloneExisting: Clonar un wiki existente
+Toolbar/NoWikisToClone: No hay wikis disponibles para clonar
+Toolbar/Help: Ayuda
+Toolbar/Settings: Ajustes
+Toolbar/Language: Idioma
+List/SearchPlaceholder: buscar
+List/ClearSearch: Borrar búsqueda
+Row/Untitled: Sin título
+Row/Open: abrir
+Row/Reveal: mostrar
+Row/Remove: quitar
+Row/ToFolder: a carpeta
+Row/ToFile: a archivo
+Row/ToFolderTooltip: Elige (o crea) una carpeta vacía para la nueva carpeta wiki
+Row/ToFileTooltip: Elige dónde guardar el nuevo wiki de archivo único
+Row/Advanced: avanzado
+Row/Plugins: complementos
+Advanced/Backups: Copias de seguridad
+Advanced/SaveBackup: Guardar una copia de seguridad en cada guardado
+Advanced/RevealBackups: mostrar copias de seguridad
+Advanced/ServerNote: Estas opciones controlan cómo se sirve la carpeta wiki por HTTP. Surten efecto la próxima vez que se abra la carpeta wiki.
+Advanced/Server: Servidor
+Advanced/Host: Host
+Advanced/Port: Puerto
+Advanced/PathPrefix: Prefijo de ruta
+Advanced/RootTiddler: Tiddler raíz
+Advanced/Gzip: Comprimir respuestas (gzip)
+Advanced/Access: Acceso
+Advanced/Credentials: Archivo de credenciales
+Advanced/AnonUsername: Nombre de usuario anónimo
+Advanced/Readers: Lectores
+Advanced/Writers: Escritores
+PluginChooser/Heading: Gestionar complementos
+PluginChooser/Close: Cerrar
+PluginChooser/OpenWarning: Este wiki está abierto actualmente. Cierra primero su ventana y luego haz clic en Aplicar.
+PluginChooser/FilterPlaceholder: Filtrar complementos…
+PluginChooser/Clear: Borrar
+PluginChooser/NoMatch: Ningún complemento coincide con tu filtro.
+PluginChooser/Apply: Aplicar cambios
+PluginChooser/Cancel: Cancelar
+PluginChooser/Update: Actualizar
+PluginChooser/UpdateAvailable: Se incluye una versión más reciente: haz clic para actualizar
+PluginChooser/Updated: Actualizado
+Row/PluginUpdates: Actualizaciones de complementos disponibles

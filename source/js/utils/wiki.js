@@ -11,6 +11,21 @@ exports.alert = function(text,topic) {
 	(new $tw.utils.Logger(topic || "TiddlyDesktop")).alert(text);
 };
 
+// Every language TiddlyWiki5 ships, so the wiki list is translatable into all of them
+// (the Language toolbar switcher lists whatever language plugins are loaded). Read from
+// the bundled core's languages folder so it stays in sync automatically as TW adds more.
+// wiki.js lives at <app>/js/utils, the TW core at <app>/tiddlywiki, both in dev and built.
+function getBundledLanguages() {
+	try {
+		var langDir = path.resolve(__dirname,"..","..","tiddlywiki","languages");
+		return fs.readdirSync(langDir).filter(function(name) {
+			try { return fs.statSync(path.resolve(langDir,name)).isDirectory(); } catch(e) { return false; }
+		}).sort();
+	} catch(e) {
+		return [];
+	}
+}
+
 // Get the path of the backstage wiki folder, creating it if needed
 exports.getBackstageWikiFolder = function(appDataPath) {
 	// Create a user configuration wiki folder if it doesn't exist
@@ -37,6 +52,9 @@ exports.getBackstageWikiFolder = function(appDataPath) {
 			]
 		};
 	}
+	// Always (re)bundle every available language — set unconditionally so an upgrade that
+	// adds languages picks them up on the next launch without touching the user's wiki.
+	packageJson.languages = getBundledLanguages();
 	if(!fs.existsSync(wikiFolder)) {
 		fs.mkdirSync(wikiFolder);
 	}

@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: 위키 파일 추가
+Toolbar/AddWikiFolder: 위키 폴더 추가
+Toolbar/Backstage: 백스테이지
+Toolbar/CreateWikiFolder: 새 위키 폴더 만들기
+Toolbar/CreateWiki: 새 위키 만들기
+Toolbar/CreateFromTemplate: 템플릿에서 만들기
+Toolbar/NoTemplates: 정의된 템플릿이 없습니다 — 설정을 참조하세요
+Toolbar/From: 원본:
+Toolbar/CloneExisting: 기존 위키 복제
+Toolbar/NoWikisToClone: 복제할 수 있는 위키가 없습니다
+Toolbar/Help: 도움말
+Toolbar/Settings: 설정
+Toolbar/Language: 언어
+List/SearchPlaceholder: 검색
+List/ClearSearch: 검색 지우기
+Row/Untitled: 제목 없음
+Row/Open: 열기
+Row/Reveal: 표시
+Row/Remove: 제거
+Row/ToFolder: 폴더로
+Row/ToFile: 파일로
+Row/ToFolderTooltip: 새 위키 폴더를 위한 빈 폴더를 선택(또는 생성)하세요
+Row/ToFileTooltip: 새 단일 파일 위키를 저장할 위치를 선택하세요
+Row/Advanced: 고급
+Row/Plugins: 플러그인
+Advanced/Backups: 백업
+Advanced/SaveBackup: 저장할 때마다 백업 저장
+Advanced/RevealBackups: 백업 표시
+Advanced/ServerNote: 이 옵션은 위키 폴더가 HTTP를 통해 제공되는 방식을 제어합니다. 다음에 위키 폴더를 열 때 적용됩니다.
+Advanced/Server: 서버
+Advanced/Host: 호스트
+Advanced/Port: 포트
+Advanced/PathPrefix: 경로 접두사
+Advanced/RootTiddler: 루트 Tiddler
+Advanced/Gzip: 응답 압축(gzip)
+Advanced/Access: 접근
+Advanced/Credentials: 자격 증명 파일
+Advanced/AnonUsername: 익명 사용자 이름
+Advanced/Readers: 읽기 사용자
+Advanced/Writers: 쓰기 사용자
+PluginChooser/Heading: 플러그인 관리
+PluginChooser/Close: 닫기
+PluginChooser/OpenWarning: 이 위키는 현재 열려 있습니다. 먼저 창을 닫은 다음 적용을 클릭하세요.
+PluginChooser/FilterPlaceholder: 플러그인 필터링…
+PluginChooser/Clear: 지우기
+PluginChooser/NoMatch: 필터와 일치하는 플러그인이 없습니다.
+PluginChooser/Apply: 변경 사항 적용
+PluginChooser/Cancel: 취소
+PluginChooser/Update: 업데이트
+PluginChooser/UpdateAvailable: 더 새로운 버전이 포함되어 있습니다 — 클릭하여 업데이트
+PluginChooser/Updated: 업데이트됨
+Row/PluginUpdates: 플러그인 업데이트가 있습니다

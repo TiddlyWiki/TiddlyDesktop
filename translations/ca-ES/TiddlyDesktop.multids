@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Afegeix un fitxer wiki
+Toolbar/AddWikiFolder: Afegeix una carpeta wiki
+Toolbar/Backstage: Rebost
+Toolbar/CreateWikiFolder: Crea una carpeta wiki nova
+Toolbar/CreateWiki: Crea un wiki nou
+Toolbar/CreateFromTemplate: Crea a partir d’una plantilla
+Toolbar/NoTemplates: No hi ha plantilles definides: vegeu Configuració
+Toolbar/From: de
+Toolbar/CloneExisting: Clona un wiki existent
+Toolbar/NoWikisToClone: No hi ha cap wiki disponible per clonar
+Toolbar/Help: Ajuda
+Toolbar/Settings: Configuració
+Toolbar/Language: Idioma
+List/SearchPlaceholder: cerca
+List/ClearSearch: Esborra la cerca
+Row/Untitled: Sense títol
+Row/Open: obre
+Row/Reveal: mostra
+Row/Remove: elimina
+Row/ToFolder: a carpeta
+Row/ToFile: a fitxer
+Row/ToFolderTooltip: Trieu (o creeu) una carpeta buida per a la nova carpeta wiki
+Row/ToFileTooltip: Trieu on desar el nou wiki de fitxer únic
+Row/Advanced: avançat
+Row/Plugins: connectors
+Advanced/Backups: Còpies de seguretat
+Advanced/SaveBackup: Desa una còpia de seguretat a cada desada
+Advanced/RevealBackups: mostra les còpies de seguretat
+Advanced/ServerNote: Aquestes opcions controlen com es serveix la carpeta wiki per HTTP. Tenen efecte la propera vegada que s’obri la carpeta wiki.
+Advanced/Server: Servidor
+Advanced/Host: Amfitrió
+Advanced/Port: Port
+Advanced/PathPrefix: Prefix de camí
+Advanced/RootTiddler: Tiddler arrel
+Advanced/Gzip: Comprimeix les respostes (gzip)
+Advanced/Access: Accés
+Advanced/Credentials: Fitxer de credencials
+Advanced/AnonUsername: Nom d’usuari anònim
+Advanced/Readers: Lectors
+Advanced/Writers: Escriptors
+PluginChooser/Heading: Gestiona els connectors
+PluginChooser/Close: Tanca
+PluginChooser/OpenWarning: Aquest wiki està obert actualment. Tanqueu-ne primer la finestra i després feu clic a Aplica.
+PluginChooser/FilterPlaceholder: Filtra els connectors…
+PluginChooser/Clear: Esborra
+PluginChooser/NoMatch: Cap connector coincideix amb el filtre.
+PluginChooser/Apply: Aplica els canvis
+PluginChooser/Cancel: Cancel·la
+PluginChooser/Update: Actualitza
+PluginChooser/UpdateAvailable: S’inclou una versió més recent: fes clic per actualitzar
+PluginChooser/Updated: Actualitzat
+Row/PluginUpdates: Hi ha actualitzacions de connectors

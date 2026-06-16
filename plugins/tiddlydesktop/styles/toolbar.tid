@@ -24,6 +24,14 @@ tags: $:/tags/Stylesheet
     margin-right: 1em;
 }
 
+/* Every interactive toolbar control shows the hand pointer on hover. */
+.td-toolbar button,
+.td-toolbar select,
+.td-toolbar label,
+.td-toolbar input[type="file"] {
+    cursor: pointer;
+}
+
 .td-logo {
 	height: 3em;
 	vertical-align: middle;

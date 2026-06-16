@@ -55,16 +55,16 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <$list filter="[prefix[$:/temp/collab/share/available/]limit[1]]" variable="_">
 <$set name="getCount" value={{{ [prefix[$:/temp/collab/share/available/]!field:subscribed[yes]count[]] }}}>
 <div class="tc-collab-get-toggle">
-<$reveal type="nomatch" state="$:/temp/collab/state/get-open" text="yes" tag="div">
-<$button set="$:/temp/collab/state/get-open" setTo="yes" class="tc-btn-invisible tc-collab-get-header">{{$:/core/images/right-arrow}}<span>Shared tiddlers</span><span class={{{ [<getCount>match[0]then[tc-collab-get-badge tc-collab-get-badge-zero]else[tc-collab-get-badge]] }}}><$text text=<<getCount>>/></span></$button>
+<$reveal type="nomatch" state="$:/temp/collab/state/sidebar-get-open" text="yes" tag="div">
+<$button set="$:/temp/collab/state/sidebar-get-open" setTo="yes" class="tc-btn-invisible tc-collab-get-header">{{$:/core/images/right-arrow}}<span>Shared tiddlers</span><span class={{{ [<getCount>match[0]then[tc-collab-get-badge tc-collab-get-badge-zero]else[tc-collab-get-badge]] }}}><$text text=<<getCount>>/></span></$button>
 </$reveal>
-<$reveal type="match" state="$:/temp/collab/state/get-open" text="yes" tag="div">
-<$button set="$:/temp/collab/state/get-open" setTo="no" class="tc-btn-invisible tc-collab-get-header">{{$:/core/images/down-arrow}}<span>Shared tiddlers</span><span class={{{ [<getCount>match[0]then[tc-collab-get-badge tc-collab-get-badge-zero]else[tc-collab-get-badge]] }}}><$text text=<<getCount>>/></span></$button>
+<$reveal type="match" state="$:/temp/collab/state/sidebar-get-open" text="yes" tag="div">
+<$button set="$:/temp/collab/state/sidebar-get-open" setTo="no" class="tc-btn-invisible tc-collab-get-header">{{$:/core/images/down-arrow}}<span>Shared tiddlers</span><span class={{{ [<getCount>match[0]then[tc-collab-get-badge tc-collab-get-badge-zero]else[tc-collab-get-badge]] }}}><$text text=<<getCount>>/></span></$button>
 </$reveal>
 </div>
 </$set>
 </$list>
-<$reveal type="match" state="$:/temp/collab/state/get-open" text="yes">
+<$reveal type="match" state="$:/temp/collab/state/sidebar-get-open" text="yes">
 <$list filter="[prefix[$:/temp/collab/share/available/]sort[tiddler-title]]" emptyMessage="">
 <$set name="sharedTitle" value={{{ [<currentTiddler>get[tiddler-title]] }}}>
 <$set name="isSubscribed" value={{{ [<currentTiddler>get[subscribed]] }}}>

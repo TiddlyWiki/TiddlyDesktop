@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Wiki-bestand toevoegen
+Toolbar/AddWikiFolder: Wiki-map toevoegen
+Toolbar/Backstage: Backstage
+Toolbar/CreateWikiFolder: Nieuwe wiki-map maken
+Toolbar/CreateWiki: Nieuwe wiki maken
+Toolbar/CreateFromTemplate: Maken op basis van een sjabloon
+Toolbar/NoTemplates: Geen sjablonen gedefinieerd – zie Instellingen
+Toolbar/From: uit
+Toolbar/CloneExisting: Een bestaande wiki klonen
+Toolbar/NoWikisToClone: Geen wiki's beschikbaar om te klonen
+Toolbar/Help: Help
+Toolbar/Settings: Instellingen
+Toolbar/Language: Taal
+List/SearchPlaceholder: zoeken
+List/ClearSearch: Zoekopdracht wissen
+Row/Untitled: Naamloos
+Row/Open: openen
+Row/Reveal: tonen
+Row/Remove: verwijderen
+Row/ToFolder: naar map
+Row/ToFile: naar bestand
+Row/ToFolderTooltip: Kies (of maak) een lege map voor de nieuwe wiki-map
+Row/ToFileTooltip: Kies waar de nieuwe enkelbestands-wiki moet worden opgeslagen
+Row/Advanced: geavanceerd
+Row/Plugins: plug-ins
+Advanced/Backups: Back-ups
+Advanced/SaveBackup: Een back-up maken bij elke keer opslaan
+Advanced/RevealBackups: back-ups tonen
+Advanced/ServerNote: Deze opties bepalen hoe de wiki-map via HTTP wordt aangeboden. Ze worden van kracht de volgende keer dat de wiki-map wordt geopend.
+Advanced/Server: Server
+Advanced/Host: Host
+Advanced/Port: Poort
+Advanced/PathPrefix: Padvoorvoegsel
+Advanced/RootTiddler: Root-tiddler
+Advanced/Gzip: Antwoorden comprimeren (gzip)
+Advanced/Access: Toegang
+Advanced/Credentials: Inloggegevensbestand
+Advanced/AnonUsername: Anonieme gebruikersnaam
+Advanced/Readers: Lezers
+Advanced/Writers: Schrijvers
+PluginChooser/Heading: Plug-ins beheren
+PluginChooser/Close: Sluiten
+PluginChooser/OpenWarning: Deze wiki is momenteel geopend. Sluit eerst het venster en klik daarna op Toepassen.
+PluginChooser/FilterPlaceholder: Plug-ins filteren…
+PluginChooser/Clear: Wissen
+PluginChooser/NoMatch: Geen plug-ins komen overeen met je filter.
+PluginChooser/Apply: Wijzigingen toepassen
+PluginChooser/Cancel: Annuleren
+PluginChooser/Update: Bijwerken
+PluginChooser/UpdateAvailable: Een nieuwere versie is meegeleverd — klik om bij te werken
+PluginChooser/Updated: Bijgewerkt
+Row/PluginUpdates: Plug-in-updates beschikbaar

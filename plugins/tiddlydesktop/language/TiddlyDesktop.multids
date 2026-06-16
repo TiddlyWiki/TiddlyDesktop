@@ -48,3 +48,7 @@ PluginChooser/Clear: Clear
 PluginChooser/NoMatch: No plugins match your filter.
 PluginChooser/Apply: Apply Changes
 PluginChooser/Cancel: Cancel
+PluginChooser/Update: Update
+PluginChooser/UpdateAvailable: A newer version is bundled — click to update
+PluginChooser/Updated: Updated
+Row/PluginUpdates: Plugin updates available

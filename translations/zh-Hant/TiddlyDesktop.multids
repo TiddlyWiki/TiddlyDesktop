@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: 新增 wiki 檔案
+Toolbar/AddWikiFolder: 新增 wiki 資料夾
+Toolbar/Backstage: 後台
+Toolbar/CreateWikiFolder: 建立新的 wiki 資料夾
+Toolbar/CreateWiki: 建立新的 wiki
+Toolbar/CreateFromTemplate: 從範本建立
+Toolbar/NoTemplates: 未定義範本 —— 請參閱設定
+Toolbar/From: 來自
+Toolbar/CloneExisting: 複製現有 wiki
+Toolbar/NoWikisToClone: 沒有可複製的 wiki
+Toolbar/Help: 說明
+Toolbar/Settings: 設定
+Toolbar/Language: 語言
+List/SearchPlaceholder: 搜尋
+List/ClearSearch: 清除搜尋
+Row/Untitled: 無標題
+Row/Open: 開啟
+Row/Reveal: 顯示
+Row/Remove: 移除
+Row/ToFolder: 轉為資料夾
+Row/ToFile: 轉為檔案
+Row/ToFolderTooltip: 為新的 wiki 資料夾選擇（或建立）一個空資料夾
+Row/ToFileTooltip: 選擇新的單一檔案 wiki 的儲存位置
+Row/Advanced: 進階
+Row/Plugins: 外掛
+Advanced/Backups: 備份
+Advanced/SaveBackup: 每次儲存時儲存一份備份
+Advanced/RevealBackups: 顯示備份
+Advanced/ServerNote: 這些選項控制 wiki 資料夾如何透過 HTTP 提供服務。它們將在下次開啟該 wiki 資料夾時生效。
+Advanced/Server: 伺服器
+Advanced/Host: 主機
+Advanced/Port: 連接埠
+Advanced/PathPrefix: 路徑前綴
+Advanced/RootTiddler: 根 Tiddler
+Advanced/Gzip: 壓縮回應（gzip）
+Advanced/Access: 存取
+Advanced/Credentials: 憑證檔案
+Advanced/AnonUsername: 匿名使用者名稱
+Advanced/Readers: 讀者
+Advanced/Writers: 寫者
+PluginChooser/Heading: 管理外掛
+PluginChooser/Close: 關閉
+PluginChooser/OpenWarning: 此 wiki 目前已開啟。請先關閉其視窗，然後點選套用。
+PluginChooser/FilterPlaceholder: 篩選外掛…
+PluginChooser/Clear: 清除
+PluginChooser/NoMatch: 沒有外掛符合您的篩選條件。
+PluginChooser/Apply: 套用變更
+PluginChooser/Cancel: 取消
+PluginChooser/Update: 更新
+PluginChooser/UpdateAvailable: 已隨附較新版本 —— 點選以更新
+PluginChooser/Updated: 已更新
+Row/PluginUpdates: 有可用的外掛更新

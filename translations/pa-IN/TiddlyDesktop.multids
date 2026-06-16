@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: ਵਿਕੀ ਫ਼ਾਈਲ ਸ਼ਾਮਲ ਕਰੋ
+Toolbar/AddWikiFolder: ਵਿਕੀ ਫੋਲਡਰ ਸ਼ਾਮਲ ਕਰੋ
+Toolbar/Backstage: ਬੈਕਸਟੇਜ
+Toolbar/CreateWikiFolder: ਨਵਾਂ ਵਿਕੀ ਫੋਲਡਰ ਬਣਾਓ
+Toolbar/CreateWiki: ਨਵੀਂ ਵਿਕੀ ਬਣਾਓ
+Toolbar/CreateFromTemplate: ਟੈਂਪਲੇਟ ਤੋਂ ਬਣਾਓ
+Toolbar/NoTemplates: ਕੋਈ ਟੈਂਪਲੇਟ ਪਰਿਭਾਸ਼ਿਤ ਨਹੀਂ – ਸੈਟਿੰਗਾਂ ਵੇਖੋ
+Toolbar/From: ਤੋਂ
+Toolbar/CloneExisting: ਮੌਜੂਦਾ ਵਿਕੀ ਦਾ ਕਲੋਨ ਬਣਾਓ
+Toolbar/NoWikisToClone: ਕਲੋਨ ਕਰਨ ਲਈ ਕੋਈ ਵਿਕੀ ਉਪਲਬਧ ਨਹੀਂ
+Toolbar/Help: ਮਦਦ
+Toolbar/Settings: ਸੈਟਿੰਗਾਂ
+Toolbar/Language: ਭਾਸ਼ਾ
+List/SearchPlaceholder: ਖੋਜੋ
+List/ClearSearch: ਖੋਜ ਸਾਫ਼ ਕਰੋ
+Row/Untitled: ਬਿਨਾਂ ਸਿਰਲੇਖ
+Row/Open: ਖੋਲ੍ਹੋ
+Row/Reveal: ਵਿਖਾਓ
+Row/Remove: ਹਟਾਓ
+Row/ToFolder: ਫੋਲਡਰ ਵਿੱਚ
+Row/ToFile: ਫ਼ਾਈਲ ਵਿੱਚ
+Row/ToFolderTooltip: ਨਵੇਂ ਵਿਕੀ ਫੋਲਡਰ ਲਈ ਇੱਕ ਖਾਲੀ ਫੋਲਡਰ ਚੁਣੋ (ਜਾਂ ਬਣਾਓ)
+Row/ToFileTooltip: ਨਵੀਂ ਇੱਕ-ਫ਼ਾਈਲ ਵਿਕੀ ਨੂੰ ਸੰਭਾਲਣ ਲਈ ਥਾਂ ਚੁਣੋ
+Row/Advanced: ਉੱਨਤ
+Row/Plugins: ਪਲੱਗਇਨ
+Advanced/Backups: ਬੈਕਅੱਪ
+Advanced/SaveBackup: ਹਰ ਵਾਰ ਸੰਭਾਲਣ 'ਤੇ ਇੱਕ ਬੈਕਅੱਪ ਸੰਭਾਲੋ
+Advanced/RevealBackups: ਬੈਕਅੱਪ ਵਿਖਾਓ
+Advanced/ServerNote: ਇਹ ਚੋਣਾਂ ਕੰਟਰੋਲ ਕਰਦੀਆਂ ਹਨ ਕਿ ਵਿਕੀ ਫੋਲਡਰ HTTP ਉੱਤੇ ਕਿਵੇਂ ਪਰੋਸਿਆ ਜਾਂਦਾ ਹੈ। ਇਹ ਅਗਲੀ ਵਾਰ ਵਿਕੀ ਫੋਲਡਰ ਖੋਲ੍ਹਣ 'ਤੇ ਲਾਗੂ ਹੁੰਦੀਆਂ ਹਨ।
+Advanced/Server: ਸਰਵਰ
+Advanced/Host: ਹੋਸਟ
+Advanced/Port: ਪੋਰਟ
+Advanced/PathPrefix: ਪਾਥ ਅਗੇਤਰ
+Advanced/RootTiddler: ਰੂਟ ਟਿਡਲਰ
+Advanced/Gzip: ਜਵਾਬ ਸੰਕੁਚਿਤ ਕਰੋ (gzip)
+Advanced/Access: ਪਹੁੰਚ
+Advanced/Credentials: ਕ੍ਰੈਡੈਂਸ਼ਲ ਫ਼ਾਈਲ
+Advanced/AnonUsername: ਗੁਮਨਾਮ ਵਰਤੋਂਕਾਰ ਨਾਮ
+Advanced/Readers: ਪਾਠਕ
+Advanced/Writers: ਲੇਖਕ
+PluginChooser/Heading: ਪਲੱਗਇਨ ਪ੍ਰਬੰਧਿਤ ਕਰੋ
+PluginChooser/Close: ਬੰਦ ਕਰੋ
+PluginChooser/OpenWarning: ਇਹ ਵਿਕੀ ਇਸ ਵੇਲੇ ਖੁੱਲ੍ਹੀ ਹੈ। ਪਹਿਲਾਂ ਇਸਦੀ ਵਿੰਡੋ ਬੰਦ ਕਰੋ, ਫਿਰ ਲਾਗੂ ਕਰੋ 'ਤੇ ਕਲਿੱਕ ਕਰੋ।
+PluginChooser/FilterPlaceholder: ਪਲੱਗਇਨ ਫਿਲਟਰ ਕਰੋ…
+PluginChooser/Clear: ਸਾਫ਼ ਕਰੋ
+PluginChooser/NoMatch: ਤੁਹਾਡੇ ਫਿਲਟਰ ਨਾਲ ਕੋਈ ਪਲੱਗਇਨ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ।
+PluginChooser/Apply: ਤਬਦੀਲੀਆਂ ਲਾਗੂ ਕਰੋ
+PluginChooser/Cancel: ਰੱਦ ਕਰੋ
+PluginChooser/Update: ਅੱਪਡੇਟ ਕਰੋ
+PluginChooser/UpdateAvailable: ਇੱਕ ਨਵਾਂ ਸੰਸਕਰਣ ਸ਼ਾਮਲ ਹੈ — ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ
+PluginChooser/Updated: ਅੱਪਡੇਟ ਕੀਤਾ
+Row/PluginUpdates: ਪਲੱਗਇਨ ਅੱਪਡੇਟ ਉਪਲਬਧ ਹਨ

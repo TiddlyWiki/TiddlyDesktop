@@ -19,7 +19,7 @@ title: $:/TiddlyDesktop/PluginChooser
 <div class="td-plugin-open-warning">⚠&#32;{{$:/language/TiddlyDesktop/PluginChooser/OpenWarning}}</div>
 </$list>
 <div class="td-plugin-search-row">
-<$edit-text tiddler="$:/temp/TiddlyDesktop/PluginChooser/search" tag="input" class="tc-edit-texteditor td-plugin-search" placeholder={{$:/language/TiddlyDesktop/PluginChooser/FilterPlaceholder}}/>
+<$edit-text tiddler="$:/temp/TiddlyDesktop/PluginChooser/search" tag="input" class="tc-edit-texteditor td-plugin-search" focus="yes" placeholder={{$:/language/TiddlyDesktop/PluginChooser/FilterPlaceholder}}/>
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/search]!field:text[]]">
 <$button class="tc-btn-invisible td-plugin-search-clear" set="$:/temp/TiddlyDesktop/PluginChooser/search" setTo="" tooltip={{$:/language/TiddlyDesktop/PluginChooser/Clear}}>✕</$button>
 </$list>
@@ -35,7 +35,13 @@ title: $:/TiddlyDesktop/PluginChooser
 <$list filter="[<currentTiddler>get[plugin-type]!match[plugin]]" variable="ptype"><span class="td-plugin-type-badge"><$text text=<<ptype>>/></span></$list>
 <$list filter="[<currentTiddler>get[description]!match[]]" variable="desc"><br/><span class="td-plugin-desc"><$text text=<<desc>>/></span></$list>
 </div>
+<$list filter="[<currentTiddler>field:update-available[yes]]" variable="_">
+<span class="td-plugin-version td-plugin-version-outdated">v<$text text={{{ [<currentTiddler>get[installed-version]] }}}/> → v<$text text={{{ [<currentTiddler>get[version]] }}}/></span>
+<$button message="tiddlydesktop-update-plugin" param=<<pluginTitle>> class="tc-btn-invisible td-button td-plugin-btn-update" tooltip={{$:/language/TiddlyDesktop/PluginChooser/UpdateAvailable}}>{{$:/language/TiddlyDesktop/PluginChooser/Update}}</$button>
+</$list>
+<$list filter="[<currentTiddler>!field:update-available[yes]]" variable="_">
 <$list filter="[<currentTiddler>get[version]!match[]]" variable="ver"><span class="td-plugin-version">v<$text text=<<ver>>/></span></$list>
+</$list>
 </$let>
 </div>
 </$list>

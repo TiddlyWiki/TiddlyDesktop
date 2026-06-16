@@ -7,7 +7,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>TiddlyDesktop</string>
 	<key>CFBundleExecutable</key>
-	<string>nwjs</string>
+	<string>TiddlyDesktop</string>
 	<key>CFBundleIconFile</key>
 	<string>nw.icns</string>
 	<key>CFBundleIdentifier</key>

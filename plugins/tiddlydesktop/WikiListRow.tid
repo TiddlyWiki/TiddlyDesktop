@@ -81,7 +81,7 @@ title: WikiListRow
 <div class="td-wiki-toolbar-item">
 <$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/classic/$(currentTiddler)$""" text="yes" tag="span">
 <$button message="tiddlydesktop-open-plugin-chooser" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-plugins">
-{{$:/language/TiddlyDesktop/Row/Plugins}}
+{{$:/language/TiddlyDesktop/Row/Plugins}}<$list filter="[<currentTiddler>addprefix[$:/temp/TiddlyDesktop/plugin-updates/]get[text]!match[]!match[0]]" variable="updateCount"><span class="td-plugin-update-badge" title={{$:/language/TiddlyDesktop/Row/PluginUpdates}}><$text text=<<updateCount>>/></span></$list>
 </$button>
 </$reveal>
 </div>

@@ -150,6 +150,14 @@ WikiFileWindow.prototype.onloadiframe = function() {
 	} catch(e) {
 		console.error("[TiddlyDesktop] disable-permalinks install failed:",e);
 	}
+	// Safe external embeds: enforce the allowlist and route allowlisted media iframes through
+	// a loopback http shim (real origin -> avoids YouTube's file:// error 153). The wiki
+	// document stays file://, so saving and the collab bridges below are unaffected.
+	try {
+		require("./utils/embeds.js").install(this.iframe.contentDocument,this.iframe.contentWindow);
+	} catch(e) {
+		console.error("[TiddlyDesktop] embeds install failed:",e);
+	}
 	// Observe mutations of the title element of the iframe
 	this.titleObserver = new MutationObserver(this.extractIframeTitle.bind(this));
 	var iframeTitleNode = this.iframe.contentDocument.getElementsByTagName("title")[0];

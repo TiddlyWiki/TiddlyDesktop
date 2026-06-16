@@ -1,9 +1,15 @@
 title: WikiListToolbar
 
 <div class="td-toolbar">
+<!-- currentLanguage makes this subtree depend on $:/language, so switching language
+re-renders the toolbar buttons live: their lingo transcludes don't refresh on their own
+through the list+transclude-by-variable indirection (the wiki-row buttons do, via a
+different render path). -->
+<$set name="currentLanguage" value={{$:/language}}>
 <$list filter="[all[tiddlers+shadows]tag[toolbar]]" variable="toolbar">
 <div class="td-toolbar-item">
 <$transclude tiddler=<<toolbar>>/>
 </div>
 </$list>
+</$set>
 </div>

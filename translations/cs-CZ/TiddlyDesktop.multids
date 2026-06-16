@@ -1,0 +1,54 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Přidat soubor wiki
+Toolbar/AddWikiFolder: Přidat složku wiki
+Toolbar/Backstage: Zákulisí
+Toolbar/CreateWikiFolder: Vytvořit novou složku wiki
+Toolbar/CreateWiki: Vytvořit nové wiki
+Toolbar/CreateFromTemplate: Vytvořit ze šablony
+Toolbar/NoTemplates: Nejsou definovány žádné šablony – viz Nastavení
+Toolbar/From: z
+Toolbar/CloneExisting: Klonovat existující wiki
+Toolbar/NoWikisToClone: Žádná wiki k klonování
+Toolbar/Help: Nápověda
+Toolbar/Settings: Nastavení
+Toolbar/Language: Jazyk
+List/SearchPlaceholder: hledat
+List/ClearSearch: Vymazat hledání
+Row/Untitled: Bez názvu
+Row/Open: otevřít
+Row/Reveal: zobrazit
+Row/Remove: odebrat
+Row/ToFolder: do složky
+Row/ToFile: do souboru
+Row/ToFolderTooltip: Vyberte (nebo vytvořte) prázdnou složku pro novou složku wiki
+Row/ToFileTooltip: Vyberte, kam uložit nové jednosouborové wiki
+Row/Advanced: pokročilé
+Row/Plugins: pluginy
+Advanced/Backups: Zálohy
+Advanced/SaveBackup: Uložit zálohu při každém uložení
+Advanced/RevealBackups: zobrazit zálohy
+Advanced/ServerNote: Tyto možnosti řídí, jak je složka wiki poskytována přes HTTP. Projeví se při příštím otevření složky wiki.
+Advanced/Server: Server
+Advanced/Host: Hostitel
+Advanced/Port: Port
+Advanced/PathPrefix: Předpona cesty
+Advanced/RootTiddler: Kořenový tiddler
+Advanced/Gzip: Komprimovat odpovědi (gzip)
+Advanced/Access: Přístup
+Advanced/Credentials: Soubor s přihlašovacími údaji
+Advanced/AnonUsername: Anonymní uživatelské jméno
+Advanced/Readers: Čtenáři
+Advanced/Writers: Zapisovatelé
+PluginChooser/Heading: Spravovat pluginy
+PluginChooser/Close: Zavřít
+PluginChooser/OpenWarning: Toto wiki je momentálně otevřené. Nejprve zavřete jeho okno a poté klikněte na Použít.
+PluginChooser/FilterPlaceholder: Filtrovat pluginy…
+PluginChooser/Clear: Vymazat
+PluginChooser/NoMatch: Filtru neodpovídají žádné pluginy.
+PluginChooser/Apply: Použít změny
+PluginChooser/Cancel: Zrušit
+PluginChooser/Update: Aktualizovat
+PluginChooser/UpdateAvailable: Je přiložena novější verze — aktualizujte kliknutím
+PluginChooser/Updated: Aktualizováno
+Row/PluginUpdates: Jsou dostupné aktualizace pluginů

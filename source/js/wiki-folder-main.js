@@ -230,3 +230,11 @@ try {
 } catch(e) {
 	console.error("[TiddlyDesktop] disable-permalinks install failed:",e);
 }
+
+// Safe external embeds (YouTube etc.): allowlisted media is routed through a loopback http
+// shim (real origin -> the provider plays instead of rejecting a file:// referer).
+try {
+	require("../js/utils/embeds.js").install(containerWindow.window.document,containerWindow.window);
+} catch(e) {
+	console.error("[TiddlyDesktop] embeds install failed:",e);
+}
