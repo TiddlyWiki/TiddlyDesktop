@@ -17,12 +17,12 @@ turns that into its `[subfilter<tagListFilter>!is[system]search:title<userInput>
 \whitespace trim
 <div class="tc-edit-tags">
 	<$list filter="[<currentTiddler>get<tagField>enlist-input[]sort[title]]" storyview="pop">
-		<$macrocall $name="tag-body"
+		<span class="td-wikilist-tag-pop"><$macrocall $name="tag-body"
 			colour={{{ [<currentTiddler>] :cascade[all[shadows+tiddlers]tag[$:/tags/TiddlerColourFilter]!is[draft]get[text]] }}}
 			palette={{$:/palette}}
 			icon={{{ [<currentTiddler>] :cascade[all[shadows+tiddlers]tag[$:/tags/TiddlerIconFilter]!is[draft]get[text]] }}}
 			tagField=<<tagField>>
-		/>
+		/></span>
 	</$list>
 	<$let tabIndex={{$:/config/EditTabIndex}} cancelPopups="yes">
 		<$macrocall $name="tag-picker" tagField=<<tagField>> tagListFilter=<<wikiTagListFilter>>/>
@@ -30,6 +30,6 @@ turns that into its `[subfilter<tagListFilter>!is[system]search:title<userInput>
 </div>
 \end
 
-<$let saveTiddler=<<currentTiddler>> wikiTagListFilter="[all[tiddlers]tag[wikilist]addprefix[$:/TiddlyDesktop/Config/wiki-tags/]tags[]sort[]]">
+<$let saveTiddler=<<currentTiddler>> wikiTagListFilter="[all[tiddlers]tag[wikilist]addprefix[$:/TiddlyDesktop/Config/wiki-tags/]tags[]sort[]] :and[unique[]]">
 	<$macrocall $name="edit-tags-template" tagField="tags"/>
 </$let>

@@ -86,10 +86,14 @@ title: WikiListRow
 </$reveal>
 </div>
 <div class="td-wiki-toolbar-item">
-<$let storyTiddler="$:/TiddlyDesktop/Config/wiki-tags/$(currentTiddler)$">
-<$tiddler tiddler=<<storyTiddler>>>
+<!-- Use <$let currentTiddler=…> (NOT <$tiddler>) to point the tag picker at this wiki's
+     wiki-tags config tiddler. <$tiddler> refreshSelf's whenever the referenced tiddler's
+     content changes (its tiddlerState hash tracks the fields), which would rebuild this whole
+     block on every tag add/remove — destroying the tag list and killing the "pop" animation.
+     <$let> only re-renders when its (stable) value changes, so the list refreshes incrementally
+     and the storyview animates. -->
+<$let currentTiddler="$:/TiddlyDesktop/Config/wiki-tags/$(currentTiddler)$">
 {{||WikiList/edit-tags-template}}
-</$tiddler>
 </$let>
 </div>
 </div>

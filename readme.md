@@ -18,9 +18,24 @@ Download the Windows, linux or Mac binary .zip files from:
 
 https://github.com/TiddlyWiki/TiddlyDesktop/releases
 
-Unzip into a folder and run `TiddlyWiki.app` or `nw.exe` and for linux `nw`
+Unzip into a folder and run the `TiddlyDesktop` launcher: `TiddlyDesktop.app` on macOS, `TiddlyDesktop.exe` on Windows, and `TiddlyDesktop` on Linux.
 
 Note that TiddlyDesktop will not work correctly from a Windows UNC network share (eg ``\\MY-SERVER\SHARE\MyFolder``). You should map the network share to a local drive, and run it from there.
+
+## Opening unsigned builds
+
+The released binaries are not signed with a paid developer certificate, so the operating system shows a warning the first time you open them. This is expected; the steps below are a one-time bypass.
+
+**macOS (Gatekeeper).** The app is ad-hoc signed so it launches (this is required on Apple Silicon), but macOS still flags it as coming from an unidentified developer. To open it:
+
+* **Right-click** (or Control-click) `TiddlyDesktop.app` → **Open** → **Open** in the dialog. macOS remembers the choice for next time.
+* If macOS says the app "is damaged and can't be opened" (the quarantine flag added by the browser download), clear it once:
+
+  ```
+  xattr -dr com.apple.quarantine /path/to/TiddlyDesktop.app
+  ```
+
+**Windows (SmartScreen).** When SmartScreen shows "Windows protected your PC", click **More info → Run anyway**.
 
 ## Linux AppImage
 

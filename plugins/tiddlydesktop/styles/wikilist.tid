@@ -117,6 +117,14 @@ tags: $:/tags/Stylesheet
 	margin-right: 1em;
 }
 
+/* Per-row tag pills: each is wrapped in this element so the "pop" storyview always has a real,
+   transformable element as the list item's first DOM node (the tag-body/$wikify content can
+   momentarily be a text node, which makes pop skip the animation). inline-block so the pills
+   still flow inline and transform: scale() actually applies. */
+.td-wikilist .td-wikilist-tag-pop {
+	display: inline-block;
+}
+
 .td-wikilist .td-wikilist-button-open {
 	background-color: <<colour wikilist-button-open>>;
 }

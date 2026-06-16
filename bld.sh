@@ -98,6 +98,14 @@ do
 	cp "./strings/InfoPlist.strings" "$f/InfoPlist.strings"
 done
 
+# Ad-hoc code-sign the bundle (free). Re-bundling (renaming the executable, injecting app.nw)
+# invalidated NW.js's signature, and a broken/unsigned app won't launch on Apple Silicon.
+# Ad-hoc signing makes it run; it does NOT satisfy Gatekeeper/notarization (those need the paid
+# Apple Developer ID), so users still bypass once — see the readme. `--deep` signs the nested
+# NW.js frameworks/helpers. Skipped where codesign is unavailable (non-macOS build hosts).
+MAC64_APP="output/mac64/TiddlyDesktop-mac64-v$(./bin/get-version-number)/TiddlyDesktop.app"
+command -v codesign >/dev/null 2>&1 && [ -e "$MAC64_APP/Contents/MacOS/TiddlyDesktop" ] && codesign --force --deep --sign - "$MAC64_APP" || true
+
 }
 
 # OS X Apple Silicon App
@@ -118,6 +126,11 @@ do
 done
 
 xattr -c output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)/TiddlyDesktop.app
+
+# Ad-hoc code-sign AFTER xattr -c (which would otherwise strip the signature). Mandatory for
+# Apple Silicon to launch at all; free, but not Gatekeeper/notarization (paid) — see the readme.
+MACARM_APP="output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)/TiddlyDesktop.app"
+command -v codesign >/dev/null 2>&1 && [ -e "$MACARM_APP/Contents/MacOS/TiddlyDesktop" ] && codesign --force --deep --sign - "$MACARM_APP" || true
 
 }
 
