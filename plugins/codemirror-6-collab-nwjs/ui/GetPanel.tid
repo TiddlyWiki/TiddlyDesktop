@@ -52,7 +52,10 @@ title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/GetPanel
 <$list filter="[<progressTitle>!is[tiddler]]" variable="_">
 <$set name="extMode" value={{{ [[$:/plugins/tiddlywiki/external-attachments]is[tiddler]] :filter[[$:/config/ExternalAttachments/Enable]get[text]match[yes]] +[first[]] }}}>
 <$list filter="[<extMode>!match[]]" variable="_">
-<$browse nwsaveas={{{ [<currentTiddler>get[asset-name]] }}} message="codemirror-6-collab-get-asset" param=<<sharedTitle>> class="tc-collab-get-asset-browse" tooltip="Save this attachment to a file on disk"/>
+<span class="tc-file-input-wrapper tc-collab-get-asset-wrapper">
+<$button class="tc-btn-invisible tc-collab-get-btn" tooltip="Save this attachment to a file on disk">Get</$button>
+<$browse nwsaveas={{{ [<currentTiddler>get[asset-name]] }}} message="codemirror-6-collab-get-asset" param=<<sharedTitle>> tooltip="Save this attachment to a file on disk"/>
+</span>
 </$list>
 <$list filter="[<extMode>match[]]" variable="_">
 <$button message="codemirror-6-collab-get-asset" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn" tooltip="Embed this attachment in your wiki">Get</$button>

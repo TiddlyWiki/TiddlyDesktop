@@ -50,6 +50,11 @@ jobs:
     steps:
       - name: "💾 Checking out repository code..."
         uses: actions/checkout@v4
+        with:
+          # Full history so bld.sh can derive the collab plugin version from its git commit
+          # count (bin/stamp-collab-version.js). A shallow clone would undercount and ship a
+          # regressed version.
+          fetch-depth: 0
       - name: "⬢ Setting up Node.js 24..."
         uses: actions/setup-node@v4
         with:

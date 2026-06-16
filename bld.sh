@@ -16,6 +16,13 @@ cp -RH node_modules/ws source/node_modules/ws
 # Copy TiddlyWiki core files into the source directory
 cp -RH node_modules/tiddlywiki source/tiddlywiki
 
+# Drop the demo/documentation editions the desktop never boots (~37 MB: tw5.com, geospatialdemo,
+# tour, the language demo editions, …), keeping only the tiny starter editions. We keep "empty"
+# and "server" so a "new wiki from edition" / `--init <edition>` path stays available (they total
+# ~8 KB). To offer more editions (e.g. in the "Create new wiki" dropdown later), add their names
+# to the keep-list below — they're always present in node_modules/tiddlywiki at build time.
+find source/tiddlywiki/editions -mindepth 1 -maxdepth 1 ! -name empty ! -name server -exec rm -rf {} +
+
 # Generate and inject the TiddlyDesktop WikiList translations into each bundled language
 # plugin, so the wiki list can be shown in any language. They override the tiddlydesktop
 # plugin's English defaults because language plugins have a higher plugin-priority (100).
@@ -36,6 +43,12 @@ cp -RH plugins/tiddlydesktop source/tiddlywiki/plugins/tiddlywiki
 
 # Copy collaborative-editing NW.js transport plugin into the source directory
 cp -RH plugins/codemirror-6-collab-nwjs source/tiddlywiki/plugins/tiddlywiki
+
+# Stamp the collab plugin's auto-derived version (major.minor from its plugin.info, patch =
+# git commit count of its source) into the BUNDLED copy, so a wiki can detect a newer bundled
+# collab plugin without relying on a developer-side git hook. Needs full git history (CI uses
+# fetch-depth: 0); falls back to the existing version if history is unavailable.
+node bin/stamp-collab-version.js source/tiddlywiki/plugins/tiddlywiki/codemirror-6-collab-nwjs/plugin.info
 
 # Copy TiddlyDesktop version number from package.json to the plugin.info of the plugin and the tiddler $:/plugins/tiddlywiki/tiddlydesktop/version
 node propagate-version.js

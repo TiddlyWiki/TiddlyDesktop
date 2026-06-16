@@ -85,6 +85,15 @@ BackstageWindow.prototype.tryRender = function() {
 	$tw.desktop.utils.menu.createMenuBar(this.window_nwjs);
 	// Render the page content
 	this.renderWindow();
+	// Safe external media embeds (YouTube etc.): route allowlisted media through the local
+	// loopback shim so videos play in backstage windows (the wiki list, Settings, and Help)
+	// just like they do in single-file and folder wikis. Backstage windows render TW content
+	// directly into this Node-enabled document, so this matches the folder-wiki install.
+	try {
+		require("../js/utils/embeds.js").install(this.window_nwjs.window.document,this.window_nwjs.window);
+	} catch(e) {
+		console.error("[TiddlyDesktop] embeds install failed:",e);
+	}
 	// Remove the loading splash now that real content is rendered
 	var splash = this.window_nwjs.window.document.getElementById("td-loading-splash");
 	if(splash && splash.parentNode) {
