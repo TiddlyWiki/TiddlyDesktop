@@ -139,6 +139,11 @@ exports.ensureStarted = function(cb) {
 		var cbs = pending; pending = [];
 		cbs.forEach(function(fn) { try { fn(makeHandle()); } catch(e) {} });
 	});
+	// A listening server keeps Node's event loop alive, which (in each wiki window's process)
+	// would stop that process from exiting cleanly when the window closes — leaving zombie
+	// TiddlyDesktop processes behind. unref() lets the process exit when nothing else is
+	// pending; the shim still serves normally while the window is open.
+	try { server.unref(); } catch(e) {}
 };
 
 function makeHandle() {

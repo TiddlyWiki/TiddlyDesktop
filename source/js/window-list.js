@@ -613,6 +613,17 @@ WindowList.prototype.convertWiki = function(sourceUrl, destPath, callback) {
 		} else {
 			callback(err);
 		}
+		// Tear down the throwaway conversion instance so it leaves nothing running in the main
+		// process. Conversion is IN-PROCESS — it never spawns a child nw/TiddlyDesktop process —
+		// so the only thing it could leave is an in-memory handle such as the filesystem syncer's
+		// timer; stop it and drop the reference so repeated conversions don't accumulate timers.
+		try {
+			if(convTw && convTw.syncer && convTw.syncer.taskTimerId) {
+				clearTimeout(convTw.syncer.taskTimerId);
+				convTw.syncer.taskTimerId = null;
+			}
+		} catch(_e) {}
+		convTw = null;
 	}
 
 	var convTw;

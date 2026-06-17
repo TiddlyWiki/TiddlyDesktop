@@ -10,6 +10,10 @@ var gui = require("nw.gui"),
 
 var WindowList = require("../js/window-list.js").WindowList;
 
+// The real process.exit, captured before anything (e.g. wiki conversion) can monkey-patch it.
+// quitApp() uses this so a quit during a conversion still terminates.
+var _realProcessExit = (typeof process !== "undefined" && process.exit) ? process.exit.bind(process) : null;
+
 // Use the main window as the backstage window
 var backstageWindow = gui.Window.get();
 
@@ -21,6 +25,33 @@ function showBackstageWindow() {
 backstageWindow.on("close",function(event) {
 	backstageWindow.hide();
 });
+
+// Fully quit TiddlyDesktop, guaranteeing no process is left behind. Force-closes every window,
+// asks NW.js to quit, then — as an absolute backstop — terminates the main (browser) process.
+// Killing the main process makes Chromium tear down all renderer processes with it (on Windows
+// they're in the same Job Object), so even a Node handle (e.g. a listening socket, the embed
+// shim, a collab socket) or a hung renderer that would otherwise keep something alive cannot
+// leave a zombie behind. Idempotent.
+var _quitting = false;
+function quitApp() {
+	if(_quitting) { return; }
+	_quitting = true;
+	try { if(tray) { tray.remove(); } } catch(e) {}
+	// Force-close every tracked wiki window (close(true) skips close handlers / save prompts).
+	try {
+		var wl = $tw && $tw.desktop && $tw.desktop.windowList;
+		if(wl && wl.windows) {
+			wl.windows.slice().forEach(function(w) {
+				try { if(w && w.window_nwjs) { w.window_nwjs.close(true); } } catch(e) {}
+			});
+		}
+	} catch(e) {}
+	try { backstageWindow.close(true); } catch(e) {}
+	try { gui.App.closeAllWindows(); } catch(e) {}
+	try { gui.App.quit(); } catch(e) {}
+	// Backstop: if anything would otherwise keep the process alive, terminate it outright.
+	setTimeout(function() { try { (_realProcessExit || process.exit)(0); } catch(e) {} }, 300);
+}
 
 // Create the tray icon
 var tray = new gui.Tray({
@@ -66,8 +97,7 @@ trayMenu.append(new gui.MenuItem({
 	trayMenu.append(new gui.MenuItem({
 	label: "Quit",
 	click: function() {
-		gui.App.quit();
-		// gui.App.closeAllWindows();
+		quitApp();
 	}
 }));
 tray.menu = trayMenu;
@@ -101,6 +131,12 @@ var $tw = {desktop: {
 
 global.$tw = $tw;
 window.$tw = $tw;
+
+// Expose the full-quit so other parts (e.g. window-list, menu) can trigger a guaranteed quit,
+// and make OS termination signals quit cleanly too rather than leaving the process around.
+$tw.desktop.quitApp = quitApp;
+try { process.on("SIGINT", quitApp); } catch(e) {}
+try { process.on("SIGTERM", quitApp); } catch(e) {}
 
 var backstageWikiFolder = $tw.desktop.utils.wiki.getBackstageWikiFolder(gui.App.dataPath);
 
