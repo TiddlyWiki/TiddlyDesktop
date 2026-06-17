@@ -117,21 +117,10 @@ WikiFileWindow.prototype.onloadiframe = function() {
 	} catch(e) {
 		console.error("[TiddlyDesktop] find bar install failed:",e);
 	}
-	// Fullscreen: F11 and the fullscreen page-control button toggle the native window.
-	// The wiki's tm-full-screen uses the HTML5 document API, which is blocked in this
-	// nwdisable iframe (no allowfullscreen); reroute it to the native window instead.
-	try {
-		require("./utils/fullscreen.js").install(
-			this.window_nwjs,
-			this.iframe.contentDocument,
-			function() {
-				var cw = self.iframe && self.iframe.contentWindow;
-				return cw && cw.$tw && cw.$tw.rootWidget;
-			}
-		);
-	} catch(e) {
-		console.error("[TiddlyDesktop] fullscreen install failed:",e);
-	}
+	// Fullscreen (F11 + the wiki's fullscreen button → native window) is handled in the wiki
+	// window's OWN process by wiki-file-fullscreen.js (loaded from wiki-file-window.html), NOT
+	// here in backstage: window state/events/timers are not reliably observable across the
+	// process boundary, which is why the backstage approach never worked for single-file wikis.
 	// Page zoom: shortcuts bound on both the outer window and the iframe, with the reset
 	// control living in the outer window (outside the wiki content, like the find bar).
 	try {

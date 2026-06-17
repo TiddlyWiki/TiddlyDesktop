@@ -562,7 +562,6 @@ use the NW.js SDK runtime, which includes DevTools.)
 | `Ctrl`/`Cmd` `F` | Find in page | Any wiki window (defers to focused editor) |
 | `Ctrl`/`Cmd` `+` / `-` / `0` | Zoom in / out / reset | Any wiki window |
 | `Ctrl`/`Cmd` + mouse wheel | Zoom | Any wiki window |
-| `Ctrl-Shift-F` | Focus the wiki-list search box | Wiki list |
 
 Standard TiddlyWiki shortcuts apply inside wikis as usual.
 

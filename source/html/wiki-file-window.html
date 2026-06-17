@@ -28,6 +28,9 @@
 <iframe id="tid-main-wiki-file-viewer" class="td-wiki-file-viewer" src="" nwdisable nwfaketop allow="fullscreen *">
 </iframe>
 </div>
+<!-- Native fullscreen is handled in THIS window's own process (wiki-file-fullscreen.js); it must
+not be driven from backstage, where the window's fullscreen state/events/timers aren't observable. -->
+<script src="../js/wiki-file-fullscreen.js"></script>
 </body>
 </html>
 
