@@ -36,10 +36,17 @@ DropLinkWidget.prototype.render = function(parent,nextSibling) {
 	$tw.utils.addEventListeners(domNode,[
 		{name: "dragenter", handlerObject: this, handlerMethod: "handleDragEnterEvent"},
 		{name: "dragover", handlerObject: this, handlerMethod: "handleDragOverEvent"},
-		{name: "dragleave", handlerObject: this, handlerMethod: "handleDragLeaveEvent"},
 		{name: "drop", handlerObject: this, handlerMethod: "handleDropEvent"},
 		{name: "paste", handlerObject: this, handlerMethod: "handlePasteEvent"}
 	]);
+	// The drag-over OVERLAY is driven from a CAPTURE-phase dragover listener plus a short hide
+	// timer, not the stock dragenter/dragleave counter. The wikilist's rows are nested droppable
+	// widgets, and on Windows the enter/leave events across those child boundaries leave the
+	// counter unbalanced, so the overlay never appears. dragover fires continuously while the
+	// pointer is anywhere in the droplink subtree, and capturing it means a child droppable that
+	// stops propagation can't hide it from us — so this works identically on Linux, macOS and
+	// Windows.
+	domNode.addEventListener("dragover",function(event) { self.handleOverlayDragOver(event); },true);
 	domNode.addEventListener("click",function (event) {
 	},false);
 	// Insert element
@@ -48,33 +55,36 @@ DropLinkWidget.prototype.render = function(parent,nextSibling) {
 	this.domNodes.push(domNode);
 };
 
-DropLinkWidget.prototype.enterDrag = function() {
-	// Check for this window being the source of the drag
-	if($tw.dragInProgress) {
-		return false;
-	}
-	// We count enter/leave events
-	this.dragEnterCount = (this.dragEnterCount || 0) + 1;
-	// If we're entering for the first time we need to apply highlighting
-	if(this.dragEnterCount === 1) {
+// Show/hide the drag-over overlay. Driven by dragover (which fires continuously) rather than an
+// enter/leave counter: on each captured dragover we make sure the overlay is shown and re-arm a
+// short timer that hides it once dragover stops firing — i.e. the drag has left the droplink.
+DropLinkWidget.prototype.handleOverlayDragOver = function(event) {
+	// An internal drag (e.g. reordering a wikilist row) sets $tw.dragInProgress — no file overlay.
+	if($tw.dragInProgress) { return; }
+	if(["TEXTAREA","INPUT"].indexOf(event.target.tagName) !== -1) { return; }
+	var self = this;
+	if(!this.dropOverlayShown) {
 		$tw.utils.addClass(this.domNodes[0],"tc-dragover");
+		this.dropOverlayShown = true;
 	}
+	if(this.dropOverlayTimer) { clearTimeout(this.dropOverlayTimer); }
+	this.dropOverlayTimer = setTimeout(function() {
+		self.dropOverlayTimer = null;
+		self.hideDropOverlay();
+	},150);
 };
 
-DropLinkWidget.prototype.leaveDrag = function() {
-	// Reduce the enter count
-	this.dragEnterCount = (this.dragEnterCount || 0) - 1;
-	// Remove highlighting if we're leaving externally
-	if(this.dragEnterCount <= 0) {
+DropLinkWidget.prototype.hideDropOverlay = function() {
+	if(this.dropOverlayTimer) { clearTimeout(this.dropOverlayTimer); this.dropOverlayTimer = null; }
+	if(this.dropOverlayShown) {
 		$tw.utils.removeClass(this.domNodes[0],"tc-dragover");
+		this.dropOverlayShown = false;
 	}
 };
 
 DropLinkWidget.prototype.handleDragEnterEvent  = function(event) {
-	this.enterDrag();
-	// Tell the browser that we're ready to handle the drop
+	// Allow the drop (and don't ripple to parent handlers). The overlay is handled by dragover.
 	event.preventDefault();
-	// Tell the browser not to ripple the drag up to any parent drop handlers
 	event.stopPropagation();
 };
 
@@ -92,12 +102,8 @@ DropLinkWidget.prototype.handleDragOverEvent  = function(event) {
 	event.dataTransfer.dropEffect = "copy"; // Explicitly show this is a copy
 };
 
-DropLinkWidget.prototype.handleDragLeaveEvent  = function(event) {
-	this.leaveDrag();
-};
-
 DropLinkWidget.prototype.handleDropEvent  = function(event) {
-	this.leaveDrag();
+	this.hideDropOverlay();
 	// Check for being over a TEXTAREA or INPUT
 	if(["TEXTAREA","INPUT"].indexOf(event.target.tagName) !== -1) {
 		return false;
@@ -108,10 +114,6 @@ DropLinkWidget.prototype.handleDropEvent  = function(event) {
 	}
 	var self = this,
 		dataTransfer = event.dataTransfer;
-	// Reset the enter count
-	this.dragEnterCount = 0;
-	// Remove highlighting
-	$tw.utils.removeClass(this.domNodes[0],"tc-dragover");
 	// Import any files in the drop
 	var file, tiddler,title;
 	for(var f=0; f<dataTransfer.files.length; f++) {

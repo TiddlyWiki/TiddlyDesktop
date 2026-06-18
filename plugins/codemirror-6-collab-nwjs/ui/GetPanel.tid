@@ -36,7 +36,7 @@ title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/GetPanel
 
 <$list filter="[<currentTiddler>get[asset]match[yes]]" variable="_">
 <$list filter="[<currentTiddler>get[asset-got]match[yes]]" variable="_">
-<span class="tc-collab-get-saved" title="Attachment saved to your wiki">✓ Saved</span>
+<span class="tc-collab-get-saved tc-tiny-gap-right" title="Attachment saved to your wiki">✓ Saved</span>
 <$list filter="[<isSubscribed>match[yes]]" variable="_">
 <$button message="codemirror-6-collab-unsubscribe-tiddler" param=<<sharedTitle>> class="tc-btn-invisible tc-collab-get-btn tc-collab-get-btn-subscribed" tooltip="Stop receiving updates for this attachment tiddler">✓ Got</$button>
 </$list>

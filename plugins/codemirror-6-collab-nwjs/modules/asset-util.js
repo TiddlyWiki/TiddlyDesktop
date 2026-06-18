@@ -75,7 +75,12 @@ function norm(p) { return String(p || "").replace(/\\/g, "/").replace(/\/+$/, ""
 
 function fromFileUrl(u) {
 	u = String(u || "");
-	return (/^file:\/\//i).test(u) ? decodeURI(u.replace(/^file:\/\//i, "")) : u;
+	if((/^file:\/\//i).test(u)) { u = u.replace(/^file:\/\//i, ""); }
+	// A _canonical_uri is a URI: TiddlyWiki's external-attachments URL-encodes it (a space becomes
+	// %20, etc.), so decode it back to a real filesystem path. This must apply to RELATIVE paths
+	// too — previously only file:// URLs were decoded, so a relative attachment with a space stayed
+	// "Screenshot%20bla.png" and could neither be read nor written (and showed encoded in the UI).
+	try { return decodeURI(u); } catch(e) { return u; }
 }
 exports.fromFileUrl = fromFileUrl;
 
@@ -116,7 +121,10 @@ exports.canonicalUriForPath = function(absPath) {
 	// outside it (a relative path out of the tree is fragile).
 	var useAbsolute = $tw.wiki.getTiddlerText(descendant ? ABS_DESC : ABS_NON, descendant ? "no" : "yes") === "yes";
 	if(useAbsolute || !base) { return "file://" + encodeURI(norm(absPath)); }
-	return relativePath(base, norm(absPath));
+	// Encode the relative form too, so the stored _canonical_uri is a proper URI (matching how TW
+	// external-attachments records them) — it round-trips through fromFileUrl's decode and renders
+	// correctly as an <img>/link src.
+	return encodeURI(relativePath(base, norm(absPath)));
 };
 
 // ── file I/O (Node fs in folder wikis, parent bridge in single-file wikis) ──────

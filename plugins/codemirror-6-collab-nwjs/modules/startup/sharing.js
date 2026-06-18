@@ -923,19 +923,17 @@ exports.startup = function() {
 	function _reconcile(title, remoteFields) {
 		var local = $tw.wiki.getTiddler(title);
 		if(!local) { _applyRemote(title, remoteFields); return; }
-		var localMs    = _parseMs(local.fields.modified),
-			remoteMs   = _parseMs(remoteFields.modified),
-			localC     = _contentString(_serialise(local)),
-			remoteC    = _contentString(remoteFields);
+		var localC  = _contentString(_serialise(local)),
+			remoteC = _contentString(remoteFields);
 		if(localC === remoteC) { _markSynced(title); _clearDiverged(title); return; }
-		// Once flagged diverged, NOTHING auto-applies or auto-pushes — not even another
-		// peer's newer version or resolution. A diverged peer holds un-pushed edits, and
-		// with 3+ peers silently adopting someone else's copy would lose them (and could
-		// flip-flop between several divergent answers). We only track the newest competing
-		// remote for the Resolve dialog; divergence clears when the user resolves, or when
-		// a remote equal to our local arrives (handled above — the room converged on ours).
+		// Once flagged diverged, NOTHING auto-applies or auto-pushes — not even another peer's
+		// version or resolution. A diverged peer holds un-pushed edits, and with 3+ peers silently
+		// adopting someone else's copy would lose them (and could flip-flop between several divergent
+		// answers). We track the LATEST-RECEIVED competing remote for the Resolve dialog (by arrival
+		// order, NOT wall-clock `modified` — see below); divergence clears when the user resolves, or
+		// when a remote equal to our local arrives (handled above — the room converged on ours).
 		if(divergedRemote[title]) {
-			if(remoteMs >= _parseMs(divergedRemote[title].modified)) { divergedRemote[title] = remoteFields; }
+			divergedRemote[title] = remoteFields;
 			return;
 		}
 		// If this tiddler is open in an editor, a coarse change must not silently overwrite
@@ -947,10 +945,10 @@ exports.startup = function() {
 			else { _scheduleEditingConflict(title, remoteFields); }
 			return;
 		}
-		// Consult the 3-way base BEFORE timestamps: it's authoritative about WHO changed.
-		// If only one side changed since the last common base, adopt that side; if BOTH
-		// changed it's a genuine conflict — regardless of which has the newer `modified`
-		// (e.g. two peers editing the same tiddler while disconnected). A resolution still
+		// The 3-way base is authoritative about WHO changed since the last common content — and it
+		// needs NO clock, so it is immune to the two machines' system clocks disagreeing (the cause
+		// of the "owner's copy keeps resetting my edit" report). If only one side changed since the
+		// base, adopt that side; if both changed it's a genuine conflict. A resolution still
 		// propagates: an in-sync recipient has localC==base, so it adopts the pushed copy.
 		var base = syncedText[title];   // a content checksum (see _markSynced)
 		if(typeof base === "string" && base) {
@@ -958,10 +956,11 @@ exports.startup = function() {
 			if(_fp(remoteC) === base) { _pushLocal(title); return; }                  // they didn't change it → keep ours
 			_setDiverged(title, remoteFields); return;                                // both changed → conflict
 		}
-		// No base (e.g. after a reload, so we can't tell who changed): fall back to
-		// last-write-wins by modified, flagging a conflict only on a timestamp tie.
-		if(remoteMs > localMs) { _applyRemote(title, remoteFields); return; }
-		if(localMs > remoteMs) { _pushLocal(title); return; }
+		// No base (e.g. after a reload we can't tell who changed). We deliberately do NOT fall back
+		// to comparing wall-clock `modified`: each machine stamps it from its own (possibly skewed)
+		// clock, so last-write-wins there silently discards a genuinely-newer edit. With no base and
+		// differing content we can't prove who changed — so flag a conflict for the user to resolve
+		// rather than guess and risk losing an edit.
 		_setDiverged(title, remoteFields);
 	}
 
@@ -1041,14 +1040,16 @@ exports.startup = function() {
 	var SERVE_CONSENT_MS = 120000;
 
 	function _requestAssetConsent(title, requesterId, requestId) {
-		if(!requesterId || requesterId === deviceId || !requestId) { return; }
-		if(!ownedTiddlers[title]) { return; }          // only the owner holds the original
+		console.log("[collab-asset] consent request title=" + title + " from=" + requesterId + " req=" + requestId);
+		if(!requesterId || requesterId === deviceId || !requestId) { console.log("[collab-asset] consent SKIP: bad ids"); return; }
+		if(!ownedTiddlers[title]) { console.log("[collab-asset] consent SKIP: not owner of " + title); return; }          // only the owner holds the original
 		var t = $tw.wiki.getTiddler(title);
-		if(!t) { return; }
+		if(!t) { console.log("[collab-asset] consent SKIP: tiddler missing " + title); return; }
 		var info = _assetInfo(title);
-		if(!info) { return; }
-		if(!_isMemberPresent(requesterId)) { return; } // must be a present (verified) member
-		if(pendingServes[requestId]) { return; }       // ignore duplicate request ids
+		if(!info) { console.log("[collab-asset] consent SKIP: not an asset " + title); return; }
+		if(!_isMemberPresent(requesterId)) { console.log("[collab-asset] consent SKIP: requester not a present member " + requesterId); return; } // must be a present (verified) member
+		if(pendingServes[requestId]) { console.log("[collab-asset] consent SKIP: duplicate req " + requestId); return; }       // ignore duplicate request ids
+		console.log("[collab-asset] consent prompt raised for " + title);
 		var member = $tw.wiki.getTiddler("$:/temp/collab/members/" + requesterId);
 		var requesterName = (member && (member.fields["user-name"] || member.fields["device-name"])) || requesterId;
 		var uri = t.fields._canonical_uri;
@@ -1128,6 +1129,7 @@ exports.startup = function() {
 		delete fields.text;
 		var chunks = [];
 		for(var i = 0; i < base64.length; i += ASSET_CHUNK_B64) { chunks.push(base64.slice(i, i + ASSET_CHUNK_B64)); }
+		console.log("[collab-asset] serving " + t.fields.title + " to " + requesterId + " bytes=" + Math.floor(base64.length * 3 / 4) + " chunks=" + chunks.length);
 		_sendPrivate(requesterId, {
 			type:        "collab-asset-meta",
 			requestId:   requestId,
@@ -1212,6 +1214,7 @@ exports.startup = function() {
 		delete pendingAssetGets[requestId];
 		if(!inc || !pending) return;
 		var base64 = inc.chunks.join("");
+		console.log("[collab-asset] finalize req=" + requestId + " title=" + pending.title + " bytes=" + Math.floor(base64.length * 3 / 4) + " external=" + (!!pending.dest && assetUtil.storeExternally()));
 		var meta   = inc.meta;
 		var title  = pending.title;
 		var fields = meta.fields || {};
@@ -1378,13 +1381,17 @@ exports.startup = function() {
 				title:          title,
 				fields:         _serialise(tiddler)
 			});
-			// Our edit is the common base ONLY if it actually went out — peers converge on
-			// what they received. While disconnected the send is a no-op, so we must keep the
-			// prior base: a concurrent peer edit then surfaces as a conflict on reconnect
-			// (both sides differ from base) instead of being silently adopted. But the tiddler
-			// now DIVERGES from that kept base, so the base is no longer re-derivable from the
-			// saved content — persist it (now non-trivial) so the divergence survives a reload.
-			if(_isConnected()) { _markSynced(title); }
+			// Advance the 3-way base to this edit ONLY for tiddlers WE OWN, and only while
+			// connected. We're authoritative for our own tiddlers — the room converges on our
+			// version — so moving the base forward is safe and keeps our future edits from looking
+			// like conflicts. For a tiddler owned by a PEER we must NOT advance the base on send:
+			// our edit is unconfirmed, and if the owner's periodic manifest re-asserts its older
+			// copy before adopting ours, an advanced base would make us believe we hadn't changed it
+			// and re-adopt the stale copy (the reset bug). Leaving the base at the last agreed
+			// content makes a manifest drift correctly read as "we hold a pending edit" → keep/push
+			// ours. In all other cases (disconnected, or a peer-owned tiddler) the tiddler now
+			// DIVERGES from the kept base, so persist that base so the divergence survives a reload.
+			if(_isConnected() && ownedTiddlers[title]) { _markSynced(title); }
 			else { _persistRoomStateSoon(); }
 		});
 	});
@@ -1416,7 +1423,18 @@ exports.startup = function() {
 						_markSynced(item.title); _clearDiverged(item.title);   // in sync with the owner
 						return;
 					}
-					_requestFromOwner(item.title);
+					// Our content differs from the owner's. Consult the base so we never re-fetch
+					// over a PENDING local edit (which would discard it — the reset bug): if our
+					// content still equals the last agreed base we're simply behind → pull; if it
+					// differs we hold an un-acknowledged edit → (re)push ours and let the owner
+					// reconcile it. Already-diverged tiddlers are left for the user to resolve.
+					if(divergedRemote[item.title]) { return; }
+					var _b = syncedText[item.title];
+					if(_b && _tiddlerFp(item.title) !== _b) {
+						_pushLocal(item.title);
+					} else {
+						_requestFromOwner(item.title);
+					}
 				});
 				// A present peer just told us authoritatively what it shares; drop any
 				// now-orphaned advertisements (owner left, never subscribed) so the Get
@@ -1555,6 +1573,7 @@ exports.startup = function() {
 			break;
 
 		case "collab-asset-meta":
+			console.log("[collab-asset] meta received req=" + msg.requestId + " title=" + msg.title + " size=" + msg.size + " chunks=" + msg.totalChunks + " ours=" + !!pendingAssetGets[msg.requestId]);
 			if(!pendingAssetGets[msg.requestId]) break;   // not our request
 			if(msg.size > assetUtil.maxAssetBytes()) {
 				delete pendingAssetGets[msg.requestId];
@@ -1563,6 +1582,9 @@ exports.startup = function() {
 			}
 			incomingAssets[msg.requestId] = {meta: msg, chunks: new Array(msg.totalChunks || 0), received: 0};
 			_writeAssetProgress(pendingAssetGets[msg.requestId].title, 0, msg.totalChunks || 0);
+			// A zero-byte asset (totalChunks === 0) sends no chunks, so the chunk handler's
+			// completion check would never run — raise the inspect/accept prompt now.
+			if(!msg.totalChunks) { _raiseIncomingPrompt(msg.requestId); }
 			break;
 
 		case "collab-asset-chunk":

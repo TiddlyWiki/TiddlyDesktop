@@ -494,7 +494,8 @@ tags: $:/tags/Stylesheet
 }
 
 .tc-collab-shared-title {
-  flex: 1;
+  /* Take the whole first line so the "by …" / badges wrap onto their own line below. */
+  flex: 0 0 100%;
   font-size: 0.85em;
   word-break: break-word;
   min-width: 0;
@@ -630,6 +631,14 @@ tags: $:/tags/Stylesheet
   justify-content: center;
   font-size: 0.7em;
   color: <<colour foreground>>;
+}
+
+/* In the sidebar's shared-tiddlers list the progress bar gets its own full-width line below the
+   title (the Get panel uses the fixed-width inline version above). */
+.tc-collab-shared-item .tc-collab-asset-progress {
+  flex: 0 0 100%;
+  width: auto;
+  margin-top: 3px;
 }
 
 /* -- Toolbar share button ---------------------------------------------------- */

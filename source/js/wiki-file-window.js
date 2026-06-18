@@ -224,7 +224,11 @@ WikiFileWindow.prototype.onloadiframe = function() {
 		self.iframe.contentWindow._nwjsFileResults  = {};
 		var _resolveAssetPath = function(p) {
 			p = String(p || "");
-			if((/^file:\/\//i).test(p)) { p = decodeURI(p.replace(/^file:\/\//i, "")); }
+			if((/^file:\/\//i).test(p)) { p = p.replace(/^file:\/\//i, ""); }
+			// _canonical_uri is URL-encoded (spaces as %20, etc.); decode it for BOTH file:// and
+			// relative paths, otherwise a relative attachment with a space resolves to a literal
+			// "Screenshot%20bla.png" that doesn't exist.
+			try { p = decodeURI(p); } catch(e) {}
 			return _pathMod.isAbsolute(p) ? p : _pathMod.resolve(_wikiDir, p);
 		};
 		var _fileTimer = setInterval(function() {
