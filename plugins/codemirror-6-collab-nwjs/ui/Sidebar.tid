@@ -145,7 +145,7 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <div class="tc-collab-room-panel">
 <$reveal type="nomatch" state="$:/config/codemirror-6-collab/room-code" text="">
 <div class="tc-collab-room-name-row">
-<span class="tc-collab-room-name">Room: <code><$text text={{$:/config/codemirror-6-collab/room-code}}/></code></span>
+<span class="tc-collab-room-name tc-tiny-gap-right">Room: <code><$text text={{$:/config/codemirror-6-collab/room-code}}/></code></span>
 </div>
 <div class="tc-collab-room-actions">
 <$reveal type="match" state="$:/temp/collab/status!!status" text="connected">

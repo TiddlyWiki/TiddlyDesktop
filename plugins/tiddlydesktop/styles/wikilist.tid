@@ -367,6 +367,37 @@ tags: $:/tags/Stylesheet
 	flex-shrink: 0;
 }
 
+.td-plugin-tabs {
+	display: flex;
+	gap: 4px;
+	padding: 0.4em 1.2em 0;
+	flex-shrink: 0;
+	border-bottom: 1px solid <<colour muted-foreground>>;
+}
+
+.td-plugin-tab {
+	background: none;
+	border: 1px solid transparent;
+	border-bottom: none;
+	border-radius: 5px 5px 0 0;
+	padding: 5px 12px;
+	cursor: pointer;
+	color: <<colour muted-foreground>>;
+	font-size: 0.9em;
+	margin-bottom: -1px;
+}
+
+.td-plugin-tab:hover {
+	color: <<colour foreground>>;
+}
+
+.td-plugin-tab-active {
+	color: <<colour foreground>>;
+	font-weight: 600;
+	border-color: <<colour muted-foreground>>;
+	background: <<colour background>>;
+}
+
 .td-plugin-search-row {
 	display: flex;
 	align-items: center;

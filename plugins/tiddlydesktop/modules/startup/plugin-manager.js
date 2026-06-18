@@ -33,19 +33,30 @@ exports.startup = function() {
 	// __dirname is NOT reliable here — TW executes startup modules through its own
 	// module system where __dirname is derived from the tiddler title, not the
 	// physical file path.
-	var pluginPaths = $tw.getLibraryItemSearchPaths(
-		$tw.config.pluginsPath,
-		$tw.config.pluginsEnvVar
-	);
+	// The three library kinds TiddlyWiki resolves at boot, each with its own search paths
+	// (bundled dir + env var). Plugins and THEMES are author-nested (`<root>/<author>/<name>`);
+	// LANGUAGES are flat (`<root>/<lang>`) and referenced by bare name — hence the per-kind flag.
+	var pluginPaths   = $tw.getLibraryItemSearchPaths($tw.config.pluginsPath,   $tw.config.pluginsEnvVar);
+	var themePaths    = $tw.getLibraryItemSearchPaths($tw.config.themesPath,    $tw.config.themesEnvVar);
+	var languagePaths = $tw.getLibraryItemSearchPaths($tw.config.languagesPath, $tw.config.languagesEnvVar);
+	var LIBRARY_KINDS = [
+		{paths: pluginPaths,   flat: false},
+		{paths: themePaths,    flat: false},
+		{paths: languagePaths, flat: true}
+	];
 
-	// Enumerate the bundled / library plugins. This used to run only once ("bundled plugins don't
-	// change during a session"), but we now also re-scan when they change ON DISK (see the watcher
-	// below) — so a rebuilt or updated plugin (or an external TIDDLYWIKI_PLUGIN_PATH change) shows
-	// up live in the wiki-list "updates available" badge and the chooser's update buttons, without
-	// restarting. Closures below reference these vars by name, so reassigning them takes effect.
+	// Enumerate the bundled / library plugins, themes and languages. This used to run only once
+	// ("bundled plugins don't change during a session"), but we now also re-scan when they change
+	// ON DISK (see the watcher below) — so a rebuilt or updated item (or an external
+	// TIDDLYWIKI_PLUGIN_PATH / TIDDLYWIKI_THEME_PATH / TIDDLYWIKI_LANGUAGE_PATH change) shows up
+	// live in the wiki-list "updates available" badge and the chooser, without restarting. Closures
+	// below reference these vars by name, so reassigning them takes effect.
 	var available = [], availableByTitle = {};
 	function refreshAvailable() {
-		available = _getAvailablePlugins(pluginPaths, fs, path);
+		available = [];
+		LIBRARY_KINDS.forEach(function(kind) {
+			available = available.concat(_getAvailableItems(kind.paths, kind.flat, fs, path));
+		});
 		availableByTitle = {};
 		available.forEach(function(p) { availableByTitle[p.title] = p; });
 	}
@@ -111,6 +122,7 @@ exports.startup = function() {
 		}));
 		$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/TiddlyDesktop/PluginChooser/search", text: ""}));
 		$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/TiddlyDesktop/PluginChooser/status", text: ""}));
+		$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/TiddlyDesktop/PluginChooser/tab", text: "plugin"}));
 
 		// Remove stale available/selected tiddlers, then populate fresh (resetting selection).
 		_clearChooserTiddlers(["available", "selected"]);
@@ -234,9 +246,11 @@ exports.startup = function() {
 		_watchers.forEach(function(w) { try { w.close(); } catch(_e) {} });
 		_watchers = [];
 		var dirs = Object.create(null);
-		pluginPaths.forEach(function(root) {
-			dirs[root] = true;
-			try { fs.readdirSync(root).forEach(function(a) { var ad = path.join(root, a); if(_isDir(ad, fs)) { dirs[ad] = true; } }); } catch(_e) {}
+		LIBRARY_KINDS.forEach(function(kind) {
+			kind.paths.forEach(function(root) {
+				dirs[root] = true;
+				try { fs.readdirSync(root).forEach(function(a) { var ad = path.join(root, a); if(_isDir(ad, fs)) { dirs[ad] = true; } }); } catch(_e) {}
+			});
 		});
 		available.forEach(function(p) { if(p.path) { dirs[p.path] = true; } });
 		Object.keys(dirs).forEach(function(d) {
@@ -286,6 +300,7 @@ function _closeChooser() {
 	$tw.wiki.deleteTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
 	$tw.wiki.deleteTiddler("$:/temp/TiddlyDesktop/PluginChooser/search");
 	$tw.wiki.deleteTiddler("$:/temp/TiddlyDesktop/PluginChooser/status");
+	$tw.wiki.deleteTiddler("$:/temp/TiddlyDesktop/PluginChooser/tab");
 	_clearChooserTiddlers(["available", "selected"]);
 }
 
@@ -303,58 +318,63 @@ var _PROTECTED_FOLDER_NAMES = {
 	"tiddlywiki/filesystem": true
 };
 
-// ── plugin enumeration ────────────────────────────────────────────────────────
+// ── library enumeration (plugins / themes / languages) ──────────────────────────
 
-function _getAvailablePlugins(pluginPaths, fs, path) {
-	var plugins = [], seen = {};
+// Enumerate installable items under `searchPaths`. `flat` chooses the on-disk layout:
+//   flat=false → `<root>/<author>/<name>/plugin.info`  (plugins, themes; name = "author/name")
+//   flat=true  → `<root>/<name>/plugin.info`           (languages; name = "name")
+// The recorded `name` is exactly what goes in tiddlywiki.info's plugins/themes/languages array.
+function _getAvailableItems(searchPaths, flat, fs, path) {
+	var items = [], seen = {};
 
-	function scanAuthorDir(authorDir, source) {
-		var entries;
-		try { entries = fs.readdirSync(authorDir); } catch(_e) { return; }
-		entries.forEach(function(name) {
-			var pluginDir  = path.join(authorDir, name);
-			var infoFile   = path.join(pluginDir, "plugin.info");
-			if(!_isDir(pluginDir, fs)) return;
-			if(!fs.existsSync(infoFile)) return;
-			try {
-				var info = JSON.parse(fs.readFileSync(infoFile, "utf8"));
-				if(!info.title || seen[info.title]) return;
-				// Skip protected and backstage-only plugins
-				if(_PROTECTED_TITLES[info.title]) return;
-				if(info.title === "$:/plugins/tiddlywiki/tiddlydesktop") return;
-				seen[info.title] = true;
-				var author = path.basename(authorDir);
-				plugins.push({
-					path: pluginDir,
-					name: author + "/" + name,
-					title: info.title,
-					description: info.description || "",
-					version: info.version || "",
-					"plugin-type": info["plugin-type"] || "plugin",
-					source: source
-				});
-			} catch(_e) {}
-		});
+	function addItem(itemDir, name, source) {
+		var infoFile = path.join(itemDir, "plugin.info");
+		if(!_isDir(itemDir, fs)) return;
+		if(!fs.existsSync(infoFile)) return;
+		try {
+			var info = JSON.parse(fs.readFileSync(infoFile, "utf8"));
+			if(!info.title || seen[info.title]) return;
+			// Skip protected and backstage-only plugins
+			if(_PROTECTED_TITLES[info.title]) return;
+			if(info.title === "$:/plugins/tiddlywiki/tiddlydesktop") return;
+			seen[info.title] = true;
+			items.push({
+				path: itemDir,
+				name: name,
+				title: info.title,
+				description: info.description || "",
+				version: info.version || "",
+				"plugin-type": info["plugin-type"] || "plugin",
+				source: source
+			});
+		} catch(_e) {}
 	}
 
-	function scanPluginsRoot(rootDir, source) {
-		if(!fs.existsSync(rootDir)) return;
+	function scanFlat(rootDir, source) {           // <root>/<name>/plugin.info
 		var entries;
 		try { entries = fs.readdirSync(rootDir); } catch(_e) { return; }
-		entries.forEach(function(author) {
+		entries.forEach(function(name) { addItem(path.join(rootDir, name), name, source); });
+	}
+	function scanNested(rootDir, source) {         // <root>/<author>/<name>/plugin.info
+		var authors;
+		try { authors = fs.readdirSync(rootDir); } catch(_e) { return; }
+		authors.forEach(function(author) {
 			var authorDir = path.join(rootDir, author);
-			if(_isDir(authorDir, fs)) { scanAuthorDir(authorDir, source); }
+			if(!_isDir(authorDir, fs)) return;
+			var names;
+			try { names = fs.readdirSync(authorDir); } catch(_e) { return; }
+			names.forEach(function(name) { addItem(path.join(authorDir, name), author + "/" + name, source); });
 		});
 	}
 
-	// pluginPaths already includes bundled plugins and TIDDLYWIKI_PLUGIN_PATH entries
-	// (computed by $tw.getLibraryItemSearchPaths in the startup function)
-	pluginPaths.forEach(function(rootDir, i) {
-		scanPluginsRoot(rootDir, i === 0 ? "bundled" : "external");
+	(searchPaths || []).forEach(function(rootDir, i) {
+		if(!fs.existsSync(rootDir)) return;
+		var source = i === 0 ? "bundled" : "external";
+		if(flat) { scanFlat(rootDir, source); } else { scanNested(rootDir, source); }
 	});
 
-	plugins.sort(function(a, b) { return a.title.localeCompare(b.title); });
-	return plugins;
+	items.sort(function(a, b) { return a.title.localeCompare(b.title); });
+	return items;
 }
 
 function _isDir(p, fs) {
@@ -388,7 +408,11 @@ function _getInstalledFromFolder(folderPath, fs, path) {
 	var infoPath = path.join(folderPath, "tiddlywiki.info");
 	try {
 		var info = JSON.parse(fs.readFileSync(infoPath, "utf8"));
-		return (info.plugins || []).map(function(p) { return "$:/plugins/" + p; });
+		var titles = [];
+		(info.plugins   || []).forEach(function(p) { titles.push("$:/plugins/" + p); });
+		(info.themes    || []).forEach(function(t) { titles.push("$:/themes/" + t); });
+		(info.languages || []).forEach(function(l) { titles.push("$:/languages/" + l); });
+		return titles;
 	} catch(_e) {
 		return [];
 	}
@@ -513,22 +537,35 @@ function _applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path) {
 	var infoPath   = path.join(folderPath, "tiddlywiki.info");
 	var info = {};
 	try { info = JSON.parse(fs.readFileSync(infoPath, "utf8")); } catch(_e) {}
-	info.plugins = info.plugins || [];
+	info.plugins   = info.plugins   || [];
+	info.themes    = info.themes    || [];
+	info.languages = info.languages || [];
+
+	// tiddlywiki.info keeps plugins, themes and languages in separate arrays. Route by the title
+	// prefix ($:/themes/… / $:/languages/… / else plugins); the bare name (after the prefix) is
+	// what the array holds.
+	function arrayFor(title) {
+		if(title.indexOf("$:/themes/")    === 0) { return {arr: info.themes,    name: title.slice("$:/themes/".length)}; }
+		if(title.indexOf("$:/languages/") === 0) { return {arr: info.languages, name: title.slice("$:/languages/".length)}; }
+		return {arr: info.plugins, name: title.replace(/^\$:\/plugins\//, "")};
+	}
 
 	// Remove (never touch protected titles or required server plugins)
 	toRemove.forEach(function(title) {
 		if(_PROTECTED_TITLES[title]) return;
-		var name = title.replace(/^\$:\/plugins\//, "");
-		if(_PROTECTED_FOLDER_NAMES[name]) return;
-		info.plugins = info.plugins.filter(function(p) { return p !== name; });
+		var t = arrayFor(title);
+		if(_PROTECTED_FOLDER_NAMES[t.name]) return;
+		var arr = t.arr;
+		for(var i = arr.length - 1; i >= 0; i--) { if(arr[i] === t.name) { arr.splice(i, 1); } }
 	});
 
-	// Install
-	toInstall.forEach(function(pluginFields) {
-		var name = pluginFields["plugin-name"];
-		if(name && info.plugins.indexOf(name) === -1) {
-			info.plugins.push(name);
-		}
+	// Install — into the array matching the item's plugin-type.
+	toInstall.forEach(function(fields) {
+		var name = fields["plugin-name"];
+		if(!name) { return; }
+		var type = fields["plugin-type"] || "plugin";
+		var arr = type === "theme" ? info.themes : (type === "language" ? info.languages : info.plugins);
+		if(arr.indexOf(name) === -1) { arr.push(name); }
 	});
 
 	fs.writeFileSync(infoPath, JSON.stringify(info, null, 4), "utf8");

@@ -3,12 +3,17 @@ title: $:/TiddlyDesktop/PluginChooser
 \whitespace trim
 \define plugin-sel-title() $:/temp/TiddlyDesktop/PluginChooser/selected/$(pluginTitle)$
 
+\procedure pcTab(tab, caption)
+\whitespace trim
+<$button set="$:/temp/TiddlyDesktop/PluginChooser/tab" setTo=<<tab>> class={{{ [[$:/temp/TiddlyDesktop/PluginChooser/tab]get[text]] :else[[plugin]] +[match<tab>then[td-plugin-tab td-plugin-tab-active]else[td-plugin-tab]] }}}><<caption>></$button>
+\end
+
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]!is[missing]!field:text[]]" variable="_">
 <div class="td-plugin-overlay">
 <div class="td-plugin-dialog">
 <div class="td-plugin-header">
 <h2 class="td-plugin-heading">{{$:/language/TiddlyDesktop/PluginChooser/Heading}}</h2>
-<$button message="tiddlydesktop-close-plugin-chooser" class="tc-btn-invisible td-plugin-close-btn" tooltip={{$:/language/TiddlyDesktop/PluginChooser/Close}}>✕</$button>
+<$button message="tiddlydesktop-close-plugin-chooser" class="tc-btn-invisible td-plugin-close-btn" tooltip={{$:/language/TiddlyDesktop/PluginChooser/Close}}>{{$:/core/images/close-button}}</$button>
 </div>
 <div class="td-plugin-wiki-url">
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[file]]" variable="_">{{$:/core/images/file}}</$list>
@@ -18,6 +23,11 @@ title: $:/TiddlyDesktop/PluginChooser
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-open[yes]]" variable="_">
 <div class="td-plugin-open-warning">⚠&#32;{{$:/language/TiddlyDesktop/PluginChooser/OpenWarning}}</div>
 </$list>
+<div class="td-plugin-tabs">
+<<pcTab "plugin" "Plugins">>
+<<pcTab "language" "Languages">>
+<<pcTab "theme" "Themes">>
+</div>
 <div class="td-plugin-search-row">
 <$edit-text tiddler="$:/temp/TiddlyDesktop/PluginChooser/search" tag="input" class="tc-edit-texteditor td-plugin-search" focus="yes" placeholder={{$:/language/TiddlyDesktop/PluginChooser/FilterPlaceholder}}/>
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/search]!field:text[]]">
@@ -25,8 +35,8 @@ title: $:/TiddlyDesktop/PluginChooser
 </$list>
 </div>
 <div class="td-plugin-list">
-<$let searchText={{{ [[$:/temp/TiddlyDesktop/PluginChooser/search]get[text]] }}}>
-<$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]search:plugin-title,description<searchText>sort[plugin-title]]">
+<$let searchText={{{ [[$:/temp/TiddlyDesktop/PluginChooser/search]get[text]] }}} currentTab={{{ [[$:/temp/TiddlyDesktop/PluginChooser/tab]get[text]] :else[[plugin]] }}}>
+<$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]plugin-type<currentTab>search:plugin-title,description<searchText>sort[plugin-title]]">
 <div class="td-plugin-row">
 <$let pluginTitle={{{ [<currentTiddler>get[plugin-title]] }}}>
 <$checkbox tiddler=<<plugin-sel-title>> field="text" checked="yes" unchecked="no" default="no" class="td-plugin-checkbox"/>
@@ -45,7 +55,7 @@ title: $:/TiddlyDesktop/PluginChooser
 </$let>
 </div>
 </$list>
-<$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]search:plugin-title,description<searchText>count[]compare:number:lt[1]]" variable="_">
+<$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]plugin-type<currentTab>search:plugin-title,description<searchText>count[]compare:number:lt[1]]" variable="_">
 <div class="td-plugin-empty">{{$:/language/TiddlyDesktop/PluginChooser/NoMatch}}</div>
 </$list>
 </$let>
