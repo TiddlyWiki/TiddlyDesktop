@@ -29,20 +29,28 @@ exports.extractUrl = extractUrl;
 
 // Bring the app to the foreground: focus the window the user was last in (tracked on
 // $tw.desktop.lastFocusedWindow), else the backstage window.
-function focusApp() {
+// Try to bring one window to the front. Returns true only if it succeeded — a stale handle
+// (the window was closed) throws, so the caller falls through to the next candidate.
+function tryFocus(target) {
+	var win = target && target.window_nwjs;
+	if(!win) { return false; }
 	try {
-		var desktop = global.$tw && global.$tw.desktop;
-		// Prefer the window that actually started OAuth (opened the browser) over the merely
-		// last-focused window, so we return to where sign-in was initiated rather than backstage.
-		var target = desktop && (desktop.oauthOriginWindow || desktop.lastFocusedWindow);
-		var win = target && target.window_nwjs;
-		if(win) {
-			try { win.show(); } catch(e) {}
-			try { win.restore(); } catch(e) {}   // un-minimise if needed
-			try { win.focus(); } catch(e) {}
-			return;
-		}
-	} catch(e) {}
+		win.show();
+		try { win.restore(); } catch(e) {}   // un-minimise if needed
+		win.focus();
+		return true;
+	} catch(e) { return false; }
+}
+
+function focusApp() {
+	var desktop = global.$tw && global.$tw.desktop;
+	if(desktop) {
+		// Prefer the window that started OAuth (opened the browser), then the last-focused window,
+		// returning to where sign-in was initiated rather than backstage. Each is tried in turn so
+		// a closed/stale handle just falls through.
+		if(tryFocus(desktop.oauthOriginWindow)) { return; }
+		if(tryFocus(desktop.lastFocusedWindow)) { return; }
+	}
 	if(_backstageWindow) {
 		try { _backstageWindow.show(); } catch(e) {}
 		try { _backstageWindow.focus(); } catch(e) {}

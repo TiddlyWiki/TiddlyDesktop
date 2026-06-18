@@ -389,6 +389,12 @@ WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
 	// handler — so guard against handling the same window twice.
 	if(w._closeHandled) { return; }
 	w._closeHandled = true;
+	// Drop any references to this window so a tiddlydesktop:// deep-link return (OAuth) doesn't
+	// try to focus a now-closed window.
+	try {
+		if($tw.desktop.oauthOriginWindow === w) { $tw.desktop.oauthOriginWindow = null; }
+		if($tw.desktop.lastFocusedWindow === w) { $tw.desktop.lastFocusedWindow = null; }
+	} catch(e) {}
 	// Remove from the wiki list if required
 	if(removeFromWikiListOnClose) {
 		var wikiListTiddlerTitle = w.getIdentifier();
