@@ -123,14 +123,13 @@ tags: $:/tags/Stylesheet
    still flow inline and transform: scale() actually applies. */
 .td-wikilist .td-wikilist-tag-pop {
 	display: inline-block;
-	margin-right: 7px;
 }
 
-/* Give the row's tag pills a consistent foreground/background, overriding the per-tag inline
-   colour the core tag-body macro emits (hence !important). */
-.td-wikilist .td-wikilist-tag-pop .tc-tag-label {
-	color: <<colour tag-foreground>> !important;
-	background-color: <<colour tag-background>> !important;
+/* Top filter tag-row (the .td-tags row above the wiki rows): space the pills out. Each pill's
+   colours are computed per tag in WikiList.tid (background = the tag tiddler's colour via the
+   TiddlerColourFilter cascade, with a contrasting foreground/fill), so only layout lives here. */
+.td-tags .tc-tag-label {
+	margin-right: 7px;
 }
 
 .td-wikilist .td-wikilist-button-open {

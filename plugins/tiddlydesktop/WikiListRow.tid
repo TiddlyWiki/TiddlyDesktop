@@ -2,14 +2,16 @@ title: WikiListRow
 
 \define drag-start-actions()
 <$action-setfield $tiddler="$:/temp/wikilistrow/dragging" text=<<tv-selectednode-height>>/>
+<$action-setfield $tiddler="$:/temp/wikilistrow/dragging/tiddler" text=<<currentTiddler>>/>
 \end
 
 \define drag-end-actions()
 <$action-deletetiddler $tiddler="$:/temp/wikilistrow/dragging"/>
+<$action-deletetiddler $tiddler="$:/temp/wikilistrow/dragging/tiddler"/>
 \end
 
 \define wikilist-row()
-<$draggable tiddler=<<currentTiddler>> class="td-wikilist-item" startactions=<<drag-start-actions>> endactions=<<drag-end-actions>>>
+<$draggable tiddler=<<currentTiddler>> class="td-wikilist-item" startactions=<<drag-start-actions>> endactions=<<drag-end-actions>> style.display={{{ [{$:/temp/wikilistrow/dragging/tiddler}match<currentTiddler>then[none]] :else[[block]] }}}>
 <div class="td-wikilist-thumbnail">
 <$button message="tiddlydesktop-add-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible">
 <$list filter="[[$:/TiddlyDesktop/Config/favicon/$(currentTiddler)$]!is[missing]]" emptyMessage="""

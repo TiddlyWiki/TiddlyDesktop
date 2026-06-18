@@ -9,9 +9,11 @@ title: WikiList
 </p>
 <p class="td-tags">
 <$list filter="[prefix[$:/TiddlyDesktop/Config/wiki-tags/]tags[]sort[]] :and[unique[]]" variable="tag" storyview="pop">
-<$button set=<<qualify '$:/temp/WikiList/search'>> setTo={{{ "[tag["[<tag>]"]]"+[join[]] }}} class="tc-tag-label tc-btn-invisible" style="background-color:;
-fill:#333333;
-color:#333333;"><<tag>></$button>
+<$let currentTiddler=<<tag>> palette={{$:/palette}} tagColour={{{ [<currentTiddler>] :cascade[all[shadows+tiddlers]tag[$:/tags/TiddlerColourFilter]!is[draft]get[text]] :else[<palette>getindex[tag-background]] }}}>
+<$wikify name="tagFg" text="<$macrocall $name='contrastcolour' target=<<tagColour>> fallbackTarget={{{ [<palette>getindex[tag-background]] }}} colourA={{{ [<palette>getindex[foreground]] }}} colourB={{{ [<palette>getindex[background]] }}}/>">
+<$button set=<<qualify '$:/temp/WikiList/search'>> setTo={{{ "[tag["[<currentTiddler>]"]]"+[join[]] }}} class="tc-tag-label tc-btn-invisible" style=`background-color:$(tagColour)$;color:$(tagFg)$;fill:$(tagFg)$;`><<currentTiddler>></$button>
+</$wikify>
+</$let>
 </$list>
 {{WikiList/ui/Buttons/DeleteUnusedTags}}
 </p>
