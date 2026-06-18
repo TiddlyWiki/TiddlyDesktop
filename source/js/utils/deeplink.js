@@ -36,7 +36,9 @@ function tryFocus(target) {
 	if(!win) { return false; }
 	try {
 		win.show();
-		try { win.restore(); } catch(e) {}   // un-minimise if needed
+		// Only restore() a MINIMISED window — restore() also un-maximizes, so calling it on a
+		// maximized window would drop it out of the maximized state.
+		if(win.__tdMinimized) { try { win.restore(); } catch(e) {} }
 		win.focus();
 		return true;
 	} catch(e) { return false; }

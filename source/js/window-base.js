@@ -161,6 +161,10 @@ exports.addBaseMethods = function(proto) {
 		try { win.on("focus",function() { try { $tw.desktop.lastFocusedWindow = self; } catch(e) {} }); } catch(e) {}
 		try { win.on("maximize",function() { win.__tdMaximized = true; self.saveMaximizedFlag(true); }); } catch(e) {}
 		try { win.on("unmaximize",function() { win.__tdMaximized = false; self.saveMaximizedFlag(false); schedule(); }); } catch(e) {}
+		// Track minimized state so a deep-link return can un-minimise WITHOUT un-maximising
+		// (restore() does both, so it must only be used on a genuinely minimised window).
+		try { win.on("minimize",function() { win.__tdMinimized = true; }); } catch(e) {}
+		try { win.on("restore",function() { win.__tdMinimized = false; }); } catch(e) {}
 	};
 
 }
