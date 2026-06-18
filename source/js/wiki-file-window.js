@@ -201,6 +201,10 @@ WikiFileWindow.prototype.onloadiframe = function() {
 		self.window_nwjs.once("close", function() { clearInterval(_queueTimer); });
 		// Shell.openExternal bridge (GUI call — not affected by nwdisable).
 		self.iframe.contentWindow._nwjsOpenExternal = function(url) {
+			// Remember which window opened an external URL, so the OAuth deep-link return
+			// (tiddlydesktop://auth…) re-focuses THIS window — the one sign-in was started
+			// from — rather than the backstage window.
+			try { $tw.desktop.oauthOriginWindow = self; } catch(e) {}
 			$tw.desktop.gui.Shell.openExternal(url);
 		};
 		// Notify oauth.js that the queue is ready.

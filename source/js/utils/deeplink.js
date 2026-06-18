@@ -32,8 +32,10 @@ exports.extractUrl = extractUrl;
 function focusApp() {
 	try {
 		var desktop = global.$tw && global.$tw.desktop;
-		var last = desktop && desktop.lastFocusedWindow;
-		var win = last && last.window_nwjs;
+		// Prefer the window that actually started OAuth (opened the browser) over the merely
+		// last-focused window, so we return to where sign-in was initiated rather than backstage.
+		var target = desktop && (desktop.oauthOriginWindow || desktop.lastFocusedWindow);
+		var win = target && target.window_nwjs;
 		if(win) {
 			try { win.show(); } catch(e) {}
 			try { win.restore(); } catch(e) {}   // un-minimise if needed
