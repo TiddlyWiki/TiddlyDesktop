@@ -32,21 +32,22 @@ DropLinkWidget.prototype.render = function(parent,nextSibling) {
 	// Create element
 	var domNode = this.document.createElement("div");
 	domNode.className = "tc-droplink";
-	// Add event handlers
+	// Add event handlers. The drag-over OVERLAY is an enter/leave COUNTER, but registered in the
+	// CAPTURE phase (the three listeners below). Why:
+	//   • Capture (not bubble) so the wikilist's nested droppable ROWS can't desync it — a child
+	//     droppable that stops propagation of its dragenter would otherwise hide the overlay the
+	//     moment the pointer crossed onto a row (the bug on Windows, where the overlay never showed).
+	//   • A counter (not a dragover timer) so the overlay survives the pointer being held STILL —
+	//     Chromium doesn't reliably keep firing dragover while stationary (notably on Linux), so a
+	//     timer-based hide would make the overlay vanish when the mouse stops. Enter/leave fire only
+	//     on actual boundary crossings, so a still pointer keeps the count at 1.
+	domNode.addEventListener("dragenter",function(event) { self.handleDragEnterEvent(event); },true);
+	domNode.addEventListener("dragleave",function(event) { self.handleDragLeaveEvent(event); },true);
+	domNode.addEventListener("dragover",function(event) { self.handleDragOverEvent(event); },true);
 	$tw.utils.addEventListeners(domNode,[
-		{name: "dragenter", handlerObject: this, handlerMethod: "handleDragEnterEvent"},
-		{name: "dragover", handlerObject: this, handlerMethod: "handleDragOverEvent"},
 		{name: "drop", handlerObject: this, handlerMethod: "handleDropEvent"},
 		{name: "paste", handlerObject: this, handlerMethod: "handlePasteEvent"}
 	]);
-	// The drag-over OVERLAY is driven from a CAPTURE-phase dragover listener plus a short hide
-	// timer, not the stock dragenter/dragleave counter. The wikilist's rows are nested droppable
-	// widgets, and on Windows the enter/leave events across those child boundaries leave the
-	// counter unbalanced, so the overlay never appears. dragover fires continuously while the
-	// pointer is anywhere in the droplink subtree, and capturing it means a child droppable that
-	// stops propagation can't hide it from us — so this works identically on Linux, macOS and
-	// Windows.
-	domNode.addEventListener("dragover",function(event) { self.handleOverlayDragOver(event); },true);
 	domNode.addEventListener("click",function (event) {
 	},false);
 	// Insert element
@@ -55,37 +56,34 @@ DropLinkWidget.prototype.render = function(parent,nextSibling) {
 	this.domNodes.push(domNode);
 };
 
-// Show/hide the drag-over overlay. Driven by dragover (which fires continuously) rather than an
-// enter/leave counter: on each captured dragover we make sure the overlay is shown and re-arm a
-// short timer that hides it once dragover stops firing — i.e. the drag has left the droplink.
-DropLinkWidget.prototype.handleOverlayDragOver = function(event) {
+// Enter/leave counter: show the overlay while the drag is anywhere inside the droplink subtree,
+// hide it only when it has actually left (count back to 0). No timer, so a stationary pointer keeps
+// it shown. enterDrag/leaveDrag are driven by the CAPTURE-phase listeners registered in render().
+DropLinkWidget.prototype.enterDrag = function() {
 	// An internal drag (e.g. reordering a wikilist row) sets $tw.dragInProgress — no file overlay.
 	if($tw.dragInProgress) { return; }
-	if(["TEXTAREA","INPUT"].indexOf(event.target.tagName) !== -1) { return; }
-	var self = this;
-	if(!this.dropOverlayShown) {
+	this.dragEnterCount = (this.dragEnterCount || 0) + 1;
+	if(this.dragEnterCount === 1) {
 		$tw.utils.addClass(this.domNodes[0],"tc-dragover");
-		this.dropOverlayShown = true;
 	}
-	if(this.dropOverlayTimer) { clearTimeout(this.dropOverlayTimer); }
-	this.dropOverlayTimer = setTimeout(function() {
-		self.dropOverlayTimer = null;
-		self.hideDropOverlay();
-	},150);
 };
 
-DropLinkWidget.prototype.hideDropOverlay = function() {
-	if(this.dropOverlayTimer) { clearTimeout(this.dropOverlayTimer); this.dropOverlayTimer = null; }
-	if(this.dropOverlayShown) {
+DropLinkWidget.prototype.leaveDrag = function() {
+	this.dragEnterCount = (this.dragEnterCount || 0) - 1;
+	if(this.dragEnterCount <= 0) {
+		this.dragEnterCount = 0;
 		$tw.utils.removeClass(this.domNodes[0],"tc-dragover");
-		this.dropOverlayShown = false;
 	}
 };
 
 DropLinkWidget.prototype.handleDragEnterEvent  = function(event) {
-	// Allow the drop (and don't ripple to parent handlers). The overlay is handled by dragover.
+	this.enterDrag();
+	// Allow the drop.
 	event.preventDefault();
-	event.stopPropagation();
+};
+
+DropLinkWidget.prototype.handleDragLeaveEvent  = function(event) {
+	this.leaveDrag();
 };
 
 DropLinkWidget.prototype.handleDragOverEvent  = function(event) {
@@ -103,7 +101,8 @@ DropLinkWidget.prototype.handleDragOverEvent  = function(event) {
 };
 
 DropLinkWidget.prototype.handleDropEvent  = function(event) {
-	this.hideDropOverlay();
+	this.dragEnterCount = 0;
+	$tw.utils.removeClass(this.domNodes[0],"tc-dragover");
 	// Check for being over a TEXTAREA or INPUT
 	if(["TEXTAREA","INPUT"].indexOf(event.target.tagName) !== -1) {
 		return false;

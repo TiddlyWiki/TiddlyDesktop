@@ -212,6 +212,11 @@ ones (at startup, when the list changes, and after applying). Outdated plugins s
 a count **badge**. Folder wikis load bundled plugins by name at boot, so they're always current
 (no badge).
 
+The plugin library is also **watched on disk** (`fs.watch`): if a bundled plugin changes there — a
+rebuild, an app update, or an external `TIDDLYWIKI_PLUGIN_PATH` edit — the badge and the chooser's
+Update buttons refresh live, without restarting (opening the chooser also re-scans). "Newer" is
+judged by the plugin's `plugin.info` version.
+
 The bundled **collaboration plugin carries its own version**, independent of the app version, so
 wikis can detect and update to a newer bundled copy. That version is derived at build time
 (`major.minor` from its `plugin.info`, patch = commits touching the plugin since that
@@ -260,9 +265,13 @@ These apply to both single-file and folder wiki windows.
 
 - **Fullscreen** — `F11` (or TiddlyWiki's fullscreen page-control button) toggles the **native**
   window fullscreen. (HTML5-document fullscreen doesn't give true window fullscreen in NW.js and
-  is blocked inside the single-file iframe, so it's rerouted to the native window.) Leaving
-  fullscreen restores the previous **bounds, screen, and maximized state** — covering multi-
-  monitor setups and Esc-to-exit.
+  is blocked inside the single-file iframe, so it's rerouted to the native window — the button's
+  handler replaces the wiki's own `tm-full-screen` handler.) If the window was **maximized** before
+  going fullscreen, leaving fullscreen **re-maximizes** it (NW.js otherwise drops back to normal
+  bounds). This is handled inside each wiki window's own process and detected by polling
+  `win.isFullscreen`, since NW.js doesn't emit a reliable leave-fullscreen event on Linux — so it
+  also covers Esc-to-exit. (The OAuth deep-link return likewise re-focuses the window without
+  un-maximizing it.)
 - **Page zoom** — `Ctrl`/`Cmd` `+` / `-` / `0`, or `Ctrl`/`Cmd` + mouse wheel. A reset control
   appears (top-left, fixed) only when not at 100%.
 - **Find in page** — `Ctrl`/`Cmd` `F` opens a browser-style find bar (match count, next/prev,
@@ -315,7 +324,8 @@ JSFiddle, Internet Archive (`archive.org`).
 
 ### Adding your own domains
 
-The allowlist is configured **per wiki**. In the wiki, create a tiddler titled
+The allowlist (which media hosts get the `127.0.0.1` referer fix — other iframes load regardless)
+is configured **per wiki**. In the wiki, create a tiddler titled
 **`$:/config/TiddlyDesktop/EmbedHosts`** and list extra hosts in its text, one per line (spaces
 or commas also work). They are *added* to the defaults:
 
@@ -404,8 +414,10 @@ encrypted; the relay server only ever sees ciphertext.**
 
 1. Open the **Collab** tab in the sidebar and expand **Settings**.
 2. Set the **Relay server URL** (e.g. `wss://relay.example.com:8443/`).
-3. **Sign in** under Account with one of the offered providers (the system browser opens; the
-   client polls the relay for the result — no deep-link handling).
+3. **Sign in** under Account with one of the offered providers — the system browser opens, and
+   after you authorise, its page returns you to the app via the `tiddlydesktop://` deep link
+   (focusing the window you started from). Sign-in is finalised by the relay result-poll either
+   way, so it still works if the OS handler isn't registered (the page also offers a manual link).
 4. Set a **Room code** (a shared name) and, for true privacy, a **Room token** (a shared secret
    that is *never* sent to the relay).
 5. Click **Connect**. The status bar (bottom-right) shows the connection state, a `🔒 end-to-end
@@ -471,6 +483,14 @@ never silently clobbers edits: the side that actually changed is adopted; a genu
 both-sides-changed conflict is flagged **diverged**. (Persistence is arranged so it does not
 re-dirty the wiki after every save.)
 
+This is **clock-independent** — it never compares the two machines' wall-clock `modified`
+timestamps. Those are stamped by each machine's own clock (TiddlyWiki stores them in UTC, so this
+is *not* a timezone issue), and if the clocks disagree, timestamp-based "last write wins" silently
+discards a genuinely-newer edit. The base instead tracks *which side changed* relative to the last
+agreed content, and when it can't tell (no base + differing content) it flags a conflict rather
+than guessing. A subscriber's edit to a peer-owned tiddler is therefore never reset by the owner's
+periodic manifest.
+
 When a tiddler diverges, a red **conflict badge** appears on the Collab sidebar tab and a
 conflict button on the dock. A **Resolve** button (sidebar / dock / tiddler toolbars) opens a
 dialog with a text diff and a table of any differing non-text fields, offering **Use mine / Use
@@ -482,11 +502,14 @@ editor never silently overwrites your live edits.
 
 Fetch a tiddler backed by a file (`_canonical_uri`) or an embedded binary as an attachment. It
 is streamed **privately, chunked, and rate-paced**, with a configurable size cap
-(**`$:/config/codemirror-6-collab/max-asset-mb`**) and a live progress bar in the Get list. With
-the External Attachments plugin enabled, **Get** offers a *save-as* dialog and stores the file on
-disk; otherwise it embeds the file inline. Received attachments stay marked **Got/Saved** across
-restarts. A consent prompt precedes any attachment leaving your machine, and an inspection
-prompt lets you review a received attachment before it is written.
+(**`$:/config/codemirror-6-collab/max-asset-mb`**) and a live progress bar — shown both in the Get
+list **and** in the Collab sidebar's shared-tiddlers list. With the External Attachments plugin
+enabled, **Get** offers a *save-as* dialog and stores the file on disk; otherwise it embeds the
+file inline. Received attachments stay marked **Got/Saved** across restarts. A consent prompt
+precedes any attachment leaving your machine, and an inspection prompt lets you review a received
+attachment before it is written. Attachment paths are treated as URIs (URL-decoded for filesystem
+access, encoded when recorded), so filenames containing spaces (`%20`) transfer and display
+correctly across platforms.
 
 ### 17.9 Chat
 
@@ -497,7 +520,9 @@ The collaboration dock has a **Chat** panel:
   can read it.
 
 An unread-count badge clears when the panel opens; an opt-in incoming-message **sound** is
-available (`$:/config/codemirror-6-collab/chat-sound`).
+available (`$:/config/codemirror-6-collab/chat-sound`). A separate opt-in **sound for a new tiddler
+becoming available to get** (`$:/config/codemirror-6-collab/share-sound`) is deliberately distinct
+from the chat sound, so you can tell the two apart.
 
 ### 17.10 Security model
 
@@ -527,6 +552,7 @@ All in the **Collab** sidebar tab (and the Settings page):
 | Relay only (disable LAN) | `$:/config/codemirror-6-collab/relay-only` |
 | Allow system tiddlers | `$:/config/codemirror-6-collab/allow-system-tiddlers` |
 | Chat sound | `$:/config/codemirror-6-collab/chat-sound` |
+| New-shared-tiddler sound | `$:/config/codemirror-6-collab/share-sound` |
 | OAuth provider / token / username / id | `$:/config/codemirror-6-collab/auth-provider`, `auth-token`, `auth-username`, `auth-user-id` |
 | Device id / name | `$:/config/codemirror-6-collab/device-id`, `device-name` |
 
