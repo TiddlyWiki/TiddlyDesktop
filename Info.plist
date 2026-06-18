@@ -32,5 +32,16 @@
     <string>public.app-category.utilities</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.tiddlywiki.tiddlydesktop.url</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>tiddlydesktop</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

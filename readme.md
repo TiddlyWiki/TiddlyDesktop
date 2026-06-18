@@ -231,13 +231,14 @@ Window position and size are remembered per wiki.
 Wikis can embed external media with an `<iframe>` (a YouTube video, a Vimeo clip, an
 OpenStreetMap map, and so on). TiddlyDesktop makes these play reliably and safely:
 
-* Only embeds whose host is on an **allowlist** are loaded. Any other external iframe is
-  blocked and replaced with a small note, so a tiddler can't quietly beacon to an arbitrary
-  server just by being rendered.
-* Allowlisted media is routed through a tiny local `http://127.0.0.1` helper so the provider
-  sees a real web origin and plays — single-file wikis are `file://` pages, which players
-  like YouTube otherwise reject (error 153). The wiki file itself stays `file://`; the helper
-  is bound to localhost only, only ever loads allowlisted hosts, and serves no files.
+* Embeds whose host is on an **allowlist** are routed through a tiny local `http://127.0.0.1`
+  helper so the provider sees a real web origin and plays — single-file wikis are `file://`
+  pages, which players like YouTube otherwise reject (error 153). The wiki file itself stays
+  `file://`; the helper is bound to localhost only, only ever loads allowlisted hosts, and
+  serves no files.
+* Any other external iframe is left **exactly as the wiki wrote it** and loads normally — for
+  example a plugin-library iframe pointing at `tiddlywiki.com`. The allowlist only decides what
+  gets the `127.0.0.1` referer fix, not whether an iframe may load.
 
 ### Hosts allowed by default
 
@@ -260,9 +261,11 @@ Sub-domains are included automatically (e.g. `youtube.com` also allows `www.yout
 
 ### Adding your own domains
 
-The allowlist is configured **per wiki**. In the wiki you want to allow extra embeds in,
-create a tiddler titled `$:/config/TiddlyDesktop/EmbedHosts` and list the additional hosts in
-its text, one per line (spaces or commas also work). They are *added* to the defaults above:
+The allowlist is configured **per wiki**. If a media provider needs the `127.0.0.1` referer fix
+to play and isn't in the defaults, create a tiddler titled
+`$:/config/TiddlyDesktop/EmbedHosts` in that wiki and list the additional hosts in its text, one
+per line (spaces or commas also work). They are *added* to the defaults above. (Other embeds load
+fine without this — the list only controls the referer fix.)
 
 ```
 vimeo.com

@@ -123,6 +123,14 @@ tags: $:/tags/Stylesheet
    still flow inline and transform: scale() actually applies. */
 .td-wikilist .td-wikilist-tag-pop {
 	display: inline-block;
+	margin-right: 7px;
+}
+
+/* Give the row's tag pills a consistent foreground/background, overriding the per-tag inline
+   colour the core tag-body macro emits (hence !important). */
+.td-wikilist .td-wikilist-tag-pop .tc-tag-label {
+	color: <<colour tag-foreground>> !important;
+	background-color: <<colour tag-background>> !important;
 }
 
 .td-wikilist .td-wikilist-button-open {

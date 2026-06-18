@@ -284,8 +284,10 @@ OpenStreetMap map, …). TiddlyDesktop makes these play reliably and safely.
 
 ### How it works
 
-- Only embeds whose **host is on an allowlist** load. Any other external iframe is blocked and
-  replaced with a small note, so a tiddler can't quietly beacon to an arbitrary server.
+- An **allowlist** decides which embeds are routed through the loopback shim below (the `file://`
+  referer fix). Any other external iframe is left **exactly as the wiki wrote it** and loads as a
+  normal iframe — for example a plugin-library iframe pointing at `tiddlywiki.com`. The allowlist
+  governs only the shim routing, not whether an iframe may load.
 - Single-file wikis are `file://` pages, so an embedded player has an empty/`file://` Referer,
   which YouTube rejects (error 153). To fix this, allowlisted media is routed through a tiny
   **loopback HTTP shim**: a server bound to `127.0.0.1` on a random port serves a one-iframe
@@ -574,7 +576,7 @@ Tiddlers you can create/edit to configure behaviour. Collaboration settings are 
 
 | Tiddler | Purpose | Lives in |
 |---|---|---|
-| `$:/config/TiddlyDesktop/EmbedHosts` | Extra allowed embed hosts (one per line) | each wiki |
+| `$:/config/TiddlyDesktop/EmbedHosts` | Extra hosts routed through the media shim (one per line) | each wiki |
 | `$:/config/ExternalAttachments/Enable` | Enable external attachments (`yes`) | each wiki |
 | `$:/config/ExternalAttachments/UseAbsoluteForDescendents` | Use absolute path for files under the wiki dir | each wiki |
 | `$:/config/ExternalAttachments/UseAbsoluteForNonDescendents` | Use absolute path for files elsewhere | each wiki |

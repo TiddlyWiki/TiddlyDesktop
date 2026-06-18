@@ -155,6 +155,10 @@ exports.addBaseMethods = function(proto) {
 		}
 		try { win.on("move",schedule); } catch(e) {}
 		try { win.on("resize",schedule); } catch(e) {}
+		// Remember the window the user is in, so a tiddlydesktop:// deep link (OAuth return)
+		// re-focuses it. The focus event is frame-level, so this works for folder windows
+		// (separate process) too.
+		try { win.on("focus",function() { try { $tw.desktop.lastFocusedWindow = self; } catch(e) {} }); } catch(e) {}
 		try { win.on("maximize",function() { win.__tdMaximized = true; self.saveMaximizedFlag(true); }); } catch(e) {}
 		try { win.on("unmaximize",function() { win.__tdMaximized = false; self.saveMaximizedFlag(false); schedule(); }); } catch(e) {}
 	};

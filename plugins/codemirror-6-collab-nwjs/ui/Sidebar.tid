@@ -199,6 +199,7 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/relay-only" field="text" checked="yes" unchecked="no" default="no"/><span class="tc-tiny-gap-left">Relay only — disable direct LAN</span></div>
 <div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/allow-system-tiddlers" field="text" checked="yes" unchecked="no" default="no"/><span class="tc-tiny-gap-left">Allow system (<code>$:/</code>) tiddlers — never executable; trusted rooms only</span></div>
 <div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/chat-sound" field="text" checked="yes" unchecked="no" default="no"/><span class="tc-tiny-gap-left">Play a sound when a chat message arrives</span></div>
+<div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/share-sound" field="text" checked="yes" unchecked="no" default="no"/><span class="tc-tiny-gap-left">Play a sound when a new tiddler is available to get</span></div>
 </div>
 <div class="tc-collab-settings-group">
 <div class="tc-collab-settings-label">Identity</div>

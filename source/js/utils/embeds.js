@@ -10,16 +10,19 @@ do not want to rely on that alone, and we do not want a tiddler to be able to be
 arbitrary server just by being rendered.
 
 So:
-  • Only iframes whose host is on a curated allowlist are permitted to load at all; any
-    other external (http/https) iframe is blocked and replaced with a small note. The list
-    is editable per-wiki via $:/config/TiddlyDesktop/EmbedHosts (added to the defaults).
-  • Allowlisted media is routed through a loopback http shim (local-server.js): the iframe's
-    src is rewritten to http://127.0.0.1:<port>/<token>/embed?src=<original>. The shim, served
-    from a real http origin, embeds the provider — so the provider sees an http Referer and
-    plays, instead of YouTube's file:// rejection (error 153). The embed stays a plain in-flow
-    <iframe> (natural layout/scroll/stacking); the wiki document itself stays file://, so
-    saving, the collab bridges and external attachments are untouched. If the shim server
-    can't start we fall back to hardening the iframe in place (no playback, but no breakage).
+  • A curated allowlist decides which external embeds get routed through a loopback http shim
+    (local-server.js): the iframe's src is rewritten to
+    http://127.0.0.1:<port>/<token>/embed?src=<original>. The shim, served from a real http
+    origin, embeds the provider — so the provider sees an http Referer and plays, instead of
+    YouTube's file:// rejection (error 153). The embed stays a plain in-flow <iframe> (natural
+    layout/scroll/stacking); the wiki document itself stays file://, so saving, the collab
+    bridges and external attachments are untouched. If the shim server can't start we fall back
+    to hardening the iframe in place (no playback, but no breakage). The list is editable
+    per-wiki via $:/config/TiddlyDesktop/EmbedHosts (added to the defaults).
+  • Any external iframe whose host is NOT on the allowlist is left EXACTLY as the wiki author
+    wrote it — src and attributes untouched — and loads as a normal browser iframe (e.g. the
+    plugin library iframe pointing at tiddlywiki.com). The allowlist therefore governs only the
+    shim referer-fix, not whether an iframe may load.
 
 Local / relative / blob: / data: iframes (TiddlyWiki's own internal frames) are left alone.
 */
@@ -71,17 +74,6 @@ exports.install = function(doc, win) {
 		return list;
 	}
 
-	function blockEmbed(iframe, host) {
-		var note = doc.createElement("div");
-		note.className = "td-embed-blocked";
-		note.setAttribute("style", "padding:8px 12px;border:1px dashed #b0883a;border-radius:6px;" +
-			"background:rgba(176,136,58,0.08);color:#8a6d2b;font:13px/1.4 sans-serif;");
-		note.textContent = "⚠ Embedded content from “" + host + "” is blocked. Add this host to " +
-			CONFIG_HOSTS + " to allow it.";
-		note.__tdEmbedUpgraded = true;
-		if(iframe.parentNode) { iframe.parentNode.replaceChild(note, iframe); }
-	}
-
 	function hardenIframe(iframe) {
 		// We frame our own shim (which sets its own allow on the provider iframe), so set a
 		// known-good policy here rather than trusting the author's allow=. Crucially this uses
@@ -116,7 +108,15 @@ exports.install = function(doc, win) {
 		if(!/^https?:\/\//i.test(src)) { return; }   // only real external embeds; leave TW's own frames
 		var url;
 		try { url = new URLctor(src); } catch(e) { return; }
-		if(!hostAllowed(url.hostname, allowedHosts())) { blockEmbed(iframe, url.hostname); return; }
+		if(!hostAllowed(url.hostname, allowedHosts())) {
+			// Not on the allowlist → leave the iframe EXACTLY as the wiki author wrote it: src and
+			// attributes untouched. The allowlist only decides what gets routed through the loopback
+			// shim (the file:// referer fix); everything else renders as a normal browser iframe, so
+			// e.g. the plugin library iframe pointing at tiddlywiki.com just works. Mark it handled so
+			// the observer doesn't keep re-evaluating it (a later src change resets the mark).
+			iframe.__tdEmbedUpgraded = true;
+			return;
+		}
 		// Allowlisted media.
 		if(serverReady) {
 			pointAtShim(iframe, src, url.hostname);

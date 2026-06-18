@@ -1,6 +1,7 @@
 title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/EditToolbarShareButton
 tags: $:/tags/EditToolbar
 caption: Collab share
+description: Share the tiddler being edited with collaborators in the room
 list-before: $:/core/ui/EditToolbar/delete
 
 \whitespace trim
@@ -12,13 +13,13 @@ list-before: $:/core/ui/EditToolbar/delete
 <$set name="isOwned" value={{{ [<realTitle>addprefix[$:/temp/collab/share/owned/]is[tiddler]then[yes]else[no]] }}}>
 <$list filter="[<isOwned>match[yes]]" variable="_">
 <$button message="codemirror-6-collab-unshare-tiddler" param=<<realTitle>> class="tc-btn-invisible tc-collab-share-btn tc-collab-share-btn-active" tooltip="Stop sharing this tiddler">
-{{$:/core/images/plugin-generic-plugin}}
+<%if [<tv-config-toolbar-icons>match[yes]] %>{{$:/core/images/plugin-generic-plugin}}<%endif%><%if [<tv-config-toolbar-text>match[yes]] %><span class="tc-btn-text">Stop sharing</span><%endif%>
 </$button>
 </$list>
 <$list filter="[<isOwned>match[no]]" variable="_">
 <$set name="isGot" value={{{ [<realTitle>addprefix[$:/temp/collab/share/available/]get[subscribed]match[yes]then[yes]else[no]] }}}>
 <$button message="codemirror-6-collab-share-tiddler" param=<<realTitle>> class={{{ [<isGot>match[yes]then[tc-btn-invisible tc-collab-share-btn tc-collab-share-btn-got]else[tc-btn-invisible tc-collab-share-btn]] }}} tooltip={{{ [<isGot>match[yes]then[Synced from a peer — you are subscribed to this tiddler]else[Share this tiddler with room members]] }}}>
-{{$:/core/images/plugin-generic-plugin}}
+<%if [<tv-config-toolbar-icons>match[yes]] %>{{$:/core/images/plugin-generic-plugin}}<%endif%><%if [<tv-config-toolbar-text>match[yes]] %><span class="tc-btn-text"><$text text={{{ [<isGot>match[yes]then[Subscribed]else[Share]] }}}/></span><%endif%>
 </$button>
 </$set>
 </$list>

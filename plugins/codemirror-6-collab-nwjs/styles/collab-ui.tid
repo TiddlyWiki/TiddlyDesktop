@@ -1263,7 +1263,6 @@ tags: $:/tags/Stylesheet
   border-top: 1px solid <<colour tiddler-border>>;
   border-left: 1px solid <<colour tiddler-border>>;
   border-radius: 4px 0 0 0;
-  box-shadow: -3px -3px 10px rgba(0, 0, 0, 0.1);
   font-size: 0.82em;
   color: <<colour foreground>>;
 }
@@ -1477,7 +1476,6 @@ tags: $:/tags/Stylesheet
   border-top: 1px solid <<colour tiddler-border>>;
   border-left: 1px solid <<colour tiddler-border>>;
   border-radius: 4px 0 0 0;
-  box-shadow: -3px -3px 10px rgba(0, 0, 0, 0.1);
   font-size: 0.82em;
   color: <<colour foreground>>;
 }

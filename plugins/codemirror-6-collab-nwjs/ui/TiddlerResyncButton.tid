@@ -1,6 +1,7 @@
 title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/TiddlerResyncButton
 tags: $:/tags/ViewToolbar
 caption: Collab resolve conflict
+description: Resolve this tiddler when it has diverged from the room
 
 \whitespace trim
 <$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
@@ -8,7 +9,7 @@ caption: Collab resolve conflict
 <$set name="availTiddler" value={{{ [<currentTiddler>addprefix[$:/temp/collab/share/available/]] }}}>
 <$list filter="[<availTiddler>get[diverged]match[yes]]" variable="_">
 <$button message="codemirror-6-collab-resolve-tiddler" param=<<currentTiddler>> class="tc-btn-invisible tc-collab-share-btn tc-collab-resolve-toolbar-btn" tooltip="This tiddler diverged from the room — review and resolve">
-{{$:/core/images/warning}}
+<%if [<tv-config-toolbar-icons>match[yes]] %>{{$:/core/images/warning}}<%endif%><%if [<tv-config-toolbar-text>match[yes]] %><span class="tc-btn-text">Resolve conflict</span><%endif%>
 </$button>
 </$list>
 </$set>

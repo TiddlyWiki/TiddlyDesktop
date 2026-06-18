@@ -160,6 +160,48 @@ exports.startup = function() {
 		try { return !!(api && api.getStatus && api.getStatus() === "connected"); } catch(e) { return false; }
 	}
 
+	// ── new-shared-tiddler sound (opt-in) ────────────────────────────────────────
+	// Played when a peer makes a NEW tiddler available to get. Synthesised with the Web Audio
+	// API (no binary asset), and deliberately DIFFERENT from the chat sound — chat is a soft
+	// two-note sine (660→880); this is a brighter triangle-wave rising triad — so the two
+	// notifications are distinguishable by ear. Off unless the user ticks
+	// $:/config/codemirror-6-collab/share-sound.
+	var SHARE_SOUND_TITLE = "$:/config/codemirror-6-collab/share-sound";
+	var _shareAudioCtx = null;
+	function _playShareChime() {
+		try {
+			var AC = window.AudioContext || window.webkitAudioContext;
+			if(!AC) { return; }
+			if(!_shareAudioCtx) { _shareAudioCtx = new AC(); }
+			var ctx = _shareAudioCtx;
+			if(ctx.state === "suspended") { try { ctx.resume(); } catch(e) {} }
+			var t = ctx.currentTime;
+			var gain = ctx.createGain();
+			gain.connect(ctx.destination);
+			gain.gain.setValueAtTime(0.0001, t);
+			gain.gain.exponentialRampToValueAtTime(0.14, t + 0.012);
+			gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.34);
+			var osc = ctx.createOscillator();
+			osc.type = "triangle";
+			osc.frequency.setValueAtTime(880, t);            // A5
+			osc.frequency.setValueAtTime(1108.73, t + 0.10); // C#6
+			osc.frequency.setValueAtTime(1318.51, t + 0.20); // E6 — bright rising triad
+			osc.connect(gain);
+			osc.start(t);
+			osc.stop(t + 0.35);
+		} catch(e) {}
+	}
+	function _playShareSound() {
+		if($tw.wiki.getTiddlerText(SHARE_SOUND_TITLE, "no") !== "yes") { return; }
+		_playShareChime();
+	}
+	// Prime the AudioContext (and confirm audibly) the moment the user enables the setting —
+	// that change is dispatched within the checkbox click (a user gesture), which browsers
+	// require before audio can play. Mirrors the chat-sound behaviour.
+	$tw.wiki.addEventListener("change", function(changes) {
+		if(changes[SHARE_SOUND_TITLE] && $tw.wiki.getTiddlerText(SHARE_SOUND_TITLE, "no") === "yes") { _playShareChime(); }
+	});
+
 	// Pairwise (1:1) send for asset bytes — encrypted exclusively for the recipient
 	// (pairwise ECDH) so megabytes aren't broadcast to the whole room. Falls back to
 	// a room send if the pairwise channel isn't available.
@@ -1386,13 +1428,17 @@ exports.startup = function() {
 		case "collab-share-new":
 			// Enforce title uniqueness: drop the claim if title is already taken.
 			if(msg.ownerDeviceId !== deviceId && msg.title) {
-				_claimAvailable(msg.title, {
+				// Only a genuinely NEW availability (not a re-broadcast of one we already see)
+				// should ring the opt-in notification sound.
+				var _shareWasNew = !availableTiddlers[msg.title];
+				var _shareClaimed = _claimAvailable(msg.title, {
 					ownerDeviceId: msg.ownerDeviceId,
 					ownerName:     msg.ownerName || msg.ownerDeviceId,
 					sharedAt:      msg.sharedAt  || Date.now(),
 					assetName:     msg.assetName || "",
 					assetType:     msg.assetType || ""
 				});
+				if(_shareClaimed && _shareWasNew) { _playShareSound(); }
 			}
 			break;
 

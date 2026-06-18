@@ -9,6 +9,8 @@ var gui = require("nw.gui"),
 	path = require("path");
 
 var WindowList = require("../js/window-list.js").WindowList;
+var protocol = require("../js/utils/protocol.js");
+var deeplink = require("../js/utils/deeplink.js");
 
 // The real process.exit, captured before anything (e.g. wiki conversion) can monkey-patch it.
 // quitApp() uses this so a quit during a conversion still terminates.
@@ -138,6 +140,13 @@ $tw.desktop.quitApp = quitApp;
 try { process.on("SIGINT", quitApp); } catch(e) {}
 try { process.on("SIGTERM", quitApp); } catch(e) {}
 
+// Custom-protocol (tiddlydesktop://) handling: register this binary as the handler so the OAuth
+// relay's post-login redirect returns to the app, and wire the running-instance "open" hook. We
+// track the last-focused window so a deep link re-focuses the window the user came from.
+try { protocol.register(); } catch(e) {}
+try { deeplink.install(backstageWindow); } catch(e) {}
+try { backstageWindow.on("focus", function() { try { $tw.desktop.lastFocusedWindow = null; } catch(e) {} }); } catch(e) {}
+
 var backstageWikiFolder = $tw.desktop.utils.wiki.getBackstageWikiFolder(gui.App.dataPath);
 
 // Show dev tools on F12
@@ -194,8 +203,14 @@ var defaultCommand = "open",
 // window now (with its lightweight loading splash) so the user sees a window
 // immediately. The heavy TiddlyWiki boot below paints the real content into
 // the already-open window via BackstageWindow.tryRender().
-var initialArgv = gui.App.argv.slice(0),
-	hasNonFlagArg = initialArgv.some(function(a) { return !a.startsWith("--"); });
+var initialArgv = gui.App.argv.slice(0);
+// A tiddlydesktop:// deep link (OAuth return) launched cold lands in argv — pull it out so it
+// isn't treated as a wiki path, and act on it once boot has finished (see below).
+var _coldStartDeepLink = deeplink.findColdStartUrl(initialArgv);
+if(_coldStartDeepLink) {
+	initialArgv = initialArgv.filter(function(a) { return deeplink.extractUrl(a) !== _coldStartDeepLink; });
+}
+var hasNonFlagArg = initialArgv.some(function(a) { return !a.startsWith("--"); });
 if(!hasNonFlagArg) {
 	$tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});
 	commandFlags.haveOpenedWindow = true;
@@ -244,5 +259,7 @@ setTimeout(function() {
 				w.tryRender();
 			}
 		});
+		// If launched cold by a tiddlydesktop:// deep link, act on it now that there's a window.
+		if(_coldStartDeepLink) { try { deeplink.handleUrl(_coldStartDeepLink); } catch(e) {} }
 	});
 },0);
