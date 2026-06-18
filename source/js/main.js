@@ -144,7 +144,7 @@ try { process.on("SIGTERM", quitApp); } catch(e) {}
 // relay's post-login redirect returns to the app, and wire the running-instance "open" hook. We
 // track the last-focused window so a deep link re-focuses the window the user came from.
 try { protocol.register(); } catch(e) {}
-try { deeplink.install(backstageWindow); } catch(e) {}
+try { deeplink.install(backstageWindow, gui); } catch(e) {}
 try { backstageWindow.on("focus", function() { try { $tw.desktop.lastFocusedWindow = null; } catch(e) {} }); } catch(e) {}
 
 var backstageWikiFolder = $tw.desktop.utils.wiki.getBackstageWikiFolder(gui.App.dataPath);
@@ -154,7 +154,7 @@ $tw.desktop.utils.devtools.trapDevTools(backstageWindow,document);
 
 // Fullscreen on F11 (and the fullscreen button, should the UI gain one) for this window
 try {
-	require("./utils/fullscreen.js").install(backstageWindow,document,function() { return $tw.rootWidget; });
+	require("../js/utils/fullscreen.js").install(backstageWindow,document,function() { return $tw.rootWidget; });
 } catch(e) {
 	console.error("[TiddlyDesktop] fullscreen install failed:",e);
 }

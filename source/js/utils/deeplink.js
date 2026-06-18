@@ -12,7 +12,10 @@ job is purely to return focus to the app — that already makes "redirect back t
 
 "use strict";
 
-var gui = require("nw.gui");
+// NOTE: do NOT require("nw.gui") here — that module is only resolvable from the page's main script
+// (main.js), not from a require()'d sub-module, so requiring it would throw and abort boot. main.js
+// hands us its gui handle via install() instead.
+var gui = null;
 
 var _backstageWindow = null;
 
@@ -54,13 +57,16 @@ exports.handleUrl = handleUrl;
 
 // Wire the running-instance hook. NW.js fires App "open" when another launch of the app (e.g. the
 // browser opening tiddlydesktop://) forwards its command line here.
-exports.install = function(backstageWindow) {
+exports.install = function(backstageWindow, guiRef) {
 	_backstageWindow = backstageWindow;
+	gui = guiRef || gui;
 	try {
-		gui.App.on("open", function(args) {
-			var url = extractUrl(args);
-			if(url) { handleUrl(url); }
-		});
+		if(gui && gui.App) {
+			gui.App.on("open", function(args) {
+				var url = extractUrl(args);
+				if(url) { handleUrl(url); }
+			});
+		}
 	} catch(e) {}
 };
 
