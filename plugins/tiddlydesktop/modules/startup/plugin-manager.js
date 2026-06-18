@@ -38,47 +38,30 @@ exports.startup = function() {
 		$tw.config.pluginsEnvVar
 	);
 
-	// Bundled plugins don't change during a session, so enumerate them once and reuse for
-	// the chooser AND the background "updates available" scan.
-	var available = _getAvailablePlugins(pluginPaths, fs, path);
-	var availableByTitle = {};
-	available.forEach(function(p) { availableByTitle[p.title] = p; });
+	// Enumerate the bundled / library plugins. This used to run only once ("bundled plugins don't
+	// change during a session"), but we now also re-scan when they change ON DISK (see the watcher
+	// below) — so a rebuilt or updated plugin (or an external TIDDLYWIKI_PLUGIN_PATH change) shows
+	// up live in the wiki-list "updates available" badge and the chooser's update buttons, without
+	// restarting. Closures below reference these vars by name, so reassigning them takes effect.
+	var available = [], availableByTitle = {};
+	function refreshAvailable() {
+		available = _getAvailablePlugins(pluginPaths, fs, path);
+		availableByTitle = {};
+		available.forEach(function(p) { availableByTitle[p.title] = p; });
+	}
+	refreshAvailable();
 
-	// ── open chooser ──────────────────────────────────────────────────────────
-
-	$tw.rootWidget.addEventListener("tiddlydesktop-open-plugin-chooser", function(event) {
-		var wikiUrl = event.param;
-		if(!wikiUrl) return false;
-
-		var isOpen            = _isWikiOpen(wikiUrl);
-		var isFile            = wikiUrl.startsWith("wikifile://");
+	// (Re)populate the chooser's available-plugin tiddlers for whichever wiki it currently targets.
+	// Used both when opening the chooser and on a live disk re-scan. preserveSelection keeps the
+	// user's tick state (for a live refresh) instead of resetting it to the installed state.
+	function populateChooserAvailable(preserveSelection) {
+		var target = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
+		if(!target) { return; }
+		var wikiUrl           = target.fields.text;
+		var isFile            = (target.fields["wiki-type"] === "file");
 		var installed         = _getInstalledPlugins(wikiUrl, fs, path);
 		var installedVersions = _getInstalledVersions(wikiUrl, fs, path);
-
-		// Target tiddler
-		$tw.wiki.addTiddler(new $tw.Tiddler({
-			title: "$:/temp/TiddlyDesktop/PluginChooser/target",
-			text: wikiUrl,
-			"wiki-open": isOpen ? "yes" : "no",
-			"wiki-type": isFile ? "file" : "folder"
-		}));
-
-		// Clear search
-		$tw.wiki.addTiddler(new $tw.Tiddler({
-			title: "$:/temp/TiddlyDesktop/PluginChooser/search",
-			text: ""
-		}));
-
-		// Clear status
-		$tw.wiki.addTiddler(new $tw.Tiddler({
-			title: "$:/temp/TiddlyDesktop/PluginChooser/status",
-			text: ""
-		}));
-
-		// Remove stale available/selected tiddlers
-		_clearChooserTiddlers(["available", "selected"]);
-
-		// Populate one tiddler per available plugin
+		_clearChooserTiddlers(["available"]);
 		available.forEach(function(plugin) {
 			var isInstalled    = installed.indexOf(plugin.title) !== -1;
 			var installedVer   = installedVersions[plugin.title] || "";
@@ -98,12 +81,40 @@ exports.startup = function() {
 				"update-available": updateAvailable ? "yes" : "",
 				source: plugin.source
 			}));
-			// Initialise selection from installed state
-			$tw.wiki.addTiddler(new $tw.Tiddler({
-				title: "$:/temp/TiddlyDesktop/PluginChooser/selected/" + plugin.title,
-				text: isInstalled ? "yes" : "no"
-			}));
+			// Selection: reset to the installed state on open; on a live refresh keep any existing
+			// choice and only seed newly-appeared plugins.
+			var selTitle = "$:/temp/TiddlyDesktop/PluginChooser/selected/" + plugin.title;
+			if(!preserveSelection || !$tw.wiki.tiddlerExists(selTitle)) {
+				$tw.wiki.addTiddler(new $tw.Tiddler({title: selTitle, text: isInstalled ? "yes" : "no"}));
+			}
 		});
+	}
+
+	// ── open chooser ──────────────────────────────────────────────────────────
+
+	$tw.rootWidget.addEventListener("tiddlydesktop-open-plugin-chooser", function(event) {
+		var wikiUrl = event.param;
+		if(!wikiUrl) return false;
+
+		var isOpen = _isWikiOpen(wikiUrl);
+		var isFile = wikiUrl.startsWith("wikifile://");
+
+		// Re-scan the library from disk so the chooser and its update buttons reflect the CURRENT
+		// on-disk plugin versions, not a stale startup snapshot.
+		refreshAvailable();
+
+		$tw.wiki.addTiddler(new $tw.Tiddler({
+			title: "$:/temp/TiddlyDesktop/PluginChooser/target",
+			text: wikiUrl,
+			"wiki-open": isOpen ? "yes" : "no",
+			"wiki-type": isFile ? "file" : "folder"
+		}));
+		$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/TiddlyDesktop/PluginChooser/search", text: ""}));
+		$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/TiddlyDesktop/PluginChooser/status", text: ""}));
+
+		// Remove stale available/selected tiddlers, then populate fresh (resetting selection).
+		_clearChooserTiddlers(["available", "selected"]);
+		populateChooserAvailable(false);
 
 		return false;
 	});
@@ -211,6 +222,41 @@ exports.startup = function() {
 		});
 		if(rescan) { setTimeout(function() { _scanAllUpdates(availableByTitle, fs, path); }, 200); }
 	});
+
+	// ── live disk watch ─────────────────────────────────────────────────────────
+	// Watch the plugin library on disk. When a plugin's files change there (a rebuild, an app
+	// update, or an external TIDDLYWIKI_PLUGIN_PATH edit), re-scan so the wiki-list "updates
+	// available" badge and any open chooser reflect the newer versions live — no restart needed.
+	// fs.watch isn't recursive on Linux, so we watch each level explicitly: the roots, the author
+	// dirs, and each plugin dir (where plugin.info — the version source — lives).
+	var _watchers = [], _rescanTimer = null;
+	function _setupWatchers() {
+		_watchers.forEach(function(w) { try { w.close(); } catch(_e) {} });
+		_watchers = [];
+		var dirs = Object.create(null);
+		pluginPaths.forEach(function(root) {
+			dirs[root] = true;
+			try { fs.readdirSync(root).forEach(function(a) { var ad = path.join(root, a); if(_isDir(ad, fs)) { dirs[ad] = true; } }); } catch(_e) {}
+		});
+		available.forEach(function(p) { if(p.path) { dirs[p.path] = true; } });
+		Object.keys(dirs).forEach(function(d) {
+			try { if(fs.existsSync(d)) { _watchers.push(fs.watch(d, function() { _scheduleRescan(); })); } } catch(_e) {}
+		});
+	}
+	function _scheduleRescan() {
+		if(_rescanTimer) { clearTimeout(_rescanTimer); }
+		_rescanTimer = setTimeout(function() {
+			_rescanTimer = null;
+			refreshAvailable();
+			_setupWatchers();   // the plugin set may have changed → re-establish watches
+			_scanAllUpdates(availableByTitle, fs, path);   // refresh the wiki-list badges
+			// If the chooser is open, refresh its rows (and update buttons) in place.
+			if($tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/target")) {
+				populateChooserAvailable(true);
+			}
+		}, 400);
+	}
+	try { _setupWatchers(); } catch(e) {}
 };
 
 // ── helpers ───────────────────────────────────────────────────────────────────
