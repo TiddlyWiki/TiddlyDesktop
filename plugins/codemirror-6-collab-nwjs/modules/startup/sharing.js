@@ -507,7 +507,7 @@ exports.startup = function() {
 	// empty diff), and resolves to "use-mine" | "use-theirs" | "merge" (with an edited
 	// merged-text). onResolve(resolution, remoteFields, merged).
 	var CONFLICT_TEXT_CAP = 50000;
-	var CONFLICT_FIELD_EXCLUDE = {text:1, title:1, modified:1, created:1, _canonical_uri:1, bag:1, revision:1};
+	var CONFLICT_FIELD_EXCLUDE = {text:1, title:1, modified:1, modifier:1, created:1, _canonical_uri:1, bag:1, revision:1};
 	function _showConflict(title, localTiddler, remoteFields, onResolve) {
 		var conflictTiddler = "$:/temp/collab/conflict/" + title;
 		var fieldsTiddler   = "$:/temp/collab/conflict-fields/" + title;
@@ -655,12 +655,23 @@ exports.startup = function() {
 	// joined, dates already normalised to ISO by _serialise, _canonical_uri already
 	// excluded as a per-machine ref). This is the single definition of a tiddler's
 	// "content identity" — both the checksum and _reconcile's equality test use it, so
-	// they can never disagree. Includes every shared field (text, tags, type, modified,
-	// custom fields…), so divergence in ANY field is detected.
+	// they can never disagree. Includes every shared field (text, tags, type, custom
+	// fields…), so divergence in ANY of them is detected.
+	//
+	// `modifier` is EXCLUDED here (but, unlike `modified`, still carried on the wire by
+	// _serialise so a genuine edit propagates the editor's signature). It is per-edit
+	// attribution stamped from $:/status/UserName: two peers editing the same tiddler end
+	// up with byte-identical content differing ONLY in `modifier`, and counting that as a
+	// content change made _reconcile keep adopting the other side's copy (restamping
+	// `modified`), ping-ponging and re-dirtying the wiki ~1s after every save. Dropping it
+	// from the identity means a modifier-only difference is "no change" (no apply, no
+	// dirty), while a real edit — which also changes text/tags/etc — still rides along and
+	// carries the editor's modifier with it.
 	function _contentString(serialised) {
 		if(!serialised) { return ""; }
 		var keys = Object.keys(serialised).sort(), parts = [];
 		for(var i = 0; i < keys.length; i++) {
+			if(keys[i] === "modifier") { continue; }
 			var v = serialised[keys[i]];
 			parts.push(keys[i] + "\x00" + (Array.isArray(v) ? v.join("\x01") : String(v)));
 		}

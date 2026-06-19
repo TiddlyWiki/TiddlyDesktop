@@ -82,6 +82,27 @@ WikiFileWindow.prototype.onloaded = function(event) {
 // Load handler for iframe
 WikiFileWindow.prototype.onloadiframe = function() {
 	var self = this;
+	// onloadiframe runs on EVERY iframe load, including in-place reloads (Ctrl-R) — the
+	// NW window survives, only the iframe's document/window is replaced. The bridges
+	// below each own a setInterval drain loop (and the WS/LAN ones own live sockets);
+	// previously they were torn down only when the NW window CLOSED, so every reload
+	// stacked another full set on top of the old ones. Two WS drain loops then raced
+	// over the same (new) command queue with different socket pools, so send/terminate
+	// ops landed in the wrong pool and were silently dropped — and the pre-reload relay
+	// socket was never closed — which is why collab could not reconnect after a reload.
+	// Run the previous load's teardown first, then rebuild from a clean slate. A single
+	// close handler (bound once) drains whatever is registered for the current load.
+	if(self._iframeTeardowns) {
+		self._iframeTeardowns.forEach(function(fn) { try { fn(); } catch(_e) {} });
+	}
+	self._iframeTeardowns = [];
+	if(!self._iframeCloseBound) {
+		self._iframeCloseBound = true;
+		self.window_nwjs.once("close", function() {
+			(self._iframeTeardowns || []).forEach(function(fn) { try { fn(); } catch(_e) {} });
+			self._iframeTeardowns = [];
+		});
+	}
 	// Get the mutation observer prototype for the window
 	var MutationObserver = this.window_nwjs.window.MutationObserver;
 	// Enable saving
@@ -201,7 +222,7 @@ WikiFileWindow.prototype.onloadiframe = function() {
 				});
 			} catch(_e) {}
 		}, 200);
-		self.window_nwjs.once("close", function() { clearInterval(_queueTimer); });
+		self._iframeTeardowns.push(function() { clearInterval(_queueTimer); });
 		// Shell.openExternal bridge (GUI call — not affected by nwdisable).
 		self.iframe.contentWindow._nwjsOpenExternal = function(url) {
 			// Remember which window opened an external URL, so the OAuth deep-link return
@@ -255,7 +276,7 @@ WikiFileWindow.prototype.onloadiframe = function() {
 				}
 			} catch(_e) {}
 		}, 100);
-		self.window_nwjs.once("close", function() { clearInterval(_fileTimer); });
+		self._iframeTeardowns.push(function() { clearInterval(_fileTimer); });
 		// WebSocket bridge — same queue-drain pattern as the HTTP bridge above.
 		// All socket creation and event dispatch happen inside the parent's setInterval
 		// tick (browser context) to avoid NW.js cross-context callback issues.
@@ -312,7 +333,7 @@ WikiFileWindow.prototype.onloadiframe = function() {
 				}
 			} catch(_e) {}
 		}, 50);
-		self.window_nwjs.once("close", function() {
+		self._iframeTeardowns.push(function() {
 			clearInterval(_wsTimer);
 			Object.keys(_wsPool).forEach(function(id) { try { _wsPool[id].terminate(); } catch(_e) {} });
 			_wsPool = {};
@@ -379,7 +400,7 @@ WikiFileWindow.prototype.onloadiframe = function() {
 				}
 			} catch(_e) {}
 		}, 50);
-		self.window_nwjs.once("close", function() {
+		self._iframeTeardowns.push(function() {
 			clearInterval(_lanTimer);
 			if(_lanNode) { try { _lanNode.close(); } catch(_e) {} _lanNode = null; }
 		});

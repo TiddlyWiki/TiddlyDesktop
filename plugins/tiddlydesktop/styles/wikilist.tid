@@ -117,6 +117,15 @@ tags: $:/tags/Stylesheet
 	margin-right: 1em;
 }
 
+/* The Convert/Plugins buttons are <$reveal>s that hide via the `hidden` attribute, not by
+   emitting nothing. The UA rule `[hidden] { display: none }` (specificity 0,1,0) loses to the
+   `display: inline-block` above (0,3,0), so a hidden reveal stayed laid out as an empty box —
+   contributing its margin-right: 1em as a dangling gap. Re-assert the hide at matching
+   specificity so a hidden item leaves no space (and flips back to inline-block when shown). */
+.td-wikilist .td-wiki-toolbar-item[hidden] {
+	display: none;
+}
+
 /* Per-row tag pills: each is wrapped in this element so the "pop" storyview always has a real,
    transformable element as the list item's first DOM node (the tag-body/$wikify content can
    momentarily be a text node, which makes pop skip the animation). inline-block so the pills
