@@ -27,6 +27,7 @@ Row/Advanced: για προχωρημένους
 Row/Plugins: πρόσθετα
 Advanced/Backups: Αντίγραφα ασφαλείας
 Advanced/SaveBackup: Αποθήκευση αντιγράφου ασφαλείας σε κάθε αποθήκευση
+Advanced/KeepBackups: Αντίγραφα προς διατήρηση (κενό = όλα)
 Advanced/RevealBackups: εμφάνιση αντιγράφων ασφαλείας
 Advanced/ServerNote: Αυτές οι επιλογές ελέγχουν πώς ο φάκελος wiki διανέμεται μέσω HTTP. Τίθενται σε ισχύ την επόμενη φορά που θα ανοίξει ο φάκελος wiki.
 Advanced/Server: Διακομιστής

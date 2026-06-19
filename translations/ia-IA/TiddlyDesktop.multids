@@ -27,6 +27,7 @@ Row/Advanced: avantiate
 Row/Plugins: plugins
 Advanced/Backups: Copias de reserva
 Advanced/SaveBackup: Salveguardar un copia de reserva a cata salveguarda
+Advanced/KeepBackups: Copias de reserva a mantener (vacue = totes)
 Advanced/RevealBackups: revelar copias de reserva
 Advanced/ServerNote: Iste optiones controla como le dossier wiki es servite via HTTP. Illos entra in vigor le proxime vice que le dossier wiki es aperite.
 Advanced/Server: Servitor

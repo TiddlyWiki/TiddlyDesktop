@@ -5,7 +5,7 @@ Saving support for TiddlyWiki5 and TiddlyWiki Classic
 "use strict";
 
 // Helper to enable TiddlyFox-style saving for a window
-exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn) {
+exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn,backupCountFn) {
 	// Create the message box
 	var messageBox = doc.createElement("div");
 	messageBox.id = "tiddlyfox-message-box";
@@ -27,7 +27,7 @@ exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn) {
 		}
 		// Backup the existing file (if any)
 		if(areBackupsEnabledFn() && !isClassic) {
-			backupFile(filepath);
+			backupFile(filepath,backupCountFn ? backupCountFn() : "");
 		}
 		// Save the file
 		saveFile(filepath,content);
@@ -118,8 +118,9 @@ function saveFile(filepath,content) {
 	fs.writeFileSync(filepath,content);
 }
 
-// Helper function to backup a file by copying it to the backup folder
-function backupFile(filepath) {
+// Helper function to backup a file by copying it to the backup folder. `keepText` is the
+// per-wiki "number of backups to keep" string (empty = keep all).
+function backupFile(filepath,keepText) {
 	var fs = require("fs"),
 		path = require("path");
 	// Backup the file if it exists
@@ -143,19 +144,18 @@ function backupFile(filepath) {
 		// Copy the existing file to the backup
 		$tw.utils.createDirectory(path.dirname(backupPath));
 		fs.writeFileSync(backupPath,fs.readFileSync(filepath)); // For some reason $tw.utils.copyFile() doesn't work here
-		// Enforce the configured retention limit (keep only the most recent N backups).
-		pruneBackups(filepath,backupSubPath,ext);
+		// Enforce the per-wiki retention limit (keep only the most recent N backups).
+		pruneBackups(filepath,backupSubPath,ext,keepText);
 	}
 }
 
-// Delete the oldest backups of `filepath` in `backupSubPath` beyond the configured count.
-// $:/TiddlyDesktop/BackupCount holds the number to keep; empty / non-numeric / <= 0 means
-// "keep all" (no pruning), which is the default when the tiddler is absent.
-function pruneBackups(filepath,backupSubPath,ext) {
+// Delete the oldest backups of `filepath` in `backupSubPath` beyond `keepText` (the per-wiki
+// "number of backups to keep"). Empty / non-numeric / <= 0 means "keep all" (no pruning).
+function pruneBackups(filepath,backupSubPath,ext,keepText) {
 	var fs = require("fs"),
 		path = require("path");
-	var keepText = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupCount","").trim(),
-		keep = parseInt(keepText,10);
+	keepText = (keepText || "").trim();
+	var keep = parseInt(keepText,10);
 	if(!keepText || isNaN(keep) || keep <= 0) { return; }
 	// Backups are named "<basename>.<timestamp>[ n]<ext>" (see above), so match that prefix
 	// and extension. Filtering by name keeps us from touching other wikis' backups if they

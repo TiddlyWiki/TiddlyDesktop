@@ -27,6 +27,7 @@ Row/Advanced: напредно
 Row/Plugins: приклучоци
 Advanced/Backups: Резервни копии
 Advanced/SaveBackup: Зачувај резервна копија при секое зачувување
+Advanced/KeepBackups: Резерви за чување (празно = сите)
 Advanced/RevealBackups: прикажи резервни копии
 Advanced/ServerNote: Овие опции контролираат како вики-папката се служи преку HTTP. Стапуваат во сила следниот пат кога ќе се отвори вики-папката.
 Advanced/Server: Сервер

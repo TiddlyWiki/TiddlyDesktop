@@ -27,6 +27,7 @@ Row/Advanced: дополнительно
 Row/Plugins: плагины
 Advanced/Backups: Резервные копии
 Advanced/SaveBackup: Сохранять резервную копию при каждом сохранении
+Advanced/KeepBackups: Резервных копий (пусто = все)
 Advanced/RevealBackups: показать резервные копии
 Advanced/ServerNote: Эти параметры определяют, как папка вики раздаётся по HTTP. Они вступают в силу при следующем открытии папки вики.
 Advanced/Server: Сервер

@@ -27,6 +27,7 @@ Row/Advanced: pokročilé
 Row/Plugins: pluginy
 Advanced/Backups: Zálohy
 Advanced/SaveBackup: Uložit zálohu při každém uložení
+Advanced/KeepBackups: Počet záloh k zachování (prázdné = vše)
 Advanced/RevealBackups: zobrazit zálohy
 Advanced/ServerNote: Tyto možnosti řídí, jak je složka wiki poskytována přes HTTP. Projeví se při příštím otevření složky wiki.
 Advanced/Server: Server

@@ -90,8 +90,11 @@ WikiFileWindow.prototype.onloadiframe = function() {
 		},
 		loadFileTextFn = function() {
 			return 	fs.readFileSync(self.pathname,"utf8");
+		},
+		backupCountFn = function() {
+			return $tw.wiki.getTiddlerText(self.getConfigTitle("backup-count"),"");
 		};
-	$tw.desktop.utils.saving.enableSaving(this.iframe.contentDocument,areBackupsEnabledFn,loadFileTextFn);
+	$tw.desktop.utils.saving.enableSaving(this.iframe.contentDocument,areBackupsEnabledFn,loadFileTextFn,backupCountFn);
 	// Trap links
 	$tw.desktop.utils.links.trapLinks(this.iframe.contentDocument);
 	// Intercept cross-browser drag-drop imports so tiddlers dragged from Firefox

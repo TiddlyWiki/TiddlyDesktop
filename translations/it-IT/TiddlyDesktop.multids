@@ -27,6 +27,7 @@ Row/Advanced: avanzate
 Row/Plugins: plugin
 Advanced/Backups: Backup
 Advanced/SaveBackup: Salva un backup a ogni salvataggio
+Advanced/KeepBackups: Backup da conservare (vuoto = tutti)
 Advanced/RevealBackups: mostra i backup
 Advanced/ServerNote: Queste opzioni controllano come la cartella wiki viene servita via HTTP. Hanno effetto alla prossima apertura della cartella wiki.
 Advanced/Server: Server

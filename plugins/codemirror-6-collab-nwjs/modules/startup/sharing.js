@@ -268,14 +268,19 @@ exports.startup = function() {
 			// the content identity/checksum (so an attachment with different local paths on
 			// two peers is NOT seen as diverged).
 			if(f === "_canonical_uri") { return; }
+			// `modified` is deliberately EXCLUDED from both the wire and the content checksum.
+			// It is a per-machine wall-clock stamp: peers' clocks differ, and a save/import can
+			// re-stamp it, so including it made content that is otherwise identical look changed —
+			// driving needless re-fetches and (for a Getter) re-dirtying the wiki after every save
+			// as the owner's copy echoed back with a different timestamp. Each peer keeps its OWN
+			// `modified` instead (stamped locally in _applyRemote on receive). `created` is kept:
+			// it is stable identity and matches once the tiddler has been Got.
+			if(f === "modified") { return; }
 			var v = tiddler.fields[f];
-			// Dates MUST be serialised in TiddlyWiki's own format (YYYYMMDDHHMMSSmmm), the
-			// same as getFieldString. A receiver builds the tiddler with `new $tw.Tiddler`,
-			// whose modified/created parsing expects exactly this; an ISO string would be
-			// mis-parsed (e.g. 2026-06-15 → 2026-01-01), so the round-tripped date would
-			// differ from the owner's, the content checksum would never match, and every
-			// periodic manifest would re-fetch and re-write the tiddler — dirtying the wiki
-			// every 20s. TW format round-trips losslessly, so modified/created stay in sync.
+			// Remaining dates (e.g. `created`) MUST be serialised in TiddlyWiki's own format
+			// (YYYYMMDDHHMMSSmmm), the same as getFieldString — a receiver rebuilds with
+			// `new $tw.Tiddler`, whose date parsing expects exactly this (an ISO string would be
+			// mis-parsed), so the value round-trips losslessly and the checksum stays in sync.
 			out[f] = (v instanceof Date) ? $tw.utils.stringifyDate(v) : v;
 		});
 		return out;
@@ -580,6 +585,10 @@ exports.startup = function() {
 		if(_localCu && _localCu.fields._canonical_uri && !fields._canonical_uri) {
 			fields._canonical_uri = _localCu.fields._canonical_uri;
 		}
+		// Stamp OUR own modified time on receive — `modified` is never carried over the wire
+		// (see _serialise), so each wiki has a locally-meaningful timestamp and a timestamp
+		// difference can never count as a content change.
+		fields.modified = new Date();
 		suppressEcho[title] = true;
 		try {
 			$tw.wiki.addTiddler(new $tw.Tiddler(fields));

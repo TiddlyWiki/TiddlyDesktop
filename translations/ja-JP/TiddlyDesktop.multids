@@ -27,6 +27,7 @@ Row/Advanced: 詳細
 Row/Plugins: プラグイン
 Advanced/Backups: バックアップ
 Advanced/SaveBackup: 保存のたびにバックアップを保存
+Advanced/KeepBackups: 保持するバックアップ数（空＝すべて）
 Advanced/RevealBackups: バックアップを表示
 Advanced/ServerNote: これらのオプションは、WikiフォルダーをHTTP経由でどのように配信するかを制御します。次回Wikiフォルダーを開いたときに有効になります。
 Advanced/Server: サーバー

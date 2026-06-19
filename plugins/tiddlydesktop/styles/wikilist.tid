@@ -262,6 +262,17 @@ tags: $:/tags/Stylesheet
 	border-color: <<colour wikilist-item-border-hover>>;
 }
 
+.td-wiki-backup-count {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	margin-top: 0.7em;
+}
+
+.td-wiki-backup-count input {
+	width: 8em;
+}
+
 .td-wiki-advanced-toggle {
 	display: flex;
 	align-items: center;

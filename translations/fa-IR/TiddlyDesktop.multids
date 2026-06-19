@@ -27,6 +27,7 @@ Row/Advanced: پیشرفته
 Row/Plugins: افزونه‌ها
 Advanced/Backups: پشتیبان‌گیری‌ها
 Advanced/SaveBackup: ذخیرهٔ یک نسخهٔ پشتیبان در هر بار ذخیره
+Advanced/KeepBackups: تعداد پشتیبان‌ها (خالی = همه)
 Advanced/RevealBackups: نمایش پشتیبان‌ها
 Advanced/ServerNote: این گزینه‌ها نحوهٔ ارائهٔ پوشهٔ ویکی از طریق HTTP را کنترل می‌کنند. در دفعهٔ بعدی که پوشهٔ ویکی باز شود اعمال می‌شوند.
 Advanced/Server: سرور

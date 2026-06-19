@@ -27,6 +27,7 @@ Row/Advanced: geavanceerd
 Row/Plugins: plug-ins
 Advanced/Backups: Back-ups
 Advanced/SaveBackup: Een back-up maken bij elke keer opslaan
+Advanced/KeepBackups: Back-ups bewaren (leeg = alle)
 Advanced/RevealBackups: back-ups tonen
 Advanced/ServerNote: Deze opties bepalen hoe de wiki-map via HTTP wordt aangeboden. Ze worden van kracht de volgende keer dat de wiki-map wordt geopend.
 Advanced/Server: Server

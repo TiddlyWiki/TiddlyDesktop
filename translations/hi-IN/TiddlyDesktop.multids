@@ -27,6 +27,7 @@ Row/Advanced: उन्नत
 Row/Plugins: प्लगइन
 Advanced/Backups: बैकअप
 Advanced/SaveBackup: हर बार सहेजने पर एक बैकअप सहेजें
+Advanced/KeepBackups: रखने योग्य बैकअप (खाली = सभी)
 Advanced/RevealBackups: बैकअप दिखाएँ
 Advanced/ServerNote: ये विकल्प नियंत्रित करते हैं कि विकि फ़ोल्डर HTTP पर कैसे परोसा जाए। ये अगली बार विकि फ़ोल्डर खोलने पर प्रभावी होते हैं।
 Advanced/Server: सर्वर

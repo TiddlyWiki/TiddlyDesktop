@@ -27,6 +27,7 @@ Row/Advanced: avancerat
 Row/Plugins: tillägg
 Advanced/Backups: Säkerhetskopior
 Advanced/SaveBackup: Spara en säkerhetskopia vid varje sparning
+Advanced/KeepBackups: Säkerhetskopior att behålla (tomt = alla)
 Advanced/RevealBackups: visa säkerhetskopior
 Advanced/ServerNote: Dessa alternativ styr hur wiki-mappen serveras över HTTP. De träder i kraft nästa gång wiki-mappen öppnas.
 Advanced/Server: Server

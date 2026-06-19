@@ -27,6 +27,7 @@ Row/Advanced: מתקדם
 Row/Plugins: תוספים
 Advanced/Backups: גיבויים
 Advanced/SaveBackup: שמור גיבוי בכל שמירה
+Advanced/KeepBackups: גיבויים לשמירה (ריק = הכול)
 Advanced/RevealBackups: הצג גיבויים
 Advanced/ServerNote: אפשרויות אלה קובעות כיצד תיקיית הויקי מוגשת באמצעות HTTP. הן ייכנסו לתוקף בפעם הבאה שתיקיית הויקי תיפתח.
 Advanced/Server: שרת

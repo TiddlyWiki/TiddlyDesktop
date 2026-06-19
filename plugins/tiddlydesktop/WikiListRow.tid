@@ -52,9 +52,11 @@ title: WikiListRow
 {{$:/language/TiddlyDesktop/Row/Remove}}
 </$button>
 </div>
-<div class="td-wiki-toolbar-item">
+<!-- Convert button. For classic wikis (always single-file) it is hidden — and crucially the
+     .td-wiki-toolbar-item wrapper is NOT emitted at all, so it leaves no empty slot / margin.
+     The wrapper class therefore lives on the conditional element itself. -->
 <$list filter="[all[current]prefix[wikifile://]]" variable="ignore">
-<$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/classic/$(currentTiddler)$""" text="yes" tag="div" class="td-file-input-wrapper">
+<$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/classic/$(currentTiddler)$""" text="yes" tag="div" class="td-wiki-toolbar-item td-file-input-wrapper">
 <$button class="tc-btn-invisible td-button td-wikilist-button-convert">
 {{$:/core/images/folder}} {{$:/language/TiddlyDesktop/Row/ToFolder}}
 </$button>
@@ -63,7 +65,7 @@ title: WikiListRow
 </$list>
 <$list filter="[all[current]prefix[wikifolder://]]" variable="ignore">
 <$set name="convertDefaultName" value={{{ [<currentTiddler>removeprefix[wikifolder://]split[/]last[]addsuffix[.html]] }}}>
-<div class="td-file-input-wrapper">
+<div class="td-wiki-toolbar-item td-file-input-wrapper">
 <$button class="tc-btn-invisible td-button td-wikilist-button-convert">
 {{$:/core/images/file}} {{$:/language/TiddlyDesktop/Row/ToFile}}
 </$button>
@@ -71,7 +73,6 @@ title: WikiListRow
 </div>
 </$set>
 </$list>
-</div>
 <div class="td-wiki-toolbar-item">
 <$reveal type="match" state="""$:/temp/TiddlyDesktop/state/advanced/$(currentTiddler)$""" text="open" tag="span">
 <$button set="""$:/temp/TiddlyDesktop/state/advanced/$(currentTiddler)$""" setTo="" class="tc-btn-invisible td-button td-wikilist-button-advanced">{{$:/language/TiddlyDesktop/Row/Advanced}} ▾</$button>
@@ -80,13 +81,13 @@ title: WikiListRow
 <$button set="""$:/temp/TiddlyDesktop/state/advanced/$(currentTiddler)$""" setTo="open" class="tc-btn-invisible td-button td-wikilist-button-advanced">{{$:/language/TiddlyDesktop/Row/Advanced}} ▸</$button>
 </$reveal>
 </div>
-<div class="td-wiki-toolbar-item">
-<$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/classic/$(currentTiddler)$""" text="yes" tag="span">
+<!-- Plugins button — irrelevant for classic wikis, so hidden with no empty wrapper/margin
+     (the .td-wiki-toolbar-item class is on the reveal, which emits nothing when classic). -->
+<$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/classic/$(currentTiddler)$""" text="yes" tag="div" class="td-wiki-toolbar-item">
 <$button message="tiddlydesktop-open-plugin-chooser" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-plugins">
 {{$:/language/TiddlyDesktop/Row/Plugins}}<$list filter="[<currentTiddler>addprefix[$:/temp/TiddlyDesktop/plugin-updates/]get[text]!match[]!match[0]]" variable="updateCount"><span class="td-plugin-update-badge" title={{$:/language/TiddlyDesktop/Row/PluginUpdates}}><$text text=<<updateCount>>/></span></$list>
 </$button>
 </$reveal>
-</div>
 <div class="td-wiki-toolbar-item">
 <!-- Use <$let currentTiddler=…> (NOT <$tiddler>) to point the tag picker at this wiki's
      wiki-tags config tiddler. <$tiddler> refreshSelf's whenever the referenced tiddler's
@@ -107,6 +108,10 @@ title: WikiListRow
 <label class="td-wiki-advanced-toggle">
 <$checkbox tiddler="""$:/TiddlyDesktop/Config/disable-backups/$(currentTiddler)$""" field="text" checked="no" unchecked="yes" default="no"/>
 <span>{{$:/language/TiddlyDesktop/Advanced/SaveBackup}}</span>
+</label>
+<label class="td-wiki-advanced-field td-wiki-backup-count">
+<span>{{$:/language/TiddlyDesktop/Advanced/KeepBackups}}</span>
+<$edit-text tag="input" type="number" tiddler="""$:/TiddlyDesktop/Config/backup-count/$(currentTiddler)$""" default="" placeholder=""/>
 </label>
 <div class="td-wiki-advanced-actions">
 <$button message="tiddlydesktop-reveal-backups-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-reveal-backups">{{$:/language/TiddlyDesktop/Advanced/RevealBackups}}</$button>

@@ -27,6 +27,7 @@ Row/Advanced: 進階
 Row/Plugins: 外掛
 Advanced/Backups: 備份
 Advanced/SaveBackup: 每次儲存時儲存一份備份
+Advanced/KeepBackups: 保留的備份數（留空＝全部）
 Advanced/RevealBackups: 顯示備份
 Advanced/ServerNote: 這些選項控制 wiki 資料夾如何透過 HTTP 提供服務。它們將在下次開啟該 wiki 資料夾時生效。
 Advanced/Server: 伺服器

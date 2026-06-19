@@ -27,6 +27,7 @@ Row/Advanced: avanceret
 Row/Plugins: plugins
 Advanced/Backups: Sikkerhedskopier
 Advanced/SaveBackup: Gem en sikkerhedskopi ved hver lagring
+Advanced/KeepBackups: Sikkerhedskopier at beholde (tom = alle)
 Advanced/RevealBackups: vis sikkerhedskopier
 Advanced/ServerNote: Disse indstillinger styrer, hvordan wiki-mappen serveres over HTTP. De træder i kraft, næste gang wiki-mappen åbnes.
 Advanced/Server: Server

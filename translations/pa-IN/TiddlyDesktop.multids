@@ -27,6 +27,7 @@ Row/Advanced: ਉੱਨਤ
 Row/Plugins: ਪਲੱਗਇਨ
 Advanced/Backups: ਬੈਕਅੱਪ
 Advanced/SaveBackup: ਹਰ ਵਾਰ ਸੰਭਾਲਣ 'ਤੇ ਇੱਕ ਬੈਕਅੱਪ ਸੰਭਾਲੋ
+Advanced/KeepBackups: ਰੱਖਣ ਲਈ ਬੈਕਅੱਪ (ਖਾਲੀ = ਸਾਰੇ)
 Advanced/RevealBackups: ਬੈਕਅੱਪ ਵਿਖਾਓ
 Advanced/ServerNote: ਇਹ ਚੋਣਾਂ ਕੰਟਰੋਲ ਕਰਦੀਆਂ ਹਨ ਕਿ ਵਿਕੀ ਫੋਲਡਰ HTTP ਉੱਤੇ ਕਿਵੇਂ ਪਰੋਸਿਆ ਜਾਂਦਾ ਹੈ। ਇਹ ਅਗਲੀ ਵਾਰ ਵਿਕੀ ਫੋਲਡਰ ਖੋਲ੍ਹਣ 'ਤੇ ਲਾਗੂ ਹੁੰਦੀਆਂ ਹਨ।
 Advanced/Server: ਸਰਵਰ

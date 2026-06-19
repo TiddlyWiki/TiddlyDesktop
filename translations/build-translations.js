@@ -29,7 +29,7 @@ var KEY_ORDER = [
 	"List/SearchPlaceholder","List/ClearSearch",
 	"Row/Untitled","Row/Open","Row/Reveal","Row/Remove","Row/ToFolder","Row/ToFile",
 	"Row/ToFolderTooltip","Row/ToFileTooltip","Row/Advanced","Row/Plugins",
-	"Advanced/Backups","Advanced/SaveBackup","Advanced/RevealBackups","Advanced/ServerNote",
+	"Advanced/Backups","Advanced/SaveBackup","Advanced/KeepBackups","Advanced/RevealBackups","Advanced/ServerNote",
 	"Advanced/Server","Advanced/Host","Advanced/Port","Advanced/PathPrefix","Advanced/RootTiddler",
 	"Advanced/Gzip","Advanced/Access","Advanced/Credentials","Advanced/AnonUsername",
 	"Advanced/Readers","Advanced/Writers",
@@ -632,6 +632,40 @@ Object.keys(TAB_CAPTIONS).forEach(function(lang) {
 	T[lang]["PluginChooser/Tab/plugin"]   = v[0];
 	T[lang]["PluginChooser/Tab/language"] = v[1];
 	T[lang]["PluginChooser/Tab/theme"]    = v[2];
+});
+
+// Per-wiki "Backups to keep (empty = all)" label in the advanced options.
+var KEEP_BACKUPS = {
+	"de-DE": "Backups behalten (leer = alle)",
+	"fr-FR": "Sauvegardes à conserver (vide = toutes)",
+	"es-ES": "Copias a conservar (vacío = todas)",
+	"ca-ES": "Còpies a conservar (buit = totes)",
+	"it-IT": "Backup da conservare (vuoto = tutti)",
+	"pt-BR": "Backups a manter (vazio = todos)",
+	"pt-PT": "Backups a manter (vazio = todos)",
+	"nl-NL": "Back-ups bewaren (leeg = alle)",
+	"da-DK": "Sikkerhedskopier at beholde (tom = alle)",
+	"sv-SE": "Säkerhetskopior att behålla (tomt = alla)",
+	"pl-PL": "Kopie do zachowania (puste = wszystkie)",
+	"cs-CZ": "Počet záloh k zachování (prázdné = vše)",
+	"sk-SK": "Počet záloh na zachovanie (prázdne = všetky)",
+	"sl-SI": "Število varnostnih kopij (prazno = vse)",
+	"mk-MK": "Резерви за чување (празно = сите)",
+	"ru-RU": "Резервных копий (пусто = все)",
+	"el-GR": "Αντίγραφα προς διατήρηση (κενό = όλα)",
+	"he-IL": "גיבויים לשמירה (ריק = הכול)",
+	"ar-PS": "النسخ الاحتياطية المحفوظة (فارغ = الكل)",
+	"fa-IR": "تعداد پشتیبان‌ها (خالی = همه)",
+	"hi-IN": "रखने योग्य बैकअप (खाली = सभी)",
+	"pa-IN": "ਰੱਖਣ ਲਈ ਬੈਕਅੱਪ (ਖਾਲੀ = ਸਾਰੇ)",
+	"ia-IA": "Copias de reserva a mantener (vacue = totes)",
+	"ja-JP": "保持するバックアップ数（空＝すべて）",
+	"ko-KR": "보관할 백업 수 (비우면 전체)",
+	"zh-Hans": "保留的备份数（留空＝全部）",
+	"zh-Hant": "保留的備份數（留空＝全部）"
+};
+Object.keys(KEEP_BACKUPS).forEach(function(lang) {
+	if(T[lang]) { T[lang]["Advanced/KeepBackups"] = KEEP_BACKUPS[lang]; }
 });
 
 // Variants reuse a base translation.

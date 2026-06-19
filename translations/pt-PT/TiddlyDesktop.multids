@@ -27,6 +27,7 @@ Row/Advanced: avançado
 Row/Plugins: plugins
 Advanced/Backups: Cópias de segurança
 Advanced/SaveBackup: Guardar uma cópia de segurança em cada gravação
+Advanced/KeepBackups: Backups a manter (vazio = todos)
 Advanced/RevealBackups: revelar cópias de segurança
 Advanced/ServerNote: Estas opções controlam como a pasta wiki é servida por HTTP. Entram em vigor da próxima vez que a pasta wiki for aberta.
 Advanced/Server: Servidor

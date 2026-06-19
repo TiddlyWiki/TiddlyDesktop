@@ -27,6 +27,7 @@ Row/Advanced: متقدم
 Row/Plugins: الإضافات
 Advanced/Backups: النسخ الاحتياطية
 Advanced/SaveBackup: حفظ نسخة احتياطية عند كل حفظ
+Advanced/KeepBackups: النسخ الاحتياطية المحفوظة (فارغ = الكل)
 Advanced/RevealBackups: إظهار النسخ الاحتياطية
 Advanced/ServerNote: تتحكم هذه الخيارات في كيفية تقديم مجلد الويكي عبر HTTP. تصبح سارية المفعول في المرة القادمة التي يُفتح فيها مجلد الويكي.
 Advanced/Server: الخادم

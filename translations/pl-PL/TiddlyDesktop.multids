@@ -27,6 +27,7 @@ Row/Advanced: zaawansowane
 Row/Plugins: wtyczki
 Advanced/Backups: Kopie zapasowe
 Advanced/SaveBackup: Zapisuj kopię zapasową przy każdym zapisie
+Advanced/KeepBackups: Kopie do zachowania (puste = wszystkie)
 Advanced/RevealBackups: pokaż kopie zapasowe
 Advanced/ServerNote: Te opcje określają, jak folder wiki jest udostępniany przez HTTP. Zaczynają obowiązywać przy następnym otwarciu folderu wiki.
 Advanced/Server: Serwer

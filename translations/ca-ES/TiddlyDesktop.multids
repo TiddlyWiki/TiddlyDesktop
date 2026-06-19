@@ -27,6 +27,7 @@ Row/Advanced: avançat
 Row/Plugins: connectors
 Advanced/Backups: Còpies de seguretat
 Advanced/SaveBackup: Desa una còpia de seguretat a cada desada
+Advanced/KeepBackups: Còpies a conservar (buit = totes)
 Advanced/RevealBackups: mostra les còpies de seguretat
 Advanced/ServerNote: Aquestes opcions controlen com es serveix la carpeta wiki per HTTP. Tenen efecte la propera vegada que s’obri la carpeta wiki.
 Advanced/Server: Servidor
