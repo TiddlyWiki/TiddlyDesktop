@@ -40,6 +40,9 @@ Advanced/Credentials: Αρχείο διαπιστευτηρίων
 Advanced/AnonUsername: Ανώνυμο όνομα χρήστη
 Advanced/Readers: Αναγνώστες
 Advanced/Writers: Συντάκτες
+PluginChooser/Tab/plugin: Πρόσθετα
+PluginChooser/Tab/language: Γλώσσες
+PluginChooser/Tab/theme: Θέματα
 PluginChooser/Heading: Διαχείριση προσθέτων
 PluginChooser/Close: Κλείσιμο
 PluginChooser/OpenWarning: Αυτό το wiki είναι αυτή τη στιγμή ανοιχτό. Κλείστε πρώτα το παράθυρό του και μετά κάντε κλικ στο Εφαρμογή.

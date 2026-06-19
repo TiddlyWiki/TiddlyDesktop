@@ -40,6 +40,9 @@ Advanced/Credentials: 認証情報ファイル
 Advanced/AnonUsername: 匿名ユーザー名
 Advanced/Readers: 閲覧者
 Advanced/Writers: 編集者
+PluginChooser/Tab/plugin: プラグイン
+PluginChooser/Tab/language: 言語
+PluginChooser/Tab/theme: テーマ
 PluginChooser/Heading: プラグインの管理
 PluginChooser/Close: 閉じる
 PluginChooser/OpenWarning: このWikiは現在開いています。先にウィンドウを閉じてから「適用」をクリックしてください。

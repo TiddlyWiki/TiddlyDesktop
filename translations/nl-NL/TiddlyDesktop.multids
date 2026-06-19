@@ -40,6 +40,9 @@ Advanced/Credentials: Inloggegevensbestand
 Advanced/AnonUsername: Anonieme gebruikersnaam
 Advanced/Readers: Lezers
 Advanced/Writers: Schrijvers
+PluginChooser/Tab/plugin: Plug-ins
+PluginChooser/Tab/language: Talen
+PluginChooser/Tab/theme: Thema's
 PluginChooser/Heading: Plug-ins beheren
 PluginChooser/Close: Sluiten
 PluginChooser/OpenWarning: Deze wiki is momenteel geopend. Sluit eerst het venster en klik daarna op Toepassen.

@@ -40,6 +40,9 @@ Advanced/Credentials: Fitxer de credencials
 Advanced/AnonUsername: Nom d’usuari anònim
 Advanced/Readers: Lectors
 Advanced/Writers: Escriptors
+PluginChooser/Tab/plugin: Connectors
+PluginChooser/Tab/language: Idiomes
+PluginChooser/Tab/theme: Temes
 PluginChooser/Heading: Gestiona els connectors
 PluginChooser/Close: Tanca
 PluginChooser/OpenWarning: Aquest wiki està obert actualment. Tanqueu-ne primer la finestra i després feu clic a Aplica.

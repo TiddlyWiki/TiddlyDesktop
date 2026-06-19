@@ -40,6 +40,9 @@ Advanced/Credentials: Plik poświadczeń
 Advanced/AnonUsername: Anonimowa nazwa użytkownika
 Advanced/Readers: Czytelnicy
 Advanced/Writers: Piszący
+PluginChooser/Tab/plugin: Wtyczki
+PluginChooser/Tab/language: Języki
+PluginChooser/Tab/theme: Motywy
 PluginChooser/Heading: Zarządzaj wtyczkami
 PluginChooser/Close: Zamknij
 PluginChooser/OpenWarning: To wiki jest obecnie otwarte. Najpierw zamknij jego okno, a następnie kliknij Zastosuj.

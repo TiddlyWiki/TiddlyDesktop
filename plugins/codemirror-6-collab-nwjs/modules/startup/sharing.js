@@ -602,11 +602,15 @@ exports.startup = function() {
 				type:           "collab-tiddler-update",
 				senderDeviceId: deviceId,
 				title:          title,
-				fields:         _serialise(t)
+				fields:         _serialise(t),
+				// Causal token — the base this content descends from (see the live-edit path).
+				baseFp:         syncedText[title]
 			});
-			// Our pushed content is now the common base; clears any prior divergence.
-			_markSynced(title);
-			_clearDiverged(title);
+			// Never advance the base on send (owned OR subscribed): the push is unacknowledged.
+			// Advancing here is what let a stale remote copy clobber a newer local edit (the
+			// "Get tiddler overwritten by the older owner copy" loss) and let a concurrent edit
+			// on the other side vanish. The base advances only on real acknowledgement — adopting
+			// a remote (_applyRemote) or a remote equal to ours arriving (_reconcile equality).
 		}
 	}
 
@@ -905,12 +909,12 @@ exports.startup = function() {
 	// editor closed → reconcile against the saved tiddler; now matches → adopt; still
 	// differs → flag diverged so saving prompts to Resolve instead of silently winning.
 	var editingConflictTimers = {};
-	function _scheduleEditingConflict(title, remoteFields) {
+	function _scheduleEditingConflict(title, remoteFields, remoteBaseFp) {
 		if(editingConflictTimers[title]) { clearTimeout(editingConflictTimers[title]); }
 		editingConflictTimers[title] = setTimeout(function() {
 			delete editingConflictTimers[title];
 			var et = _editingTextOf(title);
-			if(et === null) { _reconcile(title, remoteFields); return; }
+			if(et === null) { _reconcile(title, remoteFields, remoteBaseFp); return; }
 			if((remoteFields.text || "") === et) { _applyRemote(title, remoteFields); return; }
 			if(!divergedRemote[title]) { _setDiverged(title, remoteFields); }
 		}, 800);
@@ -920,7 +924,14 @@ exports.startup = function() {
 	// syncedText so we never silently clobber edits: adopt the side that changed when
 	// only one did, and flag a true both-sides-changed divergence for the user to
 	// Resolve. Ownership is irrelevant here — what matters is who actually edited.
-	function _reconcile(title, remoteFields) {
+	//
+	// `remoteBaseFp` (optional, from the sender's `baseFp` field) is the content the remote
+	// edit DESCENDS FROM — a causal token. It lets us correctly handle the case the bare base
+	// could not: when the sender already incorporated our latest content (so its edit is a
+	// direct successor of ours), fast-forward instead of false-flagging a conflict — which is
+	// what lets us keep the base un-advanced on send (no silent loss) without spamming
+	// conflicts. Absent (older peers) → we fall back to the local-base-only decision.
+	function _reconcile(title, remoteFields, remoteBaseFp) {
 		var local = $tw.wiki.getTiddler(title);
 		if(!local) { _applyRemote(title, remoteFields); return; }
 		var localC  = _contentString(_serialise(local)),
@@ -942,9 +953,16 @@ exports.startup = function() {
 		var editingText = _editingTextOf(title);
 		if(editingText !== null) {
 			if((remoteFields.text || "") === editingText) { _applyRemote(title, remoteFields); }
-			else { _scheduleEditingConflict(title, remoteFields); }
+			else { _scheduleEditingConflict(title, remoteFields, remoteBaseFp); }
 			return;
 		}
+		var localFp = _fp(localC);
+		// Fast-forward: the remote edit was made directly on top of OUR CURRENT content (the
+		// sender had already seen our latest), so we hold nothing it hasn't incorporated → adopt
+		// it. This is the rule that makes "never advance the base on send" safe: a peer that
+		// edits again after adopting our copy is fast-forwarded here rather than false-conflicted,
+		// so we no longer need the premature (loss-causing) base bump on send.
+		if(remoteBaseFp && remoteBaseFp === localFp) { _applyRemote(title, remoteFields); return; }
 		// The 3-way base is authoritative about WHO changed since the last common content — and it
 		// needs NO clock, so it is immune to the two machines' system clocks disagreeing (the cause
 		// of the "owner's copy keeps resetting my edit" report). If only one side changed since the
@@ -952,7 +970,7 @@ exports.startup = function() {
 		// propagates: an in-sync recipient has localC==base, so it adopts the pushed copy.
 		var base = syncedText[title];   // a content checksum (see _markSynced)
 		if(typeof base === "string" && base) {
-			if(_fp(localC) === base)  { _applyRemote(title, remoteFields); return; }  // we didn't change it → take theirs
+			if(localFp === base)      { _applyRemote(title, remoteFields); return; }  // we didn't change it → take theirs
 			if(_fp(remoteC) === base) { _pushLocal(title); return; }                  // they didn't change it → keep ours
 			_setDiverged(title, remoteFields); return;                                // both changed → conflict
 		}
@@ -1277,7 +1295,10 @@ exports.startup = function() {
 				senderDeviceId: deviceId,   // lets the requester tell an owner's answer from a subscriber's
 				title:          title,
 				requestId:      requestId,
-				fields:         _serialise(tiddler)
+				fields:         _serialise(tiddler),
+				// Causal token — the base our served copy descends from, so the requester can
+				// fast-forward / detect concurrency instead of risking a clobber.
+				baseFp:         syncedText[title]
 			});
 		}
 	}
@@ -1379,20 +1400,19 @@ exports.startup = function() {
 				type:           "collab-tiddler-update",
 				senderDeviceId: deviceId,
 				title:          title,
-				fields:         _serialise(tiddler)
+				fields:         _serialise(tiddler),
+				// Causal token: the content this edit DESCENDS FROM (our last agreed base).
+				// The receiver uses it to fast-forward when our edit sits directly on top of
+				// its current content, and to tell a genuine concurrent edit from a stale one.
+				baseFp:         syncedText[title]
 			});
-			// Advance the 3-way base to this edit ONLY for tiddlers WE OWN, and only while
-			// connected. We're authoritative for our own tiddlers — the room converges on our
-			// version — so moving the base forward is safe and keeps our future edits from looking
-			// like conflicts. For a tiddler owned by a PEER we must NOT advance the base on send:
-			// our edit is unconfirmed, and if the owner's periodic manifest re-asserts its older
-			// copy before adopting ours, an advanced base would make us believe we hadn't changed it
-			// and re-adopt the stale copy (the reset bug). Leaving the base at the last agreed
-			// content makes a manifest drift correctly read as "we hold a pending edit" → keep/push
-			// ours. In all other cases (disconnected, or a peer-owned tiddler) the tiddler now
-			// DIVERGES from the kept base, so persist that base so the divergence survives a reload.
-			if(_isConnected() && ownedTiddlers[title]) { _markSynced(title); }
-			else { _persistRoomStateSoon(); }
+			// We do NOT advance the base on SEND (for owned OR subscribed tiddlers). The send is
+			// unacknowledged: advancing here is what silently dropped a concurrent edit on the
+			// other side (it read the late-arriving edit as a no-op against the bumped base). The
+			// base advances only on real evidence of agreement — we adopt a remote (_applyRemote),
+			// or a remote equal to ours arrives (the equality branch of _reconcile). Until then the
+			// tiddler diverges from the kept base, so persist it for divergence-survives-reload.
+			_persistRoomStateSoon();
 		});
 	});
 
@@ -1478,8 +1498,9 @@ exports.startup = function() {
 			var wasManual = !!manualResync[msg.requestId];
 			if(wasManual) { delete manualResync[msg.requestId]; }
 			// Base-aware 3-way reconcile: adopt the side that changed, or flag a true
-			// conflict for the user to resolve (never silently clobber).
-			_reconcile(msg.title, msg.fields);
+			// conflict for the user to resolve (never silently clobber). msg.baseFp is the
+			// causal token (what the served copy descends from).
+			_reconcile(msg.title, msg.fields, msg.baseFp);
 			// A user-triggered Re-sync that turned up a genuine conflict opens the diff
 			// dialog straight away (a background catch-up just leaves the Resolve badge).
 			if(wasManual && divergedRemote[msg.title]) { _openResolveDialog(msg.title); }
@@ -1498,7 +1519,7 @@ exports.startup = function() {
 					&& msg.title
 					&& msg.fields
 					&& (subscribedTiddlers[msg.title] || ownedTiddlers[msg.title])) {
-				_reconcile(msg.title, msg.fields);
+				_reconcile(msg.title, msg.fields, msg.baseFp);
 			}
 			break;
 
@@ -1611,6 +1632,77 @@ exports.startup = function() {
 
 	// ── session lifecycle ─────────────────────────────────────────────────────
 
+	// Full bidirectional manifest exchange with the room: pull every peer's manifest, push
+	// ours, and directly re-request the latest of everything we own or subscribe to. Used on
+	// connect, when a peer joins, AND when a peer becomes verified (see below) — so the room
+	// converges instantly instead of waiting up to one MANIFEST_REVERIFY_MS for the periodic
+	// backstop. Every step is idempotent (recipients compare checksums; responses run through
+	// the base-aware _reconcile), so calling it repeatedly is safe and cannot clobber edits.
+	// Connected to the room with at least one peer present? (gates the manifest retries below
+	// and the periodic backstop, so a quiet or solo session sends nothing.)
+	function _roomActive() {
+		var st = $tw.wiki.getTiddler("$:/temp/collab/status");
+		if(!st || st.fields.status !== "connected") { return false; }
+		return $tw.wiki.filterTiddlers("[prefix[$:/temp/collab/members/]first[]]").length > 0;
+	}
+
+	// The cheap half of convergence: one manifest request + one manifest broadcast (two small
+	// frames). The recipient compares fp checksums and re-fetches only what actually drifted, so
+	// this is near-free to repeat.
+	function _exchangeManifests() {
+		_send({type: "collab-manifest-request", requesterDeviceId: deviceId});
+		_sendManifest();
+	}
+
+	function _convergeWithPeers() {
+		// Request + broadcast manifests (a peer that connected after us would otherwise never
+		// receive ours until it reconnects).
+		_exchangeManifests();
+		// Owner re-sync: pull the latest of our OWN shared tiddlers — while we were away, present
+		// peers may have advanced them (edits sync peer-to-peer even without the owner).
+		Object.keys(ownedTiddlers).forEach(function(title) {
+			_requestFromOwner(title);
+		});
+		// Catch-up: directly re-request every tiddler we subscribe to, rather than waiting for the
+		// manifest round-trip (which can race or be missed). Responses reconcile against the 3-way
+		// base — conflicts flag for the user, nothing is clobbered.
+		Object.keys(subscribedTiddlers).forEach(function(title) {
+			if(!ownedTiddlers[title]) { _requestFromOwner(title); }
+		});
+		// Relay-only has no LAN channel to deliver a second copy, so a single manifest frame
+		// dropped by the relay (transient / rate limit) would leave the room out of sync until the
+		// 20 s backstop. Cheaply re-exchange manifests a couple more times so a missed one still
+		// converges within a few seconds. Idempotent (checksum compare), so this can't storm.
+		setTimeout(function() { if(_roomActive()) { _exchangeManifests(); } }, 1500);
+		setTimeout(function() { if(_roomActive()) { _exchangeManifests(); } }, 4000);
+	}
+
+	// Re-converge the moment a peer becomes VERIFIED. When strong (room-token) E2E is in force,
+	// peers drop sharing frames from a not-yet-verified sender (see transport _blockUnverified),
+	// so the manifest burst fired at collab-connected can be dropped on both sides until each
+	// peer's membership cert verifies — leaving the wikis out of sync until the periodic
+	// (20 s) manifest. Watching the members/<id> tiddlers lets us re-exchange exactly when a
+	// peer flips to verified, closing that window. Debounced so a burst of peers verifying at
+	// once triggers a single exchange.
+	var _verifiedPeers = Object.create(null), _convergeTimer = null;
+	function _scheduleConverge() {
+		if(_convergeTimer) { return; }
+		_convergeTimer = setTimeout(function() { _convergeTimer = null; _convergeWithPeers(); }, 300);
+	}
+	$tw.wiki.addEventListener("change", function(changes) {
+		var prefix = "$:/temp/collab/members/";
+		Object.keys(changes).forEach(function(title) {
+			if(title.indexOf(prefix) !== 0) { return; }
+			var id = title.slice(prefix.length);
+			var t  = $tw.wiki.getTiddler(title);
+			if(!t) { delete _verifiedPeers[id]; return; }
+			if(t.fields.verified === "yes" && !_verifiedPeers[id]) {
+				_verifiedPeers[id] = true;
+				_scheduleConverge();
+			}
+		});
+	});
+
 	window.addEventListener("collab-connected", function() {
 		// Restore owned tiddlers in the available map.
 		Object.keys(ownedTiddlers).forEach(function(title) {
@@ -1638,35 +1730,14 @@ exports.startup = function() {
 				_writeAvailable(title, availableTiddlers[title]);
 			}
 		});
-		// Ask all current peers for their manifests.
-		_send({type: "collab-manifest-request", requesterDeviceId: deviceId});
-		// Also announce our own shares to everyone already in the room. Without
-		// this, a peer that connects *after* us (and already has shared tiddlers)
-		// would never push its manifest to us — the member-joined handler only
-		// pushes manifests from existing peers to the newcomer, not the reverse —
-		// so its shares wouldn't appear until we reconnect.
-		_sendManifest();
-		// Owner re-sync: pull the latest of our OWN shared tiddlers from the room.
-		// While we were offline, present peers may have advanced them (edits sync
-		// peer-to-peer even without the owner). Holders answer because the requester
-		// is the owner; our collab-tiddler-response handler then adopts the newest
-		// via the usual catch-up resolution (newer-remote wins; conflict → dialog).
-		Object.keys(ownedTiddlers).forEach(function(title) {
-			_requestFromOwner(title);
-		});
-		// Catch-up: directly re-request every tiddler we subscribe to. A peer joining
-		// a room where the owner is already online (with a tiddler modified since) must
-		// pull the latest now, not wait for the manifest round-trip — which can race or
-		// be missed, especially over LAN. The owner answers immediately; conflicting
-		// states resolve by timestamp in the collab-tiddler-response handler.
-		Object.keys(subscribedTiddlers).forEach(function(title) {
-			if(!ownedTiddlers[title]) { _requestFromOwner(title); }
-		});
+		_convergeWithPeers();
 	});
 
 	window.addEventListener("collab-member-joined", function() {
-		// A new peer arrived - send them our manifest.
-		_sendManifest();
+		// A new peer arrived — do the full exchange (not just push ours): request their
+		// manifest and re-pull our owned/subscribed tiddlers too, so we converge with them
+		// regardless of who connected first.
+		_convergeWithPeers();
 	});
 
 	window.addEventListener("collab-member-left", function() {
@@ -1695,10 +1766,8 @@ exports.startup = function() {
 	// through the relay's rate limit for an event that's already handled instantly live).
 	var MANIFEST_REVERIFY_MS = 20000;
 	setInterval(function() {
-		var st = $tw.wiki.getTiddler("$:/temp/collab/status");
-		if(!st || st.fields.status !== "connected") { return; }
+		if(!_roomActive()) { return; }
 		if(!Object.keys(ownedTiddlers).length) { return; }
-		if($tw.wiki.filterTiddlers("[prefix[$:/temp/collab/members/]first[]]").length === 0) { return; }
 		_sendManifest();
 	}, MANIFEST_REVERIFY_MS);
 

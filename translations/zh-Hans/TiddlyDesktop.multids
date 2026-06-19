@@ -40,6 +40,9 @@ Advanced/Credentials: 凭据文件
 Advanced/AnonUsername: 匿名用户名
 Advanced/Readers: 读者
 Advanced/Writers: 写者
+PluginChooser/Tab/plugin: 插件
+PluginChooser/Tab/language: 语言
+PluginChooser/Tab/theme: 主题
 PluginChooser/Heading: 管理插件
 PluginChooser/Close: 关闭
 PluginChooser/OpenWarning: 此 wiki 当前已打开。请先关闭其窗口，然后点击应用。

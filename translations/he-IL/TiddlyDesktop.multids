@@ -40,6 +40,9 @@ Advanced/Credentials: קובץ אישורים
 Advanced/AnonUsername: שם משתמש אנונימי
 Advanced/Readers: קוראים
 Advanced/Writers: כותבים
+PluginChooser/Tab/plugin: תוספים
+PluginChooser/Tab/language: שפות
+PluginChooser/Tab/theme: ערכות נושא
 PluginChooser/Heading: ניהול תוספים
 PluginChooser/Close: סגור
 PluginChooser/OpenWarning: ויקי זה פתוח כעת. סגרו תחילה את חלונו ואז לחצו על החל.

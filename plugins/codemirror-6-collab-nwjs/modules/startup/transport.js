@@ -978,10 +978,15 @@ exports.startup = function() {
 					if(!_decryptWarned) {
 						_decryptWarned = true;
 						console.warn("[collab-e2e] decrypt failed (room token mismatch?):", e && e.message);
+						// A peer in the same room (room code) but with a DIFFERENT room token derives
+						// a different E2E key, so neither side can read the other. Surface it both as a
+						// persistent sidebar error and a transient notification (the latter so the room
+						// creator actually notices someone tried to join with the wrong token).
 						$tw.wiki.addTiddler(new $tw.Tiddler({
 							title: "$:/temp/collab/error",
-							text:  "Could not decrypt a message from the room. Make sure every participant uses the same room token."
+							text:  "Could not decrypt a message from the room — a participant is using a different room token. Every device must use the same room token."
 						}));
+						try { $tw.notifier.display("$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/notify/RoomTokenMismatch"); } catch(_n) {}
 					}
 				});
 			});
@@ -1324,6 +1329,8 @@ exports.startup = function() {
 
 	// ── relay WebSocket ────────────────────────────────────────────────────────
 
+	var CONNECT_TIMEOUT_MS = 12000;   // fail a hung connect attempt and retry (see _connect)
+
 	function _scheduleReconnect() {
 		if(destroyed || !_userWantsConnected) return;
 		clearTimeout(reconnectTimer);
@@ -1415,8 +1422,22 @@ exports.startup = function() {
 			return;
 		}
 
+		// Connect timeout. A half-open socket to a vanished relay (LAN drop, NAT rebind,
+		// sleep) can fire NO open/close/error, leaving us stuck "connecting" forever — and
+		// the liveness watchdog only guards the *connected* state, so it can't help. So fail
+		// the attempt ourselves and retry on the normal backoff: the room recovers
+		// automatically when the network returns, instead of needing the wiki reopened.
+		var connectTimeout = setTimeout(function() {
+			if(myGen !== connectionGeneration || connected || destroyed) { return; }
+			console.warn("[collab-transport] connect attempt timed out, retrying");
+			connectionGeneration++;   // retire this socket: its late open/close/error no-op
+			if(ws) { var deadWs = ws; ws = null; try { deadWs.terminate(); } catch(_) {} }
+			if(_userWantsConnected) { _scheduleReconnect(); }
+		}, CONNECT_TIMEOUT_MS);
+
 		ws.on("open", function() {
 			if(myGen !== connectionGeneration) return;
+			clearTimeout(connectTimeout);
 			console.log("[collab-transport] relay WS opened, sending join");
 			lastRelayActivity = Date.now();
 			reconnectDelay = 1000;
@@ -1442,6 +1463,7 @@ exports.startup = function() {
 
 		ws.on("close", function() {
 			if(myGen !== connectionGeneration) return; // stale socket - ignore
+			clearTimeout(connectTimeout);
 			console.log("[collab-transport] relay WS closed, destroyed=" + destroyed);
 			connected = false;
 			if(_terminalStatus) {
@@ -1470,9 +1492,15 @@ exports.startup = function() {
 					}));
 				}
 			} else {
-				_writeStatus("disconnected");
 				_fire("collab-disconnected", {});
-				if(!destroyed) { _scheduleReconnect(); }
+				if(!destroyed) {
+					// We're going to retry: keep the status on "connecting" (not a flicker to
+					// "disconnected" between attempts) so the sidebar's Disconnect button stays
+					// put and the user can reliably cancel a stuck reconnect loop. When the user
+					// disconnected (destroyed), _teardown already cleared the status — leave it.
+					_writeStatus("connecting");
+					_scheduleReconnect();
+				}
 			}
 		});
 

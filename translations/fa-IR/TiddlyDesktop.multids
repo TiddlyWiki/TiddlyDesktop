@@ -40,6 +40,9 @@ Advanced/Credentials: فایل اعتبارنامه
 Advanced/AnonUsername: نام کاربری ناشناس
 Advanced/Readers: خوانندگان
 Advanced/Writers: نویسندگان
+PluginChooser/Tab/plugin: افزونه‌ها
+PluginChooser/Tab/language: زبان‌ها
+PluginChooser/Tab/theme: پوسته‌ها
 PluginChooser/Heading: مدیریت افزونه‌ها
 PluginChooser/Close: بستن
 PluginChooser/OpenWarning: این ویکی هم‌اکنون باز است. ابتدا پنجرهٔ آن را ببندید و سپس روی اعمال کلیک کنید.

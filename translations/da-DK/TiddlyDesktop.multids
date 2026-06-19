@@ -40,6 +40,9 @@ Advanced/Credentials: Loginfil
 Advanced/AnonUsername: Anonymt brugernavn
 Advanced/Readers: Læsere
 Advanced/Writers: Skribenter
+PluginChooser/Tab/plugin: Plugins
+PluginChooser/Tab/language: Sprog
+PluginChooser/Tab/theme: Temaer
 PluginChooser/Heading: Administrer plugins
 PluginChooser/Close: Luk
 PluginChooser/OpenWarning: Denne wiki er åben i øjeblikket. Luk først dens vindue, og klik derefter på Anvend.

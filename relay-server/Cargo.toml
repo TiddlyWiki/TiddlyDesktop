@@ -1,0 +1,30 @@
+[package]
+name = "tiddlydesktop-relay"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+axum = { version = "0.7", features = ["ws", "json"] }
+dashmap = "6"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+futures-util = { version = "0.3", features = ["sink"] }
+# GitHub OAuth token exchange + validation
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+# Persistent room/member storage
+rusqlite = { version = "0.32", features = ["bundled"] }
+# Token hashing for auth cache keys
+sha2 = "0.10"
+# OIDC JWT validation
+jsonwebtoken = "9"
+# Relay membership-certificate signing (ECDSA P-256 / ES256)
+p256 = { version = "0.13", features = ["ecdsa"] }
+rand_core = { version = "0.6", features = ["getrandom"] }
+base64 = "0.22"
+
+[profile.release]
+strip = true
+lto = true

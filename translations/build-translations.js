@@ -33,6 +33,7 @@ var KEY_ORDER = [
 	"Advanced/Server","Advanced/Host","Advanced/Port","Advanced/PathPrefix","Advanced/RootTiddler",
 	"Advanced/Gzip","Advanced/Access","Advanced/Credentials","Advanced/AnonUsername",
 	"Advanced/Readers","Advanced/Writers",
+	"PluginChooser/Tab/plugin","PluginChooser/Tab/language","PluginChooser/Tab/theme",
 	"PluginChooser/Heading","PluginChooser/Close","PluginChooser/OpenWarning","PluginChooser/FilterPlaceholder",
 	"PluginChooser/Clear","PluginChooser/NoMatch","PluginChooser/Apply","PluginChooser/Cancel",
 	"PluginChooser/Update","PluginChooser/UpdateAvailable","PluginChooser/Updated","Row/PluginUpdates"
@@ -593,6 +594,44 @@ Object.keys(PLUGIN_UPDATE).forEach(function(lang) {
 	T[lang]["PluginChooser/UpdateAvailable"] = v[1];
 	T[lang]["PluginChooser/Updated"]         = v[2];
 	T[lang]["Row/PluginUpdates"]             = v[3];
+});
+
+// PluginChooser tab captions: [Plugins, Languages, Themes].
+var TAB_CAPTIONS = {
+	"de-DE": ["Plugins", "Sprachen", "Designs"],
+	"fr-FR": ["Plugins", "Langues", "Thèmes"],
+	"es-ES": ["Complementos", "Idiomas", "Temas"],
+	"ca-ES": ["Connectors", "Idiomes", "Temes"],
+	"it-IT": ["Plugin", "Lingue", "Temi"],
+	"pt-BR": ["Plugins", "Idiomas", "Temas"],
+	"pt-PT": ["Plugins", "Idiomas", "Temas"],
+	"nl-NL": ["Plug-ins", "Talen", "Thema's"],
+	"da-DK": ["Plugins", "Sprog", "Temaer"],
+	"sv-SE": ["Tillägg", "Språk", "Teman"],
+	"pl-PL": ["Wtyczki", "Języki", "Motywy"],
+	"cs-CZ": ["Pluginy", "Jazyky", "Motivy"],
+	"sk-SK": ["Pluginy", "Jazyky", "Témy"],
+	"sl-SI": ["Vtičniki", "Jeziki", "Teme"],
+	"mk-MK": ["Приклучоци", "Јазици", "Теми"],
+	"ru-RU": ["Плагины", "Языки", "Темы"],
+	"el-GR": ["Πρόσθετα", "Γλώσσες", "Θέματα"],
+	"he-IL": ["תוספים", "שפות", "ערכות נושא"],
+	"ar-PS": ["إضافات", "اللغات", "السمات"],
+	"fa-IR": ["افزونه‌ها", "زبان‌ها", "پوسته‌ها"],
+	"hi-IN": ["प्लगइन", "भाषाएँ", "थीम"],
+	"pa-IN": ["ਪਲੱਗਇਨ", "ਭਾਸ਼ਾਵਾਂ", "ਥੀਮ"],
+	"ia-IA": ["Plugins", "Linguas", "Themas"],
+	"ja-JP": ["プラグイン", "言語", "テーマ"],
+	"ko-KR": ["플러그인", "언어", "테마"],
+	"zh-Hans": ["插件", "语言", "主题"],
+	"zh-Hant": ["外掛", "語言", "佈景主題"]
+};
+Object.keys(TAB_CAPTIONS).forEach(function(lang) {
+	if(!T[lang]) { return; }
+	var v = TAB_CAPTIONS[lang];
+	T[lang]["PluginChooser/Tab/plugin"]   = v[0];
+	T[lang]["PluginChooser/Tab/language"] = v[1];
+	T[lang]["PluginChooser/Tab/theme"]    = v[2];
 });
 
 // Variants reuse a base translation.

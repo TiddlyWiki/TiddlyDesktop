@@ -29,7 +29,7 @@ and cross-browser drag-and-drop import.
 8. [Plugin management](#8-plugin-management)
 9. [Tagging and filtering wikis](#9-tagging-and-filtering-wikis)
 10. [Language switcher (internationalisation)](#10-language-switcher-internationalisation)
-11. [Dark mode](#11-dark-mode)
+11. [Dark mode and customising the wiki list](#11-dark-mode-and-customising-the-wiki-list)
 12. [Wiki window features](#12-wiki-window-features)
 13. [Embedded media (videos, maps, …)](#13-embedded-media-videos-maps-)
 14. [External attachments](#14-external-attachments)
@@ -236,6 +236,23 @@ Click a chip to filter the list to wikis with that tag. There is also a **Delete
 control. The search box does free-text title search (and a filter search when you type a filter
 expression).
 
+### Changing the colour of a tag
+
+The tag chips use TiddlyWiki's **standard tag-colour mechanism**: a tag is coloured by a tiddler
+whose *title is the tag name* and whose **`color`** field holds a CSS colour. The wiki list reads
+it through the usual colour cascade (`$:/tags/TiddlerColourFilter`), and picks a contrasting text
+colour automatically. To set one:
+
+1. Open the wiki list's **backstage** with the **Backstage** toolbar button (this is the editable
+   TiddlyWiki behind the list itself — see [§11](#11-dark-mode-and-customising-the-wiki-list)).
+2. Create a tiddler whose **title is exactly the tag name** (e.g. `work`).
+3. Add a field named **`color`** with a CSS colour value — a hex code (`#e91e63`), an `rgb(…)`, or
+   a named colour.
+4. Save. The chip for that tag — in both the filter row and each wiki's tags — immediately uses the
+   colour.
+
+Delete the `color` field (or the whole tiddler) to revert to the palette's default tag colour.
+
 ---
 
 ## 10. Language switcher (internationalisation)
@@ -251,11 +268,28 @@ the bundled fallback. A **language switcher** in the toolbar uses the standard T
 
 ---
 
-## 11. Dark mode
+## 11. Dark mode and customising the wiki list
+
+### Dark mode
 
 TiddlyDesktop sets the CSS `color-scheme` property from the active palette's `color-scheme`
 field, so native UI (scrollbars, form controls) follows dark palettes. Choose a dark palette in
 the wiki's control panel as usual.
+
+### Modifying the wiki list window
+
+The wiki list is itself an ordinary TiddlyWiki, shown with a slim chrome. Click the **Backstage**
+button in the toolbar to open the **full wiki behind the list**, where you can add and edit
+tiddlers to customise it. Everything you change is saved into that backstage wiki and persists
+across restarts. For example:
+
+- **Palette / dark mode** — pick a different `$:/palette` in the usual control panel; the list and
+  toolbar re-colour live.
+- **Tag colours** — see [Changing the colour of a tag](#changing-the-colour-of-a-tag) (§9).
+- **Custom CSS** — add a tiddler tagged `$:/tags/Stylesheet` with your own rules. The wiki-list
+  elements use `td-…` class names (e.g. `.td-wikilist-item`, `.td-wikilist-title`,
+  `.td-tags .tc-tag-label`), so you can restyle rows, titles, and tag chips.
+- **Empty-list message, language, and backup options** — on the Settings page.
 
 ---
 

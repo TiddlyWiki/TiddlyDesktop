@@ -40,6 +40,9 @@ Advanced/Credentials: Datoteka s poverilnicami
 Advanced/AnonUsername: Anonimno uporabniško ime
 Advanced/Readers: Bralci
 Advanced/Writers: Pisci
+PluginChooser/Tab/plugin: Vtičniki
+PluginChooser/Tab/language: Jeziki
+PluginChooser/Tab/theme: Teme
 PluginChooser/Heading: Upravljanje vtičnikov
 PluginChooser/Close: Zapri
 PluginChooser/OpenWarning: Ta wiki je trenutno odprt. Najprej zaprite njegovo okno in nato kliknite Uporabi.

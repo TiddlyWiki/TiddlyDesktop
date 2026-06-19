@@ -40,6 +40,9 @@ Advanced/Credentials: क्रेडेंशियल फ़ाइल
 Advanced/AnonUsername: अनाम उपयोगकर्ता नाम
 Advanced/Readers: पाठक
 Advanced/Writers: लेखक
+PluginChooser/Tab/plugin: प्लगइन
+PluginChooser/Tab/language: भाषाएँ
+PluginChooser/Tab/theme: थीम
 PluginChooser/Heading: प्लगइन प्रबंधित करें
 PluginChooser/Close: बंद करें
 PluginChooser/OpenWarning: यह विकि अभी खुली है। पहले इसकी विंडो बंद करें, फिर लागू करें पर क्लिक करें।

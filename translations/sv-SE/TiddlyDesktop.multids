@@ -40,6 +40,9 @@ Advanced/Credentials: Autentiseringsfil
 Advanced/AnonUsername: Anonymt användarnamn
 Advanced/Readers: Läsare
 Advanced/Writers: Skribenter
+PluginChooser/Tab/plugin: Tillägg
+PluginChooser/Tab/language: Språk
+PluginChooser/Tab/theme: Teman
 PluginChooser/Heading: Hantera tillägg
 PluginChooser/Close: Stäng
 PluginChooser/OpenWarning: Den här wikin är öppen just nu. Stäng först dess fönster och klicka sedan på Tillämpa.

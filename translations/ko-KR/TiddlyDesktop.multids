@@ -40,6 +40,9 @@ Advanced/Credentials: 자격 증명 파일
 Advanced/AnonUsername: 익명 사용자 이름
 Advanced/Readers: 읽기 사용자
 Advanced/Writers: 쓰기 사용자
+PluginChooser/Tab/plugin: 플러그인
+PluginChooser/Tab/language: 언어
+PluginChooser/Tab/theme: 테마
 PluginChooser/Heading: 플러그인 관리
 PluginChooser/Close: 닫기
 PluginChooser/OpenWarning: 이 위키는 현재 열려 있습니다. 먼저 창을 닫은 다음 적용을 클릭하세요.

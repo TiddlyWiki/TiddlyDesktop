@@ -1,0 +1,14 @@
+# Rust build artifacts
+/target/
+
+# Local runtime state — never commit (contains rooms, members, token hashes,
+# and the relay signing key once the server has run)
+relay.db
+relay.db-shm
+relay.db-wal
+
+# Local secrets / env (real credentials live in /etc/tiddlydesktop-relay/env on the server)
+.env
+env
+*.pem
+*.key

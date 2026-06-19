@@ -42,6 +42,12 @@ var CONFIG_HOSTS = "$:/config/TiddlyDesktop/EmbedHosts";
 // `web-share`: this Chromium build doesn't recognise it in `allow=` and only logs a warning.)
 var EMBED_ALLOW  = "autoplay; encrypted-media; fullscreen *; picture-in-picture; clipboard-write";
 
+// A self-animating (SMIL) spinner, shown as the iframe's background while an allowlisted
+// embed is being routed to the shim. The provider's content paints over it once loaded; for
+// the brief moment beforehand it hides the transient blank / file:// referer error page
+// (YouTube error 153) the user would otherwise see flash.
+var SPINNER = "data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='44'%20height='44'%20viewBox='0%200%2044%2044'%3E%3Ccircle%20cx='22'%20cy='22'%20r='16'%20fill='none'%20stroke='%23ffffff'%20stroke-opacity='0.2'%20stroke-width='4'/%3E%3Cpath%20d='M22%206a16%2016%200%200%201%2016%2016'%20fill='none'%20stroke='%23ffffff'%20stroke-opacity='0.85'%20stroke-width='4'%20stroke-linecap='round'%3E%3CanimateTransform%20attributeName='transform'%20type='rotate'%20from='0%2022%2022'%20to='360%2022%2022'%20dur='0.9s'%20repeatCount='indefinite'/%3E%3C/path%3E%3C/svg%3E";
+
 /*
   doc      - the document the wiki renders into (folder: the window's document; single-file:
              the iframe's contentDocument)
@@ -74,6 +80,26 @@ exports.install = function(doc, win) {
 		return list;
 	}
 
+	// Show / clear the spinner background on an iframe being routed to the shim.
+	function setMask(iframe, on) {
+		try {
+			iframe.style.background = on
+				? "#1a1a1a url(\"" + SPINNER + "\") center center / 44px 44px no-repeat"
+				: "";
+		} catch(e) {}
+	}
+	// Clear the spinner once the REAL shim content has loaded. The about:blank load fired
+	// while the iframe is still parked is ignored, so the spinner persists across the
+	// park → shim transition (covering the whole pre-playback window, error 153 included).
+	function attachMaskClear(iframe) {
+		if(iframe.__tdEmbedMaskHooked) { return; }
+		iframe.__tdEmbedMaskHooked = true;
+		iframe.addEventListener("load", function() {
+			if(iframe.__tdEmbedParked) { return; }
+			setMask(iframe, false);
+		});
+	}
+
 	function hardenIframe(iframe) {
 		// We frame our own shim (which sets its own allow on the provider iframe), so set a
 		// known-good policy here rather than trusting the author's allow=. Crucially this uses
@@ -94,8 +120,13 @@ exports.install = function(doc, win) {
 		hardenIframe(iframe);
 		if(embedBase) {
 			embedBase.registerHost(host);
-			try { iframe.src = embedBase.embedUrl(originalSrc); } catch(e) {}
+			// Mask with the spinner until the shim (a real http origin → no error 153) loads.
+			// Setting src cancels any in-flight direct provider load, so its error never paints.
+			attachMaskClear(iframe);
+			setMask(iframe, true);
+			try { iframe.src = embedBase.embedUrl(originalSrc); } catch(e) { setMask(iframe, false); }
 		} else {
+			setMask(iframe, false);
 			try { iframe.src = originalSrc; } catch(e) {}
 		}
 	}
@@ -128,6 +159,8 @@ exports.install = function(doc, win) {
 			iframe.__tdEmbedSrc    = src;
 			iframe.__tdEmbedHost   = url.hostname;
 			parked.push(iframe);
+			attachMaskClear(iframe);
+			setMask(iframe, true);
 			try { iframe.src = "about:blank"; } catch(e) {}
 		}
 	}

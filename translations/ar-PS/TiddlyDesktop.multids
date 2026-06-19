@@ -40,6 +40,9 @@ Advanced/Credentials: ملف بيانات الاعتماد
 Advanced/AnonUsername: اسم مستخدم مجهول
 Advanced/Readers: القُرّاء
 Advanced/Writers: الكُتّاب
+PluginChooser/Tab/plugin: إضافات
+PluginChooser/Tab/language: اللغات
+PluginChooser/Tab/theme: السمات
 PluginChooser/Heading: إدارة الإضافات
 PluginChooser/Close: إغلاق
 PluginChooser/OpenWarning: هذا الويكي مفتوح حاليًا. أغلق نافذته أولًا ثم انقر على تطبيق.

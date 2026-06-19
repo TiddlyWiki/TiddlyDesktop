@@ -1,0 +1,45 @@
+[Unit]
+Description=TiddlyDesktop Relay Server
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=relay
+Group=relay
+ExecStart=/usr/local/bin/tiddlydesktop-relay
+Restart=always
+RestartSec=5
+
+# Persistent state (SQLite database) — creates /var/lib/tiddlydesktop-relay/
+StateDirectory=tiddlydesktop-relay
+
+# Relay listens on localhost:8444 — Caddy handles TLS on public :8443 and proxies here
+Environment=PORT=8444
+Environment=RUST_LOG=tiddlydesktop_relay=info
+# Set BIND_PUBLIC=1 to listen on 0.0.0.0 instead of localhost (not recommended with Caddy)
+#Environment=BIND_PUBLIC=1
+
+# GitHub OAuth credentials (CLIENT_ID + CLIENT_SECRET)
+EnvironmentFile=/etc/tiddlydesktop-relay/env
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+MemoryDenyWriteExecute=true
+LockPersonality=true
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=512M
+
+[Install]
+WantedBy=multi-user.target

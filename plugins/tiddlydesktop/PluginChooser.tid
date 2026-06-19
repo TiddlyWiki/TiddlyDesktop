@@ -3,9 +3,9 @@ title: $:/TiddlyDesktop/PluginChooser
 \whitespace trim
 \define plugin-sel-title() $:/temp/TiddlyDesktop/PluginChooser/selected/$(pluginTitle)$
 
-\procedure pcTab(tab, caption)
+\procedure pcTab(tab)
 \whitespace trim
-<$button set="$:/temp/TiddlyDesktop/PluginChooser/tab" setTo=<<tab>> class={{{ [[$:/temp/TiddlyDesktop/PluginChooser/tab]get[text]] :else[[plugin]] +[match<tab>then[td-plugin-tab td-plugin-tab-active]else[td-plugin-tab]] }}}><<caption>></$button>
+<$button set="$:/temp/TiddlyDesktop/PluginChooser/tab" setTo=<<tab>> class={{{ [[$:/temp/TiddlyDesktop/PluginChooser/tab]get[text]] :else[[plugin]] +[match<tab>then[td-plugin-tab td-plugin-tab-active]else[td-plugin-tab]] }}}><$transclude tiddler={{{ [[$:/language/TiddlyDesktop/PluginChooser/Tab/]addsuffix<tab>] }}}/></$button>
 \end
 
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]!is[missing]!field:text[]]" variable="_">
@@ -24,9 +24,9 @@ title: $:/TiddlyDesktop/PluginChooser
 <div class="td-plugin-open-warning">⚠&#32;{{$:/language/TiddlyDesktop/PluginChooser/OpenWarning}}</div>
 </$list>
 <div class="td-plugin-tabs">
-<<pcTab "plugin" "Plugins">>
-<<pcTab "language" "Languages">>
-<<pcTab "theme" "Themes">>
+<<pcTab "plugin">>
+<<pcTab "language">>
+<<pcTab "theme">>
 </div>
 <div class="td-plugin-search-row">
 <$edit-text tiddler="$:/temp/TiddlyDesktop/PluginChooser/search" tag="input" class="tc-edit-texteditor td-plugin-search" focus="yes" placeholder={{$:/language/TiddlyDesktop/PluginChooser/FilterPlaceholder}}/>

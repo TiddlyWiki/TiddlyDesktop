@@ -40,6 +40,9 @@ Advanced/Credentials: 憑證檔案
 Advanced/AnonUsername: 匿名使用者名稱
 Advanced/Readers: 讀者
 Advanced/Writers: 寫者
+PluginChooser/Tab/plugin: 外掛
+PluginChooser/Tab/language: 語言
+PluginChooser/Tab/theme: 佈景主題
 PluginChooser/Heading: 管理外掛
 PluginChooser/Close: 關閉
 PluginChooser/OpenWarning: 此 wiki 目前已開啟。請先關閉其視窗，然後點選套用。

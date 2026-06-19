@@ -40,6 +40,9 @@ Advanced/Credentials: File de credentiales
 Advanced/AnonUsername: Nomine de usator anonyme
 Advanced/Readers: Lectores
 Advanced/Writers: Scriptores
+PluginChooser/Tab/plugin: Plugins
+PluginChooser/Tab/language: Linguas
+PluginChooser/Tab/theme: Themas
 PluginChooser/Heading: Gerer le plugins
 PluginChooser/Close: Clauder
 PluginChooser/OpenWarning: Iste wiki es actualmente aperte. Claude prime su fenestra, postea clicca Applicar.

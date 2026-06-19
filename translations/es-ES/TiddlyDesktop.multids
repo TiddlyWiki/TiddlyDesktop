@@ -40,6 +40,9 @@ Advanced/Credentials: Archivo de credenciales
 Advanced/AnonUsername: Nombre de usuario anónimo
 Advanced/Readers: Lectores
 Advanced/Writers: Escritores
+PluginChooser/Tab/plugin: Complementos
+PluginChooser/Tab/language: Idiomas
+PluginChooser/Tab/theme: Temas
 PluginChooser/Heading: Gestionar complementos
 PluginChooser/Close: Cerrar
 PluginChooser/OpenWarning: Este wiki está abierto actualmente. Cierra primero su ventana y luego haz clic en Aplicar.

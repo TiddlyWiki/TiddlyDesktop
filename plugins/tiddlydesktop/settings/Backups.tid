@@ -16,4 +16,10 @@ The path of the backup file can be an absolute path or a relative path to the di
 Reset to default
 </$button>
 
+! Number of backups to keep
+
+Enter how many of the most recent backups to keep per wiki file — older ones are deleted automatically after each save. Leave this empty to keep ''all'' backups.
+
+<$edit-text tiddler="$:/TiddlyDesktop/BackupCount" tag="input" type="number"/>
+
 (Note that backups for ~TiddlyWiki Classic wikis are managed within the TWC wiki - see "txtBackupFolder" in ~AdvancedOptions).

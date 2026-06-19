@@ -40,6 +40,9 @@ Advanced/Credentials: Файл учётных данных
 Advanced/AnonUsername: Анонимное имя пользователя
 Advanced/Readers: Читатели
 Advanced/Writers: Авторы
+PluginChooser/Tab/plugin: Плагины
+PluginChooser/Tab/language: Языки
+PluginChooser/Tab/theme: Темы
 PluginChooser/Heading: Управление плагинами
 PluginChooser/Close: Закрыть
 PluginChooser/OpenWarning: Эта вики сейчас открыта. Сначала закройте её окно, затем нажмите Применить.

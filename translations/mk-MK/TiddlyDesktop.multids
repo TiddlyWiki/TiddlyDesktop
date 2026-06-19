@@ -40,6 +40,9 @@ Advanced/Credentials: Датотека со акредитиви
 Advanced/AnonUsername: Анонимно корисничко име
 Advanced/Readers: Читатели
 Advanced/Writers: Запишувачи
+PluginChooser/Tab/plugin: Приклучоци
+PluginChooser/Tab/language: Јазици
+PluginChooser/Tab/theme: Теми
 PluginChooser/Heading: Управувај со приклучоци
 PluginChooser/Close: Затвори
 PluginChooser/OpenWarning: Ова вики е моментално отворено. Прво затворете го неговиот прозорец, а потоа кликнете Примени.

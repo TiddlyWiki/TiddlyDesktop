@@ -197,6 +197,34 @@ favicon and title, and a toolbar:
 
 (Convert and plugins are hidden for TiddlyWiki Classic wikis, which are single-file only.)
 
+## Modifying your wiki list window
+
+The wiki list is itself an ordinary TiddlyWiki running with a slim chrome. Click the **Backstage**
+button in the toolbar to open the **full wiki behind the list**, where you can add and edit
+tiddlers to customise it. Changes are saved into that backstage wiki and persist across restarts.
+
+A few useful things you can do there:
+
+* **Palette / dark mode** — pick a different `$:/palette` in the usual control panel; the list and
+  toolbar re-colour live.
+* **Custom CSS** — add a tiddler tagged `$:/tags/Stylesheet` with your own rules. Wiki-list
+  elements use `td-…` class names (e.g. `.td-wikilist-item`, `.td-tags .tc-tag-label`).
+* **Settings** — the empty-list message, language, and backup options live on the Settings page.
+
+### Changing the colour of a tag in the wiki list
+
+Tag chips use TiddlyWiki's standard tag-colour mechanism: a tag is coloured by a tiddler whose
+**title is the tag name** and whose **`color`** field holds a CSS colour. To set one:
+
+1. Open the **Backstage** (toolbar button).
+2. Create a new tiddler whose **title is exactly the tag name** (for example `work`).
+3. Add a field named **`color`** with a CSS colour value — a hex code such as `#e91e63`, an
+   `rgb(…)`, or a named colour.
+4. Save. The chip for that tag — in both the filter row and each wiki's tags — immediately uses
+   the colour, with the text colour chosen automatically for contrast.
+
+Delete the `color` field (or the whole tiddler) to revert to the palette's default tag colour.
+
 ## Serving a folder wiki over the local network
 
 A wiki folder runs its own TiddlyWiki server. Open a folder wiki's **advanced** options and
@@ -279,7 +307,7 @@ host from the list (or deleting the tiddler) reverts to the built-in defaults.
 
 ## Multiple Configurations
 
-To have separate mutliple instances of TiddlyDesktop (for example, separate Personal and Professional instances), you can pass the `--user-data-dir` argument.  e.g. `/opt/TiddlyDesktop/nw --user-data-dir=/mnt/data/TiddlyWiki/config`.  The property should be a directory to use for holding configuration data.
+To have separate mutliple instances of TiddlyDesktop (for example, separate Personal and Professional instances), you can pass the `--user-data-dir` argument.  e.g. `/opt/TiddlyDesktop/TiddlyDesktop --user-data-dir=/mnt/data/TiddlyWiki/config`.  The property should be a directory to use for holding configuration data.
 
 ## Developer Tools
 
@@ -363,22 +391,22 @@ On Linux, nw.js (Chromium) defaults to its Wayland backend on Wayland sessions. 
 * native dialogs and prompts appearing in the wrong place or behaving strangely
 * incorrect window sizing, positioning, or focus
 
-If you hit any of these, force the X11 (XWayland) backend by launching `nw` with the `--ozone-platform=x11` flag:
+If you hit any of these, force the X11 (XWayland) backend by launching `TiddlyDesktop` with the `--ozone-platform=x11` flag:
 
 ```
-./nw --ozone-platform=x11
+./TiddlyDesktop --ozone-platform=x11
 ```
 
 This can be combined with other arguments, e.g.:
 
 ```
-./nw --ozone-platform=x11 --user-data-dir=/path/to/config
+./TiddlyDesktop --ozone-platform=x11 --user-data-dir=/path/to/config
 ```
 
 To make it permanent you can wrap the launcher in a small script or shell alias, or set the environment variable instead of passing the flag:
 
 ```
-OZONE_PLATFORM=x11 ./nw
+OZONE_PLATFORM=x11 ./TiddlyDesktop
 ```
 
 Most desktop-drag-and-drop and window-decoration problems on Wayland are resolved by running under X11 this way.

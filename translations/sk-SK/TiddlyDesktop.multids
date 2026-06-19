@@ -40,6 +40,9 @@ Advanced/Credentials: Súbor s prihlasovacími údajmi
 Advanced/AnonUsername: Anonymné používateľské meno
 Advanced/Readers: Čitatelia
 Advanced/Writers: Zapisovatelia
+PluginChooser/Tab/plugin: Pluginy
+PluginChooser/Tab/language: Jazyky
+PluginChooser/Tab/theme: Témy
 PluginChooser/Heading: Spravovať pluginy
 PluginChooser/Close: Zavrieť
 PluginChooser/OpenWarning: Toto wiki je momentálne otvorené. Najprv zatvorte jeho okno a potom kliknite na Použiť.
