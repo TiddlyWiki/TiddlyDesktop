@@ -63,6 +63,15 @@ var CONFIG_SUBSCRIBED = "$:/config/codemirror-6-collab/subscribed-tiddlers";   /
 // carry your shares/subscriptions across. (Manifests + temp tiddlers are already per
 // connection, hence per room.)
 var CONFIG_ROOMS      = "$:/config/codemirror-6-collab/rooms";
+// The 3-way base checksums (syncedText) live in their OWN tiddler, separate from the rooms store,
+// and are EXCLUDED from the saver's dirty-tracking (see _excludeBasesFromDirtyTracking). The base
+// advances after every synced edit converges — pure collab bookkeeping with no user-content change
+// — so keeping it in the dirty-tracked rooms store re-reddened the save indicator ~1s after each
+// save of a shared tiddler. It is still written to the wiki FILE (the save filter is separate), so
+// a pending base persisted alongside a real content edit survives a reload; it just no longer
+// triggers a spurious dirty/autosave on its own. Owned/subscribed stay in CONFIG_ROOMS, which IS
+// dirty-tracked, so sharing/unsharing still autosaves and warns on close.
+var CONFIG_BASES      = "$:/config/codemirror-6-collab/bases";
 var AVAIL_PREFIX      = "$:/temp/collab/share/available/";
 var OWNED_PREFIX      = "$:/temp/collab/share/owned/";
 
@@ -305,6 +314,35 @@ exports.startup = function() {
 		$tw.wiki.addTiddler(new $tw.Tiddler({title: CONFIG_ROOMS, text: text}));
 	}
 
+	// The bases store: JSON { "<roomCode>": { "<title>": "<baseFp>" } }. Kept separate from the
+	// rooms store and excluded from dirty-tracking (see CONFIG_BASES). Idempotent like the above.
+	function _loadBasesStore() {
+		var obj = _safeJson($tw.wiki.getTiddlerText(CONFIG_BASES, "{}"));
+		return (obj && typeof obj === "object" && !Array.isArray(obj)) ? obj : {};
+	}
+	function _writeBasesStore(store) {
+		var text = JSON.stringify(store);
+		if($tw.wiki.getTiddlerText(CONFIG_BASES, "") === text) { return; }
+		$tw.wiki.addTiddler(new $tw.Tiddler({title: CONFIG_BASES, text: text}));
+	}
+
+	// Recompile the saver's dirty-tracking filter to exclude CONFIG_BASES, so advancing the base
+	// never counts as an unsaved change. We adjust the live filterFn in memory rather than writing
+	// an override of $:/config/SaverFilter, so we don't shadow the core default (which would go
+	// stale if core updates it) — we re-derive from whatever the current filter is, every startup.
+	// No-ops when dirty-tracking is off / there is no saver (e.g. server-side).
+	function _excludeBasesFromDirtyTracking() {
+		try {
+			var sh = $tw.saverHandler;
+			if(!sh || !sh.filterFn) { return; }
+			var base = $tw.wiki.getTiddlerText("$:/config/SaverFilter", "");
+			// Need a real positive base term to subtract from; a bare "-[[…]]" would match nothing
+			// and make the wiki never report dirty. If SaverFilter is somehow empty, leave it be.
+			if(!base.trim()) { return; }
+			sh.filterFn = $tw.wiki.compileFilter(base + " -[[" + CONFIG_BASES + "]]");
+		} catch(e) { /* nothing to exclude */ }
+	}
+
 	// Persist the current in-memory owned/subscribed sets — AND the 3-way base checksums
 	// (syncedText) — under the room they belong to (_stateRoom). Both _saveOwned and
 	// _saveSubscribed funnel here. Persisting the bases lets conflict detection survive a
@@ -337,9 +375,15 @@ exports.startup = function() {
 				if(syncedText[title] !== _curFp) { bases[title] = syncedText[title]; }
 			}
 		});
-		if(owned.length || subscribed.length) { store[_stateRoom] = {owned: owned, subscribed: subscribed, bases: bases}; }
+		if(owned.length || subscribed.length) { store[_stateRoom] = {owned: owned, subscribed: subscribed}; }
 		else { delete store[_stateRoom]; }
 		_writeRoomsStore(store);
+		// Bases go to their own (dirty-excluded) tiddler — see CONFIG_BASES. Writing them here, not
+		// in the rooms store, is what stops a base advance from re-dirtying the wiki after a save.
+		var basesStore = _loadBasesStore();
+		if(Object.keys(bases).length) { basesStore[_stateRoom] = bases; }
+		else { delete basesStore[_stateRoom]; }
+		_writeBasesStore(basesStore);
 	}
 
 	// Debounced persist — _markSynced can fire many times in one manifest pass; batch them
@@ -407,11 +451,15 @@ exports.startup = function() {
 		});
 		// Restore the persisted 3-way base checksums so conflict detection works immediately
 		// after a reload (an offline edit since then will diverge from this base, not be
-		// silently overwritten by a concurrent remote edit on reconnect).
-		if(entry.bases && typeof entry.bases === "object") {
-			Object.keys(entry.bases).forEach(function(title) {
-				if(typeof entry.bases[title] === "string" && (ownedTiddlers[title] || subscribedTiddlers[title])) {
-					syncedText[title] = entry.bases[title];
+		// silently overwritten by a concurrent remote edit on reconnect). Bases now live in their
+		// own tiddler (CONFIG_BASES); legacy wikis kept them inside the rooms entry, so fall back
+		// to that and let the next _persistRoomState migrate them across.
+		var basesEntry = _loadBasesStore()[room];
+		if(!basesEntry && entry.bases && typeof entry.bases === "object") { basesEntry = entry.bases; }
+		if(basesEntry && typeof basesEntry === "object") {
+			Object.keys(basesEntry).forEach(function(title) {
+				if(typeof basesEntry[title] === "string" && (ownedTiddlers[title] || subscribedTiddlers[title])) {
+					syncedText[title] = basesEntry[title];
 				}
 			});
 		}
@@ -627,6 +675,9 @@ exports.startup = function() {
 
 	_stateRoom = _currentRoom();
 	_loadRoomState(_stateRoom);
+	// Keep base-checksum churn out of the dirty/save machinery (must run after core "startup"
+	// built $tw.saverHandler — guaranteed by exports.after = ["startup", …]).
+	_excludeBasesFromDirtyTracking();
 
 	// Switching rooms swaps the persisted share state: the old room's sets are already
 	// saved (on every mutation), so persist once more under it, drop the in-memory state
