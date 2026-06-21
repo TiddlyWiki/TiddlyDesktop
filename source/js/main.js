@@ -11,6 +11,18 @@ var gui = require("nw.gui"),
 var WindowList = require("../js/window-list.js").WindowList;
 var protocol = require("../js/utils/protocol.js");
 var deeplink = require("../js/utils/deeplink.js");
+var startupGuard = require("../js/utils/startup-guard.js");
+
+// Recover from an unclean previous run or a Chromium (NW.js) upgrade BEFORE booting:
+//   - kill any STALE TiddlyDesktop process trees that aren't ours (they can keep the Chromium
+//     profile locked and make this launch hang with no window). TiddlyDesktop is single-instance,
+//     so reaching here means we're the primary instance — a healthy running TiddlyDesktop is never
+//     touched, only orphans left by a crash or an older build.
+//   - on a Chromium version change, clear Chromium's disposable GPU/shader caches and any stale
+//     Singleton lock. Never touches the wiki list or any TiddlyDesktop data.
+// Both calls are fully self-guarded and can never block startup.
+try { startupGuard.killStaleInstances(); } catch(e) { console.error("[TiddlyDesktop] stale-process cleanup failed:",e); }
+try { startupGuard.guardProfile(gui.App.dataPath); } catch(e) { console.error("[TiddlyDesktop] profile guard failed:",e); }
 
 // The real process.exit, captured before anything (e.g. wiki conversion) can monkey-patch it.
 // quitApp() uses this so a quit during a conversion still terminates.
