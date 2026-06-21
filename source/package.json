@@ -1,6 +1,7 @@
 {
     "name": "TiddlyDesktop",
     "main": "./html/main.html",
+    "node-main": "./js/node-main.js",
     "window": {
         "id": "tiddlydesktop://",
         "show": false,
