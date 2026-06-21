@@ -2,7 +2,7 @@
     "title": "$:/plugins/tiddlywiki/codemirror-6-collab-nwjs",
     "description": "Real-time collaborative editing for TiddlyDesktop (NW.js) - includes Yjs CM6 integration and WebSocket relay transport",
     "author": "BurningTreeC",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "core-version": ">=5.0.0",
     "plugin-type": "plugin",
     "list": "readme"

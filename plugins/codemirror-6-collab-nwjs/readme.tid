@@ -6,18 +6,18 @@ cursors in the CodeMirror 6 editor.
 
 !! What you get
 
-* **Live co-editing** — shared tiddlers synchronise character-by-character using [[Yjs|https://github.com/yjs/yjs]] CRDTs, with remote cursors and selections shown in the CodeMirror 6 editor.
-* **Per-tiddler sharing** — share just the tiddlers you choose (toolbar share button); others in the room see them in the //Get// panel and can subscribe. The first peer to share a title owns it.
-* **Attachments** — shared image/binary tiddlers stream peer-to-peer (paced under the relay's limit); each is saved as an external file or embedded according to your External Attachments setting.
-* **Chat** — a room chat panel, including private 1:1 messages, with an optional notification sound.
-* **Conflict-safe** — offline or concurrent edits are detected against a 3-way base; genuine divergences are flagged and resolved with a diff/merge dialog rather than silently overwriting.
-* **End-to-end encryption** — generating an invite mints a room token (shared out of band, never sent to the relay) so room traffic is encrypted; peer identities are authenticated via relay-signed membership certificates.
+* ''Live co-editing'' — shared tiddlers synchronise character-by-character using [[Yjs|https://github.com/yjs/yjs]] CRDTs, with remote cursors and selections shown in the CodeMirror 6 editor.
+* ''Per-tiddler sharing'' — share just the tiddlers you choose (toolbar share button); others in the room see them in the //Get// panel and can subscribe. The first peer to share a title owns it.
+* ''Attachments'' — shared image/binary tiddlers stream peer-to-peer (paced under the relay's limit); each is saved as an external file or embedded according to your External Attachments setting.
+* ''Chat'' — a room chat panel, including private 1:1 messages, with an optional notification sound.
+* ''Conflict-safe'' — offline or concurrent edits are detected against a 3-way base; genuine divergences are flagged and resolved with a diff/merge dialog rather than silently overwriting.
+* ''End-to-end encryption'' — generating an invite mints a room token (shared out of band, never sent to the relay) so room traffic is encrypted; peer identities are authenticated via relay-signed membership certificates.
 
 !! How it connects
 
-* A **WebSocket relay** carries traffic between instances on different networks. Set its URL in the collaboration settings and sign in (GitHub / GitLab / OIDC) to authenticate.
-* On the **same LAN**, instances also connect directly (lower latency), unless //Relay only// is enabled.
-* Share a room by generating an **invite code** and sending it to a collaborator out of band; applying it joins the room (and, with the embedded token, enables end-to-end encryption).
+* A ''WebSocket relay'' carries traffic between instances on different networks. Set its URL in the collaboration settings and sign in (GitHub / GitLab / OIDC) to authenticate.
+* On the ''same LAN'', instances also connect directly (lower latency), unless //Relay only// is enabled.
+* Share a room by generating an ''invite code'' and sending it to a collaborator out of band; applying it joins the room (and, with the embedded token, enables end-to-end encryption).
 
 !! Notes
 
