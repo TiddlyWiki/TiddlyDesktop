@@ -5,16 +5,19 @@ spins up the GPU / renderer for a window. We use it for the startup work that ge
 from running that early:
 
   - remove a STALE Chromium Singleton lock left behind by a dead instance, so this launch isn't
-    wrongly treated as a secondary instance and left hanging with no window; and
+    wrongly treated as a secondary instance and left hanging with no window;
   - clear Chromium's disposable GPU / shader caches when the Chromium (NW.js) version changed,
     BEFORE the GPU process opens them — the common cause of a blank / no-window launch after an
-    upgrade.
+    upgrade; and
+  - on Windows, terminate a HUNG primary that would otherwise trap this launch (see below).
 
-It deliberately does NOT terminate other TiddlyDesktop processes. node-main can also execute in a
-SECONDARY launch before NW.js routes it to the primary, so killing from here could take down a
-healthy running instance (and on Windows there is no Singleton symlink to detect one). Stale-process
-termination therefore stays in main.js, which only ever runs in the primary instance. See
-utils/startup-guard.js.
+It does NOT do general stale-process termination: node-main also executes in a SECONDARY launch
+before NW.js routes it to the primary, so broad killing from here could take down a healthy running
+instance. That stays in main.js, which only ever runs in the primary. The single, narrow exception
+is Windows, where there is no Singleton symlink to clear and a forwarded launch trapped by a hung
+primary never reaches main.js — so killHungPrimary() runs here to terminate ONLY a primary that is
+demonstrably hung (owns a window yet reports Responding == false). A healthy primary responds and is
+left alone, and our launch forwards to it as normal. See utils/startup-guard.js.
 
 Everything is wrapped so a failure here can never stop the app from starting.
 */
@@ -43,7 +46,11 @@ function resolveProfileDir() {
 }
 
 try {
-	require("./utils/startup-guard.js").guardProfile(resolveProfileDir());
+	var guard = require("./utils/startup-guard.js");
+	var profileDir = resolveProfileDir();
+	// Windows only (no-op elsewhere): clear a hung primary before NW.js forwards this launch to it.
+	guard.killHungPrimary(profileDir);
+	guard.guardProfile(profileDir);
 } catch(e) {
 	try { console.error("[TiddlyDesktop] node-main guard failed:", e); } catch(_e) {}
 }
