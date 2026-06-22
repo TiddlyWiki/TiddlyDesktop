@@ -6,10 +6,13 @@ Two jobs, both run synchronously at the very start of main.js (before the Tiddly
 1. killStaleInstances() — after an unclean shutdown, a crash, or an upgrade from an older build,
    orphaned TiddlyDesktop processes can linger and keep holding the Chromium profile's Singleton
    lock / file handles. The next launch then hangs with no window and no error. Because
-   TiddlyDesktop is single-instance (source/package.json sets no "single-instance": false),
-   main.js only ever runs in the PRIMARY instance — a second launch is forwarded to the first and
-   never reaches here. So any OTHER TiddlyDesktop process tree we can see at this point is, by
-   definition, not a healthy running instance of this profile; it is stale, and we terminate it.
+   TiddlyDesktop is single-instance per profile (source/package.json sets no "single-instance":
+   false), so a second launch against the SAME profile is forwarded to the first and never reaches
+   here. A launch with a different --user-data-dir, however, is the primary of its own profile and
+   does run main.js — that is a legitimate parallel instance, NOT a stale one. We therefore only
+   terminate other TiddlyDesktop trees that share OUR profile: any same-profile tree we can see
+   here cannot be a healthy running instance (the live one would have absorbed our launch), so it
+   is stale. Each tree's profile is read from the --user-data-dir on its root (browser) process.
    Our own process tree is always identified and spared.
 
 2. guardProfile() — detect a Chromium version change (i.e. an NW.js upgrade) and clear the
@@ -61,14 +64,16 @@ function enumerateTiddlyDesktop() {
 		if(process.platform === "win32") {
 			// PowerShell CIM is available on all supported Windows and gives a stable, parseable
 			// table. Already filtered to our image name, so every row is a TiddlyDesktop process.
+				// CommandLine is included so the kill can read each tree's --user-data-dir (empty when
+				// the process is elevated and unreadable — treated as the default profile downstream).
 			var psOut = cp.execFileSync("powershell.exe", [
 				"-NoProfile", "-NonInteractive", "-Command",
 				"Get-CimInstance Win32_Process -Filter \"Name='" + EXE_NAME + ".exe'\"" +
-					" | ForEach-Object { \"$($_.ProcessId)`t$($_.ParentProcessId)\" }"
+					" | ForEach-Object { \"$($_.ProcessId)`t$($_.ParentProcessId)`t$($_.CommandLine)\" }"
 			], {encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], windowsHide: true});
 			return psOut.split(/\r?\n/).map(function(line) {
-				var m = /^(\d+)\t(\d+)$/.exec(line.trim());
-				return m ? {pid: parseInt(m[1], 10), ppid: parseInt(m[2], 10), cmd: EXE_NAME} : null;
+				var m = /^(\d+)\t(\d+)\t(.*)$/.exec(line.replace(/\r$/, ""));
+				return m ? {pid: parseInt(m[1], 10), ppid: parseInt(m[2], 10), cmd: m[3]} : null;
 			}).filter(Boolean);
 		}
 		// POSIX (Linux, macOS): -A lists every process on both BSD and procps ps.
@@ -97,9 +102,38 @@ function looksLikeTiddlyDesktop(cmd) {
 	return OUR_EXEC && cmd.indexOf(OUR_EXEC) !== -1;
 }
 
+// --- Profile identification ------------------------------------------------------------------
+
+// Normalise a filesystem path for cross-process comparison: absolute, no trailing separator,
+// case-folded on the case-insensitive platforms (Windows, and macOS by default).
+function normPath(p) {
+	if(!p) { return ""; }
+	var r = path.resolve(p).replace(/[\/\\]+$/, "");
+	return (process.platform === "win32" || process.platform === "darwin") ? r.toLowerCase() : r;
+}
+
+function stripQuotes(s) {
+	return s.replace(/^["']/, "").replace(/["']$/, "");
+}
+
+// Extract the --user-data-dir value from a process command line, or "" when the flag is absent
+// (the instance is running on Chromium's default profile location). Chromium normalises the flag
+// to the --user-data-dir=VALUE form, and VALUE may itself contain spaces (e.g. the macOS default
+// ".../Application Support/..."), so for that form we read up to the next " --flag" or end of line.
+function userDataDirOf(cmd) {
+	if(!cmd) { return ""; }
+	var m = /--user-data-dir=(.*?)(?=\s+--|$)/.exec(cmd);
+	if(m) { return stripQuotes(m[1].trim()); }
+	// Space-separated form (--user-data-dir PATH), as a user might type it on the launcher: one token.
+	m = /--user-data-dir\s+("[^"]*"|'[^']*'|\S+)/.exec(cmd);
+	return m ? stripQuotes(m[1]) : "";
+}
+
 // --- 1. Kill stale instances -----------------------------------------------------------------
 
-exports.killStaleInstances = function() {
+// dataPath is the active Chromium profile dir (gui.App.dataPath, e.g. .../TiddlyDesktop/Default);
+// its parent is the --user-data-dir root we compare other instances against.
+exports.killStaleInstances = function(dataPath) {
 	try {
 		var rows = enumerateTiddlyDesktop();
 		if(!rows || !rows.length) { return; }
@@ -124,9 +158,26 @@ exports.killStaleInstances = function() {
 		}
 
 		var ourRoot = rootOf(process.pid);
-		// Every TiddlyDesktop pid whose instance root isn't ours belongs to a stale tree.
+
+		// Our own profile, taken authoritatively from gui.App.dataPath, plus whether we run on the
+		// platform-default profile (our root process carries no explicit --user-data-dir).
+		var ourProfile = normPath(path.dirname(dataPath || ""));
+		var weOnDefault = !userDataDirOf((byPid[ourRoot] && byPid[ourRoot].cmd) || "");
+
+		// A tree shares our profile when its root's --user-data-dir resolves to ours; a tree with no
+		// flag is on the default profile, which is ours only if we too launched without the flag.
+		function sharesOurProfile(root) {
+			var dir = userDataDirOf((byPid[root] && byPid[root].cmd) || "");
+			return dir ? (normPath(dir) === ourProfile) : weOnDefault;
+		}
+
+		// A pid is stale only if its instance root isn't ours AND that instance shares our profile.
+		// Parallel instances launched with a different --user-data-dir are legitimate and spared.
 		var stalePids = rows.map(function(r) { return r.pid; })
-			.filter(function(pid) { return rootOf(pid) !== ourRoot; });
+			.filter(function(pid) {
+				var root = rootOf(pid);
+				return root !== ourRoot && sharesOurProfile(root);
+			});
 		if(!stalePids.length) { return; }
 
 		if(process.platform === "win32") {
