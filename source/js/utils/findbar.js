@@ -18,9 +18,21 @@ installFindBar({ hostWindow, hostDocument, getContentWindow, getContentDocument 
 
 "use strict";
 
-var SHOW_TEXT = 4, FILTER_ACCEPT = 1, FILTER_REJECT = 3;
 var HL_ALL = "td-find-all", HL_CUR = "td-find-current";
 var MAX_MATCHES = 10000;
+
+// Elements that introduce a visual line/box break. A query must not match across
+// one of these (the browser's own find-in-page doesn't either), so we insert a
+// separator between their text when flattening the DOM. Everything else (notably
+// the <span>s a syntax highlighter wraps each token in) counts as inline, so a
+// query like "$tw." still matches when it's split across adjacent inline spans.
+var BLOCK_TAGS = {
+	ADDRESS:1, ARTICLE:1, ASIDE:1, BLOCKQUOTE:1, BR:1, CANVAS:1, DD:1, DETAILS:1,
+	DIALOG:1, DIV:1, DL:1, DT:1, FIELDSET:1, FIGCAPTION:1, FIGURE:1, FOOTER:1,
+	FORM:1, H1:1, H2:1, H3:1, H4:1, H5:1, H6:1, HEADER:1, HR:1, LI:1, MAIN:1,
+	NAV:1, OL:1, P:1, PRE:1, SECTION:1, SUMMARY:1, TABLE:1, TBODY:1, TD:1, TFOOT:1,
+	TH:1, THEAD:1, TR:1, UL:1, VIDEO:1
+};
 
 exports.installFindBar = function(options) {
 	var hostWindow         = options.hostWindow,
@@ -178,32 +190,80 @@ exports.installFindBar = function(options) {
 	// Walk the current content and build a Range for every match. Pure — it reads
 	// the live DOM and returns fresh ranges, so it can be re-run whenever the
 	// content changes underneath us.
+	//
+	// We flatten the visible text into one string and search that, rather than each
+	// text node on its own, so a query that spans element boundaries still matches —
+	// e.g. "$tw." rendered by a syntax highlighter as <span>$tw</span><span>.</span>
+	// lives in two text nodes and would otherwise never be found. Block-level
+	// elements insert a separator so we don't match across unrelated lines/blocks.
 	function collectRanges(query) {
 		var d = cdoc();
 		if(!d || !d.body) { return []; }
-		var q = query.toLowerCase(), ranges = [];
-		var walker = d.createTreeWalker(d.body, SHOW_TEXT, function(node) {
-			var p = node.parentNode;
-			if(!p || !node.nodeValue) { return FILTER_REJECT; }
-			var tag = p.nodeName;
-			if(tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT") { return FILTER_REJECT; }
-			// Skip the find bar's own UI (matters for folder wikis, where the panel
-			// shares the document with the wiki being searched).
-			if(p.closest && p.closest(".td-findbar")) { return FILTER_REJECT; }
-			return FILTER_ACCEPT;
-		});
-		var node;
-		outer: while((node = walker.nextNode())) {
-			var lower = node.nodeValue.toLowerCase(), from = 0, pos;
-			while((pos = lower.indexOf(q, from)) !== -1) {
+		var q = query.toLowerCase();
+		if(!q) { return []; }
+
+		// Flatten body text in document order. `segments` records, for each text
+		// node, where its text starts in the combined string, so a match position
+		// can be mapped back to a node + offset. `sepPending` collapses runs of
+		// block boundaries into a single separator and avoids a leading one.
+		var segments = [], parts = [], gLen = 0, sepPending = false;
+		var SEP = "\n";
+		function addSep() {
+			if(gLen > 0 && !sepPending) { parts.push(SEP); gLen += SEP.length; sepPending = true; }
+		}
+		function walk(el) {
+			for(var child = el.firstChild; child; child = child.nextSibling) {
+				var nt = child.nodeType;
+				if(nt === 3) {
+					var v = child.nodeValue;
+					if(v) {
+						segments.push({ node: child, gStart: gLen, len: v.length });
+						parts.push(v); gLen += v.length; sepPending = false;
+					}
+				} else if(nt === 1) {
+					var tag = child.nodeName;
+					if(tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT") { continue; }
+					// Skip the find bar's own UI (matters for folder wikis, where the
+					// panel shares the document with the wiki being searched).
+					if(child.classList && child.classList.contains("td-findbar")) { continue; }
+					var block = BLOCK_TAGS[tag] === 1;
+					if(block) { addSep(); }
+					walk(child);
+					if(block) { addSep(); }
+				}
+			}
+		}
+		walk(d.body);
+
+		// Map a position in the combined string to a {node, offset}. Binary search
+		// over segments; positions that fall on a separator return null (a match can
+		// only land there if the query itself contains the separator char).
+		function locate(p) {
+			var lo = 0, hi = segments.length - 1;
+			while(lo <= hi) {
+				var mid = (lo + hi) >> 1, seg = segments[mid];
+				if(p < seg.gStart) { hi = mid - 1; }
+				else if(p >= seg.gStart + seg.len) { lo = mid + 1; }
+				else { return { node: seg.node, offset: p - seg.gStart }; }
+			}
+			return null;
+		}
+
+		var hay = parts.join("").toLowerCase(), ranges = [], from = 0, pos;
+		while((pos = hay.indexOf(q, from)) !== -1) {
+			// Start at the first matched char; end after the last one, so a match that
+			// spans two adjacent inline text nodes yields a range across both.
+			var startLoc = locate(pos), endLoc = locate(pos + q.length - 1);
+			if(startLoc && endLoc) {
 				try {
 					var r = d.createRange();
-					r.setStart(node, pos); r.setEnd(node, pos + q.length);
+					r.setStart(startLoc.node, startLoc.offset);
+					r.setEnd(endLoc.node, endLoc.offset + 1);
 					ranges.push(r);
 				} catch(e) {}
-				from = pos + q.length;
-				if(ranges.length >= MAX_MATCHES) { break outer; }
 			}
+			from = pos + q.length;
+			if(ranges.length >= MAX_MATCHES) { break; }
 		}
 		return ranges;
 	}
