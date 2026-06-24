@@ -52,6 +52,9 @@ PluginChooser/Clear: Wyczyść
 PluginChooser/NoMatch: Żadna wtyczka nie pasuje do filtra.
 PluginChooser/Apply: Zastosuj zmiany
 PluginChooser/Cancel: Anuluj
+PluginChooser/Reinstall: Zainstaluj ponownie
+PluginChooser/ReinstallTooltip: Zainstaluj ponownie dołączoną wersję tej wtyczki
+PluginChooser/Reinstalled: Zainstalowano ponownie
 PluginChooser/Update: Aktualizuj
 PluginChooser/UpdateAvailable: Dołączono nowszą wersję — kliknij, aby zaktualizować
 PluginChooser/Updated: Zaktualizowano

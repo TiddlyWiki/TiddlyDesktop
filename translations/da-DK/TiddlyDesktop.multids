@@ -52,6 +52,9 @@ PluginChooser/Clear: Ryd
 PluginChooser/NoMatch: Ingen plugins matcher dit filter.
 PluginChooser/Apply: Anvend ændringer
 PluginChooser/Cancel: Annullér
+PluginChooser/Reinstall: Geninstallér
+PluginChooser/ReinstallTooltip: Geninstallér den medfølgende version af dette plugin
+PluginChooser/Reinstalled: Geninstalleret
 PluginChooser/Update: Opdatér
 PluginChooser/UpdateAvailable: En nyere version er inkluderet — klik for at opdatere
 PluginChooser/Updated: Opdateret

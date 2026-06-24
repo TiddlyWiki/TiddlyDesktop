@@ -52,6 +52,9 @@ PluginChooser/Clear: Исчисти
 PluginChooser/NoMatch: Ниту еден приклучок не одговара на вашиот филтер.
 PluginChooser/Apply: Примени измени
 PluginChooser/Cancel: Откажи
+PluginChooser/Reinstall: Преинсталирај
+PluginChooser/ReinstallTooltip: Преинсталирај ја вклучената верзија на овој приклучок
+PluginChooser/Reinstalled: Преинсталирано
 PluginChooser/Update: Ажурирај
 PluginChooser/UpdateAvailable: Вклучена е поново верзија — кликнете за ажурирање
 PluginChooser/Updated: Ажурирано

@@ -52,6 +52,9 @@ PluginChooser/Clear: مسح
 PluginChooser/NoMatch: لا توجد إضافات تطابق عامل التصفية.
 PluginChooser/Apply: تطبيق التغييرات
 PluginChooser/Cancel: إلغاء
+PluginChooser/Reinstall: إعادة التثبيت
+PluginChooser/ReinstallTooltip: إعادة تثبيت النسخة المضمّنة من هذه الإضافة
+PluginChooser/Reinstalled: تمت إعادة التثبيت
 PluginChooser/Update: تحديث
 PluginChooser/UpdateAvailable: يتوفّر إصدار أحدث — انقر للتحديث
 PluginChooser/Updated: تم التحديث

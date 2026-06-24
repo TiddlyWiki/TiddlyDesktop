@@ -52,6 +52,9 @@ PluginChooser/Clear: Esborra
 PluginChooser/NoMatch: Cap connector coincideix amb el filtre.
 PluginChooser/Apply: Aplica els canvis
 PluginChooser/Cancel: Cancel·la
+PluginChooser/Reinstall: Reinstal·la
+PluginChooser/ReinstallTooltip: Reinstal·la la versió inclosa d’aquest connector
+PluginChooser/Reinstalled: Reinstal·lat
 PluginChooser/Update: Actualitza
 PluginChooser/UpdateAvailable: S’inclou una versió més recent: fes clic per actualitzar
 PluginChooser/Updated: Actualitzat

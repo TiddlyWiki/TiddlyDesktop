@@ -52,6 +52,9 @@ PluginChooser/Clear: 지우기
 PluginChooser/NoMatch: 필터와 일치하는 플러그인이 없습니다.
 PluginChooser/Apply: 변경 사항 적용
 PluginChooser/Cancel: 취소
+PluginChooser/Reinstall: 다시 설치
+PluginChooser/ReinstallTooltip: 이 플러그인의 포함된 버전을 다시 설치합니다
+PluginChooser/Reinstalled: 다시 설치됨
 PluginChooser/Update: 업데이트
 PluginChooser/UpdateAvailable: 더 새로운 버전이 포함되어 있습니다 — 클릭하여 업데이트
 PluginChooser/Updated: 업데이트됨

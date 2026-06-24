@@ -52,6 +52,9 @@ PluginChooser/Clear: Effacer
 PluginChooser/NoMatch: Aucun plugin ne correspond à votre filtre.
 PluginChooser/Apply: Appliquer les modifications
 PluginChooser/Cancel: Annuler
+PluginChooser/Reinstall: Réinstaller
+PluginChooser/ReinstallTooltip: Réinstaller la version fournie de ce plugin
+PluginChooser/Reinstalled: Réinstallé
 PluginChooser/Update: Mettre à jour
 PluginChooser/UpdateAvailable: Une version plus récente est fournie — cliquez pour mettre à jour
 PluginChooser/Updated: Mis à jour

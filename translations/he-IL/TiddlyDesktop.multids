@@ -52,6 +52,9 @@ PluginChooser/Clear: נקה
 PluginChooser/NoMatch: אין תוספים התואמים את הסינון.
 PluginChooser/Apply: החל שינויים
 PluginChooser/Cancel: ביטול
+PluginChooser/Reinstall: התקן מחדש
+PluginChooser/ReinstallTooltip: התקנה מחדש של הגרסה הכלולה של תוסף זה
+PluginChooser/Reinstalled: הותקן מחדש
 PluginChooser/Update: עדכן
 PluginChooser/UpdateAvailable: כלולה גרסה חדשה יותר — לחצו לעדכון
 PluginChooser/Updated: עודכן

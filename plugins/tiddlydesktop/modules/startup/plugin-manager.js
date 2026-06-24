@@ -89,6 +89,7 @@ exports.startup = function() {
 				description: plugin.description,
 				version: plugin.version,
 				"installed-version": installedVer,
+				installed: isInstalled ? "yes" : "",
 				"update-available": updateAvailable ? "yes" : "",
 				source: plugin.source
 			}));
@@ -210,6 +211,40 @@ exports.startup = function() {
 			_setStatus("✗ Error: " + e.message);
 		}
 
+		return false;
+	});
+
+	// ── reinstall a single plugin ───────────────────────────────────────────────
+	// Force-rewrite this plugin's embedded copy from the bundled version, regardless
+	// of whether an update is flagged. A repair action (e.g. a plugin's tiddlers got
+	// corrupted) — unlike Update it doesn't require a newer version to be available.
+	$tw.rootWidget.addEventListener("tiddlydesktop-reinstall-plugin", function(event) {
+		var pluginTitle = event.param;
+		var target = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
+		if(!pluginTitle || !target) return false;
+		var wikiUrl = target.fields.text;
+		if(target.fields["wiki-open"] === "yes") {
+			_setStatus("✗ " + $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/PluginChooser/OpenWarning", "Close the wiki first."));
+			return false;
+		}
+		var availTiddler = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/available/" + pluginTitle);
+		if(!availTiddler) return false;
+		try {
+			if(wikiUrl.startsWith("wikifile://")) {
+				_applyFileChanges(wikiUrl, [availTiddler.fields], [], fs, path);
+			} else {
+				_applyFolderChanges(wikiUrl, [availTiddler.fields], [], fs, path);
+			}
+			// Reflect the (possibly bumped) installed version in the chooser without reopening it.
+			$tw.wiki.addTiddler(new $tw.Tiddler(availTiddler.fields, {
+				"installed-version": availTiddler.fields.version,
+				"update-available": ""
+			}));
+			_setStatus("✓ " + $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/PluginChooser/Reinstalled", "Reinstalled") + " " + pluginTitle);
+			_scanUpdatesForWiki(wikiUrl, availableByTitle, fs, path);
+		} catch(e) {
+			_setStatus("✗ Error: " + e.message);
+		}
 		return false;
 	});
 

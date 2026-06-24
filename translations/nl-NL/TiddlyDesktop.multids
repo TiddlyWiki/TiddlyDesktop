@@ -52,6 +52,9 @@ PluginChooser/Clear: Wissen
 PluginChooser/NoMatch: Geen plug-ins komen overeen met je filter.
 PluginChooser/Apply: Wijzigingen toepassen
 PluginChooser/Cancel: Annuleren
+PluginChooser/Reinstall: Opnieuw installeren
+PluginChooser/ReinstallTooltip: De meegeleverde versie van deze plug-in opnieuw installeren
+PluginChooser/Reinstalled: Opnieuw geïnstalleerd
 PluginChooser/Update: Bijwerken
 PluginChooser/UpdateAvailable: Een nieuwere versie is meegeleverd — klik om bij te werken
 PluginChooser/Updated: Bijgewerkt

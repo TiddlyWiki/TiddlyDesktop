@@ -36,6 +36,7 @@ var KEY_ORDER = [
 	"PluginChooser/Tab/plugin","PluginChooser/Tab/language","PluginChooser/Tab/theme",
 	"PluginChooser/Heading","PluginChooser/Close","PluginChooser/OpenWarning","PluginChooser/FilterPlaceholder",
 	"PluginChooser/Clear","PluginChooser/NoMatch","PluginChooser/Apply","PluginChooser/Cancel",
+	"PluginChooser/Reinstall","PluginChooser/ReinstallTooltip","PluginChooser/Reinstalled",
 	"PluginChooser/Update","PluginChooser/UpdateAvailable","PluginChooser/Updated","Row/PluginUpdates"
 ];
 
@@ -594,6 +595,44 @@ Object.keys(PLUGIN_UPDATE).forEach(function(lang) {
 	T[lang]["PluginChooser/UpdateAvailable"] = v[1];
 	T[lang]["PluginChooser/Updated"]         = v[2];
 	T[lang]["Row/PluginUpdates"]             = v[3];
+});
+
+// Per-row reinstall button strings: [Reinstall (label), ReinstallTooltip, Reinstalled (status)].
+var REINSTALL = {
+	"de-DE": ["Neu installieren", "Die mitgelieferte Version dieses Plugins neu installieren", "Neu installiert"],
+	"fr-FR": ["Réinstaller", "Réinstaller la version fournie de ce plugin", "Réinstallé"],
+	"es-ES": ["Reinstalar", "Reinstalar la versión incluida de este complemento", "Reinstalado"],
+	"ca-ES": ["Reinstal·la", "Reinstal·la la versió inclosa d’aquest connector", "Reinstal·lat"],
+	"it-IT": ["Reinstalla", "Reinstalla la versione inclusa di questo plugin", "Reinstallato"],
+	"pt-BR": ["Reinstalar", "Reinstalar a versão incluída deste plugin", "Reinstalado"],
+	"pt-PT": ["Reinstalar", "Reinstalar a versão incluída deste plugin", "Reinstalado"],
+	"nl-NL": ["Opnieuw installeren", "De meegeleverde versie van deze plug-in opnieuw installeren", "Opnieuw geïnstalleerd"],
+	"da-DK": ["Geninstallér", "Geninstallér den medfølgende version af dette plugin", "Geninstalleret"],
+	"sv-SE": ["Installera om", "Installera om den medföljande versionen av detta tillägg", "Ominstallerad"],
+	"pl-PL": ["Zainstaluj ponownie", "Zainstaluj ponownie dołączoną wersję tej wtyczki", "Zainstalowano ponownie"],
+	"cs-CZ": ["Přeinstalovat", "Přeinstalovat přiloženou verzi tohoto pluginu", "Přeinstalováno"],
+	"sk-SK": ["Preinštalovať", "Preinštalovať priloženú verziu tohto pluginu", "Preinštalované"],
+	"sl-SI": ["Znova namesti", "Znova namesti priloženo različico tega vtičnika", "Znova nameščeno"],
+	"mk-MK": ["Преинсталирај", "Преинсталирај ја вклучената верзија на овој приклучок", "Преинсталирано"],
+	"ru-RU": ["Переустановить", "Переустановить встроенную версию этого плагина", "Переустановлено"],
+	"el-GR": ["Επανεγκατάσταση", "Επανεγκατάσταση της ενσωματωμένης έκδοσης αυτού του προσθέτου", "Επανεγκαταστάθηκε"],
+	"he-IL": ["התקן מחדש", "התקנה מחדש של הגרסה הכלולה של תוסף זה", "הותקן מחדש"],
+	"ar-PS": ["إعادة التثبيت", "إعادة تثبيت النسخة المضمّنة من هذه الإضافة", "تمت إعادة التثبيت"],
+	"fa-IR": ["نصب مجدد", "نصب مجدد نسخهٔ همراه این افزونه", "دوباره نصب شد"],
+	"hi-IN": ["पुनः इंस्टॉल करें", "इस प्लगइन का साथ-शामिल संस्करण पुनः इंस्टॉल करें", "पुनः इंस्टॉल किया गया"],
+	"pa-IN": ["ਮੁੜ ਇੰਸਟਾਲ ਕਰੋ", "ਇਸ ਪਲੱਗਇਨ ਦਾ ਨਾਲ-ਸ਼ਾਮਲ ਸੰਸਕਰਣ ਮੁੜ ਇੰਸਟਾਲ ਕਰੋ", "ਮੁੜ ਇੰਸਟਾਲ ਕੀਤਾ"],
+	"ia-IA": ["Reinstallar", "Reinstallar le version includite de iste plugin", "Reinstallate"],
+	"ja-JP": ["再インストール", "このプラグインの同梱版を再インストールします", "再インストールしました"],
+	"ko-KR": ["다시 설치", "이 플러그인의 포함된 버전을 다시 설치합니다", "다시 설치됨"],
+	"zh-Hans": ["重新安装", "重新安装此插件的捆绑版本", "已重新安装"],
+	"zh-Hant": ["重新安裝", "重新安裝此外掛的隨附版本", "已重新安裝"]
+};
+Object.keys(REINSTALL).forEach(function(lang) {
+	if(!T[lang]) { return; }
+	var v = REINSTALL[lang];
+	T[lang]["PluginChooser/Reinstall"]        = v[0];
+	T[lang]["PluginChooser/ReinstallTooltip"] = v[1];
+	T[lang]["PluginChooser/Reinstalled"]      = v[2];
 });
 
 // PluginChooser tab captions: [Plugins, Languages, Themes].

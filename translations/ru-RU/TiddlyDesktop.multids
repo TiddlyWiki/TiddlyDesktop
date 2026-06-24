@@ -52,6 +52,9 @@ PluginChooser/Clear: Очистить
 PluginChooser/NoMatch: Нет плагинов, соответствующих фильтру.
 PluginChooser/Apply: Применить изменения
 PluginChooser/Cancel: Отмена
+PluginChooser/Reinstall: Переустановить
+PluginChooser/ReinstallTooltip: Переустановить встроенную версию этого плагина
+PluginChooser/Reinstalled: Переустановлено
 PluginChooser/Update: Обновить
 PluginChooser/UpdateAvailable: В комплекте есть более новая версия — нажмите, чтобы обновить
 PluginChooser/Updated: Обновлено

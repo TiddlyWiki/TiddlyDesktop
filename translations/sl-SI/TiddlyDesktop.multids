@@ -52,6 +52,9 @@ PluginChooser/Clear: Počisti
 PluginChooser/NoMatch: Filtru ne ustreza noben vtičnik.
 PluginChooser/Apply: Uporabi spremembe
 PluginChooser/Cancel: Prekliči
+PluginChooser/Reinstall: Znova namesti
+PluginChooser/ReinstallTooltip: Znova namesti priloženo različico tega vtičnika
+PluginChooser/Reinstalled: Znova nameščeno
 PluginChooser/Update: Posodobi
 PluginChooser/UpdateAvailable: Priložena je novejša različica — kliknite za posodobitev
 PluginChooser/Updated: Posodobljeno

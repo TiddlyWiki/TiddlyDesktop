@@ -52,6 +52,9 @@ PluginChooser/Clear: Rader
 PluginChooser/NoMatch: Nulle plugin corresponde a tu filtro.
 PluginChooser/Apply: Applicar cambiamentos
 PluginChooser/Cancel: Cancellar
+PluginChooser/Reinstall: Reinstallar
+PluginChooser/ReinstallTooltip: Reinstallar le version includite de iste plugin
+PluginChooser/Reinstalled: Reinstallate
 PluginChooser/Update: Actualisar
 PluginChooser/UpdateAvailable: Un version plus recente es includite — clicca pro actualisar
 PluginChooser/Updated: Actualisate

@@ -52,6 +52,9 @@ PluginChooser/Clear: Vymazať
 PluginChooser/NoMatch: Filtru nezodpovedajú žiadne pluginy.
 PluginChooser/Apply: Použiť zmeny
 PluginChooser/Cancel: Zrušiť
+PluginChooser/Reinstall: Preinštalovať
+PluginChooser/ReinstallTooltip: Preinštalovať priloženú verziu tohto pluginu
+PluginChooser/Reinstalled: Preinštalované
 PluginChooser/Update: Aktualizovať
 PluginChooser/UpdateAvailable: Je priložená novšia verzia — aktualizujte kliknutím
 PluginChooser/Updated: Aktualizované

@@ -52,6 +52,9 @@ PluginChooser/Clear: پاک کردن
 PluginChooser/NoMatch: هیچ افزونه‌ای با فیلتر شما مطابقت ندارد.
 PluginChooser/Apply: اعمال تغییرات
 PluginChooser/Cancel: لغو
+PluginChooser/Reinstall: نصب مجدد
+PluginChooser/ReinstallTooltip: نصب مجدد نسخهٔ همراه این افزونه
+PluginChooser/Reinstalled: دوباره نصب شد
 PluginChooser/Update: به‌روزرسانی
 PluginChooser/UpdateAvailable: نسخهٔ جدیدتری همراه است — برای به‌روزرسانی کلیک کنید
 PluginChooser/Updated: به‌روزرسانی شد

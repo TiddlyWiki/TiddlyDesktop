@@ -464,9 +464,19 @@ tags: $:/tags/Stylesheet
 	border-bottom: none;
 }
 
+/* The checkbox is a <label> that wraps the plugin info, so clicking the title
+   (or description) toggles selection — not just the little box itself. */
 .td-plugin-checkbox {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	cursor: pointer;
+}
+
+.td-plugin-checkbox input {
 	flex-shrink: 0;
-	margin-top: 2px;
 }
 
 .td-plugin-info {
@@ -517,6 +527,17 @@ tags: $:/tags/Stylesheet
 
 .td-plugin-btn-update:hover {
 	background-color: #1666c1;
+}
+
+.td-plugin-btn-reinstall {
+	flex-shrink: 0;
+	background-color: <<colour wikilist-button-background>>;
+	color: <<colour wikilist-button-foreground>>;
+	white-space: nowrap;
+}
+
+.td-plugin-btn-reinstall:hover {
+	filter: brightness(0.92);
 }
 
 /* Count badge on the wiki-list Plugins button when a wiki has outdated plugins. */

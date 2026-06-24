@@ -52,6 +52,9 @@ PluginChooser/Clear: ਸਾਫ਼ ਕਰੋ
 PluginChooser/NoMatch: ਤੁਹਾਡੇ ਫਿਲਟਰ ਨਾਲ ਕੋਈ ਪਲੱਗਇਨ ਮੇਲ ਨਹੀਂ ਖਾਂਦਾ।
 PluginChooser/Apply: ਤਬਦੀਲੀਆਂ ਲਾਗੂ ਕਰੋ
 PluginChooser/Cancel: ਰੱਦ ਕਰੋ
+PluginChooser/Reinstall: ਮੁੜ ਇੰਸਟਾਲ ਕਰੋ
+PluginChooser/ReinstallTooltip: ਇਸ ਪਲੱਗਇਨ ਦਾ ਨਾਲ-ਸ਼ਾਮਲ ਸੰਸਕਰਣ ਮੁੜ ਇੰਸਟਾਲ ਕਰੋ
+PluginChooser/Reinstalled: ਮੁੜ ਇੰਸਟਾਲ ਕੀਤਾ
 PluginChooser/Update: ਅੱਪਡੇਟ ਕਰੋ
 PluginChooser/UpdateAvailable: ਇੱਕ ਨਵਾਂ ਸੰਸਕਰਣ ਸ਼ਾਮਲ ਹੈ — ਅੱਪਡੇਟ ਕਰਨ ਲਈ ਕਲਿੱਕ ਕਰੋ
 PluginChooser/Updated: ਅੱਪਡੇਟ ਕੀਤਾ

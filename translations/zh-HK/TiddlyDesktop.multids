@@ -52,6 +52,9 @@ PluginChooser/Clear: 清除
 PluginChooser/NoMatch: 沒有外掛符合您的篩選條件。
 PluginChooser/Apply: 套用變更
 PluginChooser/Cancel: 取消
+PluginChooser/Reinstall: 重新安裝
+PluginChooser/ReinstallTooltip: 重新安裝此外掛的隨附版本
+PluginChooser/Reinstalled: 已重新安裝
 PluginChooser/Update: 更新
 PluginChooser/UpdateAvailable: 已隨附較新版本 —— 點選以更新
 PluginChooser/Updated: 已更新

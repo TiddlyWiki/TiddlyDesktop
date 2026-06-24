@@ -39,18 +39,22 @@ title: $:/TiddlyDesktop/PluginChooser
 <$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]plugin-type<currentTab>search:plugin-title,description<searchText>sort[plugin-title]]">
 <div class="td-plugin-row">
 <$let pluginTitle={{{ [<currentTiddler>get[plugin-title]] }}}>
-<$checkbox tiddler=<<plugin-sel-title>> field="text" checked="yes" unchecked="no" default="no" class="td-plugin-checkbox"/>
+<$checkbox tiddler=<<plugin-sel-title>> field="text" checked="yes" unchecked="no" default="no" class="td-plugin-checkbox">
 <div class="td-plugin-info">
 <span class="td-plugin-title"><$text text=<<pluginTitle>>/></span>
 <$list filter="[<currentTiddler>get[plugin-type]!match[plugin]]" variable="ptype"><span class="td-plugin-type-badge"><$text text=<<ptype>>/></span></$list>
 <$list filter="[<currentTiddler>get[description]!match[]]" variable="desc"><br/><span class="td-plugin-desc"><$text text=<<desc>>/></span></$list>
 </div>
+</$checkbox>
 <$list filter="[<currentTiddler>field:update-available[yes]]" variable="_">
 <span class="td-plugin-version td-plugin-version-outdated">v<$text text={{{ [<currentTiddler>get[installed-version]] }}}/> → v<$text text={{{ [<currentTiddler>get[version]] }}}/></span>
 <$button message="tiddlydesktop-update-plugin" param=<<pluginTitle>> class="tc-btn-invisible td-button td-plugin-btn-update" tooltip={{$:/language/TiddlyDesktop/PluginChooser/UpdateAvailable}}>{{$:/language/TiddlyDesktop/PluginChooser/Update}}</$button>
 </$list>
 <$list filter="[<currentTiddler>!field:update-available[yes]]" variable="_">
 <$list filter="[<currentTiddler>get[version]!match[]]" variable="ver"><span class="td-plugin-version">v<$text text=<<ver>>/></span></$list>
+<$list filter="[<currentTiddler>field:installed[yes]]" variable="_"><$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[file]]" variable="_">
+<$button message="tiddlydesktop-reinstall-plugin" param=<<pluginTitle>> class="tc-btn-invisible td-button td-plugin-btn-reinstall" tooltip={{$:/language/TiddlyDesktop/PluginChooser/ReinstallTooltip}}>{{$:/language/TiddlyDesktop/PluginChooser/Reinstall}}</$button>
+</$list></$list>
 </$list>
 </$let>
 </div>

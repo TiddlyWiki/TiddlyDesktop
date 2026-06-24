@@ -52,6 +52,9 @@ PluginChooser/Clear: Καθαρισμός
 PluginChooser/NoMatch: Κανένα πρόσθετο δεν ταιριάζει με το φίλτρο σας.
 PluginChooser/Apply: Εφαρμογή αλλαγών
 PluginChooser/Cancel: Άκυρο
+PluginChooser/Reinstall: Επανεγκατάσταση
+PluginChooser/ReinstallTooltip: Επανεγκατάσταση της ενσωματωμένης έκδοσης αυτού του προσθέτου
+PluginChooser/Reinstalled: Επανεγκαταστάθηκε
 PluginChooser/Update: Ενημέρωση
 PluginChooser/UpdateAvailable: Περιλαμβάνεται νεότερη έκδοση — κάντε κλικ για ενημέρωση
 PluginChooser/Updated: Ενημερώθηκε

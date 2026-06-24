@@ -52,6 +52,9 @@ PluginChooser/Clear: Rensa
 PluginChooser/NoMatch: Inga tillägg matchar ditt filter.
 PluginChooser/Apply: Tillämpa ändringar
 PluginChooser/Cancel: Avbryt
+PluginChooser/Reinstall: Installera om
+PluginChooser/ReinstallTooltip: Installera om den medföljande versionen av detta tillägg
+PluginChooser/Reinstalled: Ominstallerad
 PluginChooser/Update: Uppdatera
 PluginChooser/UpdateAvailable: En nyare version medföljer — klicka för att uppdatera
 PluginChooser/Updated: Uppdaterad
