@@ -55,6 +55,11 @@ PluginChooser/Cancel: إلغاء
 PluginChooser/Reinstall: إعادة التثبيت
 PluginChooser/ReinstallTooltip: إعادة تثبيت النسخة المضمّنة من هذه الإضافة
 PluginChooser/Reinstalled: تمت إعادة التثبيت
+PluginChooser/Installed: مثبّت
+PluginChooser/NotInstalled: غير مثبّت
+PluginChooser/Versions: إصدارات
+PluginChooser/SourceBundled: مضمّن
+PluginChooser/SourceExternal: خارجي
 PluginChooser/Update: تحديث
 PluginChooser/UpdateAvailable: يتوفّر إصدار أحدث — انقر للتحديث
 PluginChooser/Updated: تم التحديث

@@ -124,37 +124,62 @@ exports.addBaseMethods = function(proto) {
 	// event-driven flag gets stuck "maximized" once set and the window can never be
 	// remembered as restored again. A maximized window fills the work area and sits at its
 	// origin; tolerance covers WM frames / invisible resize borders.
-	proto.isMaximizedNow = function() {
+	// Returns true (maximized), false (not), or null (can't tell). Judged by SIZE only — a
+	// maximized window fills the work area. We deliberately do NOT compare x/y: global window
+	// coordinates are unreliable on some window managers (and not exposed at all on Wayland),
+	// so a position check would read a genuinely-maximized window as "restored" and lose the
+	// state. Prefer the window's own screen metrics (reliable in-process and on Wayland), then
+	// fall back to the nw.gui Screen work area.
+	proto._maximizedState = function() {
 		var win = this.window_nwjs;
-		if(!win) { return false; }
+		if(!win) { return null; }
 		try {
-			var x = win.x, y = win.y, w = win.width, h = win.height;
-			if(!isFinite(w) || !isFinite(h) || w < 1 || h < 1) { return false; }
-			var wa = _workAreaFor(x, y, w, h);
-			if(!wa) { return false; }   // can't enumerate screens → don't guess "maximized"
+			var w = win.width, h = win.height;
+			if(!isFinite(w) || !isFinite(h) || w < 1 || h < 1) { return null; }
+			var availW = null, availH = null;
+			try {
+				var scr = win.window && win.window.screen;
+				if(scr && scr.availWidth) { availW = scr.availWidth; availH = scr.availHeight; }
+			} catch(e) {}
+			if(availW === null) {
+				var wa = _workAreaFor(win.x, win.y, w, h);
+				if(wa) { availW = wa.width; availH = wa.height; }
+			}
+			if(availW === null) { return null; }   // can't measure → unknown
 			var tol = 40;
-			return Math.abs(w - wa.width)  <= tol && Math.abs(h - wa.height) <= tol &&
-			       Math.abs(x - wa.x)      <= tol && Math.abs(y - wa.y)      <= tol;
+			return (Math.abs(w - availW) <= tol && Math.abs(h - availH) <= tol);
 		} catch(e) {}
-		return false;
+		return null;
 	};
 
 	// Persist the window's current position and size. While the window is maximized we keep
 	// the previously-stored normal (restore) bounds untouched and only flag maximized=true;
 	// when it isn't, we store the live bounds with maximized=false. The maximized state is
-	// recomputed from the bounds on every save (see isMaximizedNow) so it stays correct on
+	// recomputed from the bounds on every save (see _maximizedState) so it stays correct on
 	// platforms that emit no maximize/unmaximize events. Skipped while fullscreen.
 	proto.saveGeometry = function() {
 		var win = this.window_nwjs;
 		if(!win) { return; }
 		try {
 			if(win.isFullscreen) { return; }
-			var maximized = this.isMaximizedNow();
+			// Don't persist transitional bounds while a programmatic maximize is still settling
+			// (see restoreMaximizedState) — otherwise the restore bounds would be captured as
+			// "not maximized" and clobber the flag we just restored.
+			if(win.__tdGeomSettleUntil && Date.now() < win.__tdGeomSettleUntil) { return; }
+			var maximized = this._maximizedState();
+			// When the screen can't be measured, trust the event-driven flag rather than guess —
+			// never downgrade a known-maximized window to "restored" on an unreadable sample.
+			if(maximized === null) { maximized = !!win.__tdMaximized; }
 			win.__tdMaximized = maximized;
 			if(maximized) {
-				// Don't overwrite the normal bounds with the maximized ones — just flag it,
-				// so restore-on-reopen has real bounds to fall back to after un-maximizing.
+				// Don't overwrite the normal bounds with the maximized ones — just flag it, so
+				// restore-on-reopen has real bounds to fall back to after un-maximizing. If no
+				// normal bounds were ever saved (window was maximized from first launch), seed
+				// them with the current bounds so loadGeometry stays valid and restore works.
 				var prev = this.loadGeometry() || {};
+				if(!isFinite(prev.width) || !isFinite(prev.height) || prev.width < 1 || prev.height < 1) {
+					prev.x = win.x; prev.y = win.y; prev.width = win.width; prev.height = win.height;
+				}
 				prev.maximized = true;
 				$tw.wiki.addTiddler(new $tw.Tiddler({title: this.getConfigTitle("geometry"),text: JSON.stringify(prev)}));
 				return;
@@ -181,6 +206,10 @@ exports.addBaseMethods = function(proto) {
 		var g = this.loadGeometry();
 		if(g && g.maximized) {
 			win.__tdMaximized = true;
+			// Suppress geometry saves briefly: a resize/move fired during the maximize
+			// transition (while the window is still at its restore bounds) must not overwrite
+			// the maximized flag with a "restored" sample before the WM finishes maximizing.
+			win.__tdGeomSettleUntil = Date.now() + 1500;
 			try { win.maximize(); } catch(e) {}
 		}
 	};

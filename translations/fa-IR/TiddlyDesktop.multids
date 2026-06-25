@@ -55,6 +55,11 @@ PluginChooser/Cancel: لغو
 PluginChooser/Reinstall: نصب مجدد
 PluginChooser/ReinstallTooltip: نصب مجدد نسخهٔ همراه این افزونه
 PluginChooser/Reinstalled: دوباره نصب شد
+PluginChooser/Installed: نصب‌شده
+PluginChooser/NotInstalled: نصب نشده
+PluginChooser/Versions: نسخه‌ها
+PluginChooser/SourceBundled: همراه
+PluginChooser/SourceExternal: خارجی
 PluginChooser/Update: به‌روزرسانی
 PluginChooser/UpdateAvailable: نسخهٔ جدیدتری همراه است — برای به‌روزرسانی کلیک کنید
 PluginChooser/Updated: به‌روزرسانی شد

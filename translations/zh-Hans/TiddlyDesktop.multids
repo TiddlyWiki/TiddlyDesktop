@@ -55,6 +55,11 @@ PluginChooser/Cancel: 取消
 PluginChooser/Reinstall: 重新安装
 PluginChooser/ReinstallTooltip: 重新安装此插件的捆绑版本
 PluginChooser/Reinstalled: 已重新安装
+PluginChooser/Installed: 已安装
+PluginChooser/NotInstalled: 未安装
+PluginChooser/Versions: 个版本
+PluginChooser/SourceBundled: 捆绑
+PluginChooser/SourceExternal: 外部
 PluginChooser/Update: 更新
 PluginChooser/UpdateAvailable: 已捆绑更新的版本 —— 点击以更新
 PluginChooser/Updated: 已更新

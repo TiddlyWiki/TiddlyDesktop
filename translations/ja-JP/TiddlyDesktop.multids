@@ -55,6 +55,11 @@ PluginChooser/Cancel: キャンセル
 PluginChooser/Reinstall: 再インストール
 PluginChooser/ReinstallTooltip: このプラグインの同梱版を再インストールします
 PluginChooser/Reinstalled: 再インストールしました
+PluginChooser/Installed: インストール済み
+PluginChooser/NotInstalled: 未インストール
+PluginChooser/Versions: バージョン
+PluginChooser/SourceBundled: 同梱
+PluginChooser/SourceExternal: 外部
 PluginChooser/Update: 更新
 PluginChooser/UpdateAvailable: より新しいバージョンが同梱されています — クリックして更新
 PluginChooser/Updated: 更新しました

@@ -2,6 +2,7 @@ title: $:/TiddlyDesktop/PluginChooser
 
 \whitespace trim
 \define plugin-sel-title() $:/temp/TiddlyDesktop/PluginChooser/selected/$(pluginTitle)$
+\define plugin-exp-title() $:/temp/TiddlyDesktop/PluginChooser/expanded/$(pluginTitle)$
 
 \procedure pcTab(tab)
 \whitespace trim
@@ -36,28 +37,76 @@ title: $:/TiddlyDesktop/PluginChooser
 </div>
 <div class="td-plugin-list">
 <$let searchText={{{ [[$:/temp/TiddlyDesktop/PluginChooser/search]get[text]] }}} currentTab={{{ [[$:/temp/TiddlyDesktop/PluginChooser/tab]get[text]] :else[[plugin]] }}}>
-<$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]plugin-type<currentTab>search:plugin-title,description<searchText>sort[plugin-title]]">
+<$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]plugin-type<currentTab>search:plugin-title,description<searchText>each[plugin-title]sort[plugin-title]]">
+<$let pluginTitle={{{ [<currentTiddler>get[plugin-title]] }}} verCount={{{ [<currentTiddler>get[version-count]] }}}>
 <div class="td-plugin-row">
-<$let pluginTitle={{{ [<currentTiddler>get[plugin-title]] }}}>
-<$checkbox tiddler=<<plugin-sel-title>> field="text" checked="yes" unchecked="no" default="no" class="td-plugin-checkbox">
+
+<$list filter="[<verCount>match[1]]" variable="_">
+<!-- One available version: a checkbox spanning the title toggles install on/off. -->
+<$checkbox tiddler=<<plugin-sel-title>> field="text" checked={{{ [<currentTiddler>get[plugin-path]] }}} unchecked="" default="" class="td-plugin-checkbox">
 <div class="td-plugin-info">
 <span class="td-plugin-title"><$text text=<<pluginTitle>>/></span>
 <$list filter="[<currentTiddler>get[plugin-type]!match[plugin]]" variable="ptype"><span class="td-plugin-type-badge"><$text text=<<ptype>>/></span></$list>
 <$list filter="[<currentTiddler>get[description]!match[]]" variable="desc"><br/><span class="td-plugin-desc"><$text text=<<desc>>/></span></$list>
 </div>
 </$checkbox>
+<span class="td-plugin-row-actions">
 <$list filter="[<currentTiddler>field:update-available[yes]]" variable="_">
-<span class="td-plugin-version td-plugin-version-outdated">v<$text text={{{ [<currentTiddler>get[installed-version]] }}}/> → v<$text text={{{ [<currentTiddler>get[version]] }}}/></span>
-<$button message="tiddlydesktop-update-plugin" param=<<pluginTitle>> class="tc-btn-invisible td-button td-plugin-btn-update" tooltip={{$:/language/TiddlyDesktop/PluginChooser/UpdateAvailable}}>{{$:/core/images/download-button}} {{$:/language/TiddlyDesktop/PluginChooser/Update}}</$button>
+<span class="td-plugin-version td-plugin-version-outdated tc-small-gap-right">v<$text text={{{ [<currentTiddler>get[installed-version]] }}}/> → v<$text text={{{ [<currentTiddler>get[version]] }}}/></span>
+<$button message="tiddlydesktop-update-plugin" param=<<currentTiddler>> class="tc-btn-invisible td-button td-plugin-btn-update" tooltip={{$:/language/TiddlyDesktop/PluginChooser/UpdateAvailable}}>{{$:/core/images/download-button}} {{$:/language/TiddlyDesktop/PluginChooser/Update}}</$button>
 </$list>
 <$list filter="[<currentTiddler>!field:update-available[yes]]" variable="_">
-<$list filter="[<currentTiddler>get[version]!match[]]" variable="ver"><span class="td-plugin-version">v<$text text=<<ver>>/></span></$list>
+<$list filter="[<currentTiddler>get[version]!match[]]" variable="ver"><span class="td-plugin-version tc-small-gap-right">v<$text text=<<ver>>/></span></$list>
 <$list filter="[<currentTiddler>field:installed[yes]]" variable="_"><$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[file]]" variable="_">
-<$button message="tiddlydesktop-reinstall-plugin" param=<<pluginTitle>> class="tc-btn-invisible td-button td-plugin-btn-reinstall" tooltip={{$:/language/TiddlyDesktop/PluginChooser/ReinstallTooltip}}>{{$:/core/images/refresh-button}} {{$:/language/TiddlyDesktop/PluginChooser/Reinstall}}</$button>
+<$button message="tiddlydesktop-reinstall-plugin" param=<<currentTiddler>> class="tc-btn-invisible td-button td-plugin-btn-reinstall" tooltip={{$:/language/TiddlyDesktop/PluginChooser/ReinstallTooltip}}>{{$:/core/images/refresh-button}} {{$:/language/TiddlyDesktop/PluginChooser/Reinstall}}</$button>
 </$list></$list>
 </$list>
-</$let>
+</span>
+</$list>
+
+<$list filter="[<verCount>!match[1]]" variable="_">
+<!-- Several versions of the same plugin: pick exactly one to install (or none). -->
+<div class="td-plugin-group">
+<div class="td-plugin-info">
+<span class="td-plugin-title"><$text text=<<pluginTitle>>/></span>
+<$list filter="[<currentTiddler>get[plugin-type]!match[plugin]]" variable="ptype"><span class="td-plugin-type-badge"><$text text=<<ptype>>/></span></$list>
+<$list filter="[<currentTiddler>get[description]!match[]]" variable="desc"><br/><span class="td-plugin-desc"><$text text=<<desc>>/></span></$list>
 </div>
+<$reveal type="nomatch" state=<<plugin-exp-title>> text="yes" tag="div" class="td-plugin-versions-reveal">
+<$button set=<<plugin-exp-title>> setTo="yes" class="tc-btn-invisible td-plugin-versions-toggle">{{$:/core/images/chevron-right}} <span><$text text=<<verCount>>/>&#32;{{$:/language/TiddlyDesktop/PluginChooser/Versions}}</span></$button>
+</$reveal>
+<$reveal type="match" state=<<plugin-exp-title>> text="yes" tag="div" class="td-plugin-versions-reveal">
+<$button set=<<plugin-exp-title>> setTo="no" class="tc-btn-invisible td-plugin-versions-toggle">{{$:/core/images/chevron-down}} <span><$text text=<<verCount>>/>&#32;{{$:/language/TiddlyDesktop/PluginChooser/Versions}}</span></$button>
+<div class="td-plugin-versions">
+<$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]plugin-type<currentTab>plugin-title<pluginTitle>nsort[version-order]]" variable="itemTiddler">
+<div class="td-plugin-version-row">
+<$radio tiddler=<<plugin-sel-title>> field="text" value={{{ [<itemTiddler>get[plugin-path]] }}} class="td-plugin-version-choice">
+<span class="td-plugin-version">v<$text text={{{ [<itemTiddler>get[version]] }}}/></span>
+<span class="td-plugin-source"><$list filter="[<itemTiddler>get[source]match[bundled]]" variable="_">{{$:/language/TiddlyDesktop/PluginChooser/SourceBundled}}</$list><$list filter="[<itemTiddler>get[source]match[external]]" variable="_">{{$:/language/TiddlyDesktop/PluginChooser/SourceExternal}}</$list></span>
+<$list filter="[<itemTiddler>field:installed[yes]]" variable="_"><span class="td-plugin-installed-tag">{{$:/language/TiddlyDesktop/PluginChooser/Installed}}</span></$list>
+</$radio>
+<span class="td-plugin-version-actions">
+<$list filter="[<itemTiddler>field:update-available[yes]]" variable="_">
+<$button message="tiddlydesktop-update-plugin" param=<<itemTiddler>> class="tc-btn-invisible td-button td-plugin-btn-update" tooltip={{$:/language/TiddlyDesktop/PluginChooser/UpdateAvailable}}>{{$:/core/images/download-button}} {{$:/language/TiddlyDesktop/PluginChooser/Update}}</$button>
+</$list>
+<$list filter="[<itemTiddler>field:installed[yes]]" variable="_"><$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[file]]" variable="_">
+<$button message="tiddlydesktop-reinstall-plugin" param=<<itemTiddler>> class="tc-btn-invisible td-button td-plugin-btn-reinstall" tooltip={{$:/language/TiddlyDesktop/PluginChooser/ReinstallTooltip}}>{{$:/core/images/refresh-button}} {{$:/language/TiddlyDesktop/PluginChooser/Reinstall}}</$button>
+</$list></$list>
+</span>
+</div>
+</$list>
+<div class="td-plugin-version-row">
+<$radio tiddler=<<plugin-sel-title>> field="text" value="" class="td-plugin-version-choice td-plugin-version-none">
+<span class="td-plugin-none">{{$:/language/TiddlyDesktop/PluginChooser/NotInstalled}}</span>
+</$radio>
+</div>
+</div>
+</$reveal>
+</div>
+</$list>
+
+</div>
+</$let>
 </$list>
 <$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]plugin-type<currentTab>search:plugin-title,description<searchText>count[]compare:number:lt[1]]" variable="_">
 <div class="td-plugin-empty">{{$:/language/TiddlyDesktop/PluginChooser/NoMatch}}</div>

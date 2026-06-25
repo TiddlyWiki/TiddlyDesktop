@@ -55,6 +55,11 @@ PluginChooser/Cancel: रद्द करें
 PluginChooser/Reinstall: पुनः इंस्टॉल करें
 PluginChooser/ReinstallTooltip: इस प्लगइन का साथ-शामिल संस्करण पुनः इंस्टॉल करें
 PluginChooser/Reinstalled: पुनः इंस्टॉल किया गया
+PluginChooser/Installed: इंस्टॉल किया गया
+PluginChooser/NotInstalled: इंस्टॉल नहीं है
+PluginChooser/Versions: संस्करण
+PluginChooser/SourceBundled: साथ-शामिल
+PluginChooser/SourceExternal: बाहरी
 PluginChooser/Update: अपडेट करें
 PluginChooser/UpdateAvailable: एक नया संस्करण शामिल है — अपडेट करने के लिए क्लिक करें
 PluginChooser/Updated: अपडेट किया गया

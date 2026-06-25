@@ -37,6 +37,8 @@ var KEY_ORDER = [
 	"PluginChooser/Heading","PluginChooser/Close","PluginChooser/OpenWarning","PluginChooser/FilterPlaceholder",
 	"PluginChooser/Clear","PluginChooser/NoMatch","PluginChooser/Apply","PluginChooser/Cancel",
 	"PluginChooser/Reinstall","PluginChooser/ReinstallTooltip","PluginChooser/Reinstalled",
+	"PluginChooser/Installed","PluginChooser/NotInstalled","PluginChooser/Versions",
+	"PluginChooser/SourceBundled","PluginChooser/SourceExternal",
 	"PluginChooser/Update","PluginChooser/UpdateAvailable","PluginChooser/Updated","Row/PluginUpdates"
 ];
 
@@ -633,6 +635,48 @@ Object.keys(REINSTALL).forEach(function(lang) {
 	T[lang]["PluginChooser/Reinstall"]        = v[0];
 	T[lang]["PluginChooser/ReinstallTooltip"] = v[1];
 	T[lang]["PluginChooser/Reinstalled"]      = v[2];
+});
+
+// Version-row install state: [Installed (badge on the installed version), NotInstalled (the
+// "none" radio that removes the plugin)]. Shown only when a plugin has several versions.
+// [Installed, NotInstalled, Versions, SourceBundled, SourceExternal].
+var INSTALL_STATE = {
+	"de-DE": ["installiert", "Nicht installiert", "Versionen", "mitgeliefert", "extern"],
+	"fr-FR": ["installé", "Non installé", "versions", "fourni", "externe"],
+	"es-ES": ["instalado", "No instalado", "versiones", "incluido", "externo"],
+	"ca-ES": ["instal·lat", "No instal·lat", "versions", "inclòs", "extern"],
+	"it-IT": ["installato", "Non installato", "versioni", "incluso", "esterno"],
+	"pt-BR": ["instalado", "Não instalado", "versões", "incluído", "externo"],
+	"pt-PT": ["instalado", "Não instalado", "versões", "incluído", "externo"],
+	"nl-NL": ["geïnstalleerd", "Niet geïnstalleerd", "versies", "meegeleverd", "extern"],
+	"da-DK": ["installeret", "Ikke installeret", "versioner", "medfølgende", "ekstern"],
+	"sv-SE": ["installerad", "Inte installerad", "versioner", "medföljande", "extern"],
+	"pl-PL": ["zainstalowano", "Nie zainstalowano", "wersje", "dołączony", "zewnętrzny"],
+	"cs-CZ": ["nainstalováno", "Nenainstalováno", "verze", "součástí", "externí"],
+	"sk-SK": ["nainštalované", "Nenainštalované", "verzie", "súčasťou", "externý"],
+	"sl-SI": ["nameščeno", "Ni nameščeno", "različice", "priloženo", "zunanji"],
+	"mk-MK": ["инсталирано", "Не е инсталирано", "верзии", "вградено", "надворешно"],
+	"ru-RU": ["установлено", "Не установлено", "версии", "встроенный", "внешний"],
+	"el-GR": ["εγκατεστημένο", "Δεν είναι εγκατεστημένο", "εκδόσεις", "ενσωματωμένο", "εξωτερικό"],
+	"he-IL": ["מותקן", "לא מותקן", "גרסאות", "מצורף", "חיצוני"],
+	"ar-PS": ["مثبّت", "غير مثبّت", "إصدارات", "مضمّن", "خارجي"],
+	"fa-IR": ["نصب‌شده", "نصب نشده", "نسخه‌ها", "همراه", "خارجی"],
+	"hi-IN": ["इंस्टॉल किया गया", "इंस्टॉल नहीं है", "संस्करण", "साथ-शामिल", "बाहरी"],
+	"pa-IN": ["ਇੰਸਟਾਲ ਕੀਤਾ", "ਇੰਸਟਾਲ ਨਹੀਂ ਹੈ", "ਸੰਸਕਰਣ", "ਨਾਲ-ਸ਼ਾਮਲ", "ਬਾਹਰੀ"],
+	"ia-IA": ["installate", "Non installate", "versiones", "includite", "externe"],
+	"ja-JP": ["インストール済み", "未インストール", "バージョン", "同梱", "外部"],
+	"ko-KR": ["설치됨", "설치되지 않음", "버전", "포함됨", "외부"],
+	"zh-Hans": ["已安装", "未安装", "个版本", "捆绑", "外部"],
+	"zh-Hant": ["已安裝", "未安裝", "個版本", "隨附", "外部"]
+};
+Object.keys(INSTALL_STATE).forEach(function(lang) {
+	if(!T[lang]) { return; }
+	var v = INSTALL_STATE[lang];
+	T[lang]["PluginChooser/Installed"]      = v[0];
+	T[lang]["PluginChooser/NotInstalled"]   = v[1];
+	T[lang]["PluginChooser/Versions"]       = v[2];
+	T[lang]["PluginChooser/SourceBundled"]  = v[3];
+	T[lang]["PluginChooser/SourceExternal"] = v[4];
 });
 
 // PluginChooser tab captions: [Plugins, Languages, Themes].

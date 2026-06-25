@@ -55,6 +55,11 @@ PluginChooser/Cancel: 취소
 PluginChooser/Reinstall: 다시 설치
 PluginChooser/ReinstallTooltip: 이 플러그인의 포함된 버전을 다시 설치합니다
 PluginChooser/Reinstalled: 다시 설치됨
+PluginChooser/Installed: 설치됨
+PluginChooser/NotInstalled: 설치되지 않음
+PluginChooser/Versions: 버전
+PluginChooser/SourceBundled: 포함됨
+PluginChooser/SourceExternal: 외부
 PluginChooser/Update: 업데이트
 PluginChooser/UpdateAvailable: 더 새로운 버전이 포함되어 있습니다 — 클릭하여 업데이트
 PluginChooser/Updated: 업데이트됨

@@ -55,6 +55,11 @@ PluginChooser/Cancel: Annuleren
 PluginChooser/Reinstall: Opnieuw installeren
 PluginChooser/ReinstallTooltip: De meegeleverde versie van deze plug-in opnieuw installeren
 PluginChooser/Reinstalled: Opnieuw geïnstalleerd
+PluginChooser/Installed: geïnstalleerd
+PluginChooser/NotInstalled: Niet geïnstalleerd
+PluginChooser/Versions: versies
+PluginChooser/SourceBundled: meegeleverd
+PluginChooser/SourceExternal: extern
 PluginChooser/Update: Bijwerken
 PluginChooser/UpdateAvailable: Een nieuwere versie is meegeleverd — klik om bij te werken
 PluginChooser/Updated: Bijgewerkt

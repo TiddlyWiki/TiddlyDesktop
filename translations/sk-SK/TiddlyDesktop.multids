@@ -55,6 +55,11 @@ PluginChooser/Cancel: Zrušiť
 PluginChooser/Reinstall: Preinštalovať
 PluginChooser/ReinstallTooltip: Preinštalovať priloženú verziu tohto pluginu
 PluginChooser/Reinstalled: Preinštalované
+PluginChooser/Installed: nainštalované
+PluginChooser/NotInstalled: Nenainštalované
+PluginChooser/Versions: verzie
+PluginChooser/SourceBundled: súčasťou
+PluginChooser/SourceExternal: externý
 PluginChooser/Update: Aktualizovať
 PluginChooser/UpdateAvailable: Je priložená novšia verzia — aktualizujte kliknutím
 PluginChooser/Updated: Aktualizované

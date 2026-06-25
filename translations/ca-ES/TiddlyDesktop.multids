@@ -55,6 +55,11 @@ PluginChooser/Cancel: Cancel·la
 PluginChooser/Reinstall: Reinstal·la
 PluginChooser/ReinstallTooltip: Reinstal·la la versió inclosa d’aquest connector
 PluginChooser/Reinstalled: Reinstal·lat
+PluginChooser/Installed: instal·lat
+PluginChooser/NotInstalled: No instal·lat
+PluginChooser/Versions: versions
+PluginChooser/SourceBundled: inclòs
+PluginChooser/SourceExternal: extern
 PluginChooser/Update: Actualitza
 PluginChooser/UpdateAvailable: S’inclou una versió més recent: fes clic per actualitzar
 PluginChooser/Updated: Actualitzat

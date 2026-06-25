@@ -55,6 +55,11 @@ PluginChooser/Cancel: Annullér
 PluginChooser/Reinstall: Geninstallér
 PluginChooser/ReinstallTooltip: Geninstallér den medfølgende version af dette plugin
 PluginChooser/Reinstalled: Geninstalleret
+PluginChooser/Installed: installeret
+PluginChooser/NotInstalled: Ikke installeret
+PluginChooser/Versions: versioner
+PluginChooser/SourceBundled: medfølgende
+PluginChooser/SourceExternal: ekstern
 PluginChooser/Update: Opdatér
 PluginChooser/UpdateAvailable: En nyere version er inkluderet — klik for at opdatere
 PluginChooser/Updated: Opdateret

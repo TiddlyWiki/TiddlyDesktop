@@ -55,6 +55,11 @@ PluginChooser/Cancel: Prekliči
 PluginChooser/Reinstall: Znova namesti
 PluginChooser/ReinstallTooltip: Znova namesti priloženo različico tega vtičnika
 PluginChooser/Reinstalled: Znova nameščeno
+PluginChooser/Installed: nameščeno
+PluginChooser/NotInstalled: Ni nameščeno
+PluginChooser/Versions: različice
+PluginChooser/SourceBundled: priloženo
+PluginChooser/SourceExternal: zunanji
 PluginChooser/Update: Posodobi
 PluginChooser/UpdateAvailable: Priložena je novejša različica — kliknite za posodobitev
 PluginChooser/Updated: Posodobljeno

@@ -57,8 +57,13 @@ exports.startup = function() {
 		LIBRARY_KINDS.forEach(function(kind) {
 			available = available.concat(_getAvailableItems(kind.paths, kind.flat, fs, path));
 		});
+		// Update detection (and the wiki-list badge) compares against the NEWEST available
+		// version of each plugin, so collapse duplicates here keeping the highest version.
 		availableByTitle = {};
-		available.forEach(function(p) { availableByTitle[p.title] = p; });
+		available.forEach(function(p) {
+			var prev = availableByTitle[p.title];
+			if(!prev || _semverGt(p.version, prev.version)) { availableByTitle[p.title] = p; }
+		});
 	}
 	refreshAvailable();
 
@@ -73,31 +78,74 @@ exports.startup = function() {
 		var installed         = _getInstalledPlugins(wikiUrl, fs, path);
 		var installedVersions = _getInstalledVersions(wikiUrl, fs, path);
 		_clearChooserTiddlers(["available"]);
-		available.forEach(function(plugin) {
-			var isInstalled    = installed.indexOf(plugin.title) !== -1;
-			var installedVer   = installedVersions[plugin.title] || "";
-			// A newer bundled version than the embedded one (single-file wikis only — folder
-			// wikis load the bundled copy at boot, so they're always current).
-			var updateAvailable = isFile && isInstalled && _semverGt(plugin.version, installedVer);
-			$tw.wiki.addTiddler(new $tw.Tiddler({
-				title: "$:/temp/TiddlyDesktop/PluginChooser/available/" + plugin.title,
-				tags: ["$:/temp/TiddlyDesktop/PluginChooser/available"],
-				"plugin-title": plugin.title,
-				"plugin-name": plugin.name,
-				"plugin-path": plugin.path,
-				"plugin-type": plugin["plugin-type"] || "plugin",
-				description: plugin.description,
-				version: plugin.version,
-				"installed-version": installedVer,
-				installed: isInstalled ? "yes" : "",
-				"update-available": updateAvailable ? "yes" : "",
-				source: plugin.source
-			}));
-			// Selection: reset to the installed state on open; on a live refresh keep any existing
-			// choice and only seed newly-appeared plugins.
-			var selTitle = "$:/temp/TiddlyDesktop/PluginChooser/selected/" + plugin.title;
+
+		// The same plugin title can have several available versions (one per library path).
+		// Group them so each version becomes its own selectable row, ordered newest-first,
+		// and so the per-title default selection can pick the right one exactly once.
+		var byTitle = Object.create(null);
+		available.forEach(function(p) { (byTitle[p.title] = byTitle[p.title] || []).push(p); });
+
+		var idx = 0;
+		Object.keys(byTitle).forEach(function(title) {
+			var items = byTitle[title].slice().sort(function(a, b) {
+				if(_semverGt(a.version, b.version)) { return -1; }
+				if(_semverGt(b.version, a.version)) { return 1; }
+				// Same version: prefer the bundled copy so reinstall/install uses it.
+				if(a.source !== b.source) { return a.source === "bundled" ? -1 : 1; }
+				return 0;
+			});
+			// Drop duplicate versions — the same version found in several library paths
+			// should appear once, not once per path.
+			var seenVer = Object.create(null);
+			items = items.filter(function(it) {
+				var v = it.version || "";
+				if(seenVer[v]) { return false; }
+				seenVer[v] = true;
+				return true;
+			});
+			var isInstalled  = installed.indexOf(title) !== -1;
+			var installedVer = installedVersions[title] || "";
+			// The version to pre-select: the one matching what's installed (so opening + Apply
+			// is a no-op), else the newest. Folder wikis don't embed a version, so "installed"
+			// just means present — pre-select the newest there.
+			var defaultItem = null;
+			if(isInstalled) {
+				if(isFile) {
+					for(var k = 0; k < items.length; k++) { if((items[k].version || "") === installedVer) { defaultItem = items[k]; break; } }
+				}
+				if(!defaultItem) { defaultItem = items[0]; }
+			}
+			items.forEach(function(plugin, order) {
+				// Mark the row that represents the current install — the same row we pre-select
+				// (defaultItem: the version matching what's embedded, else the newest). Don't
+				// require a version-string match here: themes carry no version in plugin.info, so
+				// an exact match would never hold and the Reinstall button would never appear.
+				var thisInstalled = !!defaultItem && plugin === defaultItem;
+				// A newer version than the embedded one (single-file wikis only — folder wikis
+				// load the library copy at boot, so they're always current).
+				var updateAvailable = isFile && isInstalled && _semverGt(plugin.version, installedVer);
+				$tw.wiki.addTiddler(new $tw.Tiddler({
+					title: "$:/temp/TiddlyDesktop/PluginChooser/available/" + (idx++),
+					tags: ["$:/temp/TiddlyDesktop/PluginChooser/available"],
+					"plugin-title": title,
+					"plugin-name": plugin.name,
+					"plugin-path": plugin.path,
+					"plugin-type": plugin["plugin-type"] || "plugin",
+					description: plugin.description,
+					version: plugin.version,
+					"version-order": String(order),
+					"version-count": String(items.length),
+					"installed-version": installedVer,
+					installed: thisInstalled ? "yes" : "",
+					"update-available": updateAvailable ? "yes" : "",
+					source: plugin.source
+				}));
+			});
+			// Selection holds the chosen version's plugin-path (or "" for "not installed").
+			// Reset to the installed state on open; on a live refresh keep any existing choice.
+			var selTitle = "$:/temp/TiddlyDesktop/PluginChooser/selected/" + title;
 			if(!preserveSelection || !$tw.wiki.tiddlerExists(selTitle)) {
-				$tw.wiki.addTiddler(new $tw.Tiddler({title: selTitle, text: isInstalled ? "yes" : "no"}));
+				$tw.wiki.addTiddler(new $tw.Tiddler({title: selTitle, text: defaultItem ? defaultItem.path : ""}));
 			}
 		});
 	}
@@ -134,28 +182,25 @@ exports.startup = function() {
 
 	// ── update a single outdated plugin to the bundled version ──────────────────
 	$tw.rootWidget.addEventListener("tiddlydesktop-update-plugin", function(event) {
-		var pluginTitle = event.param;
+		// param is the available-row tiddler (a specific version), not the plugin title.
+		var availTiddler = event.param && $tw.wiki.getTiddler(event.param);
 		var target = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
-		if(!pluginTitle || !target) return false;
-		var wikiUrl = target.fields.text;
+		if(!availTiddler || !target) return false;
+		var wikiUrl = target.fields.text, pluginTitle = availTiddler.fields["plugin-title"];
 		if(target.fields["wiki-open"] === "yes") {
 			_setStatus("✗ " + $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/PluginChooser/OpenWarning", "Close the wiki first."));
 			return false;
 		}
-		var availTiddler = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/available/" + pluginTitle);
-		if(!availTiddler) return false;
 		try {
-			// Re-installing the bundled plugin replaces the wiki's older embedded copy.
+			// Re-installing the chosen version replaces the wiki's older embedded copy.
 			if(wikiUrl.startsWith("wikifile://")) {
 				_applyFileChanges(wikiUrl, [availTiddler.fields], [], fs, path);
 			} else {
 				_applyFolderChanges(wikiUrl, [availTiddler.fields], [], fs, path);
 			}
-			// Reflect the new state in the chooser without reopening it.
-			$tw.wiki.addTiddler(new $tw.Tiddler(availTiddler.fields, {
-				"installed-version": availTiddler.fields.version,
-				"update-available": ""
-			}));
+			// Point the selection at the now-installed version and recompute every row from disk.
+			$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/TiddlyDesktop/PluginChooser/selected/" + pluginTitle, text: availTiddler.fields["plugin-path"]}));
+			populateChooserAvailable(true);
 			_setStatus("✓ " + $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/PluginChooser/Updated", "Updated") + " " + pluginTitle);
 			_scanUpdatesForWiki(wikiUrl, availableByTitle, fs, path);
 		} catch(e) {
@@ -177,19 +222,33 @@ exports.startup = function() {
 			return false;
 		}
 
-		// Collect toInstall / toRemove by diffing selection against installed
-		var installed = _getInstalledPlugins(wikiUrl, fs, path);
+		// Collect toInstall / toRemove by diffing selection against installed. Selection holds
+		// the chosen version's plugin-path per title (or "" for "remove / not installed").
+		var isFile            = (targetTid.fields["wiki-type"] === "file");
+		var installed         = _getInstalledPlugins(wikiUrl, fs, path);
+		var installedVersions = _getInstalledVersions(wikiUrl, fs, path);
 		var toInstall = [], toRemove = [];
 
+		// Index the available rows by path, and gather the distinct plugin titles.
+		var fieldsByPath = Object.create(null), titles = [];
 		$tw.wiki.filterTiddlers("[tag[$:/temp/TiddlyDesktop/PluginChooser/available]]").forEach(function(availTitle) {
-			var pluginTitle = $tw.wiki.getTiddler(availTitle).fields["plugin-title"];
-			var selected = $tw.wiki.getTiddlerText(
-				"$:/temp/TiddlyDesktop/PluginChooser/selected/" + pluginTitle, "no"
-			) === "yes";
+			var f = $tw.wiki.getTiddler(availTitle).fields;
+			fieldsByPath[f["plugin-path"]] = f;
+			if(titles.indexOf(f["plugin-title"]) === -1) { titles.push(f["plugin-title"]); }
+		});
+
+		titles.forEach(function(pluginTitle) {
+			var selPath = $tw.wiki.getTiddlerText("$:/temp/TiddlyDesktop/PluginChooser/selected/" + pluginTitle, "");
 			var wasInstalled = installed.indexOf(pluginTitle) !== -1;
-			if(selected && !wasInstalled) {
-				toInstall.push($tw.wiki.getTiddler(availTitle).fields);
-			} else if(!selected && wasInstalled) {
+			var installedVer = installedVersions[pluginTitle] || "";
+			if(selPath) {
+				var item = fieldsByPath[selPath];
+				// Install when not present, or when a different version was chosen (file wikis
+				// only — folder wikis reference by name and load whatever the library holds).
+				if(item && (!wasInstalled || (isFile && (item.version || "") !== installedVer))) {
+					toInstall.push(item);
+				}
+			} else if(wasInstalled) {
 				toRemove.push(pluginTitle);
 			}
 		});
@@ -219,27 +278,24 @@ exports.startup = function() {
 	// of whether an update is flagged. A repair action (e.g. a plugin's tiddlers got
 	// corrupted) — unlike Update it doesn't require a newer version to be available.
 	$tw.rootWidget.addEventListener("tiddlydesktop-reinstall-plugin", function(event) {
-		var pluginTitle = event.param;
+		// param is the available-row tiddler (a specific version), not the plugin title.
+		var availTiddler = event.param && $tw.wiki.getTiddler(event.param);
 		var target = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
-		if(!pluginTitle || !target) return false;
-		var wikiUrl = target.fields.text;
+		if(!availTiddler || !target) return false;
+		var wikiUrl = target.fields.text, pluginTitle = availTiddler.fields["plugin-title"];
 		if(target.fields["wiki-open"] === "yes") {
 			_setStatus("✗ " + $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/PluginChooser/OpenWarning", "Close the wiki first."));
 			return false;
 		}
-		var availTiddler = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/available/" + pluginTitle);
-		if(!availTiddler) return false;
 		try {
 			if(wikiUrl.startsWith("wikifile://")) {
 				_applyFileChanges(wikiUrl, [availTiddler.fields], [], fs, path);
 			} else {
 				_applyFolderChanges(wikiUrl, [availTiddler.fields], [], fs, path);
 			}
-			// Reflect the (possibly bumped) installed version in the chooser without reopening it.
-			$tw.wiki.addTiddler(new $tw.Tiddler(availTiddler.fields, {
-				"installed-version": availTiddler.fields.version,
-				"update-available": ""
-			}));
+			// Point the selection at the reinstalled version and recompute every row from disk.
+			$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/TiddlyDesktop/PluginChooser/selected/" + pluginTitle, text: availTiddler.fields["plugin-path"]}));
+			populateChooserAvailable(true);
 			_setStatus("✓ " + $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/PluginChooser/Reinstalled", "Reinstalled") + " " + pluginTitle);
 			_scanUpdatesForWiki(wikiUrl, availableByTitle, fs, path);
 		} catch(e) {
@@ -341,9 +397,11 @@ function _closeChooser() {
 
 // ── protected titles — never shown in chooser, never removed ─────────────────
 
-// Full plugin titles that must never be removed from any wiki.
+// Full plugin titles that must never be removed from any wiki — and never offered in the
+// chooser (they're core infrastructure, not user-managed plugins).
 var _PROTECTED_TITLES = {
-	"$:/core": true
+	"$:/core": true,
+	"$:/core-server": true
 };
 
 // Short names (as they appear in tiddlywiki.info) that must never be removed
@@ -360,7 +418,7 @@ var _PROTECTED_FOLDER_NAMES = {
 //   flat=true  → `<root>/<name>/plugin.info`           (languages; name = "name")
 // The recorded `name` is exactly what goes in tiddlywiki.info's plugins/themes/languages array.
 function _getAvailableItems(searchPaths, flat, fs, path) {
-	var items = [], seen = {};
+	var items = [];
 
 	function addItem(itemDir, name, source) {
 		var infoFile = path.join(itemDir, "plugin.info");
@@ -368,11 +426,13 @@ function _getAvailableItems(searchPaths, flat, fs, path) {
 		if(!fs.existsSync(infoFile)) return;
 		try {
 			var info = JSON.parse(fs.readFileSync(infoFile, "utf8"));
-			if(!info.title || seen[info.title]) return;
+			// NB: no de-dup by title here — the same plugin can exist in several search
+			// paths (e.g. a newer copy in TIDDLYWIKI_PLUGIN_PATH alongside the bundled one),
+			// and the chooser lists every version so the user can pick which to install.
+			if(!info.title) return;
 			// Skip protected and backstage-only plugins
 			if(_PROTECTED_TITLES[info.title]) return;
 			if(info.title === "$:/plugins/tiddlywiki/tiddlydesktop") return;
-			seen[info.title] = true;
 			items.push({
 				path: itemDir,
 				name: name,
@@ -408,7 +468,11 @@ function _getAvailableItems(searchPaths, flat, fs, path) {
 		if(flat) { scanFlat(rootDir, source); } else { scanNested(rootDir, source); }
 	});
 
-	items.sort(function(a, b) { return a.title.localeCompare(b.title); });
+	// Group by title, newest version first within each title.
+	items.sort(function(a, b) {
+		if(a.title !== b.title) { return a.title.localeCompare(b.title); }
+		return _semverGt(a.version, b.version) ? -1 : (_semverGt(b.version, a.version) ? 1 : 0);
+	});
 	return items;
 }
 

@@ -464,6 +464,13 @@ tags: $:/tags/Stylesheet
 	border-bottom: none;
 }
 
+/* TiddlyWiki wraps a run of inline content (the checkbox/radio widget + the action span) in
+   a <p>, which would become the row's only flex child and drop the right-hand actions onto a
+   new line. display:contents removes the <p> box so its children are the real flex items. */
+.td-plugin-row p {
+	display: contents;
+}
+
 /* The checkbox is a <label> that wraps the plugin info, so clicking the title
    (or description) toggles selection — not just the little box itself. */
 .td-plugin-checkbox {
@@ -564,6 +571,108 @@ tags: $:/tags/Stylesheet
 .td-plugin-row .td-plugin-btn-reinstall:hover {
 	background-color: <<colour wikilist-button-open>>;
 	color: <<colour wikilist-button-foreground>>;
+}
+
+/* ── multiple versions of one plugin ─────────────────────────────────────────
+   When the same plugin title is found in several library paths, the row shows the
+   plugin once and lists its versions as radio choices (pick one to install, or none). */
+.td-plugin-group {
+	flex: 1;
+	min-width: 0;
+}
+
+.td-plugin-versions {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin-top: 6px;
+	padding-inline-start: 26px;
+}
+
+/* One version inside the reveal: the radio choice grows; its Update/Reinstall button (if
+   any) floats to the right, matching the single-version row. */
+.td-plugin-version-row {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+}
+
+.td-plugin-version-actions {
+	margin-inline-start: auto;
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: baseline;
+	gap: 6px;
+}
+
+.td-plugin-version-choice {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: baseline;
+	gap: 7px;
+	cursor: pointer;
+	font-size: 0.85em;
+}
+
+.td-plugin-version-choice input {
+	flex-shrink: 0;
+}
+
+/* The $radio widget wraps its children in a <span>; lay those out with spacing. */
+.td-plugin-version-choice > span {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 7px;
+}
+
+.td-plugin-source {
+	color: <<colour muted-foreground>>;
+	font-size: 0.9em;
+}
+
+.td-plugin-installed-tag {
+	font-size: 0.85em;
+	padding: 0 6px;
+	border-radius: 9px;
+	background: <<colour wikilist-button-open>>;
+	color: <<colour wikilist-button-foreground>>;
+}
+
+.td-plugin-version-none .td-plugin-none {
+	color: <<colour muted-foreground>>;
+	font-style: italic;
+}
+
+/* Single-version row: keep the version label + Update/Reinstall button together at the far
+   right of the row, on one line (never wrapped below the title). */
+.td-plugin-row-actions {
+	margin-inline-start: auto;
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: baseline;
+	white-space: nowrap;
+}
+
+/* Disclosure toggle that reveals the version list. */
+.td-plugin-versions-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 5px;
+	padding: 2px 4px;
+	font-size: 0.82em;
+	color: <<colour muted-foreground>>;
+}
+
+.td-plugin-versions-toggle:hover {
+	color: <<colour foreground>>;
+}
+
+.td-plugin-versions-toggle svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
 }
 
 /* Count badge on the wiki-list Plugins button when a wiki has outdated plugins. */

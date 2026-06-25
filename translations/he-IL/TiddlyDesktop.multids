@@ -55,6 +55,11 @@ PluginChooser/Cancel: ביטול
 PluginChooser/Reinstall: התקן מחדש
 PluginChooser/ReinstallTooltip: התקנה מחדש של הגרסה הכלולה של תוסף זה
 PluginChooser/Reinstalled: הותקן מחדש
+PluginChooser/Installed: מותקן
+PluginChooser/NotInstalled: לא מותקן
+PluginChooser/Versions: גרסאות
+PluginChooser/SourceBundled: מצורף
+PluginChooser/SourceExternal: חיצוני
 PluginChooser/Update: עדכן
 PluginChooser/UpdateAvailable: כלולה גרסה חדשה יותר — לחצו לעדכון
 PluginChooser/Updated: עודכן

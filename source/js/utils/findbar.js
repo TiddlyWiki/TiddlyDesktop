@@ -95,17 +95,29 @@ exports.installFindBar = function(options) {
 		try { if(w && w.CSS && w.CSS.highlights) { w.CSS.highlights.delete(HL_ALL); w.CSS.highlights.delete(HL_CUR); } } catch(e) {}
 	}
 
+	// allRanges holds "hit" objects, each either {kind:"range", range, pos} for normal DOM
+	// text or {kind:"field", el, start, end, pos} for a match inside a <textarea>/<input>
+	// (whose text lives in .value, not the DOM). Only range hits can be painted with the CSS
+	// Custom Highlight API; field hits are revealed via the control's native selection.
 	function applyHighlights() {
 		var w = cwin();
 		if(!highlightSupported()) { return; }
 		try {
 			var hlAll = new w.Highlight();
-			for(var i = 0; i < allRanges.length; i++) { hlAll.add(allRanges[i]); }
+			for(var i = 0; i < allRanges.length; i++) {
+				var hit = allRanges[i];
+				if(hit && hit.kind === "range" && hit.range) { hlAll.add(hit.range); }
+			}
 			w.CSS.highlights.set(HL_ALL, hlAll);
-			if(curIndex >= 0 && allRanges[curIndex]) {
-				var hlCur = new w.Highlight(allRanges[curIndex]);
+			var cur = curIndex >= 0 ? allRanges[curIndex] : null;
+			if(cur && cur.kind === "range" && cur.range) {
+				var hlCur = new w.Highlight(cur.range);
 				try { hlCur.priority = 1; } catch(e) {}
 				w.CSS.highlights.set(HL_CUR, hlCur);
+			} else {
+				// Current match is a form field (or none) — no range to paint, so drop any
+				// stale "current" highlight rather than leaving it on a previous match.
+				try { w.CSS.highlights.delete(HL_CUR); } catch(e) {}
 			}
 		} catch(e) {}
 	}
@@ -136,8 +148,26 @@ exports.installFindBar = function(options) {
 		return null;
 	}
 
+	// Reveal a match inside a form control: scroll it into view and select it natively (the
+	// Highlight API can't paint inside <textarea>/<input>). Selecting needs focus, so we focus
+	// the control, set the selection, then hand focus back to the find input so Enter/arrows
+	// keep navigating — the control keeps its (inactive) selection visible.
+	function scrollToField(hit) {
+		try {
+			var el = hit.el;
+			if(el && el.scrollIntoView) { el.scrollIntoView({block: "center", inline: "nearest"}); }
+			if(el && el.setSelectionRange) {
+				try { el.focus({preventScroll: true}); el.setSelectionRange(hit.start, hit.end); } catch(e) {}
+			}
+		} catch(e) {}
+		try { input.focus(); } catch(e) {}
+	}
+
 	function scrollToCurrent() {
-		var r = allRanges[curIndex];
+		var hit = allRanges[curIndex];
+		if(!hit) { return; }
+		if(hit.kind === "field") { scrollToField(hit); return; }
+		var r = hit.range;
 		if(!r) { return; }
 		var w = cwin();
 		if(!w) { return; }
@@ -206,10 +236,58 @@ exports.installFindBar = function(options) {
 		// node, where its text starts in the combined string, so a match position
 		// can be mapped back to a node + offset. `sepPending` collapses runs of
 		// block boundaries into a single separator and avoids a leading one.
+		var hits = [];
 		var segments = [], parts = [], gLen = 0, sepPending = false;
 		var SEP = "\n";
 		function addSep() {
 			if(gLen > 0 && !sepPending) { parts.push(SEP); gLen += SEP.length; sepPending = true; }
+		}
+		function skippable(el) {
+			var tag = el.nodeName;
+			if(tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT") { return true; }
+			if(el.classList) {
+				// Skip the find bar's own UI (matters for folder wikis, where the panel shares
+				// the document with the wiki being searched).
+				if(el.classList.contains("td-findbar")) { return true; }
+				// Skip the minimap (tiddlywiki-minimap): it's a miniature duplicate of the
+				// document — including an iframe copy we'd otherwise descend into — so matching
+				// inside it just produces phantom, unscrollable duplicates of every real hit.
+				if(el.classList.contains("tc-minimap-wrapper") || el.classList.contains("tc-minimap")) { return true; }
+			}
+			return false;
+		}
+		function isTextInput(el) {
+			if(el.nodeName === "TEXTAREA") { return true; }
+			if(el.nodeName !== "INPUT") { return false; }
+			var t = (el.getAttribute("type") || "text").toLowerCase();
+			return t === "text" || t === "search" || t === "url" || t === "email" || t === "tel";
+		}
+		// A form control's live text is in .value, not the DOM, so flatten-and-search can't
+		// see it. Search the value and record "field" hits (one per match), tagged with the
+		// stream offset of the control so they sort into document order with the text hits.
+		function addFieldHits(el, pos) {
+			var value = el.value;
+			if(!value) { return; }
+			var lv = value.toLowerCase(), from = 0, p;
+			while((p = lv.indexOf(q, from)) !== -1) {
+				hits.push({ kind: "field", el: el, start: p, end: p + q.length, pos: pos });
+				from = p + q.length;
+				if(hits.length >= MAX_MATCHES) { break; }
+			}
+		}
+		function iframeBody(el) {
+			try { return el.contentDocument && el.contentDocument.body; } catch(e) { return null; }
+		}
+		// Same-origin nested iframe (e.g. TiddlyWiki's "framed" editor wraps its textarea in
+		// one): collect ONLY its field hits — we don't pull its normal text into this
+		// document's single highlight set, but the editor's textarea must still be findable.
+		function walkFields(node, pos) {
+			for(var child = node.firstChild; child; child = child.nextSibling) {
+				if(child.nodeType !== 1 || skippable(child)) { continue; }
+				if(isTextInput(child)) { addFieldHits(child, pos); continue; }
+				if(child.nodeName === "IFRAME") { var b = iframeBody(child); if(b) { walkFields(b, pos); } continue; }
+				walkFields(child, pos);
+			}
 		}
 		function walk(el) {
 			for(var child = el.firstChild; child; child = child.nextSibling) {
@@ -221,12 +299,10 @@ exports.installFindBar = function(options) {
 						parts.push(v); gLen += v.length; sepPending = false;
 					}
 				} else if(nt === 1) {
-					var tag = child.nodeName;
-					if(tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT") { continue; }
-					// Skip the find bar's own UI (matters for folder wikis, where the
-					// panel shares the document with the wiki being searched).
-					if(child.classList && child.classList.contains("td-findbar")) { continue; }
-					var block = BLOCK_TAGS[tag] === 1;
+					if(skippable(child)) { continue; }
+					if(isTextInput(child)) { addFieldHits(child, gLen); continue; }
+					if(child.nodeName === "IFRAME") { var b = iframeBody(child); if(b) { walkFields(b, gLen); } continue; }
+					var block = BLOCK_TAGS[child.nodeName] === 1;
 					if(block) { addSep(); }
 					walk(child);
 					if(block) { addSep(); }
@@ -249,7 +325,7 @@ exports.installFindBar = function(options) {
 			return null;
 		}
 
-		var hay = parts.join("").toLowerCase(), ranges = [], from = 0, pos;
+		var hay = parts.join("").toLowerCase(), from = 0, pos;
 		while((pos = hay.indexOf(q, from)) !== -1) {
 			// Start at the first matched char; end after the last one, so a match that
 			// spans two adjacent inline text nodes yields a range across both.
@@ -259,13 +335,18 @@ exports.installFindBar = function(options) {
 					var r = d.createRange();
 					r.setStart(startLoc.node, startLoc.offset);
 					r.setEnd(endLoc.node, endLoc.offset + 1);
-					ranges.push(r);
+					hits.push({ kind: "range", range: r, pos: pos });
 				} catch(e) {}
 			}
 			from = pos + q.length;
-			if(ranges.length >= MAX_MATCHES) { break; }
+			if(hits.length >= MAX_MATCHES) { break; }
 		}
-		return ranges;
+
+		// Order all hits by their offset in the flattened stream so next/prev follow document
+		// order across both kinds (a field hit sits at the stream offset of its control).
+		hits.sort(function(a, b) { return a.pos - b.pos; });
+		if(hits.length > MAX_MATCHES) { hits.length = MAX_MATCHES; }
+		return hits;
 	}
 
 	// Fresh search from the input: reset to the first match and scroll to it.
@@ -290,29 +371,40 @@ exports.installFindBar = function(options) {
 	// we relocate the range whose start is at-or-after the old current's start, so the
 	// highlight stays put and the counter always reflects true document order — making
 	// next/prev consistent (1 = first match, N = last) even while the DOM churns.
+	// Document-order comparison of a new hit against the old current ("anchor"): >=0 if the new
+	// hit is at or after the anchor, or null when the two can't be compared (different kinds, a
+	// detached anchor range, or field hits in different controls).
+	function compareHitToAnchor(h, anchor) {
+		if(h.kind === "range" && anchor.kind === "range") {
+			// START_TO_START (0): is this new range at or after the old current's start?
+			try { return h.range.compareBoundaryPoints(0, anchor.range); } catch(e) { return null; }
+		}
+		if(h.kind === "field" && anchor.kind === "field" && h.el === anchor.el) {
+			return h.start - anchor.start;
+		}
+		return null;
+	}
+
 	function reSearch() {
 		if(!isOpen() || !lastQuery) { return; }
 		injectContentStyleOnce();
 		var anchor = (curIndex >= 0 && allRanges[curIndex]) ? allRanges[curIndex] : null;
-		var newRanges = collectRanges(lastQuery);
-		if(!newRanges.length) { clearHighlights(); renderCount(); return; }
+		var newHits = collectRanges(lastQuery);
+		if(!newHits.length) { clearHighlights(); renderCount(); return; }
 		var idx = 0;
 		if(anchor) {
 			idx = -1;
-			for(var i = 0; i < newRanges.length; i++) {
-				var cmp;
-				// START_TO_START (0): compare each new match's start against the old
-				// current's start. The first one that is not before it is "the same"
-				// match (or its nearest successor if it was deleted).
-				try { cmp = newRanges[i].compareBoundaryPoints(0, anchor); } catch(e) { cmp = null; }
-				if(cmp === null) { idx = -1; break; }   // old anchor detached → can't compare
-				if(cmp >= 0) { idx = i; break; }
+			// First new hit at-or-after the old current. Incomparable hits (e.g. a field hit
+			// when the anchor is a range) are skipped, not treated as a stop, so a range anchor
+			// still lands on the right range even with editor matches interspersed.
+			for(var i = 0; i < newHits.length; i++) {
+				var cmp = compareHitToAnchor(newHits[i], anchor);
+				if(cmp !== null && cmp >= 0) { idx = i; break; }
 			}
-			// Anchor detached, or every new match precedes it (it was the last and got
-			// removed): clamp to a valid index near where we were.
-			if(idx === -1) { idx = Math.min(curIndex < 0 ? 0 : curIndex, newRanges.length - 1); }
+			// Nothing comparable at-or-after (anchor detached / was the last match): clamp.
+			if(idx === -1) { idx = Math.min(curIndex < 0 ? 0 : curIndex, newHits.length - 1); }
 		}
-		allRanges = newRanges;
+		allRanges = newHits;
 		curIndex = idx;
 		applyHighlights();
 		renderCount();

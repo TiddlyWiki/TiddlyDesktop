@@ -55,6 +55,11 @@ PluginChooser/Cancel: Άκυρο
 PluginChooser/Reinstall: Επανεγκατάσταση
 PluginChooser/ReinstallTooltip: Επανεγκατάσταση της ενσωματωμένης έκδοσης αυτού του προσθέτου
 PluginChooser/Reinstalled: Επανεγκαταστάθηκε
+PluginChooser/Installed: εγκατεστημένο
+PluginChooser/NotInstalled: Δεν είναι εγκατεστημένο
+PluginChooser/Versions: εκδόσεις
+PluginChooser/SourceBundled: ενσωματωμένο
+PluginChooser/SourceExternal: εξωτερικό
 PluginChooser/Update: Ενημέρωση
 PluginChooser/UpdateAvailable: Περιλαμβάνεται νεότερη έκδοση — κάντε κλικ για ενημέρωση
 PluginChooser/Updated: Ενημερώθηκε

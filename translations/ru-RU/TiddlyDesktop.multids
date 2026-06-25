@@ -55,6 +55,11 @@ PluginChooser/Cancel: Отмена
 PluginChooser/Reinstall: Переустановить
 PluginChooser/ReinstallTooltip: Переустановить встроенную версию этого плагина
 PluginChooser/Reinstalled: Переустановлено
+PluginChooser/Installed: установлено
+PluginChooser/NotInstalled: Не установлено
+PluginChooser/Versions: версии
+PluginChooser/SourceBundled: встроенный
+PluginChooser/SourceExternal: внешний
 PluginChooser/Update: Обновить
 PluginChooser/UpdateAvailable: В комплекте есть более новая версия — нажмите, чтобы обновить
 PluginChooser/Updated: Обновлено

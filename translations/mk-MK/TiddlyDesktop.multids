@@ -55,6 +55,11 @@ PluginChooser/Cancel: Откажи
 PluginChooser/Reinstall: Преинсталирај
 PluginChooser/ReinstallTooltip: Преинсталирај ја вклучената верзија на овој приклучок
 PluginChooser/Reinstalled: Преинсталирано
+PluginChooser/Installed: инсталирано
+PluginChooser/NotInstalled: Не е инсталирано
+PluginChooser/Versions: верзии
+PluginChooser/SourceBundled: вградено
+PluginChooser/SourceExternal: надворешно
 PluginChooser/Update: Ажурирај
 PluginChooser/UpdateAvailable: Вклучена е поново верзија — кликнете за ажурирање
 PluginChooser/Updated: Ажурирано
