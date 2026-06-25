@@ -7,7 +7,7 @@ tags: $:/tags/Stylesheet
 	padding: 1em;
 	background: <<colour wikilist-background>>;
 	width: 100%;
-	margin: 0;
+	margin: 5px 0 0 0;
 	box-sizing: border-box;
 	/* Grow to fill the remaining window height inside the flex-column droplink, so
 	   the list's background spans the full window even with only a few wikis. Doesn't
@@ -518,26 +518,52 @@ tags: $:/tags/Stylesheet
 	font-weight: 600;
 }
 
-.td-plugin-btn-update {
+/* Update and Reinstall sit in the same slot but mean different things, so they are
+   deliberately distinct: Update is the solid blue "there's a newer version" call to
+   action with a download glyph; Reinstall is a quiet outlined "repair the bundled
+   copy" action with a circular-refresh glyph.
+
+   The colour/border rules are scoped under .td-plugin-row on purpose: the base
+   `button.td-button` rule (buttons.tid) has specificity 0,1,1, so a bare
+   `.td-plugin-btn-update` (0,1,0) would lose to it and every button would fall back to
+   the same grey base background — which is exactly what made Update and Reinstall
+   indistinguishable. The descendant selector lifts these to 0,2,x so the colours win. */
+.td-plugin-btn-update,
+.td-plugin-btn-reinstall {
 	flex-shrink: 0;
-	background-color: #1a73e8;
-	color: #fff;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
 	white-space: nowrap;
 }
 
-.td-plugin-btn-update:hover {
+.td-plugin-btn-update svg,
+.td-plugin-btn-reinstall svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+.td-plugin-row .td-plugin-btn-update {
+	background-color: #1a73e8;
+	color: #fff;
+}
+
+.td-plugin-row .td-plugin-btn-update:hover {
 	background-color: #1666c1;
 }
 
-.td-plugin-btn-reinstall {
-	flex-shrink: 0;
-	background-color: <<colour wikilist-button-background>>;
-	color: <<colour wikilist-button-foreground>>;
-	white-space: nowrap;
+.td-plugin-row .td-plugin-btn-reinstall {
+	background-color: transparent;
+	color: <<colour wikilist-button-open>>;
+	border: 1px solid <<colour wikilist-button-open>>;
+	/* the 1px border would otherwise make it 2px taller than the solid Update button */
+	padding: 2px 6px;
 }
 
-.td-plugin-btn-reinstall:hover {
-	filter: brightness(0.92);
+.td-plugin-row .td-plugin-btn-reinstall:hover {
+	background-color: <<colour wikilist-button-open>>;
+	color: <<colour wikilist-button-foreground>>;
 }
 
 /* Count badge on the wiki-list Plugins button when a wiki has outdated plugins. */
@@ -579,16 +605,18 @@ tags: $:/tags/Stylesheet
 	flex-shrink: 0;
 }
 
-.td-plugin-btn-apply {
+/* Scoped under .td-plugin-actions for the same specificity reason as the row buttons
+   above — otherwise the base `button.td-button` grey wins and Apply isn't highlighted. */
+.td-plugin-actions .td-plugin-btn-apply {
 	background-color: <<colour wikilist-button-open>>;
 	color: <<colour wikilist-button-foreground>>;
 }
 
-.td-plugin-btn-apply:hover {
+.td-plugin-actions .td-plugin-btn-apply:hover {
 	background-color: <<colour wikilist-button-open-hover>>;
 }
 
-.td-plugin-btn-cancel {
+.td-plugin-actions .td-plugin-btn-cancel {
 	background-color: <<colour wikilist-button-background>>;
 	color: <<colour wikilist-button-foreground>>;
 }

@@ -280,15 +280,40 @@ exports.installFindBar = function(options) {
 	}
 
 	// Re-run the active search after the content changed (e.g. the wiki re-rendered
-	// the region a match was in). Keep the user on roughly the same match and do
+	// the region a match was in). Keep the user on the SAME physical match and do
 	// NOT scroll, so live edits underneath the bar don't yank the viewport around.
+	//
+	// We anchor to the current match's start position, not its numeric index: a
+	// re-render that inserts or removes a match ABOVE the current one shifts every
+	// index after it, so keeping the old number (Math.min(prev,len-1)) would silently
+	// jump the highlight onto a different match and desync the "n/N" counter. Instead
+	// we relocate the range whose start is at-or-after the old current's start, so the
+	// highlight stays put and the counter always reflects true document order — making
+	// next/prev consistent (1 = first match, N = last) even while the DOM churns.
 	function reSearch() {
 		if(!isOpen() || !lastQuery) { return; }
 		injectContentStyleOnce();
-		var prev = curIndex;
-		allRanges = collectRanges(lastQuery);
-		if(!allRanges.length) { clearHighlights(); renderCount(); return; }
-		curIndex = prev >= 0 ? Math.min(prev, allRanges.length - 1) : 0;
+		var anchor = (curIndex >= 0 && allRanges[curIndex]) ? allRanges[curIndex] : null;
+		var newRanges = collectRanges(lastQuery);
+		if(!newRanges.length) { clearHighlights(); renderCount(); return; }
+		var idx = 0;
+		if(anchor) {
+			idx = -1;
+			for(var i = 0; i < newRanges.length; i++) {
+				var cmp;
+				// START_TO_START (0): compare each new match's start against the old
+				// current's start. The first one that is not before it is "the same"
+				// match (or its nearest successor if it was deleted).
+				try { cmp = newRanges[i].compareBoundaryPoints(0, anchor); } catch(e) { cmp = null; }
+				if(cmp === null) { idx = -1; break; }   // old anchor detached → can't compare
+				if(cmp >= 0) { idx = i; break; }
+			}
+			// Anchor detached, or every new match precedes it (it was the last and got
+			// removed): clamp to a valid index near where we were.
+			if(idx === -1) { idx = Math.min(curIndex < 0 ? 0 : curIndex, newRanges.length - 1); }
+		}
+		allRanges = newRanges;
+		curIndex = idx;
 		applyHighlights();
 		renderCount();
 	}

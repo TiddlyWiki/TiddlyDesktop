@@ -32,6 +32,21 @@ function _rectOnAScreen(x, y, w, h) {
 	return false;
 }
 
+// The work area (screen minus taskbar/dock) of the screen the rect mostly sits on, or
+// null if screens can't be enumerated. A maximized window matches its work area.
+function _workAreaFor(x, y, w, h) {
+	var screens = _screens(), best = null, bestOverlap = -1;
+	for(var i = 0; i < screens.length; i++) {
+		var wa = screens[i].work_area || screens[i].bounds;
+		if(!wa) { continue; }
+		var ox = Math.max(0, Math.min(x + w, wa.x + wa.width)  - Math.max(x, wa.x));
+		var oy = Math.max(0, Math.min(y + h, wa.y + wa.height) - Math.max(y, wa.y));
+		var ov = ox * oy;
+		if(ov > bestOverlap) { bestOverlap = ov; best = wa; }
+	}
+	return best;
+}
+
 exports.addBaseMethods = function(proto) {
 
 	proto.getConfigTitle = function(type,identifier) {
@@ -104,21 +119,48 @@ exports.addBaseMethods = function(proto) {
 		return options;
 	};
 
-	// Persist the window's current position and size. Skipped while fullscreen or
-	// maximized, so the stored x/y/width/height stay the "normal" (restore) bounds —
-	// the maximized state is recorded separately as a flag (see saveMaximizedFlag).
+	// Is the window maximized right now? Judged from its bounds vs the screen work area,
+	// NOT from NW.js maximize/unmaximize events — those are never emitted on Linux, so an
+	// event-driven flag gets stuck "maximized" once set and the window can never be
+	// remembered as restored again. A maximized window fills the work area and sits at its
+	// origin; tolerance covers WM frames / invisible resize borders.
+	proto.isMaximizedNow = function() {
+		var win = this.window_nwjs;
+		if(!win) { return false; }
+		try {
+			var x = win.x, y = win.y, w = win.width, h = win.height;
+			if(!isFinite(w) || !isFinite(h) || w < 1 || h < 1) { return false; }
+			var wa = _workAreaFor(x, y, w, h);
+			if(!wa) { return false; }   // can't enumerate screens → don't guess "maximized"
+			var tol = 40;
+			return Math.abs(w - wa.width)  <= tol && Math.abs(h - wa.height) <= tol &&
+			       Math.abs(x - wa.x)      <= tol && Math.abs(y - wa.y)      <= tol;
+		} catch(e) {}
+		return false;
+	};
+
+	// Persist the window's current position and size. While the window is maximized we keep
+	// the previously-stored normal (restore) bounds untouched and only flag maximized=true;
+	// when it isn't, we store the live bounds with maximized=false. The maximized state is
+	// recomputed from the bounds on every save (see isMaximizedNow) so it stays correct on
+	// platforms that emit no maximize/unmaximize events. Skipped while fullscreen.
 	proto.saveGeometry = function() {
 		var win = this.window_nwjs;
 		if(!win) { return; }
 		try {
 			if(win.isFullscreen) { return; }
-			if(win.__tdMaximized) { return; }
-			var prev = this.loadGeometry() || {};
+			var maximized = this.isMaximizedNow();
+			win.__tdMaximized = maximized;
+			if(maximized) {
+				// Don't overwrite the normal bounds with the maximized ones — just flag it,
+				// so restore-on-reopen has real bounds to fall back to after un-maximizing.
+				var prev = this.loadGeometry() || {};
+				prev.maximized = true;
+				$tw.wiki.addTiddler(new $tw.Tiddler({title: this.getConfigTitle("geometry"),text: JSON.stringify(prev)}));
+				return;
+			}
 			var g = {x: win.x, y: win.y, width: win.width, height: win.height, maximized: false};
 			if(!isFinite(g.width) || !isFinite(g.height) || g.width < 1 || g.height < 1) { return; }
-			// Preserve a maximized flag set by saveMaximizedFlag if the window is, right now,
-			// genuinely maximized but __tdMaximized hasn't been observed yet (defensive).
-			void prev;
 			$tw.wiki.addTiddler(new $tw.Tiddler({title: this.getConfigTitle("geometry"),text: JSON.stringify(g)}));
 		} catch(e) {}
 	};

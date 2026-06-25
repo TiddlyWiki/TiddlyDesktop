@@ -48,12 +48,12 @@ title: $:/TiddlyDesktop/PluginChooser
 </$checkbox>
 <$list filter="[<currentTiddler>field:update-available[yes]]" variable="_">
 <span class="td-plugin-version td-plugin-version-outdated">v<$text text={{{ [<currentTiddler>get[installed-version]] }}}/> → v<$text text={{{ [<currentTiddler>get[version]] }}}/></span>
-<$button message="tiddlydesktop-update-plugin" param=<<pluginTitle>> class="tc-btn-invisible td-button td-plugin-btn-update" tooltip={{$:/language/TiddlyDesktop/PluginChooser/UpdateAvailable}}>{{$:/language/TiddlyDesktop/PluginChooser/Update}}</$button>
+<$button message="tiddlydesktop-update-plugin" param=<<pluginTitle>> class="tc-btn-invisible td-button td-plugin-btn-update" tooltip={{$:/language/TiddlyDesktop/PluginChooser/UpdateAvailable}}>{{$:/core/images/download-button}} {{$:/language/TiddlyDesktop/PluginChooser/Update}}</$button>
 </$list>
 <$list filter="[<currentTiddler>!field:update-available[yes]]" variable="_">
 <$list filter="[<currentTiddler>get[version]!match[]]" variable="ver"><span class="td-plugin-version">v<$text text=<<ver>>/></span></$list>
 <$list filter="[<currentTiddler>field:installed[yes]]" variable="_"><$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[file]]" variable="_">
-<$button message="tiddlydesktop-reinstall-plugin" param=<<pluginTitle>> class="tc-btn-invisible td-button td-plugin-btn-reinstall" tooltip={{$:/language/TiddlyDesktop/PluginChooser/ReinstallTooltip}}>{{$:/language/TiddlyDesktop/PluginChooser/Reinstall}}</$button>
+<$button message="tiddlydesktop-reinstall-plugin" param=<<pluginTitle>> class="tc-btn-invisible td-button td-plugin-btn-reinstall" tooltip={{$:/language/TiddlyDesktop/PluginChooser/ReinstallTooltip}}>{{$:/core/images/refresh-button}} {{$:/language/TiddlyDesktop/PluginChooser/Reinstall}}</$button>
 </$list></$list>
 </$list>
 </$let>
