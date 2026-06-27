@@ -525,6 +525,15 @@ tags: $:/tags/Stylesheet
 	font-weight: 600;
 }
 
+/* The "update available" hint shown beside a collapsed version list: a small download glyph
+   + "v<installed> → v<newest>", so an outstanding update is visible without expanding the group. */
+.td-plugin-version-outdated svg {
+	width: 0.9em;
+	height: 0.9em;
+	fill: currentColor;
+	vertical-align: -0.15em;
+}
+
 /* Update and Reinstall sit in the same slot but mean different things, so they are
    deliberately distinct: Update is the solid blue "there's a newer version" call to
    action with a download glyph; Reinstall is a quiet outlined "repair the bundled

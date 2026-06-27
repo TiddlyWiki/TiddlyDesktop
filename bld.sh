@@ -38,6 +38,13 @@ done
 # the injected WikiList translations) win over the tiddlydesktop plugin's English defaults.
 node translations/set-language-priority.js source/tiddlywiki/languages
 
+# Copy bundled extra themes (elegant, noir, workbench, lucid, quietude, opaline, modern)
+# into the TW theme library so they are available to both the backstage wiki and the
+# PluginChooser — alongside vanilla and snowwhite that TW ships itself.
+if [ -d "themes" ]; then
+    cp -RH themes/* source/tiddlywiki/themes/
+fi
+
 # Copy TiddlyDesktop plugin into the source directory
 cp -RH plugins/tiddlydesktop source/tiddlywiki/plugins/tiddlywiki
 

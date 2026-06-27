@@ -344,7 +344,8 @@ OpenStreetMap map, …). TiddlyDesktop makes these play reliably and safely.
   frame chain). The direct provider load is cancelled the instant an embed appears, so the 153
   error never flickers.
 - Embedded media works in **single-file wikis, folder wikis, and the backstage windows** (wiki
-  list, Settings, Help).
+  list, Settings, Help) — and in the **single-tiddler windows** opened with `tm-open-window` (the
+  tiddler toolbar's *Open in new window* button), so a video opened in its own window plays too.
 
 ### Hosts allowed by default
 

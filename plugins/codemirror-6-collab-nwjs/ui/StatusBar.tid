@@ -19,11 +19,11 @@ caption: Collab status bar
 <span class="tc-collab-statusbar-sep">·</span>
 
 <$reveal type="nomatch" state="$:/temp/collab/auth-username" text="">
-<span class="tc-collab-statusbar-badge">Username: @<$text text={{$:/temp/collab/auth-username}}/></span>
+<span class="tc-collab-statusbar-badge"><span class="tc-tiny-gap-right">Username:</span>@<$text text={{$:/temp/collab/auth-username}}/></span>
 </$reveal>
 <$reveal type="match" state="$:/temp/collab/auth-username" text="">
 <$reveal type="nomatch" state="$:/config/codemirror-6-collab/user-name" text="">
-<span class="tc-collab-statusbar-badge">Username: <$text text={{$:/config/codemirror-6-collab/user-name}}/></span>
+<span class="tc-collab-statusbar-badge"><span class="tc-tiny-gap-right">Username:</span><$text text={{$:/config/codemirror-6-collab/user-name}}/></span>
 </$reveal>
 <$reveal type="match" state="$:/config/codemirror-6-collab/user-name" text="">
 <span class="tc-collab-statusbar-badge tc-collab-statusbar-dim">not signed in</span>

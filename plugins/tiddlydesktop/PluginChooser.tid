@@ -52,7 +52,7 @@ title: $:/TiddlyDesktop/PluginChooser
 </$checkbox>
 <span class="td-plugin-row-actions">
 <$list filter="[<currentTiddler>field:update-available[yes]]" variable="_">
-<span class="td-plugin-version td-plugin-version-outdated tc-small-gap-right">v<$text text={{{ [<currentTiddler>get[installed-version]] }}}/> → v<$text text={{{ [<currentTiddler>get[version]] }}}/></span>
+<span class="td-plugin-version td-plugin-version-outdated tc-small-gap-right">v<$text text={{{ [<currentTiddler>get[installed-version]] }}}/>&#32;→&#32;v<$text text={{{ [<currentTiddler>get[version]] }}}/></span>
 <$button message="tiddlydesktop-update-plugin" param=<<currentTiddler>> class="tc-btn-invisible td-button td-plugin-btn-update" tooltip={{$:/language/TiddlyDesktop/PluginChooser/UpdateAvailable}}>{{$:/core/images/download-button}} {{$:/language/TiddlyDesktop/PluginChooser/Update}}</$button>
 </$list>
 <$list filter="[<currentTiddler>!field:update-available[yes]]" variable="_">
@@ -74,6 +74,9 @@ title: $:/TiddlyDesktop/PluginChooser
 </div>
 <$reveal type="nomatch" state=<<plugin-exp-title>> text="yes" tag="div" class="td-plugin-versions-reveal">
 <$button set=<<plugin-exp-title>> setTo="yes" class="tc-btn-invisible td-plugin-versions-toggle">{{$:/core/images/chevron-right}} <span><$text text=<<verCount>>/>&#32;{{$:/language/TiddlyDesktop/PluginChooser/Versions}}</span></$button>
+<$list filter="[tag[$:/temp/TiddlyDesktop/PluginChooser/available]plugin-type<currentTab>plugin-title<pluginTitle>field:update-available[yes]nsort[version-order]first[]]" variable="updTiddler">
+<span class="td-plugin-version td-plugin-version-outdated tc-tiny-gap-left" title={{$:/language/TiddlyDesktop/PluginChooser/UpdateAvailable}}>{{$:/core/images/download-button}} v<$text text={{{ [<updTiddler>get[installed-version]] }}}/>&#32;→&#32;v<$text text={{{ [<updTiddler>get[version]] }}}/></span>
+</$list>
 </$reveal>
 <$reveal type="match" state=<<plugin-exp-title>> text="yes" tag="div" class="td-plugin-versions-reveal">
 <$button set=<<plugin-exp-title>> setTo="no" class="tc-btn-invisible td-plugin-versions-toggle">{{$:/core/images/chevron-down}} <span><$text text=<<verCount>>/>&#32;{{$:/language/TiddlyDesktop/PluginChooser/Versions}}</span></$button>
