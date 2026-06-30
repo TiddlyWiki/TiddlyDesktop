@@ -202,7 +202,7 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <table class="tc-edit-fields"><tbody>
 <tr class="tc-edit-field"><td class="tc-edit-field-name">Relay URL</td><td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/relay-url" tag="input" placeholder="wss://relay-server/"/></td></tr>
 <tr class="tc-edit-field"><td class="tc-edit-field-name">Room code</td><td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/room-code" tag="input" placeholder="shared-room-name"/></td></tr>
-<tr class="tc-edit-field"><td class="tc-edit-field-name">Room token</td><td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/room-token" tag="input" placeholder="shared E2E secret"/></td></tr>
+<tr class="tc-edit-field"><td class="tc-edit-field-name">Room token</td><td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/room-token" tag="input" type="password" placeholder="shared E2E secret"/></td></tr>
 </tbody></table>
 <div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/relay-only" field="text" checked="yes" unchecked="no" default="no"/><span class="tc-tiny-gap-left">Relay only — disable direct LAN</span></div>
 <div class="tc-collab-settings-checkrow"><$checkbox tiddler="$:/config/codemirror-6-collab/allow-system-tiddlers" field="text" checked="yes" unchecked="no" default="no"/><span class="tc-tiny-gap-left">Allow system (<code>$:/</code>) tiddlers — never executable; trusted rooms only</span></div>
