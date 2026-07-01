@@ -222,6 +222,60 @@ wikis can detect and update to a newer bundled copy. That version is derived at 
 (`major.minor` from its `plugin.info`, patch = commits touching the plugin since that
 `major.minor.0`).
 
+### Extending the library — your own plugins, themes, and languages
+
+The Plugin Chooser lists everything TiddlyDesktop ships **plus** anything you place on three
+environment variables. This is how you make your own (or third-party) plugins, themes, and
+languages installable into any wiki — without unpacking them into each wiki by hand.
+
+| Variable | For | Layout under each directory |
+|---|---|---|
+| `TIDDLYWIKI_PLUGIN_PATH` | plugins | `<author>/<name>/` (nested), e.g. `TiddlyTools/Favicon/` |
+| `TIDDLYWIKI_THEME_PATH` | themes | `<author>/<name>/` (nested), e.g. `nico/notebook/` |
+| `TIDDLYWIKI_LANGUAGE_PATH` | languages | `<name>/` (flat), e.g. `fr-FR/` |
+
+- Each leaf folder is an ordinary TiddlyWiki **plugin folder**: a `plugin.info` manifest next to
+  the plugin's tiddler files (`.tid`, `.multids`, `.json`, …).
+- Each variable is a **list of directories**, separated by the OS path delimiter — `:` on
+  Linux/macOS, `;` on Windows — so you can point at several libraries at once.
+- These are the standard TiddlyWiki library variables; the layout is exactly what a `tiddlywiki`
+  Node.js install expects, so an existing plugin library works unchanged.
+
+Set them before launching, e.g. on Linux/macOS:
+
+```
+export TIDDLYWIKI_PLUGIN_PATH="$HOME/tw-library/plugins"
+export TIDDLYWIKI_THEME_PATH="$HOME/tw-library/themes"
+export TIDDLYWIKI_LANGUAGE_PATH="$HOME/tw-library/languages"
+./TiddlyDesktop
+```
+
+or on Windows (`setx` persists them for future sessions):
+
+```
+setx TIDDLYWIKI_PLUGIN_PATH "C:\tw-library\plugins"
+```
+
+**Why put them here rather than into each wiki:**
+
+- **Install into any wiki from one place.** Everything on these paths appears in the Plugin
+  Chooser, so you can add it to any single-file or folder wiki (and remove it) from the wiki list,
+  without opening the wiki.
+- **Update once, everywhere.** Folder wikis reference plugins/themes/languages **by name** and
+  resolve them from these paths at boot — there is no per-wiki copy to update. Refresh the library
+  folder and every folder wiki picks up the new version on its next start.
+- **Live re-scan, no restart.** The paths are watched on disk (`fs.watch`): drop in a new plugin
+  or update one in place and the chooser's catalogue and the **Update** badges refresh
+  immediately.
+- **Shared and versioned by you.** One library folder (git-managed, synced, backed up) instead of
+  frozen copies scattered inside each wiki.
+- **Feeds the wiki-list UI too.** Extra languages appear in the language switcher and extra themes
+  in theme resolution for TiddlyDesktop's own backstage, not just your wikis.
+
+Single-file wikis differ in one respect: because they must be self-contained, installing embeds a
+**copy** of the plugin into the file (so it still works if you move the file elsewhere). Folder
+wikis keep the by-name reference and stay in sync with the library.
+
 ---
 
 ## 9. Tagging and filtering wikis
@@ -265,6 +319,10 @@ the bundled fallback. A **language switcher** in the toolbar uses the standard T
   all of them.
 - Switching language is **live — no restart**. The toolbar and rows re-translate immediately
   (the UI is bound to `$:/language`).
+- **Extra languages** placed on `TIDDLYWIKI_LANGUAGE_PATH` appear here too (and in the Plugin
+  Chooser) — see [Extending the library](#extending-the-library--your-own-plugins-themes-and-languages)
+  (§8). Installed languages are plain plugins (no TiddlyDesktop wiki-list strings); only the
+  backstage carries those.
 
 ---
 
@@ -647,6 +705,20 @@ Tiddlers you can create/edit to configure behaviour. Collaboration settings are 
 
 Per-wiki TiddlyDesktop state also lives under `$:/TiddlyDesktop/Config/*` (title, favicon,
 wiki-tags, host/port, disable-backups, classic flag) in the backstage wiki.
+
+### Environment variables
+
+Read at launch (not tiddlers):
+
+| Variable | Purpose |
+|---|---|
+| `TIDDLYWIKI_PLUGIN_PATH` | Extra plugin library directories (see [§8](#extending-the-library--your-own-plugins-themes-and-languages)) |
+| `TIDDLYWIKI_THEME_PATH` | Extra theme library directories |
+| `TIDDLYWIKI_LANGUAGE_PATH` | Extra language library directories |
+| `OZONE_PLATFORM` | Force the Chromium windowing backend (e.g. `x11` under Wayland — see [§22](#linux--wayland-drag-and-drop-window-frames-dialogs)) |
+
+The three `TIDDLYWIKI_*_PATH` variables are path-delimiter–separated lists (`:` on Linux/macOS,
+`;` on Windows).
 
 ---
 

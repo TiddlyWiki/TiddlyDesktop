@@ -225,6 +225,56 @@ Tag chips use TiddlyWiki's standard tag-colour mechanism: a tag is coloured by a
 
 Delete the `color` field (or the whole tiddler) to revert to the palette's default tag colour.
 
+## Installing extra plugins, themes, and languages
+
+The **plugins** button on a wiki row lists everything TiddlyDesktop bundles **plus** anything you
+place on three environment variables. This is how you make your own (or third-party) plugins,
+themes, and languages installable into any wiki — without unpacking them into each wiki by hand.
+
+| Variable | For | Layout under each directory |
+|---|---|---|
+| `TIDDLYWIKI_PLUGIN_PATH` | plugins | `<author>/<name>/` (nested), e.g. `TiddlyTools/Favicon/` |
+| `TIDDLYWIKI_THEME_PATH` | themes | `<author>/<name>/` (nested), e.g. `nico/notebook/` |
+| `TIDDLYWIKI_LANGUAGE_PATH` | languages | `<name>/` (flat), e.g. `fr-FR/` |
+
+Each leaf folder is an ordinary TiddlyWiki **plugin folder** (a `plugin.info` manifest next to the
+plugin's tiddler files). Each variable is a **list of directories** separated by the OS path
+delimiter — `:` on Linux/macOS, `;` on Windows. These are the standard TiddlyWiki library
+variables, so an existing `tiddlywiki` Node.js plugin library works unchanged.
+
+Set them before launching. On Linux/macOS:
+
+```
+export TIDDLYWIKI_PLUGIN_PATH="$HOME/tw-library/plugins"
+export TIDDLYWIKI_THEME_PATH="$HOME/tw-library/themes"
+export TIDDLYWIKI_LANGUAGE_PATH="$HOME/tw-library/languages"
+./TiddlyDesktop
+```
+
+On Windows (`setx` persists them for future sessions):
+
+```
+setx TIDDLYWIKI_PLUGIN_PATH "C:\tw-library\plugins"
+```
+
+**Why put them here rather than into each wiki:**
+
+* **Install into any wiki from one place** — everything on these paths appears in the Plugin
+  Chooser, so you can add it to any single-file or folder wiki (and remove it) from the wiki list,
+  without opening the wiki.
+* **Update once, everywhere** — folder wikis reference plugins/themes/languages **by name** and
+  resolve them from these paths at boot, with no per-wiki copy to update; refresh the library and
+  every folder wiki picks up the new version on its next start.
+* **Live re-scan, no restart** — the paths are watched on disk, so dropping in or updating a plugin
+  refreshes the chooser and its **Update** badges immediately.
+* **Shared and versioned by you** — one library folder (git-managed, synced, backed up) instead of
+  frozen copies scattered inside each wiki.
+* **Feeds the wiki-list UI too** — extra languages appear in the language switcher.
+
+Single-file wikis are self-contained, so installing embeds a **copy** into the file (it keeps
+working if you move the file); folder wikis keep the by-name reference and stay in sync with the
+library. See [Documentation.md §8](Documentation.md#8-plugin-management) for full details.
+
 ## Serving a folder wiki over the local network
 
 A wiki folder runs its own TiddlyWiki server. Open a folder wiki's **advanced** options and

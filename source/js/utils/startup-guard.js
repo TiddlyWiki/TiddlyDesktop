@@ -13,7 +13,10 @@ Two jobs, both run synchronously at the very start of main.js (before the Tiddly
    terminate other TiddlyDesktop trees that share OUR profile: any same-profile tree we can see
    here cannot be a healthy running instance (the live one would have absorbed our launch), so it
    is stale. Each tree's profile is read from the --user-data-dir on its root (browser) process.
-   Our own process tree is always identified and spared.
+   Our own process tree is always identified and spared. Crucially, enumeration is filtered to
+   processes owned by the CURRENT OS user (uid on POSIX, GetOwner account on Windows), so on a
+   shared machine another user's TiddlyDesktop is never even considered, let alone terminated — we
+   never rely on the OS denying the kill, which would fail the moment we run elevated / as root.
 
 2. guardProfile() — detect a Chromium version change (i.e. an NW.js upgrade) and clear the
    disposable GPU / shader / code caches that commonly cause a blank or no-window launch after
@@ -35,6 +38,28 @@ var fs = require("fs"),
 // and the killer no-ops — which is the right behaviour in development.
 var EXE_NAME = "TiddlyDesktop";
 var OUR_EXEC = (process.execPath || "");
+
+// Identity of the OS user we run as. Every killer below is filtered to processes owned by THIS user
+// so we can never terminate — or even target — another user's TiddlyDesktop on a shared machine. The
+// profile-path checks are a second line of defence, but they are not sufficient on their own: the
+// per-user default profile has no --user-data-dir flag to compare, so without an owner filter a
+// different user's default-profile instance would be mis-classified as our own stale orphan. Relying
+// on the OS to deny the kill (EPERM / access-denied) is not acceptable — it fails the instant
+// TiddlyDesktop runs elevated / as root. On Windows we match by account name (Win32_Process.GetOwner);
+// on POSIX by numeric uid (process.getuid()).
+var OUR_UID = (typeof process.getuid === "function") ? process.getuid() : null;
+var OUR_WIN_USER = (process.env.USERNAME || "").toLowerCase();
+var OUR_WIN_DOMAIN = (process.env.USERDOMAIN || "").toLowerCase();
+
+// True only when a Windows process's owner (as reported by GetOwner) is the account we run as. An
+// empty/unknown owner (elevated or otherwise unreadable process) is treated as NOT ours, so such a
+// process is never targeted. Domain is compared only when both sides report one.
+function winOwnerIsUs(user, domain) {
+	if(!user) { return false; }
+	if(user.toLowerCase() !== OUR_WIN_USER) { return false; }
+	if(domain && OUR_WIN_DOMAIN && domain.toLowerCase() !== OUR_WIN_DOMAIN) { return false; }
+	return true;
+}
 
 // Hard ceiling on the synchronous process-enumeration queries below (PowerShell on Windows, ps on
 // POSIX). A hung or slow query — PowerShell cold start, AppLocker / Constrained Language Mode, an
@@ -73,26 +98,35 @@ function enumerateTiddlyDesktop() {
 			// table. Already filtered to our image name, so every row is a TiddlyDesktop process.
 				// CommandLine is included so the kill can read each tree's --user-data-dir (empty when
 				// the process is elevated and unreadable — treated as the default profile downstream).
+				// GetOwner supplies the owning account so other users' processes can be dropped below.
 			var psOut = cp.execFileSync("powershell.exe", [
 				"-NoProfile", "-NonInteractive", "-Command",
-				"Get-CimInstance Win32_Process -Filter \"Name='" + EXE_NAME + ".exe'\"" +
-					" | ForEach-Object { \"$($_.ProcessId)`t$($_.ParentProcessId)`t$($_.CommandLine)\" }"
+				"Get-CimInstance Win32_Process -Filter \"Name='" + EXE_NAME + ".exe'\" | ForEach-Object {" +
+					" $o = $null; try { $o = Invoke-CimMethod -InputObject $_ -MethodName GetOwner -ErrorAction Stop } catch {};" +
+					" $u = if($o) { $o.User } else { '' }; $d = if($o) { $o.Domain } else { '' };" +
+					" \"$($_.ProcessId)`t$($_.ParentProcessId)`t$u`t$d`t$($_.CommandLine)\" }"
 			], {encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], windowsHide: true,
 				timeout: PROCESS_QUERY_TIMEOUT_MS, killSignal: "SIGKILL"});
 			return psOut.split(/\r?\n/).map(function(line) {
-				var m = /^(\d+)\t(\d+)\t(.*)$/.exec(line.replace(/\r$/, ""));
-				return m ? {pid: parseInt(m[1], 10), ppid: parseInt(m[2], 10), cmd: m[3]} : null;
+				var m = /^(\d+)\t(\d+)\t([^\t]*)\t([^\t]*)\t(.*)$/.exec(line.replace(/\r$/, ""));
+				if(!m) { return null; }
+				// Drop any process not owned by us — never target another user's instance.
+				if(!winOwnerIsUs(m[3], m[4])) { return null; }
+				return {pid: parseInt(m[1], 10), ppid: parseInt(m[2], 10), cmd: m[5]};
 			}).filter(Boolean);
 		}
-		// POSIX (Linux, macOS): -A lists every process on both BSD and procps ps.
-		var out = cp.execFileSync("ps", ["-A", "-o", "pid=,ppid=,args="],
+		// POSIX (Linux, macOS): -A lists every process on both BSD and procps ps. uid= is read so
+		// rows owned by another user can be dropped (args= stays last as it may contain spaces).
+		var out = cp.execFileSync("ps", ["-A", "-o", "pid=,ppid=,uid=,args="],
 			{encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], maxBuffer: 16 * 1024 * 1024,
 				timeout: PROCESS_QUERY_TIMEOUT_MS, killSignal: "SIGKILL"});
 		var rows = [];
 		out.split(/\r?\n/).forEach(function(line) {
-			var m = /^\s*(\d+)\s+(\d+)\s+(.*)$/.exec(line);
+			var m = /^\s*(\d+)\s+(\d+)\s+(\d+)\s+(.*)$/.exec(line);
 			if(!m) { return; }
-			var cmd = m[3];
+			// Never target another user's process: skip any row whose uid isn't ours.
+			if(OUR_UID !== null && parseInt(m[3], 10) !== OUR_UID) { return; }
+			var cmd = m[4];
 			if(looksLikeTiddlyDesktop(cmd)) {
 				rows.push({pid: parseInt(m[1], 10), ppid: parseInt(m[2], 10), cmd: cmd});
 			}
@@ -220,9 +254,11 @@ exports.killStaleInstances = function(dataPath) {
 // --- 1b. Windows: clear a HUNG primary -------------------------------------------------------
 
 // Windows enumeration that additionally reports each process's UI responsiveness. Win32_Process
-// (CIM) gives pid/ppid/CommandLine; Get-Process gives the live .Responding flag and .MainWindowHandle
-// (0 when the process owns no top-level window). The two are joined on ProcessId. Returns rows
-// [{pid, ppid, cmd, responding, hasWindow}] or null if the query failed (→ caller no-ops).
+// (CIM) gives pid/ppid/CommandLine and, via GetOwner, the owning account; Get-Process gives the live
+// .Responding flag and .MainWindowHandle (0 when the process owns no top-level window). They are
+// joined on ProcessId, and rows not owned by the current user are dropped so another user's instance
+// is never a target. Returns rows [{pid, ppid, cmd, responding, hasWindow}] or null if the query
+// failed (→ caller no-ops).
 function enumerateWindowsState() {
 	try {
 		var psOut = cp.execFileSync("powershell.exe", [
@@ -231,18 +267,22 @@ function enumerateWindowsState() {
 				" $p = $null; try { $p = Get-Process -Id $_.ProcessId -ErrorAction Stop } catch {};" +
 				" $resp = if($p) { $p.Responding } else { $true };" +
 				" $mwh = if($p) { [int64]$p.MainWindowHandle } else { 0 };" +
-				" \"$($_.ProcessId)`t$($_.ParentProcessId)`t$resp`t$mwh`t$($_.CommandLine)\" }"
+				" $o = $null; try { $o = Invoke-CimMethod -InputObject $_ -MethodName GetOwner -ErrorAction Stop } catch {};" +
+				" $u = if($o) { $o.User } else { '' }; $d = if($o) { $o.Domain } else { '' };" +
+				" \"$($_.ProcessId)`t$($_.ParentProcessId)`t$resp`t$mwh`t$u`t$d`t$($_.CommandLine)\" }"
 		], {encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], windowsHide: true,
 			timeout: PROCESS_QUERY_TIMEOUT_MS, killSignal: "SIGKILL"});
 		return psOut.split(/\r?\n/).map(function(line) {
-			var m = /^(\d+)\t(\d+)\t(True|False)\t(\d+)\t(.*)$/.exec(line.replace(/\r$/, ""));
+			var m = /^(\d+)\t(\d+)\t(True|False)\t(\d+)\t([^\t]*)\t([^\t]*)\t(.*)$/.exec(line.replace(/\r$/, ""));
 			if(!m) { return null; }
+			// Drop any process not owned by us — a hung primary is only ever cleared for our own account.
+			if(!winOwnerIsUs(m[5], m[6])) { return null; }
 			return {
 				pid: parseInt(m[1], 10),
 				ppid: parseInt(m[2], 10),
 				responding: (m[3] === "True"),
 				hasWindow: parseInt(m[4], 10) !== 0,
-				cmd: m[5]
+				cmd: m[7]
 			};
 		}).filter(Boolean);
 	} catch(e) {
