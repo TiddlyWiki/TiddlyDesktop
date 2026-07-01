@@ -250,6 +250,22 @@ function enumerateWindowsState() {
 	}
 }
 
+// Count running processes for an image name with tasklist — a native command with no PowerShell
+// cold start (~100ms vs ~1-2s for the Win32_Process WMI query). Returns the count, or -1 if the
+// query failed (caller then must NOT treat it as "no other instance"). Used only as a cheap gate.
+function countWindowsProcessesByImage(exeName) {
+	try {
+		var out = cp.execFileSync("tasklist", ["/FI", "IMAGENAME eq " + exeName + ".exe", "/NH", "/FO", "CSV"],
+			{encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], windowsHide: true,
+				timeout: PROCESS_QUERY_TIMEOUT_MS, killSignal: "SIGKILL"});
+		// Each matching process is one CSV row, e.g. "TiddlyDesktop.exe","1234",... — a no-match prints
+		// an "INFO:" line instead, which this filter skips, giving 0.
+		return out.split(/\r?\n/).filter(function(l) { return /^"/.test(l); }).length;
+	} catch(e) {
+		return -1;
+	}
+}
+
 // On Windows there is no Singleton symlink to detect/clear (removeStaleSingletonLock no-ops), and a
 // launch against an already-claimed profile is forwarded to the primary BEFORE it reaches main.js.
 // If that primary is HUNG — alive, but its UI thread's message pump is stuck — the forwarded launch
@@ -263,6 +279,16 @@ function enumerateWindowsState() {
 exports.killHungPrimary = function(dataPath) {
 	try {
 		if(process.platform !== "win32") { return; }
+
+		// Cheap pre-gate before the costly WMI query: a hung PRIMARY owns a window, so it always has a
+		// full process tree (browser + GPU + renderers). On a normal cold start only our own
+		// just-spawned browser process exists (renderers/GPU spawn after node-main), so a low count
+		// means there is no other instance — skip the ~1-2s query entirely. A just-starting second
+		// instance (also few processes) owns no window yet, so it is never a hung-primary target, and
+		// skipping it loses nothing. -1 means tasklist failed: fall through and run the real query.
+		var procCount = countWindowsProcessesByImage(EXE_NAME);
+		if(procCount >= 0 && procCount <= 2) { return; }
+
 		var rows = enumerateWindowsState();
 		if(!rows || !rows.length) { return; }
 

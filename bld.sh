@@ -23,20 +23,25 @@ cp -RH node_modules/tiddlywiki source/tiddlywiki
 # to the keep-list below — they're always present in node_modules/tiddlywiki at build time.
 find source/tiddlywiki/editions -mindepth 1 -maxdepth 1 ! -name empty ! -name server -exec rm -rf {} +
 
-# Generate and inject the TiddlyDesktop WikiList translations into each bundled language
-# plugin, so the wiki list can be shown in any language. They override the tiddlydesktop
-# plugin's English defaults because language plugins have a higher plugin-priority (100).
+# Build the TiddlyDesktop WikiList translations, then create a BACKSTAGE-ONLY language set with those
+# strings injected and priority bumped. The backstage wiki (main.js points its boot at
+# languages-backstage) shows the wiki list in the active language. The shared source/tiddlywiki/
+# languages stays clean so a language the PluginChooser installs into a user wiki — or a folder wiki
+# resolves at runtime — carries no TiddlyDesktop strings and no priority override.
 node translations/build-translations.js
+cp -RH source/tiddlywiki/languages source/tiddlywiki/languages-backstage
 for langdir in translations/*/ ; do
 	lang=$(basename "$langdir")
-	if [ -d "source/tiddlywiki/languages/$lang" ]; then
-		cp "$langdir"TiddlyDesktop.multids "source/tiddlywiki/languages/$lang/" 2>/dev/null || true
-		cp "$langdir"EmptyMessage.tid "source/tiddlywiki/languages/$lang/" 2>/dev/null || true
+	if [ -d "source/tiddlywiki/languages-backstage/$lang" ]; then
+		cp "$langdir"TiddlyDesktop.multids "source/tiddlywiki/languages-backstage/$lang/" 2>/dev/null || true
+		cp "$langdir"EmptyMessage.tid "source/tiddlywiki/languages-backstage/$lang/" 2>/dev/null || true
 	fi
 done
-# Give every language plugin plugin-priority 100 so the active language's strings (incl.
-# the injected WikiList translations) win over the tiddlydesktop plugin's English defaults.
-node translations/set-language-priority.js source/tiddlywiki/languages
+# Backstage languages win over the tiddlydesktop plugin's English defaults via plugin-priority 100
+# (as the STRING "100"; a numeric value white-screens single-file wikis). The shared languages have
+# any upstream priority (de-DE, zh-* ship 100) stripped so installed languages are never priority 100.
+node translations/set-language-priority.js source/tiddlywiki/languages-backstage
+node translations/strip-language-priority.js source/tiddlywiki/languages
 
 # Copy bundled extra themes (elegant, noir, workbench, lucid, quietude, opaline, modern)
 # into the TW theme library so they are available to both the backstage wiki and the
@@ -59,6 +64,14 @@ node bin/stamp-collab-version.js source/tiddlywiki/plugins/tiddlywiki/codemirror
 
 # Copy TiddlyDesktop version number from package.json to the plugin.info of the plugin and the tiddler $:/plugins/tiddlywiki/tiddlydesktop/version
 node propagate-version.js
+
+# Collapse each bundled core/plugin/theme/language folder to plugin.info + a single contents.json.
+# loadPluginFolder reads every file in a plugin folder, so booting the backstage wiki (core + 34
+# languages + themes + plugins) otherwise opens ~3000 small files — on Windows each is scanned by
+# Defender, stalling startup ~20s. Packing cuts that to a few dozen reads with an identical result.
+# Runs last so the injected translations, priority-100 marker, stamped collab version and propagated
+# version number are all captured in the pack.
+node bin/pack-bundled-plugins.js source/tiddlywiki
 
 # Create the output directories
 mkdir -p output

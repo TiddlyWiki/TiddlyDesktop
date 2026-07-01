@@ -13,17 +13,17 @@ var protocol = require("../js/utils/protocol.js");
 var deeplink = require("../js/utils/deeplink.js");
 var startupGuard = require("../js/utils/startup-guard.js");
 
-// Recover from an unclean previous run or a Chromium (NW.js) upgrade BEFORE booting:
-//   - kill any STALE TiddlyDesktop process trees for OUR profile (they can keep the Chromium
-//     profile locked and make this launch hang with no window). TiddlyDesktop is single-instance
-//     per profile, so reaching here means we're the primary for this profile — a healthy running
-//     instance is never touched, and parallel instances on a different --user-data-dir are spared;
-//     only same-profile orphans left by a crash or an older build are killed.
-//   - on a Chromium version change, clear Chromium's disposable GPU/shader caches and any stale
-//     Singleton lock. Never touches the wiki list or any TiddlyDesktop data.
-// Both calls are fully self-guarded and can never block startup.
-try { startupGuard.killStaleInstances(gui.App.dataPath); } catch(e) { console.error("[TiddlyDesktop] stale-process cleanup failed:",e); }
+// On a Chromium (NW.js) upgrade, clear Chromium's disposable GPU/shader caches and any stale
+// Singleton lock BEFORE booting — a stale cache from the old Chromium is a classic blank/no-window
+// cause. Cheap unless the version actually changed; never touches the wiki list or any TiddlyDesktop
+// data, and is self-guarded so it can never block startup.
 try { startupGuard.guardProfile(gui.App.dataPath); } catch(e) { console.error("[TiddlyDesktop] profile guard failed:",e); }
+
+// Stale same-profile orphan cleanup (killStaleInstances) is deliberately NOT run synchronously here:
+// reaching main.js means we are already the primary for this profile (a live instance would have
+// absorbed this launch), so any orphans left by a crash or an older build are NOT blocking us —
+// terminating them is pure recovery. Its process-enumeration query is slow on Windows, so it is
+// deferred until after the window is up (see the boot-complete callback below) to keep startup fast.
 
 // The real process.exit, captured before anything (e.g. wiki conversion) can monkey-patch it.
 // quitApp() uses this so a quit during a conversion still terminates.
@@ -234,7 +234,16 @@ if(!hasNonFlagArg) {
 setTimeout(function() {
 	$tw.boot.suppressBoot = true;
 	require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
+	// Point ONLY the backstage boot at the backstage-specific language set: copies of the languages
+	// with the wiki-list UI translations injected and bumped to plugin-priority 100, so the active
+	// language wins in the backstage UI. The shared "../languages/" library stays clean, so the
+	// PluginChooser and folder wikis get plain languages (no TiddlyDesktop strings, no priority
+	// bump). deepDefaults during boot preserves this (it only fills missing keys); it is restored to
+	// the clean default in the boot callback below, before the PluginChooser can enumerate anything.
+	$tw.config = $tw.config || {};
+	$tw.config.languagesPath = "../languages-backstage/";
 	$tw.boot.boot(function() {
+		$tw.config.languagesPath = "../languages/";
 		// Process command line
 		var tokens = initialArgv,
 			command, commandFn,
@@ -274,5 +283,11 @@ setTimeout(function() {
 		});
 		// If launched cold by a tiddlydesktop:// deep link, act on it now that there's a window.
 		if(_coldStartDeepLink) { try { deeplink.handleUrl(_coldStartDeepLink); } catch(e) {} }
+		// Deferred recovery (see the note near the top of this file): now that the UI is up, clean up
+		// any stale same-profile orphan process trees. Deferred so its slow Windows process query
+		// never delays the window appearing.
+		setTimeout(function() {
+			try { startupGuard.killStaleInstances(gui.App.dataPath); } catch(e) { console.error("[TiddlyDesktop] stale-process cleanup failed:",e); }
+		},0);
 	});
 },0);

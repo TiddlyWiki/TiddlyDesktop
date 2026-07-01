@@ -598,6 +598,25 @@ function _backupWikiFile(filePath, fs, path) {
 	fs.writeFileSync(backupPath, fs.readFileSync(filePath));
 }
 
+// The bundled language plugins are customised for TiddlyDesktop's OWN wiki-list UI: the build injects
+// its $:/language/TiddlyDesktop/* strings into each one and bumps them to plugin-priority 100 so the
+// active language's wiki-list strings win over the tiddlydesktop plugin's English defaults. When we
+// install a language into a USER's wiki those customisations are wrong — the TiddlyDesktop strings are
+// unused noise there, and priority 100 would make the language override core globally. Strip both so an
+// installed language is a plain plugin. Mutates and returns the loadPluginFolder result in place.
+function _cleanBundledLanguage(bundled) {
+	if(!bundled || bundled["plugin-type"] !== "language") { return bundled; }
+	delete bundled["plugin-priority"];
+	try {
+		var payload = JSON.parse(bundled.text);
+		Object.keys(payload.tiddlers).forEach(function(title) {
+			if(title.indexOf("$:/language/TiddlyDesktop/") === 0) { delete payload.tiddlers[title]; }
+		});
+		bundled.text = JSON.stringify(payload);
+	} catch(e) {}
+	return bundled;
+}
+
 function _applyFileChanges(wikiUrl, toInstall, toRemove, fs, path) {
 	var filePath = wikiUrl.slice("wikifile://".length);
 	_backupWikiFile(filePath, fs, path);
@@ -619,12 +638,24 @@ function _applyFileChanges(wikiUrl, toInstall, toRemove, fs, path) {
 	toInstall.forEach(function(pluginFields) {
 		var bundled = $tw.loadPluginFolder(pluginFields["plugin-path"]);
 		if(!bundled) return;
+		_cleanBundledLanguage(bundled);
+		// TiddlyWiki tiddler fields must be strings. loadPluginFolder copies plugin.info verbatim, so a
+		// numeric field there (e.g. many language plugins' "plugin-priority": 100) enters the store as a
+		// JSON number and white-screens the wiki on boot — the plugin unpacker does string operations on
+		// the value. Coerce to strings, as TiddlyWiki does when it constructs a tiddler.
+		Object.keys(bundled).forEach(function(f) {
+			if(typeof bundled[f] !== "string") { bundled[f] = String(bundled[f]); }
+		});
 		tiddlers = tiddlers.filter(function(t) { return t.title !== bundled.title; });
 		tiddlers.push(bundled);
 	});
 
-	// Escape </script> inside JSON so it doesn't end the script tag prematurely
-	var newStoreJson = JSON.stringify(tiddlers).replace(/<\/script>/gi, "<\\/script>");
+	// Escape every "<" as <, exactly as TiddlyWiki's own saver does (the jsontiddler
+	// widget, $:/core/modules/widgets/jsontiddler.js). Inside <script type="application/json">
+	// the HTML parser still acts on "</script>", "<!--" and "<script", so a single one of those
+	// in an embedded tiddler (language Docs/Help tiddlers are full of them) truncates the store
+	// and the wiki boots to a white screen. JSON.parse decodes < back to "<" on load.
+	var newStoreJson = JSON.stringify(tiddlers).replace(/</g, "\\u003C");
 	// Use a function replacer so $ characters in newStoreJson are not interpreted
 	// as replacement pattern specifiers ($& $1 $` $' etc.) — plugin JS code is full of $
 	var newHtml = html.replace(storeRe, function() { return match[1] + newStoreJson + match[3]; });

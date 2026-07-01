@@ -26,8 +26,13 @@ fs.readdirSync(dir).forEach(function(name) {
 	if(!fs.existsSync(infoPath)) { return; }
 	try {
 		var info = JSON.parse(fs.readFileSync(infoPath, "utf8"));
-		if(info["plugin-type"] === "language" && info["plugin-priority"] !== 100) {
-			info["plugin-priority"] = 100;
+		// Write the priority as the STRING "100", not the number 100. TiddlyWiki tiddler fields must
+		// be strings: a numeric plugin-priority survives into a single-file wiki's JSON store as a
+		// JSON number and white-screens the wiki on boot (the plugin unpacker does string ops on it).
+		// Core itself ships "plugin-priority": "0" (a string) for the same reason; several upstream
+		// languages ship the number 100, which this normalises too.
+		if(info["plugin-type"] === "language" && info["plugin-priority"] !== "100") {
+			info["plugin-priority"] = "100";
 			fs.writeFileSync(infoPath, JSON.stringify(info, null, 4));
 			n++;
 		}
