@@ -117,8 +117,12 @@ exports.startup = function () {
 		refreshAvailable();
 		var isOpen = false;
 		try { isOpen = !!host.isWikiOpen(url); } catch (e) {}
+		// text = the url (used internally); display-path = the friendly path shown in the header,
+		// so the chooser doesn't show the raw base64 wikifile:// URL on Android.
+		var displayPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/Config/path/" + url, "") ||
+			$tw.wiki.getTiddlerText("$:/TiddlyDesktop/Config/title/" + url, "") || url;
 		$tw.wiki.addTiddler(new $tw.Tiddler({
-			title: CH + "target", text: url, "wiki-open": isOpen ? "yes" : "no",
+			title: CH + "target", text: url, "display-path": displayPath, "wiki-open": isOpen ? "yes" : "no",
 			"wiki-type": url.indexOf("wikifile://") === 0 ? "file" : "folder"
 		}));
 		$tw.wiki.addTiddler(new $tw.Tiddler({ title: CH + "search", text: "" }));
@@ -218,6 +222,11 @@ exports.startup = function () {
 			i++; setTimeout(step, 0);
 		})();
 	}
+
+	// Called by MainActivity.onResume: re-read the plugin library (host.listAvailable) + re-scan the
+	// per-wiki update badges, so a changed library (app update, custom plugin folder edit) shows up
+	// on the Plugins buttons automatically — no manual re-scan needed.
+	window.__tdRescanPlugins = function () { refreshAvailable(); scanAllUpdates(); };
 
 	if (host) {
 		refreshAvailable();

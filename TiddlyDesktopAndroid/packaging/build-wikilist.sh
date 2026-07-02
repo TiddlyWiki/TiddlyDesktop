@@ -33,6 +33,43 @@ cp -R "$ANDROID/tiddlers/." "$OUT/tiddlers/"
 # The classic plugin itself, resolvable by name as tiddlywiki/tiddlydesktop
 cp -R "$PLUGIN" "$OUT/plugins/tiddlywiki/tiddlydesktop"
 
+# The WikiList EmptyMessage on desktop tells the user to "drag & drop from your file explorer",
+# which doesn't apply on Android. Rewrite each copy to keep the (translated) first paragraph and
+# drop that second paragraph — leaving a correct, still-localized message. Applied to the plugin's
+# English default and (below) each language override; only touches the Android WikiList copies.
+androidify_empty() {
+	[ -f "$1" ] || return 0
+	python3 - "$1" <<-'PY'
+	import sys
+	lines = open(sys.argv[1], encoding="utf-8").read().split("\n")
+	out, i, n = [], 0, len(lines)
+	while i < n and lines[i].strip() != "": out.append(lines[i]); i += 1   # title/header
+	out.append("")
+	while i < n and lines[i].strip() == "": i += 1                          # skip blanks
+	while i < n and lines[i].strip() != "": out.append(lines[i]); i += 1    # first paragraph only
+	open(sys.argv[1], "w", encoding="utf-8").write("\n".join(out).rstrip() + "\n")
+	PY
+}
+androidify_empty "$OUT/plugins/tiddlywiki/tiddlydesktop/language/EmptyMessage.tid"
+
+# The tiddlydesktop plugin the WikiList actually loads comes from the ENGINE's PACKED copy
+# (source/tiddlywiki/.../contents.json), not the folder copy above — so its default EmptyMessage
+# (shown for untranslated locales such as en-GB / en-US) must be androidified here too. Truncate it
+# to the first paragraph inside the packed JSON. This only touches the Android engine zip (Gradle
+# zips source/tiddlywiki AFTER this script); the desktop build already packed its own copy in bld.sh.
+ENGINE_TD="$REPO/source/tiddlywiki/plugins/tiddlywiki/tiddlydesktop/contents.json"
+if [ -f "$ENGINE_TD" ]; then
+	python3 - "$ENGINE_TD" <<-'PY'
+	import json, sys
+	p = sys.argv[1]
+	d = json.load(open(p, encoding="utf-8"))
+	tids = d if isinstance(d, list) else d.get("tiddlers", [])
+	for t in [x for x in tids if x.get("title") == "$:/language/TiddlyDesktop/List/EmptyMessage"]: t["text"] = t.get("text", "").split("\n\n")[0].rstrip() + "\n"
+	json.dump(d, open(p, "w", encoding="utf-8"), ensure_ascii=False)
+	PY
+	echo "Androidified engine EmptyMessage default"
+fi
+
 # Backstage language set: for each language we have translations for, copy the engine's
 # language plugin, inject the TiddlyDesktop UI strings, and bump plugin-priority to "100"
 # so the active language's translations win over the plugin's English defaults. NodeServer
@@ -46,6 +83,7 @@ if [ -d "$ENGINE_LANGS" ]; then
 			cp -R "$ENGINE_LANGS/$lang" "$OUT/languages/$lang"
 			cp "$tdir/TiddlyDesktop.multids" "$OUT/languages/$lang/" 2>/dev/null || true
 			cp "$tdir/EmptyMessage.tid" "$OUT/languages/$lang/" 2>/dev/null || true
+			androidify_empty "$OUT/languages/$lang/EmptyMessage.tid"
 			python3 - "$OUT/languages/$lang/plugin.info" <<-'PY'
 			import json, sys
 			p = sys.argv[1]

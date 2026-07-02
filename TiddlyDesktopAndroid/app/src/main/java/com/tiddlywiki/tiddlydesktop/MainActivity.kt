@@ -105,8 +105,9 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         } else {
             pendingOpen = null // re-linked to a different file: update the entry + open it
             val newUrl = WikiUrl.encode(uri.toString(), false)
+            val newPath = readablePath(uri, false)
             webView.evaluateJavascript(
-                "window.__tdRelinkWiki && window.__tdRelinkWiki(${q(req.url)},${q(newUrl)},false,${q(req.title)});", null)
+                "window.__tdRelinkWiki && window.__tdRelinkWiki(${q(req.url)},${q(newUrl)},false,${q(req.title)},${q(newPath)});", null)
         }
     }
 
@@ -126,8 +127,9 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
             else {
                 pendingOpen = null
                 val newUrl = WikiUrl.encode(treeUri.toString(), true)
+                val newPath = readablePath(treeUri, true)
                 webView.evaluateJavascript(
-                    "window.__tdRelinkWiki && window.__tdRelinkWiki(${q(req.url)},${q(newUrl)},true,${q(req.title)});", null)
+                    "window.__tdRelinkWiki && window.__tdRelinkWiki(${q(req.url)},${q(newUrl)},true,${q(req.title)},${q(newPath)});", null)
             }
         } else {
             // Single-file: this tree is the containing folder (backups + attachments).
@@ -161,6 +163,18 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
     private val pickBackupFolderLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { uri -> uri?.let { onBackupFolderPicked(it) } }
+
+    // A freshly-created single-file wiki whose containing folder we're asking the user to grant
+    // (CreateDocument only grants the file; backups + attachments live in the folder).
+    private var pendingNewWiki: Uri? = null
+    private val newWikiFolder = registerForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
+    ) { treeUri ->
+        val dest = pendingNewWiki ?: return@registerForActivityResult
+        pendingNewWiki = null
+        val folder = if (treeUri != null) { persistPermission(treeUri); treeUri.toString() } else ""
+        registerAndOpenWiki(dest, isFolder = false, folderUri = folder)
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -466,7 +480,7 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
             val m = WikiMeta.extract(this, decoded.path, decoded.isFolder)
             if (mtime > 0L) metaMtimes[url] = mtime
             val js = "window.__tdSetWikiMeta && window.__tdSetWikiMeta(" +
-                "${q(url)},${q(m.title)},${q(m.subtitle)},${q(m.favicon)});"
+                "${q(url)},${q(m.title)},${q(m.subtitle)},${q(m.favicon)},${m.isClassic});"
             runOnUiThread { webView.evaluateJavascript(js, null) }
         }.apply { isDaemon = true; start() }
     }
@@ -524,8 +538,18 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
                 else -> false
             }
             runOnUiThread {
-                if (ok) registerAndOpenWiki(dest, op.destIsFolder)
-                else toast(R.string.toast_operation_failed)
+                when {
+                    !ok -> toast(R.string.toast_operation_failed)
+                    // Folder wiki: the picked tree already grants folder access.
+                    op.destIsFolder -> registerAndOpenWiki(dest, isFolder = true)
+                    // New single-file wiki: also ask for its containing folder now (backups +
+                    // attachments live there), so opening it doesn't prompt a re-grant later.
+                    else -> {
+                        pendingNewWiki = dest
+                        toast(R.string.toast_regrant_folder)
+                        newWikiFolder.launch(null)
+                    }
+                }
             }
         }.apply { isDaemon = true; start() }
     }
@@ -548,6 +572,9 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
             else DocumentsContract.getDocumentId(uri)
         }.getOrNull() ?: return uri.toString()
         val parts = docId.split(":", limit = 2)
+        // A "raw:" document ID is already an absolute filesystem path (raw:/storage/emulated/0/…) —
+        // return it as-is, not "raw//storage/…".
+        if (parts[0] == "raw") return parts.getOrElse(1) { docId }
         val volName = if (parts[0] == "primary") "Internal storage" else parts[0]
         val rel = parts.getOrElse(1) { "" }
         return if (rel.isEmpty()) volName else "$volName/$rel"
@@ -606,6 +633,9 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         // so rows reflect the latest content. No-op until the page has loaded.
         if (this::webView.isInitialized) {
             webView.evaluateJavascript("window.__tdRefreshAllMeta && window.__tdRefreshAllMeta();", null)
+            // Re-read the plugin library + re-scan update badges, so a changed library (app update,
+            // custom plugin folder edit) reflects on the Plugins buttons without a manual re-scan.
+            webView.evaluateJavascript("window.__tdRescanPlugins && window.__tdRescanPlugins();", null)
         }
     }
 

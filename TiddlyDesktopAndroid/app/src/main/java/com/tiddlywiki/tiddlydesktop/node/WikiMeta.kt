@@ -19,10 +19,13 @@ object WikiMeta {
 
     private const val TAG = "WikiMeta"
 
-    data class Meta(val title: String, val subtitle: String, val favicon: String)
+    data class Meta(val title: String, val subtitle: String, val favicon: String, val isClassic: Boolean = false)
 
     fun extract(context: Context, path: String, isFolder: Boolean): Meta =
         if (isFolder) extractFolder(context, path) else extractSingleFile(context, path)
+
+    /** TiddlyWiki Classic (2.x) ships a `#versionArea` placeholder that TiddlyWiki5 never emits. */
+    private val CLASSIC_MARKER = Regex("id=[\"']versionArea[\"']", RegexOption.IGNORE_CASE)
 
     // ── single-file ──────────────────────────────────────────────────────────────
 
@@ -31,8 +34,9 @@ object WikiMeta {
         val title = tiddlerField(html, "\$:/SiteTitle", "text") ?: ""
         val subtitle = tiddlerField(html, "\$:/SiteSubtitle", "text") ?: ""
         val favicon = favicon(html)
-        Log.i(TAG, "extracted title='${title.take(40)}' subtitle='${subtitle.take(40)}' favicon=${favicon.isNotEmpty()}")
-        return Meta(title.trim(), subtitle.trim(), favicon)
+        val isClassic = CLASSIC_MARKER.containsMatchIn(html)
+        Log.i(TAG, "extracted title='${title.take(40)}' subtitle='${subtitle.take(40)}' favicon=${favicon.isNotEmpty()} classic=$isClassic")
+        return Meta(title.trim(), subtitle.trim(), favicon, isClassic)
     }
 
     private fun favicon(html: String): String {

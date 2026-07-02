@@ -156,10 +156,12 @@ exports.startup = function () {
 
 	// Native re-linked a wiki to a newly-picked file/folder (its SAF grant had been lost):
 	// carry over the folder config, drop the stale entry, register + open the new one.
-	window.__tdRelinkWiki = function (oldUrl, newUrl, isFolder, title) {
+	window.__tdRelinkWiki = function (oldUrl, newUrl, isFolder, title, path) {
 		var folder = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/Config/folder/" + oldUrl, "");
 		$tw.desktop.windowList.removeByUrl(oldUrl);
-		window.__tdAddWiki(newUrl, title, "", isFolder, "", folder);
+		// Pass the freshly-derived readable path so Config/path/<newUrl> is set — otherwise the row
+		// (and PluginChooser) would fall back to showing the raw base64 wikifile:// URL.
+		window.__tdAddWiki(newUrl, title, "", isFolder, path || "", folder);
 	};
 
 	// Native re-granted the containing folder of a single-file wiki.
@@ -169,8 +171,9 @@ exports.startup = function () {
 		}
 	};
 
-	// Native pushes live SiteTitle/SiteSubtitle/favicon extracted from the wiki content.
-	window.__tdSetWikiMeta = function (url, title, subtitle, favicon) {
+	// Native pushes live SiteTitle/SiteSubtitle/favicon (+ whether it's a TiddlyWiki Classic wiki)
+	// extracted from the wiki content.
+	window.__tdSetWikiMeta = function (url, title, subtitle, favicon, isClassic) {
 		if (title) {
 			$tw.wiki.addTiddler(new $tw.Tiddler({ title: "$:/TiddlyDesktop/Config/title/" + url, text: title }));
 		}
@@ -181,6 +184,14 @@ exports.startup = function () {
 			$tw.wiki.addTiddler(new $tw.Tiddler({ title: "$:/TiddlyDesktop/Config/subtitle/" + url, text: subtitle }));
 		}
 		storeFavicon(url, favicon);
+		// Classic wikis (TW 2.x) are single-file and have no plugins/folder concept — the row hides
+		// the "to folder" + "Plugins" buttons when Config/classic/<url> is "yes".
+		var classicTitle = "$:/TiddlyDesktop/Config/classic/" + url;
+		if (isClassic === true || isClassic === "true") {
+			$tw.wiki.addTiddler(new $tw.Tiddler({ title: classicTitle, text: "yes" }));
+		} else {
+			$tw.wiki.deleteTiddler(classicTitle);
+		}
 	};
 
 	// Refresh metadata for every listed wiki (live favicon + SiteTitle/SiteSubtitle).

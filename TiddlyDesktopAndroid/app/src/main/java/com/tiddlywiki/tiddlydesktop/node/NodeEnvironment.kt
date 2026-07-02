@@ -138,13 +138,15 @@ object NodeEnvironment {
 
     /**
      * Extract [assetZip] into [destDir], stripping [stripPrefix] from each entry.
-     * Idempotent: a `.extracted` marker records the app versionCode, so it re-extracts
-     * only on first run or after an update. A missing asset is logged, not fatal.
+     * Idempotent: a `.extracted` marker records the app versionCode + install timestamp, so it
+     * re-extracts on first run and on ANY (re)install — including a same-versionCode rebuild, which
+     * is common during development. Without the install time, a new APK with an unchanged versionCode
+     * would keep serving the stale extracted assets. A missing asset is logged, not fatal.
      */
     private fun extractZipAsset(context: Context, assetZip: String, destDir: File, stripPrefix: String) {
         val marker = File(destDir, ".extracted")
-        val version = context.packageManager
-            .getPackageInfo(context.packageName, 0).versionCode.toString()
+        val pkg = context.packageManager.getPackageInfo(context.packageName, 0)
+        val version = "${pkg.versionCode}:${pkg.lastUpdateTime}"
         if (marker.exists() && marker.readText().trim() == version) return
 
         Log.i(TAG, "Extracting $assetZip -> ${destDir.absolutePath}")
