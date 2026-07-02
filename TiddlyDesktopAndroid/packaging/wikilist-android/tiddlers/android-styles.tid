@@ -1,0 +1,98 @@
+title: $:/TiddlyDesktop/android/styles
+tags: $:/tags/Stylesheet
+
+/* ── full-screen WikiList (rendered via the PageTemplate override) ────────────── */
+html, body.tc-body { height: 100%; }
+.td-wikilist-page { min-height: 100vh; display: flex; flex-direction: column; }
+.td-wikilist { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.td-backstage-page { padding: 0.5em; }
+
+/* ── top bar with the cat menu button ────────────────────────────────────────── */
+.td-topbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 0.5em;
+	padding: 0.4em 0.6em; background: <<colour background>>; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+.td-menu-button { display: flex; align-items: center; padding: 0.1em; }
+.td-topbar .td-logo,
+.td-topbar .td-menu-button .td-logo,
+.td-topbar .td-menu-button img,
+.td-topbar .td-menu-button svg { height: 3.2em !important; width: auto !important; }
+.td-topbar-title { font-weight: 600; font-size: 1.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── slide-in toolbar sidebar + blurred backdrop ─────────────────────────────── */
+.td-sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 80%; max-width: 320px; z-index: 10001;
+	background: <<colour background>>; color: <<colour foreground>>;
+	transform: translateX(-102%); transition: transform 0.25s ease;
+	box-shadow: 2px 0 14px rgba(0,0,0,.35); display: flex; flex-direction: column;
+	overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.td-sidebar.td-open { transform: translateX(0); }
+.td-sidebar-head { display: flex; align-items: center; justify-content: space-between;
+	padding: 0.6em 0.7em; border-bottom: 1px solid <<colour muted-foreground>>; }
+.td-sidebar-head .td-logo { height: 2.2em; width: 2.2em; }
+.td-sidebar-close svg { width: 22px; height: 22px; }
+.td-sidebar-items { display: flex; flex-direction: column; gap: 0.35em; padding: 0.6em; }
+.td-sidebar-item > .td-button,
+.td-sidebar-item > button,
+.td-sidebar-item > .td-language-switcher,
+.td-sidebar-item > span {
+	display: flex; align-items: center; gap: 0.55em; width: 100%; box-sizing: border-box;
+	text-align: left; padding: 0.75em 0.9em; border-radius: 9px; font-size: 1em;
+	/* Palette-agnostic contrast: a neutral translucent fill with the palette foreground text. */
+	background: rgba(128,128,128,0.16) !important;
+	color: <<colour foreground>> !important;
+	fill: <<colour foreground>> !important;
+	border: 1px solid rgba(128,128,128,0.25); height: auto; }
+.td-sidebar-item svg { width: 20px; height: 20px; flex: 0 0 auto; }
+.td-sidebar-item .td-language-switcher { justify-content: flex-start; }
+.td-sidebar-item .td-language-select { flex: 1 1 auto; width: 100%; max-width: none; min-width: 0; font-size: 1em; }
+.td-custom-plugin-path { font-size: 0.75em; opacity: 0.7; padding: 0.2em 0.9em 0.4em; word-break: break-all; }
+/* theme + palette pickers in the sidebar */
+.td-sidebar-item > .td-picker { display: flex; flex-direction: column; gap: 0.45em; width: 100%;
+	box-sizing: border-box; padding: 0.6em 0.9em; border-radius: 9px;
+	background: rgba(128,128,128,0.16); color: <<colour foreground>>; }
+.td-picker label { display: flex; align-items: center; justify-content: space-between; gap: 0.6em; }
+.td-picker-select { flex: 1 1 auto; min-width: 0; max-width: 62%; font-size: 1em; }
+/* share-to-wiki picker overlay */
+.td-share-overlay { position: fixed; inset: 0; z-index: 10002; display: flex; align-items: center; justify-content: center;
+	background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); padding: 1em; }
+.td-share-panel { background: <<colour background>>; color: <<colour foreground>>; border-radius: 12px; padding: 1em;
+	max-width: 420px; width: 100%; max-height: 80vh; display: flex; flex-direction: column; box-shadow: 0 4px 24px rgba(0,0,0,.4); }
+.td-share-heading { font-weight: 600; margin-bottom: 0.6em; }
+.td-share-list { overflow-y: auto; display: flex; flex-direction: column; gap: 0.4em; }
+.td-share-item { width: 100%; text-align: left; padding: 0.7em 0.9em; border-radius: 9px;
+	background: rgba(128,128,128,0.16) !important; color: <<colour foreground>> !important; }
+.td-share-cancel { margin-top: 0.8em; align-self: flex-end; }
+.td-share-preview { margin-bottom: 0.8em; padding-bottom: 0.6em; border-bottom: 1px solid rgba(128,128,128,0.3); }
+.td-share-preview-img { width: 100%; max-height: 160px; object-fit: cover; border-radius: 8px; }
+.td-share-preview-title { font-weight: 600; margin-top: 0.4em; }
+.td-sidebar-item .tc-drop-down { color: <<colour foreground>>; }
+
+.td-backdrop { position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.2);
+	backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+	opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+.td-backdrop.td-open { opacity: 1; pointer-events: auto; }
+.td-backdrop-hit { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+/* ── compact wiki rows (shrink the desktop plugin's 120px thumbnails etc.) ─────── */
+.td-search { margin: 0.35em 0.5em; }
+.td-tags { margin: 0 0.5em; }
+.td-wikilist-item { display: flex; align-items: flex-start; gap: 0.5em; padding: 0.4em 0.5em; }
+.td-wikilist-item + .td-wikilist-item { border-top: 1px solid <<colour muted-foreground>>; }
+.td-wikilist-thumbnail { flex: 0 0 auto; }
+.td-wikilist-thumbnail img { width: 40px !important; height: 40px; object-fit: contain; border-radius: 5px; }
+.td-wikilist-info { flex: 1 1 auto; min-width: 0; }
+.td-wiki-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.td-wiki-subtitle { font-size: 0.8em; opacity: 0.8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.td-wiki-url { font-size: 0.72em; opacity: 0.65; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.td-wiki-toolbar { display: flex; flex-wrap: wrap; gap: 0.25em; margin-top: 0.3em; }
+.td-wiki-toolbar-item { margin: 0 !important; }
+.td-wiki-toolbar .td-button { padding: 0.2em 0.5em; font-size: 0.82em; }
+.td-wiki-advanced { margin-top: 0.4em; font-size: 0.85em; }
+.td-wiki-advanced-grid { display: grid; grid-template-columns: 1fr; gap: 0.3em; }
+
+/* ── extra-tight on small screens ─────────────────────────────────────────────── */
+@media (max-width: 480px) {
+	.td-toolbar { font-size: 0.7em; padding: 0.3em 0.4em !important; }
+	.td-logo { height: 1.35em !important; }
+	.td-theme-picker select, .td-language-select { max-width: 6em; }
+	.td-wikilist-thumbnail img { width: 32px !important; height: 32px; }
+	.td-wiki-toolbar .td-button { padding: 0.18em 0.42em; font-size: 0.78em; }
+}

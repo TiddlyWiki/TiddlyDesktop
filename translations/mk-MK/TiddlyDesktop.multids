@@ -64,3 +64,24 @@ PluginChooser/Update: Ажурирај
 PluginChooser/UpdateAvailable: Вклучена е поново верзија — кликнете за ажурирање
 PluginChooser/Updated: Ажурирано
 Row/PluginUpdates: Достапни се ажурирања на приклучоци
+Toolbar/ThemeLabel: Тема
+Toolbar/PaletteLabel: Палета
+Toolbar/CustomPluginFolder: Прилагодена папка со приклучоци
+Toolbar/ConfigFolder: Папка со поставки
+Toolbar/OpenConfigFolder: Отвори ја папката со поставки
+Toolbar/BackupFolder: Папка со резерви
+Toolbar/OpenBackupFolder: Отвори ја папката со резерви
+Share/Heading: Додај ја споделената содржина во…
+Share/Cancel: Откажи
+Share/TemplatesHeading: Шаблони за споделување
+Share/TemplatesHelp: Кога споделувате врска во вики, TiddlyDesktop ја збогатува (наслов, опис, слика, вградување) и создава tiddler од соодветниот шаблон подолу. Резервирани места:
+Share/DeleteTemplate: Избриши го овој шаблон
+Share/TagsLabel: Ознаки:
+Share/AddHeading: Додајте свој шаблон
+Share/AddHelp: Дајте му име (за да го насочите од правило за домен подолу), потоа уредете ја неговата содржина погоре. Започнува како копија на општиот шаблон.
+Share/NamePlaceholder: на пр. mastodon
+Share/CreateTemplate: Создај шаблон
+Share/RulesHeading: Правила за домени
+Share/RulesHelp: Едно правило по ред како <code>domain=kind</code> (на пр. <code>vimeo.com=youtube</code>, или <code>mastodon.social=mastodon</code> за шаблон што го додадовте погоре) за да насочите сајт кон одреден шаблон.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Резервните копии на вики со една датотека стандардно се запишуваат до секое вики. Изберете папка овде за наместо тоа да ги соберете сите резервни копии на едно место.

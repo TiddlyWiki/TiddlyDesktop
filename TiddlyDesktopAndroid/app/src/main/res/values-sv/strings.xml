@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">Öppna wikier</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop körs</string>
+    <string name="wiki_server_notification_text">Wiki-servrar är aktiva</string>
+    <string name="toast_access_not_granted">Åtkomst nekad</string>
+    <string name="toast_backup_folder_set">Säkerhetskopieringsmapp angiven</string>
+    <string name="toast_config_folder_set">Konfigurationsmapp angiven</string>
+    <string name="toast_import_folder_failed">Det gick inte att importera mappen</string>
+    <string name="toast_open_folder_failed">Det går inte att öppna mappen på den här enheten</string>
+    <string name="toast_custom_plugin_folder_set">Anpassad tilläggsmapp angiven</string>
+    <string name="toast_folder_required_not_added">Mappåtkomst krävs – wiki inte tillagd</string>
+    <string name="toast_importing_plugins">Importerar tillägg…</string>
+    <string name="toast_no_backup_folder">Ingen säkerhetskopieringsmapp angiven</string>
+    <string name="toast_no_config_folder">Ingen konfigurationsmapp angiven</string>
+    <string name="toast_no_folder_access_reveal">Ingen mappåtkomst för denna wiki – lägg till den igen för att ge behörighet.</string>
+    <string name="toast_nothing_to_share">Inget att dela</string>
+    <string name="toast_operation_failed">Åtgärden misslyckades – se logcat</string>
+    <string name="toast_regrant_wiki">Ge åtkomst till denna wiki igen</string>
+    <string name="toast_regrant_folder">Ge mappåtkomst igen (säkerhetskopior och bilagor)</string>
+    <string name="toast_working">Arbetar…</string>
+    <string name="toast_saved">Sparat</string>
+    <string name="toast_save_failed">Det gick inte att spara</string>
+    <string name="toast_share_failed">Delning misslyckades</string>
+    <string name="toast_window_not_ready">Fönstret är inte klart än</string>
+    <string name="share_tiddler_chooser">Dela tiddler</string>
+    <string name="share_tid_file_chooser">Dela tiddler (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Dela</string>
+    <string name="share_btn_tooltip">Dela denna tiddler</string>
+    <string name="share_as_text">Dela som text</string>
+    <string name="share_as_tid">Dela som .tid</string>
+    <string name="share_as_html">Dela som HTML</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Externa bilagor (Android)</string>
+    <string name="ea_note_body">På Android kopieras importerade bilagor alltid till den här wikins mapp attachments/ och länkas med en relativ sökväg. Alternativen för absolut sökväg har ingen effekt här — mappar som delas via Android (content://) har ingen filsystemsökväg.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Snabbanteckning</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Skriv din anteckning…</string>
+    <string name="quicknote_done">Klar</string>
+    <string name="quicknote_cancel">Avbryt</string>
+    <string name="quicknote_no_wikis">Inga wikis ännu — lägg till en i TiddlyDesktop först</string>
+    <string name="quicknote_empty">Skriv en anteckning först</string>
+    <string name="quicknote_sent">Anteckning tillagd</string>
+    <string name="quicknote_failed">Det gick inte att lägga till anteckningen</string>
+    <string name="quicknote_tiddler_title">Anteckning %1$s</string>
+    <string name="quicknote_widget_description">Lägg till en snabbanteckning i en wiki</string>
+</resources>

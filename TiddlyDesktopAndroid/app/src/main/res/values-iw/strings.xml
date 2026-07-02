@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">ויקי פתוחים</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop פועל</string>
+    <string name="wiki_server_notification_text">שרתי הוויקי פעילים</string>
+    <string name="toast_access_not_granted">הגישה לא ניתנה</string>
+    <string name="toast_backup_folder_set">תיקיית גיבויים הוגדרה</string>
+    <string name="toast_config_folder_set">תיקיית הגדרות הוגדרה</string>
+    <string name="toast_import_folder_failed">לא ניתן היה לייבא את התיקייה</string>
+    <string name="toast_open_folder_failed">לא ניתן לפתוח את התיקייה במכשיר זה</string>
+    <string name="toast_custom_plugin_folder_set">תיקיית תוספים מותאמת הוגדרה</string>
+    <string name="toast_folder_required_not_added">נדרשת גישה לתיקייה — הוויקי לא נוסף</string>
+    <string name="toast_importing_plugins">מייבא תוספים…</string>
+    <string name="toast_no_backup_folder">לא הוגדרה תיקיית גיבויים</string>
+    <string name="toast_no_config_folder">לא הוגדרה תיקיית הגדרות</string>
+    <string name="toast_no_folder_access_reveal">אין גישה לתיקייה של ויקי זה — הוסף אותו שוב כדי להעניק הרשאה.</string>
+    <string name="toast_nothing_to_share">אין מה לשתף</string>
+    <string name="toast_operation_failed">הפעולה נכשלה — ראה logcat</string>
+    <string name="toast_regrant_wiki">הענק גישה מחדש לוויקי זה</string>
+    <string name="toast_regrant_folder">הענק גישה מחדש לתיקייה (גיבויים וקבצים מצורפים)</string>
+    <string name="toast_working">עובד…</string>
+    <string name="toast_saved">נשמר</string>
+    <string name="toast_save_failed">השמירה נכשלה</string>
+    <string name="toast_share_failed">השיתוף נכשל</string>
+    <string name="toast_window_not_ready">החלון עדיין לא מוכן</string>
+    <string name="share_tiddler_chooser">שתף tiddler</string>
+    <string name="share_tid_file_chooser">שתף tiddler (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">שתף</string>
+    <string name="share_btn_tooltip">שתף טידלר זה</string>
+    <string name="share_as_text">שתף כטקסט</string>
+    <string name="share_as_tid">שתף כ-.tid</string>
+    <string name="share_as_html">שתף כ-HTML</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">קבצים מצורפים חיצוניים (Android)</string>
+    <string name="ea_note_body">ב-Android, קבצים מצורפים מיובאים תמיד מועתקים לתיקיית attachments/ של ויקי זה ומקושרים בנתיב יחסי. לאפשרויות הנתיב המוחלט אין השפעה כאן — לתיקיות המשותפות דרך Android (content://) אין נתיב מערכת קבצים.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">הערה מהירה</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">כתוב את ההערה שלך…</string>
+    <string name="quicknote_done">סיום</string>
+    <string name="quicknote_cancel">ביטול</string>
+    <string name="quicknote_no_wikis">עדיין אין ויקי — הוסף אחד ב-TiddlyDesktop קודם</string>
+    <string name="quicknote_empty">כתוב הערה קודם</string>
+    <string name="quicknote_sent">ההערה נוספה</string>
+    <string name="quicknote_failed">לא ניתן להוסיף את ההערה</string>
+    <string name="quicknote_tiddler_title">הערה %1$s</string>
+    <string name="quicknote_widget_description">הוסף הערה מהירה לוויקי</string>
+</resources>

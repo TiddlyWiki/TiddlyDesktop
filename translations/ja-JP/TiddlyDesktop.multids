@@ -64,3 +64,24 @@ PluginChooser/Update: 更新
 PluginChooser/UpdateAvailable: より新しいバージョンが同梱されています — クリックして更新
 PluginChooser/Updated: 更新しました
 Row/PluginUpdates: プラグインの更新があります
+Toolbar/ThemeLabel: テーマ
+Toolbar/PaletteLabel: パレット
+Toolbar/CustomPluginFolder: カスタムプラグインフォルダー
+Toolbar/ConfigFolder: 設定フォルダー
+Toolbar/OpenConfigFolder: 設定フォルダーを開く
+Toolbar/BackupFolder: バックアップフォルダー
+Toolbar/OpenBackupFolder: バックアップフォルダーを開く
+Share/Heading: 共有内容の追加先…
+Share/Cancel: キャンセル
+Share/TemplatesHeading: 共有テンプレート
+Share/TemplatesHelp: ウィキにリンクを共有すると、TiddlyDesktop はそれを補強し（タイトル、説明、画像、埋め込み）、下の一致するテンプレートからティドラーを作成します。プレースホルダー:
+Share/DeleteTemplate: このテンプレートを削除
+Share/TagsLabel: タグ:
+Share/AddHeading: 独自のテンプレートを追加
+Share/AddHelp: 名前を付け（下のドメイン規則から指定するため）、上でその本文を編集します。汎用テンプレートのコピーとして始まります。
+Share/NamePlaceholder: 例: mastodon
+Share/CreateTemplate: テンプレートを作成
+Share/RulesHeading: ドメイン規則
+Share/RulesHelp: 1 行に 1 つの規則を <code>domain=kind</code> の形式で（例: <code>vimeo.com=youtube</code>、または上で追加したテンプレート用に <code>mastodon.social=mastodon</code>）記述し、サイトを特定のテンプレートに振り分けます。
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: 単一ファイルウィキのバックアップは、既定では各ウィキの隣に書き込まれます。代わりにすべてのバックアップを 1 か所にまとめるには、ここでフォルダーを選択してください。

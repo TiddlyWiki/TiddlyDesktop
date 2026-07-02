@@ -64,3 +64,24 @@ PluginChooser/Update: Обновить
 PluginChooser/UpdateAvailable: В комплекте есть более новая версия — нажмите, чтобы обновить
 PluginChooser/Updated: Обновлено
 Row/PluginUpdates: Доступны обновления плагинов
+Toolbar/ThemeLabel: Тема
+Toolbar/PaletteLabel: Палитра
+Toolbar/CustomPluginFolder: Своя папка плагинов
+Toolbar/ConfigFolder: Папка настроек
+Toolbar/OpenConfigFolder: Открыть папку настроек
+Toolbar/BackupFolder: Папка резервных копий
+Toolbar/OpenBackupFolder: Открыть папку резервных копий
+Share/Heading: Добавить общий контент в…
+Share/Cancel: Отмена
+Share/TemplatesHeading: Шаблоны публикации
+Share/TemplatesHelp: Когда вы делитесь ссылкой в вики, TiddlyDesktop обогащает её (заголовок, описание, изображение, встраивание) и создаёт тиддлер из подходящего шаблона ниже. Заполнители:
+Share/DeleteTemplate: Удалить этот шаблон
+Share/TagsLabel: Метки:
+Share/AddHeading: Добавьте свой шаблон
+Share/AddHelp: Дайте ему имя (чтобы указать на него из правила домена ниже), затем отредактируйте его содержимое выше. Он начинается как копия универсального шаблона.
+Share/NamePlaceholder: напр. mastodon
+Share/CreateTemplate: Создать шаблон
+Share/RulesHeading: Правила доменов
+Share/RulesHelp: Одно правило на строку в виде <code>domain=kind</code> (напр. <code>vimeo.com=youtube</code> или <code>mastodon.social=mastodon</code> для добавленного выше шаблона), чтобы направить сайт к определённому шаблону.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Резервные копии одностраничных вики по умолчанию сохраняются рядом с каждой вики. Выберите здесь папку, чтобы вместо этого собрать все копии в одном месте.

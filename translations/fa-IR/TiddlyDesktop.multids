@@ -64,3 +64,24 @@ PluginChooser/Update: به‌روزرسانی
 PluginChooser/UpdateAvailable: نسخهٔ جدیدتری همراه است — برای به‌روزرسانی کلیک کنید
 PluginChooser/Updated: به‌روزرسانی شد
 Row/PluginUpdates: به‌روزرسانی افزونه‌ها در دسترس است
+Toolbar/ThemeLabel: پوسته
+Toolbar/PaletteLabel: پالت
+Toolbar/CustomPluginFolder: پوشهٔ افزونهٔ سفارشی
+Toolbar/ConfigFolder: پوشهٔ پیکربندی
+Toolbar/OpenConfigFolder: باز کردن پوشهٔ پیکربندی
+Toolbar/BackupFolder: پوشهٔ پشتیبان
+Toolbar/OpenBackupFolder: باز کردن پوشهٔ پشتیبان
+Share/Heading: افزودن محتوای هم‌رسانی‌شده به…
+Share/Cancel: لغو
+Share/TemplatesHeading: قالب‌های هم‌رسانی
+Share/TemplatesHelp: وقتی پیوندی را در یک ویکی هم‌رسانی می‌کنید، TiddlyDesktop آن را غنی می‌کند (عنوان، توضیح، تصویر، جاسازی) و از قالب منطبق زیر یک تیدلر می‌سازد. جای‌گیرها:
+Share/DeleteTemplate: حذف این قالب
+Share/TagsLabel: برچسب‌ها:
+Share/AddHeading: قالب خود را اضافه کنید
+Share/AddHelp: به آن نامی بدهید (برای هدف‌گیری از یک قاعدهٔ دامنه در زیر)، سپس محتوای آن را در بالا ویرایش کنید. به‌صورت یک نسخه از قالب عمومی آغاز می‌شود.
+Share/NamePlaceholder: مثلاً mastodon
+Share/CreateTemplate: ساخت قالب
+Share/RulesHeading: قواعد دامنه
+Share/RulesHelp: هر خط یک قاعده به شکل <code>domain=kind</code> (مثلاً <code>vimeo.com=youtube</code> یا <code>mastodon.social=mastodon</code> برای قالبی که در بالا افزوده‌اید) برای هدایت یک سایت به قالبی خاص.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: نسخه‌های پشتیبان ویکی‌های تک‌پرونده‌ای به‌طور پیش‌فرض کنار هر ویکی نوشته می‌شوند. اینجا پوشه‌ای انتخاب کنید تا به‌جای آن همهٔ نسخه‌های پشتیبان در یک مکان جمع شوند.

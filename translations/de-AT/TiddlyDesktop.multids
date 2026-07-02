@@ -64,3 +64,24 @@ PluginChooser/Update: Aktualisieren
 PluginChooser/UpdateAvailable: Eine neuere Version ist enthalten – zum Aktualisieren klicken
 PluginChooser/Updated: Aktualisiert
 Row/PluginUpdates: Plugin-Updates verfügbar
+Toolbar/ThemeLabel: Design
+Toolbar/PaletteLabel: Palette
+Toolbar/CustomPluginFolder: Eigener Plugin-Ordner
+Toolbar/ConfigFolder: Konfigurationsordner
+Toolbar/OpenConfigFolder: Konfigurationsordner öffnen
+Toolbar/BackupFolder: Sicherungsordner
+Toolbar/OpenBackupFolder: Sicherungsordner öffnen
+Share/Heading: Geteilten Inhalt hinzufügen zu…
+Share/Cancel: Abbrechen
+Share/TemplatesHeading: Freigabe-Vorlagen
+Share/TemplatesHelp: Wenn du einen Link in ein Wiki teilst, reichert TiddlyDesktop ihn an (Titel, Beschreibung, Bild, Einbettung) und erstellt aus der passenden Vorlage unten einen Tiddler. Platzhalter:
+Share/DeleteTemplate: Diese Vorlage löschen
+Share/TagsLabel: Schlagwörter:
+Share/AddHeading: Eigene Vorlage hinzufügen
+Share/AddHelp: Gib ihr einen Namen (um sie über eine Domänenregel unten anzusprechen) und bearbeite dann oben ihren Inhalt. Sie beginnt als Kopie der generischen Vorlage.
+Share/NamePlaceholder: z. B. mastodon
+Share/CreateTemplate: Vorlage erstellen
+Share/RulesHeading: Domänenregeln
+Share/RulesHelp: Eine Regel pro Zeile als <code>domain=kind</code> (z. B. <code>vimeo.com=youtube</code> oder <code>mastodon.social=mastodon</code> für eine oben hinzugefügte Vorlage), um eine Website einer bestimmten Vorlage zuzuordnen.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Sicherungen von Einzeldatei-Wikis werden standardmäßig neben jedem Wiki gespeichert. Wähle hier einen Ordner, um stattdessen alle Sicherungen an einem Ort zu sammeln.

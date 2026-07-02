@@ -64,3 +64,24 @@ PluginChooser/Update: Update
 PluginChooser/UpdateAvailable: A newer version is bundled — click to update
 PluginChooser/Updated: Updated
 Row/PluginUpdates: Plugin updates available
+Toolbar/ThemeLabel: Theme
+Toolbar/PaletteLabel: Palette
+Toolbar/CustomPluginFolder: Custom plugin folder
+Toolbar/ConfigFolder: Config folder
+Toolbar/OpenConfigFolder: Open config folder
+Toolbar/BackupFolder: Backup folder
+Toolbar/OpenBackupFolder: Open backup folder
+Share/Heading: Add shared content to…
+Share/Cancel: Cancel
+Share/TemplatesHeading: Share Templates
+Share/TemplatesHelp: When you share a link into a wiki, TiddlyDesktop enriches it (title, description, image, embed) and builds a tiddler from the matching template below. Placeholders:
+Share/DeleteTemplate: Delete this template
+Share/TagsLabel: Tags:
+Share/AddHeading: Add your own template
+Share/AddHelp: Give it a name (used to target it from a domain rule below), then edit its body above. It starts as a copy of the generic template.
+Share/NamePlaceholder: e.g. mastodon
+Share/CreateTemplate: Create template
+Share/RulesHeading: Domain rules
+Share/RulesHelp: One rule per line as <code>domain=kind</code> (e.g. <code>vimeo.com=youtube</code>, or <code>mastodon.social=mastodon</code> for a template you added above) to route a site to a particular template.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Backups of single-file wikis are written next to each wiki by default. Choose a folder here to collect all backups in one place instead.

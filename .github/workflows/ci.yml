@@ -105,11 +105,71 @@ jobs:
     outputs:
       td-version: ${{ steps.td-version.outputs.version }}
 
+  build-android:
+    runs-on: ubuntu-latest
+    name: "Build Android (arm64)"
+    steps:
+      - name: "💾 Checking out repository code..."
+        uses: actions/checkout@v4
+        with:
+          # Full history so bld.sh can derive the collab plugin version (bin/stamp-collab-version.js).
+          fetch-depth: 0
+      - name: "⬢ Setting up Node.js 24..."
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: "☕ Setting up JDK 17..."
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: "🤖 Setting up Android SDK..."
+        uses: android-actions/setup-android@v3
+      - name: "🔖 Reading Android version..."
+        id: android-version
+        run: |
+          V=$(grep -oE 'versionName = "[0-9]+\.[0-9]+\.[0-9]+"' TiddlyDesktopAndroid/app/build.gradle.kts | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          echo "Android version: $V"
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+      - name: "⬇️ Fetching Node.js runtime (Termux arm64)..."
+        run: ./TiddlyDesktopAndroid/packaging/fetch-node-libs.sh
+      - name: "🛠️ Building TiddlyWiki engine + WikiList..."
+        # bld.sh (no PLATFORM/ARCH) just preps source/tiddlywiki (engine + plugins + translations);
+        # build-wikilist.sh assembles the WikiList folder wiki the Gradle task zips into assets.
+        run: |
+          ./bld.sh
+          sh TiddlyDesktopAndroid/packaging/build-wikilist.sh
+      - name: "🔐 Decoding release keystore..."
+        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+      - name: "📱 Building signed AAB + APK..."
+        working-directory: TiddlyDesktopAndroid
+        env:
+          ANDROID_KEYSTORE_FILE: ${{ runner.temp }}/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: ./gradlew :app:bundleRelease :app:assembleRelease
+      - name: "🏷️ Naming Android artifacts..."
+        run: |
+          V=${{ steps.android-version.outputs.version }}
+          cp TiddlyDesktopAndroid/app/build/outputs/bundle/release/app-release.aab "tiddlydesktop-android-v$V.aab"
+          cp TiddlyDesktopAndroid/app/build/outputs/apk/release/app-release.apk   "tiddlydesktop-android-v$V.apk"
+      - name: "📤 Uploading Android AAB (Play upload)..."
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiddlydesktop-android-v${{ steps.android-version.outputs.version }}.aab
+          path: tiddlydesktop-android-v${{ steps.android-version.outputs.version }}.aab
+      - name: "📤 Uploading Android APK (sideload)..."
+        uses: actions/upload-artifact@v4
+        with:
+          name: tiddlydesktop-android-v${{ steps.android-version.outputs.version }}.apk
+          path: tiddlydesktop-android-v${{ steps.android-version.outputs.version }}.apk
+
   release:
     # Run only if a tag was pushed (tag filter in workflow guarantees the only tags we'll see are ones that look like v1.2.3)
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
-    # Run only after build-and-package job completes
-    needs: build-and-package
+    # Run only after the desktop + Android build jobs complete
+    needs: [build-and-package, build-android]
     # This job does *not* have a matrix so it runs only a single copy
     runs-on: ubuntu-latest
     steps:
@@ -126,3 +186,4 @@ jobs:
           files: |
             tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.zip
             tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.AppImage
+            tiddlydesktop-android-v*.apk

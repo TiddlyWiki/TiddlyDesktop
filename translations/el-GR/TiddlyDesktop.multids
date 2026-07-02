@@ -64,3 +64,24 @@ PluginChooser/Update: Ενημέρωση
 PluginChooser/UpdateAvailable: Περιλαμβάνεται νεότερη έκδοση — κάντε κλικ για ενημέρωση
 PluginChooser/Updated: Ενημερώθηκε
 Row/PluginUpdates: Διαθέσιμες ενημερώσεις προσθέτων
+Toolbar/ThemeLabel: Θέμα
+Toolbar/PaletteLabel: Παλέτα
+Toolbar/CustomPluginFolder: Προσαρμοσμένος φάκελος προσθέτων
+Toolbar/ConfigFolder: Φάκελος ρυθμίσεων
+Toolbar/OpenConfigFolder: Άνοιγμα φακέλου ρυθμίσεων
+Toolbar/BackupFolder: Φάκελος αντιγράφων ασφαλείας
+Toolbar/OpenBackupFolder: Άνοιγμα φακέλου αντιγράφων ασφαλείας
+Share/Heading: Προσθήκη κοινόχρηστου περιεχομένου σε…
+Share/Cancel: Άκυρο
+Share/TemplatesHeading: Πρότυπα κοινοποίησης
+Share/TemplatesHelp: Όταν κοινοποιείτε έναν σύνδεσμο σε ένα wiki, το TiddlyDesktop τον εμπλουτίζει (τίτλος, περιγραφή, εικόνα, ενσωμάτωση) και δημιουργεί ένα tiddler από το αντίστοιχο πρότυπο παρακάτω. Σύμβολα κράτησης θέσης:
+Share/DeleteTemplate: Διαγραφή αυτού του προτύπου
+Share/TagsLabel: Ετικέτες:
+Share/AddHeading: Προσθέστε το δικό σας πρότυπο
+Share/AddHelp: Δώστε του ένα όνομα (για να το στοχεύσετε από έναν κανόνα τομέα παρακάτω) και έπειτα επεξεργαστείτε το περιεχόμενό του παραπάνω. Ξεκινά ως αντίγραφο του γενικού προτύπου.
+Share/NamePlaceholder: π.χ. mastodon
+Share/CreateTemplate: Δημιουργία προτύπου
+Share/RulesHeading: Κανόνες τομέα
+Share/RulesHelp: Ένας κανόνας ανά γραμμή ως <code>domain=kind</code> (π.χ. <code>vimeo.com=youtube</code> ή <code>mastodon.social=mastodon</code> για ένα πρότυπο που προσθέσατε παραπάνω) για να δρομολογήσετε έναν ιστότοπο σε ένα συγκεκριμένο πρότυπο.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Τα αντίγραφα ασφαλείας των wiki ενός αρχείου γράφονται από προεπιλογή δίπλα σε κάθε wiki. Επιλέξτε έναν φάκελο εδώ για να συγκεντρώσετε όλα τα αντίγραφα ασφαλείας σε ένα μέρος.

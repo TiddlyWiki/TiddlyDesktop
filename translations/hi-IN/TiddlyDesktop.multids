@@ -64,3 +64,24 @@ PluginChooser/Update: अपडेट करें
 PluginChooser/UpdateAvailable: एक नया संस्करण शामिल है — अपडेट करने के लिए क्लिक करें
 PluginChooser/Updated: अपडेट किया गया
 Row/PluginUpdates: प्लगइन अपडेट उपलब्ध हैं
+Toolbar/ThemeLabel: थीम
+Toolbar/PaletteLabel: पैलेट
+Toolbar/CustomPluginFolder: कस्टम प्लगइन फ़ोल्डर
+Toolbar/ConfigFolder: कॉन्फ़िग फ़ोल्डर
+Toolbar/OpenConfigFolder: कॉन्फ़िग फ़ोल्डर खोलें
+Toolbar/BackupFolder: बैकअप फ़ोल्डर
+Toolbar/OpenBackupFolder: बैकअप फ़ोल्डर खोलें
+Share/Heading: साझा सामग्री यहाँ जोड़ें…
+Share/Cancel: रद्द करें
+Share/TemplatesHeading: साझा टेम्पलेट
+Share/TemplatesHelp: जब आप किसी विकी में लिंक साझा करते हैं, तो TiddlyDesktop उसे समृद्ध करता है (शीर्षक, विवरण, छवि, एम्बेड) और नीचे मिलान वाले टेम्पलेट से एक टिडलर बनाता है। प्लेसहोल्डर:
+Share/DeleteTemplate: यह टेम्पलेट हटाएँ
+Share/TagsLabel: टैग:
+Share/AddHeading: अपना टेम्पलेट जोड़ें
+Share/AddHelp: इसे एक नाम दें (नीचे किसी डोमेन नियम से इसे लक्षित करने के लिए), फिर ऊपर इसकी सामग्री संपादित करें। यह सामान्य टेम्पलेट की प्रति के रूप में शुरू होता है।
+Share/NamePlaceholder: जैसे mastodon
+Share/CreateTemplate: टेम्पलेट बनाएँ
+Share/RulesHeading: डोमेन नियम
+Share/RulesHelp: प्रति पंक्ति एक नियम <code>domain=kind</code> के रूप में (जैसे <code>vimeo.com=youtube</code>, या ऊपर जोड़े गए टेम्पलेट के लिए <code>mastodon.social=mastodon</code>) किसी साइट को किसी विशेष टेम्पलेट पर भेजने के लिए।
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: एकल-फ़ाइल विकी के बैकअप डिफ़ॉल्ट रूप से प्रत्येक विकी के साथ लिखे जाते हैं। इसके बजाय सभी बैकअप एक स्थान पर एकत्र करने के लिए यहाँ एक फ़ोल्डर चुनें।

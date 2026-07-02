@@ -64,3 +64,24 @@ PluginChooser/Update: Uppdatera
 PluginChooser/UpdateAvailable: En nyare version medföljer — klicka för att uppdatera
 PluginChooser/Updated: Uppdaterad
 Row/PluginUpdates: Tilläggsuppdateringar tillgängliga
+Toolbar/ThemeLabel: Tema
+Toolbar/PaletteLabel: Palett
+Toolbar/CustomPluginFolder: Anpassad tilläggsmapp
+Toolbar/ConfigFolder: Konfigurationsmapp
+Toolbar/OpenConfigFolder: Öppna konfigurationsmapp
+Toolbar/BackupFolder: Säkerhetskopieringsmapp
+Toolbar/OpenBackupFolder: Öppna säkerhetskopieringsmapp
+Share/Heading: Lägg till delat innehåll i…
+Share/Cancel: Avbryt
+Share/TemplatesHeading: Delningsmallar
+Share/TemplatesHelp: När du delar en länk till en wiki berikar TiddlyDesktop den (titel, beskrivning, bild, inbäddning) och bygger en tiddler från den matchande mallen nedan. Platshållare:
+Share/DeleteTemplate: Ta bort den här mallen
+Share/TagsLabel: Taggar:
+Share/AddHeading: Lägg till din egen mall
+Share/AddHelp: Ge den ett namn (för att rikta in den från en domänregel nedan) och redigera sedan dess innehåll ovan. Den börjar som en kopia av den generiska mallen.
+Share/NamePlaceholder: t.ex. mastodon
+Share/CreateTemplate: Skapa mall
+Share/RulesHeading: Domänregler
+Share/RulesHelp: En regel per rad som <code>domain=kind</code> (t.ex. <code>vimeo.com=youtube</code>, eller <code>mastodon.social=mastodon</code> för en mall du lagt till ovan) för att styra en webbplats till en viss mall.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Säkerhetskopior av enfilswikis skrivs som standard bredvid varje wiki. Välj en mapp här för att i stället samla alla säkerhetskopior på ett ställe.

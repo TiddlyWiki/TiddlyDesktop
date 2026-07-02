@@ -64,3 +64,24 @@ PluginChooser/Update: 更新
 PluginChooser/UpdateAvailable: 已隨附較新版本 —— 點選以更新
 PluginChooser/Updated: 已更新
 Row/PluginUpdates: 有可用的外掛更新
+Toolbar/ThemeLabel: 佈景主題
+Toolbar/PaletteLabel: 調色盤
+Toolbar/CustomPluginFolder: 自訂外掛資料夾
+Toolbar/ConfigFolder: 設定資料夾
+Toolbar/OpenConfigFolder: 開啟設定資料夾
+Toolbar/BackupFolder: 備份資料夾
+Toolbar/OpenBackupFolder: 開啟備份資料夾
+Share/Heading: 將分享內容加入…
+Share/Cancel: 取消
+Share/TemplatesHeading: 分享範本
+Share/TemplatesHelp: 當你將連結分享到一個 wiki 時，TiddlyDesktop 會加以豐富（標題、描述、圖片、嵌入），並根據下方相符的範本產生一個 tiddler。預留位置：
+Share/DeleteTemplate: 刪除此範本
+Share/TagsLabel: 標籤：
+Share/AddHeading: 新增你自己的範本
+Share/AddHelp: 為它命名（以便從下方的網域規則參照它），然後在上方編輯其內文。它以通用範本的副本開始。
+Share/NamePlaceholder: 例如 mastodon
+Share/CreateTemplate: 建立範本
+Share/RulesHeading: 網域規則
+Share/RulesHelp: 每行一條規則，格式為 <code>domain=kind</code>（例如 <code>vimeo.com=youtube</code>，或對於上方新增的範本使用 <code>mastodon.social=mastodon</code>），將某個網站導向特定範本。
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: 單一檔案 wiki 的備份預設寫入在每個 wiki 旁邊。在此選擇一個資料夾，以便將所有備份集中到一個位置。

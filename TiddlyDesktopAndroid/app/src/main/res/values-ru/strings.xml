@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">Открытые вики</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop запущен</string>
+    <string name="wiki_server_notification_text">Вики-серверы активны</string>
+    <string name="toast_access_not_granted">Доступ не предоставлен</string>
+    <string name="toast_backup_folder_set">Папка резервных копий задана</string>
+    <string name="toast_config_folder_set">Папка настроек задана</string>
+    <string name="toast_import_folder_failed">Не удалось импортировать эту папку</string>
+    <string name="toast_open_folder_failed">Не удаётся открыть папку на этом устройстве</string>
+    <string name="toast_custom_plugin_folder_set">Своя папка плагинов задана</string>
+    <string name="toast_folder_required_not_added">Требуется доступ к папке — вики не добавлена</string>
+    <string name="toast_importing_plugins">Импорт плагинов…</string>
+    <string name="toast_no_backup_folder">Папка резервных копий не задана</string>
+    <string name="toast_no_config_folder">Папка настроек не задана</string>
+    <string name="toast_no_folder_access_reveal">Нет доступа к папке этой вики — добавьте её снова, чтобы предоставить разрешение.</string>
+    <string name="toast_nothing_to_share">Нечего отправить</string>
+    <string name="toast_operation_failed">Сбой операции — см. logcat</string>
+    <string name="toast_regrant_wiki">Повторно предоставить доступ к этой вики</string>
+    <string name="toast_regrant_folder">Повторно предоставить доступ к папке (резервные копии и вложения)</string>
+    <string name="toast_working">Выполняется…</string>
+    <string name="toast_saved">Сохранено</string>
+    <string name="toast_save_failed">Не удалось сохранить</string>
+    <string name="toast_share_failed">Не удалось поделиться</string>
+    <string name="toast_window_not_ready">Окно ещё не готово</string>
+    <string name="share_tiddler_chooser">Поделиться тиддлером</string>
+    <string name="share_tid_file_chooser">Поделиться тиддлером (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Поделиться</string>
+    <string name="share_btn_tooltip">Поделиться этим тиддлером</string>
+    <string name="share_as_text">Поделиться как текст</string>
+    <string name="share_as_tid">Поделиться как .tid</string>
+    <string name="share_as_html">Поделиться как HTML</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Внешние вложения (Android)</string>
+    <string name="ea_note_body">В Android импортированные вложения всегда копируются в папку attachments/ этой вики и связываются относительным путём. Параметры абсолютного пути здесь не действуют — у папок, предоставленных через Android (content://), нет пути в файловой системе.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Быстрая заметка</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Напишите заметку…</string>
+    <string name="quicknote_done">Готово</string>
+    <string name="quicknote_cancel">Отмена</string>
+    <string name="quicknote_no_wikis">Пока нет вики — сначала добавьте одну в TiddlyDesktop</string>
+    <string name="quicknote_empty">Сначала напишите заметку</string>
+    <string name="quicknote_sent">Заметка добавлена</string>
+    <string name="quicknote_failed">Не удалось добавить заметку</string>
+    <string name="quicknote_tiddler_title">Заметка %1$s</string>
+    <string name="quicknote_widget_description">Добавить быструю заметку в вики</string>
+</resources>

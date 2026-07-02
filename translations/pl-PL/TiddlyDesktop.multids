@@ -64,3 +64,24 @@ PluginChooser/Update: Aktualizuj
 PluginChooser/UpdateAvailable: Dołączono nowszą wersję — kliknij, aby zaktualizować
 PluginChooser/Updated: Zaktualizowano
 Row/PluginUpdates: Dostępne aktualizacje wtyczek
+Toolbar/ThemeLabel: Motyw
+Toolbar/PaletteLabel: Paleta
+Toolbar/CustomPluginFolder: Własny folder wtyczek
+Toolbar/ConfigFolder: Folder konfiguracji
+Toolbar/OpenConfigFolder: Otwórz folder konfiguracji
+Toolbar/BackupFolder: Folder kopii zapasowych
+Toolbar/OpenBackupFolder: Otwórz folder kopii zapasowych
+Share/Heading: Dodaj udostępnioną treść do…
+Share/Cancel: Anuluj
+Share/TemplatesHeading: Szablony udostępniania
+Share/TemplatesHelp: Gdy udostępniasz link do wiki, TiddlyDesktop wzbogaca go (tytuł, opis, obraz, osadzenie) i tworzy tiddlera z pasującego szablonu poniżej. Symbole zastępcze:
+Share/DeleteTemplate: Usuń ten szablon
+Share/TagsLabel: Tagi:
+Share/AddHeading: Dodaj własny szablon
+Share/AddHelp: Nadaj mu nazwę (aby wskazać go z reguły domeny poniżej), a następnie edytuj jego treść powyżej. Zaczyna jako kopia szablonu ogólnego.
+Share/NamePlaceholder: np. mastodon
+Share/CreateTemplate: Utwórz szablon
+Share/RulesHeading: Reguły domen
+Share/RulesHelp: Jedna reguła w wierszu jako <code>domain=kind</code> (np. <code>vimeo.com=youtube</code> lub <code>mastodon.social=mastodon</code> dla szablonu dodanego powyżej), aby kierować witrynę do konkretnego szablonu.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Kopie zapasowe wiki jednoplikowych są domyślnie zapisywane obok każdej wiki. Wybierz tutaj folder, aby zamiast tego zebrać wszystkie kopie w jednym miejscu.

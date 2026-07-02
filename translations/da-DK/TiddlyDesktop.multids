@@ -64,3 +64,24 @@ PluginChooser/Update: Opdatér
 PluginChooser/UpdateAvailable: En nyere version er inkluderet — klik for at opdatere
 PluginChooser/Updated: Opdateret
 Row/PluginUpdates: Plugin-opdateringer tilgængelige
+Toolbar/ThemeLabel: Tema
+Toolbar/PaletteLabel: Palet
+Toolbar/CustomPluginFolder: Tilpasset plugin-mappe
+Toolbar/ConfigFolder: Konfigurationsmappe
+Toolbar/OpenConfigFolder: Åbn konfigurationsmappe
+Toolbar/BackupFolder: Sikkerhedskopimappe
+Toolbar/OpenBackupFolder: Åbn sikkerhedskopimappe
+Share/Heading: Tilføj delt indhold til…
+Share/Cancel: Annuller
+Share/TemplatesHeading: Delingsskabeloner
+Share/TemplatesHelp: Når du deler et link i en wiki, beriger TiddlyDesktop det (titel, beskrivelse, billede, indlejring) og bygger en tiddler ud fra den matchende skabelon nedenfor. Pladsholdere:
+Share/DeleteTemplate: Slet denne skabelon
+Share/TagsLabel: Mærker:
+Share/AddHeading: Tilføj din egen skabelon
+Share/AddHelp: Giv den et navn (for at målrette den fra en domæneregel nedenfor), og rediger derefter dens indhold ovenfor. Den starter som en kopi af den generiske skabelon.
+Share/NamePlaceholder: f.eks. mastodon
+Share/CreateTemplate: Opret skabelon
+Share/RulesHeading: Domæneregler
+Share/RulesHelp: Én regel pr. linje som <code>domain=kind</code> (f.eks. <code>vimeo.com=youtube</code>, eller <code>mastodon.social=mastodon</code> for en skabelon, du har tilføjet ovenfor) for at dirigere et websted til en bestemt skabelon.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Sikkerhedskopier af enkeltfil-wikier skrives som standard ved siden af hver wiki. Vælg en mappe her for i stedet at samle alle sikkerhedskopier ét sted.

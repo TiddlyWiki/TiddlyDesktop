@@ -64,3 +64,24 @@ PluginChooser/Update: Actualisar
 PluginChooser/UpdateAvailable: Un version plus recente es includite — clicca pro actualisar
 PluginChooser/Updated: Actualisate
 Row/PluginUpdates: Actualisationes de plugins disponibile
+Toolbar/ThemeLabel: Thema
+Toolbar/PaletteLabel: Paletta
+Toolbar/CustomPluginFolder: Dossier de plugins personalisate
+Toolbar/ConfigFolder: Dossier de configuration
+Toolbar/OpenConfigFolder: Aperir le dossier de configuration
+Toolbar/BackupFolder: Dossier de copias de reserva
+Toolbar/OpenBackupFolder: Aperir le dossier de copias de reserva
+Share/Heading: Adder le contento compartite a…
+Share/Cancel: Cancellar
+Share/TemplatesHeading: Modellos de compartir
+Share/TemplatesHelp: Quando tu comparti un ligamine in un wiki, TiddlyDesktop lo inricchi (titulo, description, imagine, incorporation) e construe un tiddler ex le modello concordante infra. Substitutos:
+Share/DeleteTemplate: Deler iste modello
+Share/TagsLabel: Etiquettas:
+Share/AddHeading: Adde tu proprie modello
+Share/AddHelp: Da lo un nomine (pro appellar lo ab un regula de dominio infra), pois redige su contento supra. Illo comencia como un copia del modello generic.
+Share/NamePlaceholder: p.ex. mastodon
+Share/CreateTemplate: Crear modello
+Share/RulesHeading: Regulas de dominio
+Share/RulesHelp: Un regula per linea como <code>domain=kind</code> (p.ex. <code>vimeo.com=youtube</code>, o <code>mastodon.social=mastodon</code> pro un modello que tu addeva supra) pro diriger un sito a un modello specific.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Le copias de reserva de wikis de file unic es scribite juxta cata wiki per predefecto. Selige un dossier hic pro colliger in loco tote le copias de reserva in un sol loco.

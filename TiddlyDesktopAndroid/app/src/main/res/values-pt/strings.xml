@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">Wikis abertos</string>
+    <string name="wiki_server_notification_title">O TiddlyDesktop está em execução</string>
+    <string name="wiki_server_notification_text">Os servidores wiki estão ativos</string>
+    <string name="toast_access_not_granted">Acesso não concedido</string>
+    <string name="toast_backup_folder_set">Pasta de cópias definida</string>
+    <string name="toast_config_folder_set">Pasta de configuração definida</string>
+    <string name="toast_import_folder_failed">Não foi possível importar essa pasta</string>
+    <string name="toast_open_folder_failed">Não é possível abrir a pasta neste dispositivo</string>
+    <string name="toast_custom_plugin_folder_set">Pasta de plugins personalizada definida</string>
+    <string name="toast_folder_required_not_added">Acesso à pasta necessário — wiki não adicionado</string>
+    <string name="toast_importing_plugins">A importar plugins…</string>
+    <string name="toast_no_backup_folder">Nenhuma pasta de cópias definida</string>
+    <string name="toast_no_config_folder">Nenhuma pasta de configuração definida</string>
+    <string name="toast_no_folder_access_reveal">Sem acesso à pasta deste wiki — adicione-o novamente para conceder a permissão.</string>
+    <string name="toast_nothing_to_share">Nada para partilhar</string>
+    <string name="toast_operation_failed">Operação falhou — ver logcat</string>
+    <string name="toast_regrant_wiki">Conceder novamente o acesso a este wiki</string>
+    <string name="toast_regrant_folder">Conceder novamente o acesso à pasta (cópias e anexos)</string>
+    <string name="toast_working">A trabalhar…</string>
+    <string name="toast_saved">Guardado</string>
+    <string name="toast_save_failed">Falha ao guardar</string>
+    <string name="toast_share_failed">Falha ao partilhar</string>
+    <string name="toast_window_not_ready">Janela ainda não pronta</string>
+    <string name="share_tiddler_chooser">Partilhar tiddler</string>
+    <string name="share_tid_file_chooser">Partilhar tiddler (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Partilhar</string>
+    <string name="share_btn_tooltip">Partilhar este tiddler</string>
+    <string name="share_as_text">Partilhar como texto</string>
+    <string name="share_as_tid">Partilhar como .tid</string>
+    <string name="share_as_html">Partilhar como HTML</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Anexos externos (Android)</string>
+    <string name="ea_note_body">No Android, os anexos importados são sempre copiados para a pasta attachments/ deste wiki e ligados por um caminho relativo. As opções de caminho absoluto não têm efeito aqui — as pastas partilhadas através do Android (content://) não têm caminho de sistema de ficheiros.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Nota rápida</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Escreva a sua nota…</string>
+    <string name="quicknote_done">Concluído</string>
+    <string name="quicknote_cancel">Cancelar</string>
+    <string name="quicknote_no_wikis">Ainda sem wikis — adicione um no TiddlyDesktop primeiro</string>
+    <string name="quicknote_empty">Escreva primeiro uma nota</string>
+    <string name="quicknote_sent">Nota adicionada</string>
+    <string name="quicknote_failed">Não foi possível adicionar a nota</string>
+    <string name="quicknote_tiddler_title">Nota %1$s</string>
+    <string name="quicknote_widget_description">Adicionar uma nota rápida a um wiki</string>
+</resources>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TiddlyDesktop</string>
+    <string name="wiki_server_channel_name">Отворени викија</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop работи</string>
+    <string name="wiki_server_notification_text">Вики-серверите се активни</string>
+
+    <string name="toast_access_not_granted">Пристапот не е одобрен</string>
+    <string name="toast_backup_folder_set">Папката за резервни копии е поставена</string>
+    <string name="toast_config_folder_set">Папката за конфигурација е поставена</string>
+    <string name="toast_import_folder_failed">Таа папка не можеше да се увезе</string>
+    <string name="toast_open_folder_failed">Папката не можеше да се отвори на овој уред</string>
+    <string name="toast_custom_plugin_folder_set">Прилагодената папка за приклучоци е поставена</string>
+    <string name="toast_folder_required_not_added">Потребен е пристап до папка — викито не е додадено</string>
+    <string name="toast_importing_plugins">Увезување приклучоци…</string>
+    <string name="toast_no_backup_folder">Не е поставена папка за резервни копии</string>
+    <string name="toast_no_config_folder">Не е поставена папка за конфигурација</string>
+    <string name="toast_no_folder_access_reveal">Нема пристап до папка за ова вики — додадете го повторно за да дадете дозвола за папка.</string>
+    <string name="toast_nothing_to_share">Нема што да се сподели</string>
+    <string name="toast_operation_failed">Операцијата не успеа — видете logcat</string>
+    <string name="toast_regrant_wiki">Повторно дадете пристап до ова вики</string>
+    <string name="toast_regrant_folder">Повторно дадете пристап до папка (резервни копии и прилози)</string>
+    <string name="toast_working">Се работи…</string>
+    <string name="toast_saved">Зачувано</string>
+    <string name="toast_save_failed">Зачувувањето не успеа</string>
+    <string name="toast_share_failed">Споделувањето не успеа</string>
+    <string name="toast_window_not_ready">Прозорецот сè уште не е подготвен</string>
+    <string name="share_tiddler_chooser">Сподели tiddler</string>
+    <string name="share_tid_file_chooser">Сподели tiddler (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Сподели</string>
+    <string name="share_btn_tooltip">Сподели го овој tiddler</string>
+    <string name="share_as_text">Сподели како текст</string>
+    <string name="share_as_tid">Сподели како .tid</string>
+    <string name="share_as_html">Сподели како HTML</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Надворешни прилози (Android)</string>
+    <string name="ea_note_body">На Android, увезените прилози секогаш се копираат во папката attachments/ на ова вики и се поврзуваат со релативна патека. Опциите за апсолутна патека немаат никаков ефект тука — папките споделени преку Android (content://) немаат патека во датотечниот систем.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Брза белешка</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Напишете ја вашата белешка…</string>
+    <string name="quicknote_done">Готово</string>
+    <string name="quicknote_cancel">Откажи</string>
+    <string name="quicknote_no_wikis">Сè уште нема викија — прво додадете едно во TiddlyDesktop</string>
+    <string name="quicknote_empty">Прво напишете белешка</string>
+    <string name="quicknote_sent">Белешката е додадена</string>
+    <string name="quicknote_failed">Белешката не можеше да се додаде</string>
+    <string name="quicknote_tiddler_title">Белешка %1$s</string>
+    <string name="quicknote_widget_description">Додајте брза белешка во вики</string>
+</resources>

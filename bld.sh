@@ -16,6 +16,10 @@ cp -RH node_modules/ws source/node_modules/ws
 # Copy TiddlyWiki core files into the source directory
 cp -RH node_modules/tiddlywiki source/tiddlywiki
 
+# Add the /attachments/ range-capable server route (external attachments) to the bundled core-server
+# plugin, mirroring core's /files/ route. Copied post-core-copy so pack-bundled-plugins captures it.
+cp overrides/core-server/server/routes/get-attachments.js source/tiddlywiki/core-server/server/routes/
+
 # Drop the demo/documentation editions the desktop never boots (~37 MB: tw5.com, geospatialdemo,
 # tour, the language demo editions, …), keeping only the tiny starter editions. We keep "empty"
 # and "server" so a "new wiki from edition" / `--init <edition>` path stays available (they total

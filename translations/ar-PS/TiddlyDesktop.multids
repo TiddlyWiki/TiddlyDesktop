@@ -64,3 +64,24 @@ PluginChooser/Update: تحديث
 PluginChooser/UpdateAvailable: يتوفّر إصدار أحدث — انقر للتحديث
 PluginChooser/Updated: تم التحديث
 Row/PluginUpdates: تتوفّر تحديثات للإضافات
+Toolbar/ThemeLabel: السمة
+Toolbar/PaletteLabel: لوحة الألوان
+Toolbar/CustomPluginFolder: مجلد إضافات مخصص
+Toolbar/ConfigFolder: مجلد الإعدادات
+Toolbar/OpenConfigFolder: فتح مجلد الإعدادات
+Toolbar/BackupFolder: مجلد النسخ الاحتياطية
+Toolbar/OpenBackupFolder: فتح مجلد النسخ الاحتياطية
+Share/Heading: أضف المحتوى المشترك إلى…
+Share/Cancel: إلغاء
+Share/TemplatesHeading: قوالب المشاركة
+Share/TemplatesHelp: عند مشاركة رابط في ويكي، يقوم TiddlyDesktop بإثرائه (العنوان، الوصف، الصورة، التضمين) وينشئ تيدلر من القالب المطابق أدناه. العناصر النائبة:
+Share/DeleteTemplate: حذف هذا القالب
+Share/TagsLabel: الوسوم:
+Share/AddHeading: أضف قالبك الخاص
+Share/AddHelp: امنحه اسمًا (لاستهدافه من قاعدة نطاق أدناه)، ثم عدّل محتواه أعلاه. يبدأ كنسخة من القالب العام.
+Share/NamePlaceholder: مثال: mastodon
+Share/CreateTemplate: إنشاء قالب
+Share/RulesHeading: قواعد النطاق
+Share/RulesHelp: قاعدة واحدة في كل سطر بالشكل <code>domain=kind</code> (مثل <code>vimeo.com=youtube</code>، أو <code>mastodon.social=mastodon</code> لقالب أضفته أعلاه) لتوجيه موقع إلى قالب معيّن.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: تُكتب النسخ الاحتياطية لويكيات الملف الواحد بجانب كل ويكي افتراضيًا. اختر مجلدًا هنا لتجميع كل النسخ الاحتياطية في مكان واحد بدلاً من ذلك.

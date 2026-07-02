@@ -64,3 +64,24 @@ PluginChooser/Update: Atualizar
 PluginChooser/UpdateAvailable: Está incluída uma versão mais recente — clique para atualizar
 PluginChooser/Updated: Atualizado
 Row/PluginUpdates: Atualizações de plugins disponíveis
+Toolbar/ThemeLabel: Tema
+Toolbar/PaletteLabel: Paleta
+Toolbar/CustomPluginFolder: Pasta de plugins personalizada
+Toolbar/ConfigFolder: Pasta de configuração
+Toolbar/OpenConfigFolder: Abrir a pasta de configuração
+Toolbar/BackupFolder: Pasta de cópias de segurança
+Toolbar/OpenBackupFolder: Abrir a pasta de cópias de segurança
+Share/Heading: Adicionar o conteúdo partilhado a…
+Share/Cancel: Cancelar
+Share/TemplatesHeading: Modelos de partilha
+Share/TemplatesHelp: Quando partilha uma ligação num wiki, o TiddlyDesktop enriquece-a (título, descrição, imagem, incorporação) e cria um tiddler a partir do modelo correspondente abaixo. Marcadores:
+Share/DeleteTemplate: Eliminar este modelo
+Share/TagsLabel: Etiquetas:
+Share/AddHeading: Adicione o seu próprio modelo
+Share/AddHelp: Dê-lhe um nome (para o referenciar a partir de uma regra de domínio abaixo) e depois edite o seu conteúdo acima. Começa como uma cópia do modelo genérico.
+Share/NamePlaceholder: p. ex. mastodon
+Share/CreateTemplate: Criar modelo
+Share/RulesHeading: Regras de domínio
+Share/RulesHelp: Uma regra por linha como <code>domain=kind</code> (p. ex. <code>vimeo.com=youtube</code>, ou <code>mastodon.social=mastodon</code> para um modelo que adicionou acima) para encaminhar um site para um modelo específico.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: As cópias de segurança de wikis de ficheiro único são guardadas junto a cada wiki por predefinição. Escolha aqui uma pasta para reunir todas as cópias num só local.

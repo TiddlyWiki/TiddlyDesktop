@@ -64,3 +64,24 @@ PluginChooser/Update: עדכן
 PluginChooser/UpdateAvailable: כלולה גרסה חדשה יותר — לחצו לעדכון
 PluginChooser/Updated: עודכן
 Row/PluginUpdates: קיימים עדכוני תוספים
+Toolbar/ThemeLabel: ערכת נושא
+Toolbar/PaletteLabel: פלטה
+Toolbar/CustomPluginFolder: תיקיית תוספים מותאמת
+Toolbar/ConfigFolder: תיקיית הגדרות
+Toolbar/OpenConfigFolder: פתח תיקיית הגדרות
+Toolbar/BackupFolder: תיקיית גיבויים
+Toolbar/OpenBackupFolder: פתח תיקיית גיבויים
+Share/Heading: הוסף תוכן משותף אל…
+Share/Cancel: ביטול
+Share/TemplatesHeading: תבניות שיתוף
+Share/TemplatesHelp: כאשר אתה משתף קישור לוויקי, TiddlyDesktop מעשיר אותו (כותרת, תיאור, תמונה, הטמעה) ובונה טידלר מהתבנית התואמת שלמטה. מצייני מיקום:
+Share/DeleteTemplate: מחק תבנית זו
+Share/TagsLabel: תגיות:
+Share/AddHeading: הוסף תבנית משלך
+Share/AddHelp: תן לה שם (כדי לכוון אליה מכלל דומיין למטה), ואז ערוך את תוכנה למעלה. היא מתחילה כעותק של התבנית הכללית.
+Share/NamePlaceholder: לדוגמה mastodon
+Share/CreateTemplate: צור תבנית
+Share/RulesHeading: כללי דומיין
+Share/RulesHelp: כלל אחד בכל שורה בצורה <code>domain=kind</code> (לדוגמה <code>vimeo.com=youtube</code>, או <code>mastodon.social=mastodon</code> עבור תבנית שהוספת למעלה) כדי לנתב אתר לתבנית מסוימת.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: גיבויים של ויקי בקובץ יחיד נכתבים לצד כל ויקי כברירת מחדל. בחר כאן תיקייה כדי לאסוף את כל הגיבויים במקום אחד במקום זאת.

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Generated .tid files to share out (see WikiActivity.ShareBridge.shareTidFile). -->
+    <cache-path name="shared" path="shared/" />
+</paths>

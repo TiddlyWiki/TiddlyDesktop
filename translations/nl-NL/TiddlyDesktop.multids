@@ -64,3 +64,24 @@ PluginChooser/Update: Bijwerken
 PluginChooser/UpdateAvailable: Een nieuwere versie is meegeleverd — klik om bij te werken
 PluginChooser/Updated: Bijgewerkt
 Row/PluginUpdates: Plug-in-updates beschikbaar
+Toolbar/ThemeLabel: Thema
+Toolbar/PaletteLabel: Palet
+Toolbar/CustomPluginFolder: Aangepaste plug-inmap
+Toolbar/ConfigFolder: Configuratiemap
+Toolbar/OpenConfigFolder: Configuratiemap openen
+Toolbar/BackupFolder: Back-upmap
+Toolbar/OpenBackupFolder: Back-upmap openen
+Share/Heading: Gedeelde inhoud toevoegen aan…
+Share/Cancel: Annuleren
+Share/TemplatesHeading: Deelsjablonen
+Share/TemplatesHelp: Wanneer je een link in een wiki deelt, verrijkt TiddlyDesktop deze (titel, beschrijving, afbeelding, insluiting) en bouwt een tiddler op basis van het overeenkomende sjabloon hieronder. Plaatsaanduidingen:
+Share/DeleteTemplate: Dit sjabloon verwijderen
+Share/TagsLabel: Labels:
+Share/AddHeading: Eigen sjabloon toevoegen
+Share/AddHelp: Geef het een naam (om het aan te sturen vanuit een domeinregel hieronder) en bewerk vervolgens de inhoud hierboven. Het begint als een kopie van het generieke sjabloon.
+Share/NamePlaceholder: bijv. mastodon
+Share/CreateTemplate: Sjabloon maken
+Share/RulesHeading: Domeinregels
+Share/RulesHelp: Eén regel per regel als <code>domain=kind</code> (bijv. <code>vimeo.com=youtube</code>, of <code>mastodon.social=mastodon</code> voor een sjabloon dat je hierboven hebt toegevoegd) om een site naar een bepaald sjabloon te leiden.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Back-ups van enkelbestandswiki's worden standaard naast elke wiki opgeslagen. Kies hier een map om in plaats daarvan alle back-ups op één plek te verzamelen.

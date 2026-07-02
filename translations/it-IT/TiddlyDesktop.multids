@@ -64,3 +64,24 @@ PluginChooser/Update: Aggiorna
 PluginChooser/UpdateAvailable: È inclusa una versione più recente — fai clic per aggiornare
 PluginChooser/Updated: Aggiornato
 Row/PluginUpdates: Aggiornamenti dei plugin disponibili
+Toolbar/ThemeLabel: Tema
+Toolbar/PaletteLabel: Tavolozza
+Toolbar/CustomPluginFolder: Cartella dei plugin personalizzata
+Toolbar/ConfigFolder: Cartella di configurazione
+Toolbar/OpenConfigFolder: Apri la cartella di configurazione
+Toolbar/BackupFolder: Cartella dei backup
+Toolbar/OpenBackupFolder: Apri la cartella dei backup
+Share/Heading: Aggiungi il contenuto condiviso a…
+Share/Cancel: Annulla
+Share/TemplatesHeading: Modelli di condivisione
+Share/TemplatesHelp: Quando condividi un link in un wiki, TiddlyDesktop lo arricchisce (titolo, descrizione, immagine, incorporamento) e crea un tiddler dal modello corrispondente qui sotto. Segnaposti:
+Share/DeleteTemplate: Elimina questo modello
+Share/TagsLabel: Tag:
+Share/AddHeading: Aggiungi il tuo modello
+Share/AddHelp: Dagli un nome (per richiamarlo da una regola di dominio qui sotto), poi modifica il suo contenuto sopra. Parte come copia del modello generico.
+Share/NamePlaceholder: es. mastodon
+Share/CreateTemplate: Crea modello
+Share/RulesHeading: Regole di dominio
+Share/RulesHelp: Una regola per riga come <code>domain=kind</code> (es. <code>vimeo.com=youtube</code>, oppure <code>mastodon.social=mastodon</code> per un modello aggiunto sopra) per indirizzare un sito a un modello specifico.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: I backup dei wiki a file singolo vengono salvati accanto a ciascun wiki per impostazione predefinita. Scegli qui una cartella per raccogliere tutti i backup in un unico posto.

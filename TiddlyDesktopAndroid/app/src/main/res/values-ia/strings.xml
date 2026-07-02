@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TiddlyDesktop</string>
+    <string name="wiki_server_channel_name">Wikis aperte</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop es in execution</string>
+    <string name="wiki_server_notification_text">Le servitores wiki es active</string>
+
+    <string name="toast_access_not_granted">Accesso non concedite</string>
+    <string name="toast_backup_folder_set">Dossier de copia de reserva definite</string>
+    <string name="toast_config_folder_set">Dossier de configuration definite</string>
+    <string name="toast_import_folder_failed">Non poteva importar ille dossier</string>
+    <string name="toast_open_folder_failed">Non poteva aperir le dossier sur iste dispositivo</string>
+    <string name="toast_custom_plugin_folder_set">Dossier de plugins personalisate definite</string>
+    <string name="toast_folder_required_not_added">Accesso al dossier es requirite — wiki non addite</string>
+    <string name="toast_importing_plugins">Importation de plugins…</string>
+    <string name="toast_no_backup_folder">Nulle dossier de copia de reserva definite</string>
+    <string name="toast_no_config_folder">Nulle dossier de configuration definite</string>
+    <string name="toast_no_folder_access_reveal">Nulle accesso al dossier pro iste wiki — readde lo pro conceder le permission de dossier.</string>
+    <string name="toast_nothing_to_share">Nihil a compartir</string>
+    <string name="toast_operation_failed">Operation fallite — vide logcat</string>
+    <string name="toast_regrant_wiki">Reconcede le accesso a iste wiki</string>
+    <string name="toast_regrant_folder">Reconcede le accesso al dossier (copias de reserva e annexos)</string>
+    <string name="toast_working">Travaliante…</string>
+    <string name="toast_saved">Salveguardate</string>
+    <string name="toast_save_failed">Salveguarda fallite</string>
+    <string name="toast_share_failed">Compartir fallite</string>
+    <string name="toast_window_not_ready">Fenestra non ancora preste</string>
+    <string name="share_tiddler_chooser">Compartir tiddler</string>
+    <string name="share_tid_file_chooser">Compartir tiddler (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Compartir</string>
+    <string name="share_btn_tooltip">Compartir iste tiddler</string>
+    <string name="share_as_text">Compartir como texto</string>
+    <string name="share_as_tid">Compartir como .tid</string>
+    <string name="share_as_html">Compartir como HTML</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Annexos externe (Android)</string>
+    <string name="ea_note_body">In Android, le annexos importate es sempre copiate in le dossier attachments/ de iste wiki e ligate per un via relative. Le optiones de via absolute non ha ulle effecto hic — le dossieres compartite via Android (content://) non ha un via de systema de files.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Nota rapide</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Scribe tu nota…</string>
+    <string name="quicknote_done">Facite</string>
+    <string name="quicknote_cancel">Cancellar</string>
+    <string name="quicknote_no_wikis">Ancora nulle wikis — adde un in TiddlyDesktop primo</string>
+    <string name="quicknote_empty">Scribe prime un nota</string>
+    <string name="quicknote_sent">Nota addite</string>
+    <string name="quicknote_failed">Non poteva adder le nota</string>
+    <string name="quicknote_tiddler_title">Nota %1$s</string>
+    <string name="quicknote_widget_description">Adder un nota rapide a un wiki</string>
+</resources>

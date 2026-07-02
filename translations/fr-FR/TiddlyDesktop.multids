@@ -64,3 +64,24 @@ PluginChooser/Update: Mettre à jour
 PluginChooser/UpdateAvailable: Une version plus récente est fournie — cliquez pour mettre à jour
 PluginChooser/Updated: Mis à jour
 Row/PluginUpdates: Mises à jour de plugins disponibles
+Toolbar/ThemeLabel: Thème
+Toolbar/PaletteLabel: Palette
+Toolbar/CustomPluginFolder: Dossier de plugins personnalisé
+Toolbar/ConfigFolder: Dossier de configuration
+Toolbar/OpenConfigFolder: Ouvrir le dossier de configuration
+Toolbar/BackupFolder: Dossier de sauvegarde
+Toolbar/OpenBackupFolder: Ouvrir le dossier de sauvegarde
+Share/Heading: Ajouter le contenu partagé à…
+Share/Cancel: Annuler
+Share/TemplatesHeading: Modèles de partage
+Share/TemplatesHelp: Lorsque vous partagez un lien dans un wiki, TiddlyDesktop l'enrichit (titre, description, image, intégration) et crée un tiddler à partir du modèle correspondant ci-dessous. Espaces réservés :
+Share/DeleteTemplate: Supprimer ce modèle
+Share/TagsLabel: Étiquettes :
+Share/AddHeading: Ajouter votre propre modèle
+Share/AddHelp: Donnez-lui un nom (pour le cibler depuis une règle de domaine ci-dessous), puis modifiez son contenu ci-dessus. Il démarre comme une copie du modèle générique.
+Share/NamePlaceholder: p. ex. mastodon
+Share/CreateTemplate: Créer le modèle
+Share/RulesHeading: Règles de domaine
+Share/RulesHelp: Une règle par ligne sous la forme <code>domain=kind</code> (p. ex. <code>vimeo.com=youtube</code>, ou <code>mastodon.social=mastodon</code> pour un modèle ajouté ci-dessus) pour associer un site à un modèle particulier.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Les sauvegardes des wikis mono-fichier sont écrites à côté de chaque wiki par défaut. Choisissez un dossier ici pour regrouper toutes les sauvegardes au même endroit.

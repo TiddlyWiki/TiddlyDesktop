@@ -64,3 +64,24 @@ PluginChooser/Update: Actualitza
 PluginChooser/UpdateAvailable: S’inclou una versió més recent: fes clic per actualitzar
 PluginChooser/Updated: Actualitzat
 Row/PluginUpdates: Hi ha actualitzacions de connectors
+Toolbar/ThemeLabel: Tema
+Toolbar/PaletteLabel: Paleta
+Toolbar/CustomPluginFolder: Carpeta de connectors personalitzada
+Toolbar/ConfigFolder: Carpeta de configuració
+Toolbar/OpenConfigFolder: Obre la carpeta de configuració
+Toolbar/BackupFolder: Carpeta de còpies de seguretat
+Toolbar/OpenBackupFolder: Obre la carpeta de còpies de seguretat
+Share/Heading: Afegeix el contingut compartit a…
+Share/Cancel: Cancel·la
+Share/TemplatesHeading: Plantilles de compartició
+Share/TemplatesHelp: Quan comparteixes un enllaç en un wiki, TiddlyDesktop l'enriqueix (títol, descripció, imatge, incrustació) i crea un tiddler a partir de la plantilla coincident de sota. Marcadors de posició:
+Share/DeleteTemplate: Elimina aquesta plantilla
+Share/TagsLabel: Etiquetes:
+Share/AddHeading: Afegeix la teva pròpia plantilla
+Share/AddHelp: Posa-li un nom (per orientar-la des d'una regla de domini a sota) i després edita'n el contingut a dalt. Comença com una còpia de la plantilla genèrica.
+Share/NamePlaceholder: p. ex. mastodon
+Share/CreateTemplate: Crea la plantilla
+Share/RulesHeading: Regles de domini
+Share/RulesHelp: Una regla per línia com <code>domain=kind</code> (p. ex. <code>vimeo.com=youtube</code>, o <code>mastodon.social=mastodon</code> per a una plantilla que hagis afegit a dalt) per dirigir un lloc a una plantilla concreta.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Les còpies de seguretat dels wikis d'un sol fitxer s'escriuen al costat de cada wiki de manera predeterminada. Tria una carpeta aquí per recollir totes les còpies en un sol lloc.

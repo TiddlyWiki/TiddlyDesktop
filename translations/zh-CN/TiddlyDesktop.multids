@@ -64,3 +64,24 @@ PluginChooser/Update: 更新
 PluginChooser/UpdateAvailable: 已捆绑更新的版本 —— 点击以更新
 PluginChooser/Updated: 已更新
 Row/PluginUpdates: 有可用的插件更新
+Toolbar/ThemeLabel: 主题
+Toolbar/PaletteLabel: 调色板
+Toolbar/CustomPluginFolder: 自定义插件文件夹
+Toolbar/ConfigFolder: 配置文件夹
+Toolbar/OpenConfigFolder: 打开配置文件夹
+Toolbar/BackupFolder: 备份文件夹
+Toolbar/OpenBackupFolder: 打开备份文件夹
+Share/Heading: 将共享内容添加到…
+Share/Cancel: 取消
+Share/TemplatesHeading: 分享模板
+Share/TemplatesHelp: 当你把链接分享到一个 wiki 时，TiddlyDesktop 会对其进行丰富（标题、描述、图片、嵌入），并根据下面匹配的模板生成一个 tiddler。占位符：
+Share/DeleteTemplate: 删除此模板
+Share/TagsLabel: 标签：
+Share/AddHeading: 添加你自己的模板
+Share/AddHelp: 给它取个名字（以便从下面的域名规则中引用它），然后在上方编辑其正文。它以通用模板的副本开始。
+Share/NamePlaceholder: 例如 mastodon
+Share/CreateTemplate: 创建模板
+Share/RulesHeading: 域名规则
+Share/RulesHelp: 每行一条规则，格式为 <code>domain=kind</code>（例如 <code>vimeo.com=youtube</code>，或对于上面添加的模板使用 <code>mastodon.social=mastodon</code>），将某个站点路由到特定模板。
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: 单文件 wiki 的备份默认写入在每个 wiki 旁边。在此选择一个文件夹，以便将所有备份集中到一个位置。

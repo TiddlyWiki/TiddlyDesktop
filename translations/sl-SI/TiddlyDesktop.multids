@@ -64,3 +64,24 @@ PluginChooser/Update: Posodobi
 PluginChooser/UpdateAvailable: Priložena je novejša različica — kliknite za posodobitev
 PluginChooser/Updated: Posodobljeno
 Row/PluginUpdates: Na voljo so posodobitve vtičnikov
+Toolbar/ThemeLabel: Tema
+Toolbar/PaletteLabel: Paleta
+Toolbar/CustomPluginFolder: Mapa dodatkov po meri
+Toolbar/ConfigFolder: Konfiguracijska mapa
+Toolbar/OpenConfigFolder: Odpri konfiguracijsko mapo
+Toolbar/BackupFolder: Mapa varnostnih kopij
+Toolbar/OpenBackupFolder: Odpri mapo varnostnih kopij
+Share/Heading: Dodaj deljeno vsebino v…
+Share/Cancel: Prekliči
+Share/TemplatesHeading: Predloge za deljenje
+Share/TemplatesHelp: Ko delite povezavo v wiki, jo TiddlyDesktop obogati (naslov, opis, sliko, vdelavo) in iz ustrezne predloge spodaj ustvari tiddler. Ograde:
+Share/DeleteTemplate: Izbriši to predlogo
+Share/TagsLabel: Oznake:
+Share/AddHeading: Dodajte svojo predlogo
+Share/AddHelp: Poimenujte jo (za sklicevanje iz pravila domene spodaj), nato pa uredite njeno vsebino zgoraj. Začne kot kopija splošne predloge.
+Share/NamePlaceholder: npr. mastodon
+Share/CreateTemplate: Ustvari predlogo
+Share/RulesHeading: Pravila domen
+Share/RulesHelp: Eno pravilo na vrstico kot <code>domain=kind</code> (npr. <code>vimeo.com=youtube</code> ali <code>mastodon.social=mastodon</code> za predlogo, dodano zgoraj), da usmerite spletno mesto na določeno predlogo.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Varnostne kopije enodatotečnih wikijev se privzeto shranjujejo poleg vsakega wikija. Tukaj izberite mapo, da namesto tega zberete vse varnostne kopije na enem mestu.

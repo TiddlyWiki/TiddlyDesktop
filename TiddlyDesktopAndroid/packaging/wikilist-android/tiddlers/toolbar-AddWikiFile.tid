@@ -1,0 +1,8 @@
+title: WikiListToolbar/AddWikiFile
+tags: toolbar
+
+<$button class="td-button">
+<$action-sendmessage $message="tiddlydesktop-android-add-file"/>
+{{$:/core/images/file}}
+{{$:/language/TiddlyDesktop/Toolbar/AddWikiFile}}
+</$button>

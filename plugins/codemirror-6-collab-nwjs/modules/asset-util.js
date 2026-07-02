@@ -115,6 +115,12 @@ function isInside(child, parent) {
 // Given the absolute path the receiver saved the asset to, build the _canonical_uri
 // to record, honouring the External Attachments relative/absolute settings.
 exports.canonicalUriForPath = function(absPath) {
+	// Android: the file bridge already returns a WIKI-RELATIVE _canonical_uri (e.g.
+	// "./attachments/foo.png") for both single-file wikis (content:// wikiDir) and folder wikis
+	// (local-mirror wikiDir). Use it verbatim — running relativePath against the wikiDir produces
+	// garbage like "../../../../attachments/foo.png". On desktop writeAsset always returns an
+	// ABSOLUTE fs path, so a leading "./"/"../" never occurs there — desktop behaviour is unchanged.
+	if((/^\.\.?\//).test(String(absPath))) { return String(absPath); }
 	var base = norm(wikiDir());
 	var descendant = isInside(absPath, base);
 	// Defaults mirror sensible plugin behaviour: relative inside the wiki, absolute

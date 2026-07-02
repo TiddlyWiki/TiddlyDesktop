@@ -64,3 +64,24 @@ PluginChooser/Update: Aktualizovat
 PluginChooser/UpdateAvailable: Je přiložena novější verze — aktualizujte kliknutím
 PluginChooser/Updated: Aktualizováno
 Row/PluginUpdates: Jsou dostupné aktualizace pluginů
+Toolbar/ThemeLabel: Motiv
+Toolbar/PaletteLabel: Paleta
+Toolbar/CustomPluginFolder: Vlastní složka zásuvných modulů
+Toolbar/ConfigFolder: Složka konfigurace
+Toolbar/OpenConfigFolder: Otevřít složku konfigurace
+Toolbar/BackupFolder: Složka záloh
+Toolbar/OpenBackupFolder: Otevřít složku záloh
+Share/Heading: Přidat sdílený obsah do…
+Share/Cancel: Zrušit
+Share/TemplatesHeading: Šablony sdílení
+Share/TemplatesHelp: Když sdílíte odkaz do wiki, TiddlyDesktop jej obohatí (název, popis, obrázek, vložení) a vytvoří tiddler z odpovídající šablony níže. Zástupné symboly:
+Share/DeleteTemplate: Smazat tuto šablonu
+Share/TagsLabel: Štítky:
+Share/AddHeading: Přidejte vlastní šablonu
+Share/AddHelp: Pojmenujte ji (abyste na ni cílili z pravidla domény níže) a poté upravte její obsah výše. Začíná jako kopie obecné šablony.
+Share/NamePlaceholder: např. mastodon
+Share/CreateTemplate: Vytvořit šablonu
+Share/RulesHeading: Pravidla domén
+Share/RulesHelp: Jedno pravidlo na řádek jako <code>domain=kind</code> (např. <code>vimeo.com=youtube</code> nebo <code>mastodon.social=mastodon</code> pro šablonu přidanou výše) pro nasměrování webu na konkrétní šablonu.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Zálohy jednosouborových wiki se ve výchozím nastavení ukládají vedle každé wiki. Zde vyberte složku, abyste místo toho shromáždili všechny zálohy na jednom místě.

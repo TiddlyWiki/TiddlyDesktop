@@ -105,7 +105,7 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <$list filter="[<extMode>!match[]]" variable="_">
 <span class="tc-file-input-wrapper tc-collab-get-asset-wrapper">
 <$button class="tc-btn-invisible tc-collab-get-btn" tooltip="Save this attachment to a file on disk">Get</$button>
-<$browse nwsaveas={{{ [<currentTiddler>get[asset-name]] }}} message="codemirror-6-collab-get-asset" param=<<sharedTitle>> tooltip="Save this attachment to a file on disk"/>
+<$browse nwsaveas={{{ [<currentTiddler>get[asset-name]] }}} data-collab-asset=<<sharedTitle>> message="codemirror-6-collab-get-asset" param=<<sharedTitle>> tooltip="Save this attachment to a file on disk"/>
 </span>
 </$list>
 <$list filter="[<extMode>match[]]" variable="_">

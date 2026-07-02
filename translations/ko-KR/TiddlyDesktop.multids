@@ -64,3 +64,24 @@ PluginChooser/Update: 업데이트
 PluginChooser/UpdateAvailable: 더 새로운 버전이 포함되어 있습니다 — 클릭하여 업데이트
 PluginChooser/Updated: 업데이트됨
 Row/PluginUpdates: 플러그인 업데이트가 있습니다
+Toolbar/ThemeLabel: 테마
+Toolbar/PaletteLabel: 팔레트
+Toolbar/CustomPluginFolder: 사용자 지정 플러그인 폴더
+Toolbar/ConfigFolder: 설정 폴더
+Toolbar/OpenConfigFolder: 설정 폴더 열기
+Toolbar/BackupFolder: 백업 폴더
+Toolbar/OpenBackupFolder: 백업 폴더 열기
+Share/Heading: 공유된 콘텐츠를 추가할 위키…
+Share/Cancel: 취소
+Share/TemplatesHeading: 공유 템플릿
+Share/TemplatesHelp: 위키에 링크를 공유하면 TiddlyDesktop이 이를 보강하고(제목, 설명, 이미지, 임베드) 아래의 일치하는 템플릿에서 티들러를 만듭니다. 자리 표시자:
+Share/DeleteTemplate: 이 템플릿 삭제
+Share/TagsLabel: 태그:
+Share/AddHeading: 나만의 템플릿 추가
+Share/AddHelp: 이름을 지정하고(아래 도메인 규칙에서 대상으로 지정하기 위해) 위에서 본문을 편집하세요. 일반 템플릿의 복사본으로 시작합니다.
+Share/NamePlaceholder: 예: mastodon
+Share/CreateTemplate: 템플릿 만들기
+Share/RulesHeading: 도메인 규칙
+Share/RulesHelp: 사이트를 특정 템플릿으로 라우팅하려면 한 줄에 하나씩 <code>domain=kind</code> 형식으로 규칙을 작성하세요(예: <code>vimeo.com=youtube</code> 또는 위에서 추가한 템플릿의 경우 <code>mastodon.social=mastodon</code>).
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: 단일 파일 위키의 백업은 기본적으로 각 위키 옆에 기록됩니다. 대신 모든 백업을 한곳에 모으려면 여기에서 폴더를 선택하세요.

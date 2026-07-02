@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">Otvorené wiki</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop beží</string>
+    <string name="wiki_server_notification_text">Wiki servery sú aktívne</string>
+    <string name="toast_access_not_granted">Prístup nebol udelený</string>
+    <string name="toast_backup_folder_set">Priečinok záloh nastavený</string>
+    <string name="toast_config_folder_set">Priečinok konfigurácie nastavený</string>
+    <string name="toast_import_folder_failed">Tento priečinok sa nepodarilo importovať</string>
+    <string name="toast_open_folder_failed">Priečinok nie je možné v tomto zariadení otvoriť</string>
+    <string name="toast_custom_plugin_folder_set">Vlastný priečinok pluginov nastavený</string>
+    <string name="toast_folder_required_not_added">Vyžaduje sa prístup k priečinku — wiki nepridaná</string>
+    <string name="toast_importing_plugins">Importujú sa pluginy…</string>
+    <string name="toast_no_backup_folder">Nie je nastavený priečinok záloh</string>
+    <string name="toast_no_config_folder">Nie je nastavený priečinok konfigurácie</string>
+    <string name="toast_no_folder_access_reveal">Žiadny prístup k priečinku tejto wiki — pridajte ju znova na udelenie povolenia.</string>
+    <string name="toast_nothing_to_share">Nie je čo zdieľať</string>
+    <string name="toast_operation_failed">Operácia zlyhala — pozri logcat</string>
+    <string name="toast_regrant_wiki">Znova udeliť prístup k tejto wiki</string>
+    <string name="toast_regrant_folder">Znova udeliť prístup k priečinku (zálohy a prílohy)</string>
+    <string name="toast_working">Pracuje sa…</string>
+    <string name="toast_saved">Uložené</string>
+    <string name="toast_save_failed">Uloženie zlyhalo</string>
+    <string name="toast_share_failed">Zdieľanie zlyhalo</string>
+    <string name="toast_window_not_ready">Okno ešte nie je pripravené</string>
+    <string name="share_tiddler_chooser">Zdieľať tiddler</string>
+    <string name="share_tid_file_chooser">Zdieľať tiddler (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Zdieľať</string>
+    <string name="share_btn_tooltip">Zdieľať tento tiddler</string>
+    <string name="share_as_text">Zdieľať ako text</string>
+    <string name="share_as_tid">Zdieľať ako .tid</string>
+    <string name="share_as_html">Zdieľať ako HTML</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Externé prílohy (Android)</string>
+    <string name="ea_note_body">V systéme Android sa importované prílohy vždy kopírujú do priečinka attachments/ tejto wiki a odkazujú sa relatívnou cestou. Možnosti absolútnej cesty tu nemajú žiadny účinok — priečinky zdieľané cez Android (content://) nemajú cestu v súborovom systéme.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Rýchla poznámka</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Napíšte svoju poznámku…</string>
+    <string name="quicknote_done">Hotovo</string>
+    <string name="quicknote_cancel">Zrušiť</string>
+    <string name="quicknote_no_wikis">Zatiaľ žiadne wiki — najprv nejaké pridajte v TiddlyDesktop</string>
+    <string name="quicknote_empty">Najprv napíšte poznámku</string>
+    <string name="quicknote_sent">Poznámka pridaná</string>
+    <string name="quicknote_failed">Poznámku sa nepodarilo pridať</string>
+    <string name="quicknote_tiddler_title">Poznámka %1$s</string>
+    <string name="quicknote_widget_description">Pridať rýchlu poznámku do wiki</string>
+</resources>
