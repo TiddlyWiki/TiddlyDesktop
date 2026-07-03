@@ -37,6 +37,8 @@ class WikiActivity : ComponentActivity() {
     private lateinit var webView: WebView
     private var folderServer: NodeServer? = null
     private var singleFileServer: SingleFileWikiServer? = null
+    /** Owns the collab LAN helper process; disposed on destroy. */
+    private var collabBridge: CollabBridge? = null
     /** Non-null when this folder wiki is a SAF mirror that must be synced back to SAF. */
     private var mirroredTreeUri: String? = null
     private var syncThread: Thread? = null
@@ -232,7 +234,8 @@ class WikiActivity : ComponentActivity() {
         // Register the collab bridge BEFORE loadUrl — addJavascriptInterface only takes effect on
         // the next page load, so registering it in onPageFinished (single-file wikis never reload)
         // left `TDCollab` undefined, the shim bailed out, and OAuth fell back to CORS-blocked fetch.
-        webView.addJavascriptInterface(CollabBridge(this, webView, wikiPath), CollabBridge.INTERFACE_NAME)
+        collabBridge = CollabBridge(this, webView, wikiPath)
+        webView.addJavascriptInterface(collabBridge!!, CollabBridge.INTERFACE_NAME)
         if (serverUrl == null) {
             val wikiUrl = WikiUrl.encode(wikiPath, isFolder)
             webView.addJavascriptInterface(MetaBridge(applicationContext, wikiUrl), MetaBridge.INTERFACE_NAME)
@@ -566,6 +569,10 @@ class WikiActivity : ComponentActivity() {
     override fun onDestroy() {
         syncing = false
         syncThread?.interrupt()
+        // Always tear down the collab LAN helper process — even on a non-finishing recreate, so a
+        // config change can't orphan it.
+        runCatching { collabBridge?.dispose() }
+        collabBridge = null
         if (isFinishing) {
             // We own the server (serverUrl==null). Close any tm-open-window child windows pointing at
             // it first — otherwise they'd be left showing a dead (connection-refused) server.

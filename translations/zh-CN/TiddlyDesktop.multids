@@ -66,6 +66,9 @@ PluginChooser/Updated: 已更新
 Row/PluginUpdates: 有可用的插件更新
 Toolbar/ThemeLabel: 主题
 Toolbar/PaletteLabel: 调色板
+Toolbar/ViewLabel: 列表视图
+Toolbar/ViewFull: 完整
+Toolbar/ViewCompact: 紧凑
 Toolbar/CustomPluginFolder: 自定义插件文件夹
 Toolbar/ConfigFolder: 配置文件夹
 Toolbar/OpenConfigFolder: 打开配置文件夹

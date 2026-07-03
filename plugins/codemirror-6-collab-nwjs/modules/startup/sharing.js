@@ -1935,6 +1935,26 @@ exports.startup = function() {
 		return toTitle;
 	});
 
+	// ── delete hook ────────────────────────────────────────────────────────────
+
+	// Deleting a shared tiddler must unshare it. The core navigator fires
+	// th-deleting-tiddler ONLY for a genuine user delete (the delete button), never for a
+	// rename-save (which silently deletes the old title) or an edit cancel — so unlike the
+	// change-event listener it is unambiguous and needs no rename heuristic. We resolve on the
+	// underlying tiddler (skipping its draft, which the navigator reports separately) and, since
+	// the hook runs before the deletion, ownedTiddlers/subscribedTiddlers are still populated.
+	// Idempotent with the change listener: whichever runs first, the second's guards no-op.
+	$tw.hooks.addHook("th-deleting-tiddler", function(tiddler) {
+		try {
+			var f = tiddler && tiddler.fields;
+			if(f && !f["draft.of"] && f.title) {
+				if(ownedTiddlers[f.title]) { _unshareTiddler(f.title); }
+				else if(subscribedTiddlers[f.title]) { _unsubscribeTiddler(f.title); }
+			}
+		} catch(_e) {}
+		return tiddler;
+	});
+
 	// ── public API ────────────────────────────────────────────────────────────
 
 	window.TiddlyDesktop = window.TiddlyDesktop || {};

@@ -66,6 +66,9 @@ PluginChooser/Updated: Opdateret
 Row/PluginUpdates: Plugin-opdateringer tilgængelige
 Toolbar/ThemeLabel: Tema
 Toolbar/PaletteLabel: Palet
+Toolbar/ViewLabel: Listevisning
+Toolbar/ViewFull: Fuld
+Toolbar/ViewCompact: Kompakt
 Toolbar/CustomPluginFolder: Tilpasset plugin-mappe
 Toolbar/ConfigFolder: Konfigurationsmappe
 Toolbar/OpenConfigFolder: Åbn konfigurationsmappe

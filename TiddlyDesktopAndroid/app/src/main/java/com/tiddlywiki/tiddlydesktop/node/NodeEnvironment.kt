@@ -27,6 +27,9 @@ object NodeEnvironment {
     /** Bundled WikiList folder-wiki zip in assets. Produced by the packaging build step. */
     private const val WIKILIST_ASSET_ZIP = "wikilist.zip"
 
+    /** Bundled collab LAN helper (lan-helper.js + lan-node.js + ws). May be absent → relay-only. */
+    private const val LAN_ASSET_ZIP = "lan.zip"
+
     /** Versioned -> unversioned library names the node binary dlopen()s. */
     private val LIB_SYMLINKS = listOf(
         "libz.so.1" to "libz.so",
@@ -134,6 +137,20 @@ object NodeEnvironment {
     /** Extract the bundled WikiList folder wiki. ZIP entries are prefixed "wikilist/". */
     fun ensureWikiListExtracted(context: Context) {
         extractZipAsset(context, WIKILIST_ASSET_ZIP, wikiListDir(context), stripPrefix = "wikilist/")
+    }
+
+    /** Where the collab LAN helper is extracted: {filesDir}/lan (lan-helper.js + lan-node.js + ws). */
+    fun lanDir(context: Context): File = File(context.filesDir, "lan")
+
+    /** The LAN helper entrypoint Node runs. Present only when lan.zip was bundled. */
+    fun lanHelperJs(context: Context): File = File(lanDir(context), "lan-helper.js")
+
+    /**
+     * Extract the bundled LAN helper on first run (idempotent, versioned marker). No prefix in the
+     * zip. A missing lan.zip is logged, not fatal — the app just runs collab relay-only.
+     */
+    fun ensureLanExtracted(context: Context) {
+        extractZipAsset(context, LAN_ASSET_ZIP, lanDir(context), stripPrefix = "")
     }
 
     /**

@@ -12,7 +12,9 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
+import org.json.JSONArray
 import org.json.JSONObject
+import com.tiddlywiki.tiddlydesktop.node.LanNodeHelper
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledFuture
@@ -178,6 +180,68 @@ class CollabBridge(
     private fun wsEvent(id: Int, type: String, data: String?) {
         val dataArg = if (data == null) "null" else jsStr(data)
         eval("window._nwjsWsOnEvent && window._nwjsWsOnEvent($id,'$type',$dataArg);")
+    }
+
+    // ── bridge D: LAN peers (fast direct path via a Node helper) ─────────────────
+    // The WebView has no Node, so the LAN node (lan-node.js, X25519 + ChaCha20 + a WS
+    // listener) runs in a helper process — mirroring how desktop single-file wikis run it in
+    // the parent. Failsafe: a helper that can't start / dies just means no LAN events, and the
+    // plugin (transport.js) stays on the relay. Nothing here throws into the WebView.
+    private var lanHelper: LanNodeHelper? = null
+
+    /** Lazily start the helper on first use. Returns null (→ relay-only) if it won't start. */
+    @Synchronized
+    private fun ensureLanHelper(): LanNodeHelper? {
+        lanHelper?.let { return it }
+        val h = LanNodeHelper(activity.applicationContext) { ev -> onLanEvent(ev) }
+        if (!h.start()) return null
+        lanHelper = h
+        return h
+    }
+
+    @JavascriptInterface
+    fun lanInit(roomKeyHex: String, deviceId: String) {
+        val h = ensureLanHelper() ?: return
+        h.send(JSONObject().put("cmd", "init").put("key", roomKeyHex).put("deviceId", deviceId))
+    }
+
+    @JavascriptInterface
+    fun lanAddPeer(deviceId: String, pubkey: String, endpointsJson: String) {
+        val h = lanHelper ?: return
+        val eps = runCatching { JSONArray(endpointsJson) }.getOrDefault(JSONArray())
+        h.send(JSONObject().put("cmd", "addPeer").put("deviceId", deviceId).put("pubkey", pubkey).put("endpoints", eps))
+    }
+
+    @JavascriptInterface
+    fun lanBroadcast(json: String) {
+        lanHelper?.send(JSONObject().put("cmd", "broadcast").put("json", json))
+    }
+
+    @JavascriptInterface
+    fun lanClose() {
+        lanHelper?.send(JSONObject().put("cmd", "close"))
+    }
+
+    /** A helper event (background thread) → the plugin's window._nwjsLanOn* callbacks. */
+    private fun onLanEvent(ev: JSONObject) {
+        when (ev.optString("ev")) {
+            "ready" -> {
+                val pubArg = if (ev.isNull("pubkey")) "null" else jsStr(ev.optString("pubkey"))
+                val eps = ev.optJSONArray("endpoints") ?: JSONArray()
+                eval("window._nwjsLanOnReady && window._nwjsLanOnReady($pubArg,$eps);")
+            }
+            "message" -> eval(
+                "window._nwjsLanOnMessage && window._nwjsLanOnMessage(" +
+                    "${jsStr(ev.optString("peerId"))},${jsStr(ev.optString("json"))});"
+            )
+            "peers" -> eval("window._nwjsLanOnPeers && window._nwjsLanOnPeers(${ev.optInt("n")});")
+        }
+    }
+
+    /** Tear the helper down. Called from WikiActivity.onDestroy. */
+    fun dispose() {
+        lanHelper?.stop()
+        lanHelper = null
     }
 
     // ── bridge C: asset file I/O (SAF) ───────────────────────────────────────────

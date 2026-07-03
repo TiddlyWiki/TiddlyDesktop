@@ -66,6 +66,9 @@ PluginChooser/Updated: Updated
 Row/PluginUpdates: Plugin updates available
 Toolbar/ThemeLabel: Theme
 Toolbar/PaletteLabel: Palette
+Toolbar/ViewLabel: List view
+Toolbar/ViewFull: Full
+Toolbar/ViewCompact: Compact
 Toolbar/CustomPluginFolder: Custom plugin folder
 Toolbar/ConfigFolder: Config folder
 Toolbar/OpenConfigFolder: Open config folder

@@ -41,6 +41,14 @@ class QuickNoteActivity : AppCompatActivity() {
             spinner.adapter = it
         }
 
+        // Preselect the wiki last used from the widget. Matched by URL (stable) rather than
+        // position, so it still resolves if the wiki list was reordered or edited.
+        val prefs = getSharedPreferences(PREFS, MODE_PRIVATE)
+        prefs.getString(KEY_LAST_WIKI, null)?.let { lastUrl ->
+            val idx = wikis.indexOfFirst { it.url == lastUrl }
+            if (idx >= 0) spinner.setSelection(idx)
+        }
+
         noteInput.requestFocus()
         window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
 
@@ -51,7 +59,12 @@ class QuickNoteActivity : AppCompatActivity() {
                 Toast.makeText(this, R.string.quicknote_empty, Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val ok = sendNote(wikis[spinner.selectedItemPosition], text)
+            val pos = spinner.selectedItemPosition
+            if (pos !in wikis.indices) return@setOnClickListener
+            val chosen = wikis[pos]
+            // Remember this choice for next time (before the send, so it sticks even if delivery fails).
+            prefs.edit().putString(KEY_LAST_WIKI, chosen.url).apply()
+            val ok = sendNote(chosen, text)
             Toast.makeText(this, if (ok) R.string.quicknote_sent else R.string.quicknote_failed, Toast.LENGTH_SHORT).show()
             finish()
         }
@@ -77,5 +90,10 @@ class QuickNoteActivity : AppCompatActivity() {
             )
             true
         }.getOrDefault(false)
+    }
+
+    companion object {
+        private const val PREFS = "quicknote"
+        private const val KEY_LAST_WIKI = "last_wiki_url"
     }
 }

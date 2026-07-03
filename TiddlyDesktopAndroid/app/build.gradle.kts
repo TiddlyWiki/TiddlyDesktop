@@ -124,8 +124,30 @@ val packageWikiListAsset = tasks.register<Zip>("packageWikiListAsset") {
     from(wikilist) { into("wikilist") }
 }
 
+// The collab LAN fast-path helper (Route A): the shared lan-node.js + its only dependency `ws`
+// + the Android stdin/stdout wrapper, run in a dedicated Node helper process (see
+// node/LanNodeHelper.kt). Assembled from the single sources so lan-node.js never drifts from the
+// desktop copy it must stay wire-compatible with. Absent → the app simply runs relay-only.
+val packageLanHelper = tasks.register<Zip>("packageLanHelper") {
+    val lanSrc = layout.projectDirectory.dir("lan").asFile          // lan-helper.js (this project)
+    val lanNode = file("../../source/js/utils/lan-node.js")          // shared with desktop
+    val wsDir = file("../../node_modules/ws")                        // dependency-free
+    onlyIf {
+        val ok = File(lanSrc, "lan-helper.js").exists() && lanNode.isFile && wsDir.isDirectory
+        if (!ok) logger.warn("packageLanHelper: sources missing (lan/lan-helper.js, source/js/utils/lan-node.js, node_modules/ws) — collab LAN fast path will be absent; relay-only still works")
+        ok
+    }
+    archiveFileName.set("lan.zip")
+    destinationDirectory.set(tdAssetsDir)
+    // Entries: lan-helper.js, lan-node.js, node_modules/ws/… (require("ws") resolves via node_modules).
+    from(lanSrc) { include("lan-helper.js") }
+    from(lanNode)
+    from(wsDir) { into("node_modules/ws") }
+    exclude("**/.git/**")
+}
+
 tasks.named("preBuild") {
-    dependsOn(packageTiddlyWikiAssets, packageWikiListAsset)
+    dependsOn(packageTiddlyWikiAssets, packageWikiListAsset, packageLanHelper)
 }
 
 dependencies {

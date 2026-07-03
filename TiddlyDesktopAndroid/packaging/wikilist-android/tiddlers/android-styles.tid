@@ -88,6 +88,18 @@ html, body.tc-body { height: 100%; }
 .td-wiki-advanced { margin-top: 0.4em; font-size: 0.85em; }
 .td-wiki-advanced-grid { display: grid; grid-template-columns: 1fr; gap: 0.3em; }
 
+/* ── compact list view (chosen via the sidebar "List view" picker) ─────────────── */
+/* Favicon on the left; title over subtitle beside it. URL, per-row toolbar and the
+   advanced panel are hidden — tap the favicon to open the wiki, as in full view. */
+/* !important: the desktop plugin styles the toolbar with a higher-specificity selector
+   (.td-wikilist .td-wikilist-item .td-wiki-toolbar), so a plain compact rule loses to it. */
+.td-view-compact .td-wiki-url,
+.td-view-compact .td-wiki-toolbar,
+.td-view-compact .td-wiki-advanced { display: none !important; }
+.td-view-compact .td-wikilist-item { align-items: center; padding: 0.3em 0.5em; gap: 0.6em; }
+.td-view-compact .td-wikilist-thumbnail img { width: 32px !important; height: 32px; }
+.td-view-compact .td-wiki-title { font-size: 0.95em; }
+
 /* ── extra-tight on small screens ─────────────────────────────────────────────── */
 @media (max-width: 480px) {
 	.td-toolbar { font-size: 0.7em; padding: 0.3em 0.4em !important; }

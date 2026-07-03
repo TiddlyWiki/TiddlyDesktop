@@ -66,6 +66,9 @@ PluginChooser/Updated: Actualitzat
 Row/PluginUpdates: Hi ha actualitzacions de connectors
 Toolbar/ThemeLabel: Tema
 Toolbar/PaletteLabel: Paleta
+Toolbar/ViewLabel: Vista de llista
+Toolbar/ViewFull: Complet
+Toolbar/ViewCompact: Compacte
 Toolbar/CustomPluginFolder: Carpeta de connectors personalitzada
 Toolbar/ConfigFolder: Carpeta de configuració
 Toolbar/OpenConfigFolder: Obre la carpeta de configuració
