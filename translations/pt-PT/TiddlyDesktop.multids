@@ -66,9 +66,6 @@ PluginChooser/Updated: Atualizado
 Row/PluginUpdates: Atualizações de plugins disponíveis
 Toolbar/ThemeLabel: Tema
 Toolbar/PaletteLabel: Paleta
-Toolbar/ViewLabel: Vista de lista
-Toolbar/ViewFull: Completa
-Toolbar/ViewCompact: Compacta
 Toolbar/CustomPluginFolder: Pasta de plugins personalizada
 Toolbar/ConfigFolder: Pasta de configuração
 Toolbar/OpenConfigFolder: Abrir a pasta de configuração

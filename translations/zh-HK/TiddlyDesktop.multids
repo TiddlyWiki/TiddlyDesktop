@@ -66,9 +66,6 @@ PluginChooser/Updated: 已更新
 Row/PluginUpdates: 有可用的外掛更新
 Toolbar/ThemeLabel: 佈景主題
 Toolbar/PaletteLabel: 調色盤
-Toolbar/ViewLabel: 列表檢視
-Toolbar/ViewFull: 完整
-Toolbar/ViewCompact: 精簡
 Toolbar/CustomPluginFolder: 自訂外掛資料夾
 Toolbar/ConfigFolder: 設定資料夾
 Toolbar/OpenConfigFolder: 開啟設定資料夾

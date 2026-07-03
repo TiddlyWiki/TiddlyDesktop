@@ -66,9 +66,6 @@ PluginChooser/Updated: تم التحديث
 Row/PluginUpdates: تتوفّر تحديثات للإضافات
 Toolbar/ThemeLabel: السمة
 Toolbar/PaletteLabel: لوحة الألوان
-Toolbar/ViewLabel: عرض القائمة
-Toolbar/ViewFull: كامل
-Toolbar/ViewCompact: مُصغّر
 Toolbar/CustomPluginFolder: مجلد إضافات مخصص
 Toolbar/ConfigFolder: مجلد الإعدادات
 Toolbar/OpenConfigFolder: فتح مجلد الإعدادات

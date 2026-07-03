@@ -206,7 +206,14 @@ object NodeEnvironment {
             val link = File(symlinkDir, versioned)
             val target = File(nativeDir, unversioned)
             try {
-                if (link.exists()) link.delete()
+                // Always remove any existing link first. The app's native-lib dir path contains the
+                // install hash, which changes on every reinstall/update, so a symlink left from the
+                // previous install now dangles (points at a deleted path). File.exists() FOLLOWS the
+                // link and returns false for a dangling one, so a guarded delete would skip it and
+                // Os.symlink() would then fail with EEXIST — leaving libnode.so unable to find
+                // libz.so.1 (→ Node exits → the WebView shows ERR_CONNECTION_REFUSED). delete() does
+                // NOT follow the link, so it removes a dangling symlink too.
+                link.delete()
                 android.system.Os.symlink(target.absolutePath, link.absolutePath)
             } catch (e: Exception) {
                 Log.w(TAG, "symlink $versioned -> ${target.name} failed: ${e.message}")

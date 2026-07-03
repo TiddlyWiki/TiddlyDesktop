@@ -66,9 +66,6 @@ PluginChooser/Updated: Uppdaterad
 Row/PluginUpdates: Tilläggsuppdateringar tillgängliga
 Toolbar/ThemeLabel: Tema
 Toolbar/PaletteLabel: Palett
-Toolbar/ViewLabel: Listvy
-Toolbar/ViewFull: Fullständig
-Toolbar/ViewCompact: Kompakt
 Toolbar/CustomPluginFolder: Anpassad tilläggsmapp
 Toolbar/ConfigFolder: Konfigurationsmapp
 Toolbar/OpenConfigFolder: Öppna konfigurationsmapp

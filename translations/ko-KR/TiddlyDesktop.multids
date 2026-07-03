@@ -66,9 +66,6 @@ PluginChooser/Updated: 업데이트됨
 Row/PluginUpdates: 플러그인 업데이트가 있습니다
 Toolbar/ThemeLabel: 테마
 Toolbar/PaletteLabel: 팔레트
-Toolbar/ViewLabel: 목록 보기
-Toolbar/ViewFull: 전체
-Toolbar/ViewCompact: 간략
 Toolbar/CustomPluginFolder: 사용자 지정 플러그인 폴더
 Toolbar/ConfigFolder: 설정 폴더
 Toolbar/OpenConfigFolder: 설정 폴더 열기
