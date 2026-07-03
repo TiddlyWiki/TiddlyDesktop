@@ -1617,9 +1617,14 @@ function _connectTransport(engine, collab) {
 		var hasRemote = editors && editors.length > 0;
 		_clog("[Collab] Phase 2: hasRemoteEditors=" + hasRemote + " for " + collabTitle + " (editors: " + JSON.stringify(editors) + ")");
 
-		// Use longer timeout when we KNOW there are remote editors (they
-		// should respond), shorter timeout for the "maybe first editor" case.
-		var timeout = hasRemote ? 5000 : 500;
+		// Use longer timeout when we KNOW there are remote editors (they should respond),
+		// shorter timeout for the "maybe first editor" case. _forceJoinWait forces the long
+		// grace even with no known editors: set when we join right after connecting, where
+		// the room's membership/editing lists haven't propagated yet, so an empty editor list
+		// doesn't mean we're alone — give peers time to answer our startEditing before we
+		// self-declare and overwrite their document.
+		var timeout = (hasRemote || state._forceJoinWait) ? 5000 : 500;
+		state._forceJoinWait = false;
 
 		state._joinTimer = setTimeout(function() {
 			if(state._awaitingRemoteState && !state.destroyed) {
@@ -1650,14 +1655,37 @@ function _connectTransport(engine, collab) {
 		} catch(_e) {}
 	}
 
-	if(typeof collab.getRemoteEditorsAsync === "function") {
-		collab.getRemoteEditorsAsync(collabTitle).then(_onEditorsResolved);
-	} else if(typeof collab.getRemoteEditors === "function") {
-		_onEditorsResolved(collab.getRemoteEditors(collabTitle) || []);
+	// Kick off the join / first-editor handshake: (re-)enter awaiting mode, query known
+	// remote editors, and let _onEditorsResolved arm the timer + announce us. Stored on the
+	// state so the collab-connected handler can (re)start it after we go online.
+	state._beginJoin = function() {
+		if(state.destroyed) return;
+		state._awaitingRemoteState = true;   // set synchronously so re-entry is guarded
+		state._joinDeferred = false;
+		if(state._joinTimer) { clearTimeout(state._joinTimer); state._joinTimer = null; }
+		if(typeof collab.getRemoteEditorsAsync === "function") {
+			collab.getRemoteEditorsAsync(collabTitle).then(_onEditorsResolved);
+		} else if(typeof collab.getRemoteEditors === "function") {
+			_onEditorsResolved(collab.getRemoteEditors(collabTitle) || []);
+		} else {
+			// No editor query API - assume no remote editors (first editor mode)
+			_clog("[Collab] Phase 2: no getRemoteEditors API, assuming first editor for " + collabTitle);
+			_onEditorsResolved([]);
+		}
+	};
+
+	// Only decide first-editor-vs-join when the transport is actually connected. If the
+	// editor was created while offline — e.g. the tiddler was already open when the wiki
+	// started and collab isn't connected yet — running the handshake now would let the
+	// "no remote editors" timeout declare us the first editor and, on connect, push our
+	// locally-seeded copy over the peers' document. Instead stay in awaiting mode and let
+	// the collab-connected handler run _beginJoin, so we FETCH the peer's Yjs doc first.
+	var _connectedNow = (typeof collab.getStatus === "function") ? (collab.getStatus() === "connected") : true;
+	if(_connectedNow) {
+		state._beginJoin();
 	} else {
-		// No editor query API - assume no remote editors (first editor mode)
-		_clog("[Collab] Phase 2: no getRemoteEditors API, assuming first editor for " + collabTitle);
-		_onEditorsResolved([]);
+		state._joinDeferred = true;
+		_clog("[Collab] Phase 2: transport not connected yet for " + collabTitle + " - deferring join until collab-connected");
 	}
 }
 
@@ -1764,24 +1792,45 @@ if(typeof window !== "undefined") {
 	});
 }
 
-// On transport (re)connect: re-announce all active sessions so peers in the room
-// learn we are editing and respond with their current state. This ensures sessions
-// that were started before the stable connection (or after a reconnect) always
-// trigger the full state exchange with existing peers.
+// On transport (re)connect: bring every active session up to date with the room.
+// A session that has never received a peer's document — e.g. the tiddler was already
+// open when the wiki started and we're only now connecting — must FETCH the peer's Yjs
+// doc first (join mode), NOT push its locally-seeded copy. A session that has already
+// synced (a genuine reconnect) re-announces and pushes its full state so peers regain
+// CRDT context for our doc items.
 // Mirrors the visibilitychange handler but for WS connection events.
 if(typeof window !== "undefined") {
 	window.addEventListener("collab-connected", function() {
 		var collab = window.TiddlyDesktop && window.TiddlyDesktop.collab;
 		if(!collab) return;
 
-		var count = 0;
+		var joined = 0, resynced = 0;
 		for(var title in _collabStateByTitle) {
 			if(!_collabStateByTitle.hasOwnProperty(title)) continue;
 			var state = _collabStateByTitle[title];
 			if(state.destroyed || !state._transportConnected) continue;
-			if(state._awaitingRemoteState) continue;
 
-			count++;
+			// Deferred at creation (opened offline): start the join handshake now.
+			if(state._joinDeferred && state._beginJoin) {
+				joined++;
+				state._forceJoinWait = true;   // membership not settled yet: wait for peers
+				state._beginJoin();            // clears _joinDeferred, sets _awaitingRemoteState
+				continue;
+			}
+			// A join handshake is already in flight for this session; let it complete.
+			if(state._awaitingRemoteState) continue;
+			// Never synced with a peer yet: fetch the peer's document before treating our
+			// copy as authoritative (a peer may have appeared since we became first editor).
+			// The inbound conflict probe guards any local edits from being silently cleared.
+			if(!state._receivedRemoteState && state._beginJoin) {
+				joined++;
+				state._forceJoinWait = true;
+				state._beginJoin();
+				continue;
+			}
+
+			// Already synced (reconnect): re-announce + push full state.
+			resynced++;
 			try { collab.startEditing(state.collabTitle); } catch(_e) {}
 			try {
 				var fullState = Y.encodeStateAsUpdate(state.doc);
@@ -1792,8 +1841,8 @@ if(typeof window !== "undefined") {
 				collab.sendAwareness(state.collabTitle, uint8ToBase64(awarenessUpdate));
 			} catch(_e) {}
 		}
-		if(count > 0) {
-			_clog("[Collab] On connect: re-announced " + count + " active session(s)");
+		if(joined > 0 || resynced > 0) {
+			_clog("[Collab] On connect: " + joined + " session(s) joining peer state, " + resynced + " re-synced");
 		}
 	});
 }

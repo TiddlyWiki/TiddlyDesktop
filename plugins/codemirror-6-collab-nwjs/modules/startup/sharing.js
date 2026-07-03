@@ -53,6 +53,12 @@ Message types (sent via transport's _send → relay + LAN, all carry msg_id):
 
 exports.name        = "codemirror-6-collab-nwjs-sharing";
 exports.after       = ["codemirror-6-collab-nwjs-transport", "startup", "rootwidget"];
+// Run BEFORE the page render: this startup restores the room's owned/subscribed sets and
+// writes the "$:/temp/collab/share/available/<title>" markers that the CM6 collab plugin's
+// condition() checks to decide whether an editor gets Yjs. A tiddler left open in edit mode is
+// rendered by the "render" startup; if we wrote those markers afterwards, that editor would be
+// created without collab and only pick it up on a manual close/reopen.
+exports.before      = ["render"];
 exports.synchronous = true;
 exports.platforms   = ["browser"];
 

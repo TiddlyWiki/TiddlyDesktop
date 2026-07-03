@@ -14,6 +14,8 @@ import okhttp3.WebSocketListener
 import okio.ByteString
 import org.json.JSONObject
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
 import java.util.concurrent.TimeUnit
 
 /**
@@ -43,9 +45,20 @@ class CollabBridge(
         .followSslRedirects(true)
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
+        // Actively keep the relay WebSocket alive and detect dead half-open links: OkHttp sends a
+        // ping every 20s and fails the socket if no pong comes back. Without this the socket leaned
+        // entirely on the relay's inbound pings to avoid the read timeout, and a live-but-idle link
+        // could drop. (20s < the relay's 60s idle close, matching the NW.js `ws` behaviour.)
+        .pingInterval(20, TimeUnit.SECONDS)
         .build()
 
     private val sockets = ConcurrentHashMap<Int, WebSocket>()
+
+    // Per-socket heartbeat feeding a synthetic "ping" to the collab plugin's JS liveness watchdog.
+    private val heartbeats = ConcurrentHashMap<Int, ScheduledFuture<*>>()
+    private val heartbeatExec = Executors.newSingleThreadScheduledExecutor { r ->
+        Thread(r, "collab-ws-heartbeat").apply { isDaemon = true }
+    }
 
     // ── bridge A: HTTP + open browser ──────────────────────────────────────────
 
@@ -104,8 +117,10 @@ class CollabBridge(
             builder.header("User-Agent", "TiddlyDesktopAndroid/1.0")
             jsonToMap(headersJson).forEach { (k, v) -> builder.header(k, v) }
             val ws = http.newWebSocket(builder.build(), object : WebSocketListener() {
-                override fun onOpen(webSocket: WebSocket, response: Response) =
+                override fun onOpen(webSocket: WebSocket, response: Response) {
+                    startHeartbeat(id)
                     wsEvent(id, "open", null)
+                }
                 override fun onMessage(webSocket: WebSocket, text: String) =
                     wsEvent(id, "message", text)
                 override fun onMessage(webSocket: WebSocket, bytes: ByteString) =
@@ -113,10 +128,12 @@ class CollabBridge(
                     wsEvent(id, "message", bytes.utf8())
                 override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                     webSocket.close(code, reason)
+                    stopHeartbeat(id)
                     sockets.remove(id)
                     wsEvent(id, "close", null)
                 }
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                    stopHeartbeat(id)
                     sockets.remove(id)
                     wsEvent(id, "error", t.message ?: "ws failure")
                 }
@@ -134,7 +151,28 @@ class CollabBridge(
 
     @JavascriptInterface
     fun wsClose(id: Int) {
+        stopHeartbeat(id)
         sockets.remove(id)?.cancel()
+    }
+
+    /**
+     * Keep the collab plugin's JS liveness watchdog satisfied on a healthy but idle link. That
+     * watchdog force-reconnects if it hears no relay activity for ~50s, and on NW.js the relay's
+     * keepalive pings arrive as "ping" events that reset its timer. OkHttp answers those pings
+     * internally and never surfaces them, so without this the watchdog would tear down and rebuild
+     * a perfectly good socket every ~50s. OkHttp's own pingInterval remains the real dead-link
+     * detector: a genuinely dead socket fails there and stops the heartbeat via onFailure.
+     */
+    private fun startHeartbeat(id: Int) {
+        stopHeartbeat(id)
+        heartbeats[id] = heartbeatExec.scheduleWithFixedDelay(
+            { if (sockets.containsKey(id)) wsEvent(id, "ping", null) },
+            20, 20, TimeUnit.SECONDS
+        )
+    }
+
+    private fun stopHeartbeat(id: Int) {
+        heartbeats.remove(id)?.cancel(false)
     }
 
     private fun wsEvent(id: Int, type: String, data: String?) {

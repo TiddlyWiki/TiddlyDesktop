@@ -321,8 +321,14 @@ class PluginBridge(private val context: Context) {
             File(folderPath, "tiddlywiki.info").writeText(text); return
         }
         val root = DocumentFile.fromTreeUri(context, Uri.parse(folderPath)) ?: error("no tree")
-        val info = root.findFile("tiddlywiki.info") ?: root.createFile("application/json", "tiddlywiki.info")
-        ?: error("cannot create tiddlywiki.info")
+        // Create with a neutral MIME type, not application/json: SAF would otherwise append the
+        // type's extension and produce "tiddlywiki.info.json", leaving the folder without a
+        // usable tiddlywiki.info. Rename back if the provider still altered the name.
+        val info = root.findFile("tiddlywiki.info")
+            ?: (root.createFile("application/octet-stream", "tiddlywiki.info")
+                ?: error("cannot create tiddlywiki.info")).also {
+                if (it.name != "tiddlywiki.info") runCatching { it.renameTo("tiddlywiki.info") }
+            }
         context.contentResolver.openOutputStream(info.uri, "wt")?.use { it.write(text.toByteArray()) }
     }
 

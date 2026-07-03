@@ -108,7 +108,11 @@ object SafMirror {
                 count += writeTree(context, file, sub, since, prune)
             } else {
                 if (file.lastModified() < since) continue // unchanged since last sync
-                val target = destByName[file.name] ?: dest.createFile("application/octet-stream", file.name) ?: continue
+                val target = destByName[file.name] ?: createExactFile(dest, file.name)
+                if (target == null) {
+                    Log.w(TAG, "could not create SAF file ${file.name} in ${dest.uri}")
+                    continue
+                }
                 runCatching {
                     context.contentResolver.openOutputStream(target.uri, "wt")?.use { os ->
                         file.inputStream().use { it.copyTo(os) }
@@ -125,6 +129,23 @@ object SafMirror {
             }
         }
         return count
+    }
+
+    /**
+     * Create a SAF file whose name is exactly [name]. SAF's createFile derives an extension from
+     * the MIME type and, when the requested name's extension isn't one it recognises, can append
+     * or alter it — e.g. "tiddlywiki.info" becoming "tiddlywiki.info.bin". A wiki folder is
+     * unusable without a file called exactly "tiddlywiki.info", so we create with a neutral type
+     * and, if the provider changed the name, rename it back. Returns null only if creation fails
+     * outright.
+     */
+    private fun createExactFile(dir: DocumentFile, name: String): DocumentFile? {
+        val created = dir.createFile("application/octet-stream", name) ?: return null
+        if (created.name != name) {
+            runCatching { created.renameTo(name) }
+                .onFailure { Log.w(TAG, "renameTo($name) failed: ${it.message}") }
+        }
+        return created
     }
 
     private fun md5(s: String): String =

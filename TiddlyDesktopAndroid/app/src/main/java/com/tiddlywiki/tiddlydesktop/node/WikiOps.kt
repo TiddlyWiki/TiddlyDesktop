@@ -59,8 +59,13 @@ object WikiOps {
             "--deletetiddlers", "[prefix[\$:/temp/tiddlydesktop]]",
             "--savewikifolder", out.absolutePath
         ))
-        val ok = code == 0 && File(out, "tiddlywiki.info").exists()
-        if (ok) { ensureServerPlugins(File(out, "tiddlywiki.info")); SafMirror.exportFolderToTree(context, out, destTreeUri) }
+        var ok = code == 0 && File(out, "tiddlywiki.info").exists()
+        if (ok) {
+            ensureServerPlugins(File(out, "tiddlywiki.info"))
+            // The conversion only counts as done if the folder (incl. tiddlywiki.info) actually
+            // lands in the user's SAF destination — otherwise the "wiki" they open is empty.
+            ok = SafMirror.exportFolderToTree(context, out, destTreeUri)
+        }
         work.deleteRecursively()
         return ok
     }
