@@ -40,7 +40,9 @@ var KEY_ORDER = [
 	"PluginChooser/Installed","PluginChooser/NotInstalled","PluginChooser/Versions",
 	"PluginChooser/SourceBundled","PluginChooser/SourceExternal",
 	"PluginChooser/Update","PluginChooser/UpdateAvailable","PluginChooser/Updated","Row/PluginUpdates",
-	"Toolbar/ThemeLabel","Toolbar/PaletteLabel","Toolbar/CustomPluginFolder",
+	"Toolbar/ThemeLabel","Toolbar/PaletteLabel",
+	"Toolbar/ViewLabel","Toolbar/ViewFull","Toolbar/ViewCompact",
+	"Toolbar/CustomPluginFolder",
 	"Toolbar/ConfigFolder","Toolbar/OpenConfigFolder","Toolbar/BackupFolder","Toolbar/OpenBackupFolder",
 	"Share/Heading","Share/Cancel",
 	"Share/TemplatesHeading","Share/TemplatesHelp","Share/DeleteTemplate","Share/TagsLabel",
@@ -801,6 +803,45 @@ Object.keys(ANDROID).forEach(function(lang) {
 	T[lang]["Toolbar/OpenBackupFolder"] = v[6];
 	T[lang]["Share/Heading"] = v[7];
 	T[lang]["Share/Cancel"] = v[8];
+});
+
+// Android WikiList list-view chooser (full vs compact rows). Keys: [ViewLabel, ViewFull, ViewCompact].
+// Chinese/German variants inherit these via the aliases below.
+var VIEW = {
+	"de-DE": ["Listenansicht","Vollständig","Kompakt"],
+	"fr-FR": ["Vue liste","Complète","Compacte"],
+	"es-ES": ["Vista de lista","Completa","Compacta"],
+	"ca-ES": ["Vista de llista","Complet","Compacte"],
+	"it-IT": ["Vista elenco","Completa","Compatta"],
+	"pt-BR": ["Visualização em lista","Completa","Compacta"],
+	"pt-PT": ["Vista de lista","Completa","Compacta"],
+	"nl-NL": ["Lijstweergave","Volledig","Compact"],
+	"da-DK": ["Listevisning","Fuld","Kompakt"],
+	"sv-SE": ["Listvy","Fullständig","Kompakt"],
+	"pl-PL": ["Widok listy","Pełny","Kompaktowy"],
+	"cs-CZ": ["Zobrazení seznamu","Úplné","Kompaktní"],
+	"sk-SK": ["Zobrazenie zoznamu","Úplné","Kompaktné"],
+	"sl-SI": ["Prikaz seznama","Polno","Strnjeno"],
+	"mk-MK": ["Приказ на листа","Целосен","Компактен"],
+	"ru-RU": ["Вид списка","Полный","Компактный"],
+	"el-GR": ["Προβολή λίστας","Πλήρης","Συμπαγής"],
+	"he-IL": ["תצוגת רשימה","מלא","קומפקטי"],
+	"ar-PS": ["عرض القائمة","كامل","مُصغّر"],
+	"fa-IR": ["نمای فهرست","کامل","فشرده"],
+	"hi-IN": ["सूची दृश्य","पूर्ण","संक्षिप्त"],
+	"pa-IN": ["ਸੂਚੀ ਦ੍ਰਿਸ਼","ਪੂਰਾ","ਸੰਖੇਪ"],
+	"ia-IA": ["Vista de lista","Complete","Compacte"],
+	"ja-JP": ["リスト表示","フル","コンパクト"],
+	"ko-KR": ["목록 보기","전체","간략"],
+	"zh-Hans": ["列表视图","完整","紧凑"],
+	"zh-Hant": ["列表檢視","完整","精簡"]
+};
+Object.keys(VIEW).forEach(function(lang) {
+	if(!T[lang]) { return; }
+	var v = VIEW[lang];
+	T[lang]["Toolbar/ViewLabel"] = v[0];
+	T[lang]["Toolbar/ViewFull"] = v[1];
+	T[lang]["Toolbar/ViewCompact"] = v[2];
 });
 
 // Share-Templates + Backups settings help (Android WikiList). Order:

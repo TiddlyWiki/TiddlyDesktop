@@ -66,6 +66,9 @@ PluginChooser/Updated: अपडेट किया गया
 Row/PluginUpdates: प्लगइन अपडेट उपलब्ध हैं
 Toolbar/ThemeLabel: थीम
 Toolbar/PaletteLabel: पैलेट
+Toolbar/ViewLabel: सूची दृश्य
+Toolbar/ViewFull: पूर्ण
+Toolbar/ViewCompact: संक्षिप्त
 Toolbar/CustomPluginFolder: कस्टम प्लगइन फ़ोल्डर
 Toolbar/ConfigFolder: कॉन्फ़िग फ़ोल्डर
 Toolbar/OpenConfigFolder: कॉन्फ़िग फ़ोल्डर खोलें

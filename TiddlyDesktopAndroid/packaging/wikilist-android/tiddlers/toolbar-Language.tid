@@ -1,0 +1,20 @@
+title: WikiListToolbar/Language
+tags: toolbar
+
+\whitespace trim
+<!--
+Android WikiList language switcher. Only the ACTIVE language is loaded (NodeServer trims the rest to
+keep the served page small), so this lists the lightweight $:/TiddlyDesktop/AvailableLanguage/* stubs
+(built by build-wikilist.sh) rather than the full language plugins. Changing it hands the chosen
+language title to native, which reboots the WikiList server with that language and reloads.
+-->
+<span class="td-language-switcher" title={{$:/language/TiddlyDesktop/Toolbar/Language}}>
+{{$:/core/images/plugin-generic-language}}
+<!-- Bind to a non-synced $:/temp tiddler (NOT $:/language) so picking a language doesn't fire a
+     tiddlyweb sync PUT to the server we're about to reboot. Default shows the active language. -->
+<$select tiddler="$:/temp/TiddlyDesktop/language-choice" class="td-language-select" default={{$:/language}} actions="""<$action-sendmessage $message="tiddlydesktop-android-set-language" $param={{$:/temp/TiddlyDesktop/language-choice}}/>""">
+<$list filter="[all[tiddlers]tag[$:/tags/TiddlyDesktopLanguage]sort[caption]]">
+<option value={{!!language}}><$view field="caption"/></option>
+</$list>
+</$select>
+</span>

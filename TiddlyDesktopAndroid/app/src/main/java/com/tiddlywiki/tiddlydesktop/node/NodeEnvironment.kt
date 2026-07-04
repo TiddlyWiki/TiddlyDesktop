@@ -139,6 +139,75 @@ object NodeEnvironment {
         extractZipAsset(context, WIKILIST_ASSET_ZIP, wikiListDir(context), stripPrefix = "wikilist/")
     }
 
+    /** The full backstage language set, moved aside so languages/ can hold only the active one. */
+    private fun wikiListLanguagesAll(context: Context): File = File(wikiListDir(context), "languages-all")
+
+    /** SharedPreferences holding the WikiList's active language code (e.g. "de-DE"). */
+    private fun langPrefs(context: Context) =
+        context.getSharedPreferences("wikilist-lang", Context.MODE_PRIVATE)
+
+    /** The active WikiList language code. Defaults to the system language if we ship it, else en-GB. */
+    fun activeWikiListLanguage(context: Context): String {
+        langPrefs(context).getString("active", null)?.let { return it }
+        val all = wikiListLanguagesAll(context)
+        val available = (all.list()?.toSet() ?: emptySet()) + "en-GB"
+        val sys = context.resources.configuration.locales[0]
+        val tag = sys.toLanguageTag()            // e.g. "de-DE"
+        return when {
+            available.contains(tag) -> tag
+            available.contains(sys.language + "-" + sys.language.uppercase()) ->
+                sys.language + "-" + sys.language.uppercase()
+            else -> available.firstOrNull { it.startsWith(sys.language + "-") } ?: "en-GB"
+        }
+    }
+
+    fun setActiveWikiListLanguage(context: Context, code: String) {
+        langPrefs(context).edit().putString("active", code).apply()
+    }
+
+    /**
+     * Restrict the WikiList to ONLY the active language so its served page isn't bloated with all
+     * ~32 full language plugins (~4 MB, ~80% of the page — only one is ever active). Two independent
+     * sources both pull every language, so BOTH must be trimmed:
+     *   1. tiddlywiki.info "languages" — rewritten to just [code] (the info list otherwise resolves
+     *      every entry from the engine's default languages dir, ignoring the languages path).
+     *   2. the wiki-folder languages/ subdir — TiddlyWiki auto-loads every language folder in it, so
+     *      we keep the full set in languages-all/ and mirror only the active one into languages/.
+     * Also writes $:/language so TiddlyWiki activates it. Idempotent; safe to call every boot.
+     */
+    fun applyWikiListLanguage(context: Context, code: String) {
+        val wl = wikiListDir(context)
+        val all = wikiListLanguagesAll(context)
+        val active = File(wl, "languages")
+        // Capture the full backstage set aside. languages/ holds all ~32 whenever it was just
+        // (re)extracted (first run or app update), and only the single active one after we trim it —
+        // so a size > 1 means "freshly extracted": (re)build languages-all from it to avoid a stale copy.
+        if (!all.exists() || (active.list()?.size ?: 0) > 1) {
+            all.deleteRecursively()
+            if (active.isDirectory) active.renameTo(all) else all.mkdirs()
+        }
+        // Rebuild languages/ with only the active language (en-GB lives in the core, needs no plugin).
+        active.deleteRecursively(); active.mkdirs()
+        if (code != "en-GB") File(all, code).takeIf { it.isDirectory }?.copyRecursively(File(active, code), overwrite = true)
+        // tiddlywiki.info: languages -> [code] (preserve everything else).
+        runCatching {
+            val infoFile = File(wl, "tiddlywiki.info")
+            val info = org.json.JSONObject(infoFile.readText())
+            info.put("languages", org.json.JSONArray(if (code == "en-GB") emptyList() else listOf(code)))
+            infoFile.writeText(info.toString(4))
+        }
+        // $:/language so TiddlyWiki activates the chosen language on boot. Written as a JSON tiddler
+        // (not .tid) so the value is EXACTLY "$:/languages/<code>" — a .tid body keeps its trailing
+        // newline, which wouldn't match the switcher's <option> values.
+        runCatching {
+            val t = File(wl, "tiddlers/_td-active-language.json")
+            t.parentFile?.mkdirs()
+            // Array form — the JSON tiddler-file deserializer expects [ {…} ], not a {tiddlers:{…}} wrapper.
+            t.writeText("[{\"title\":\"\$:/language\",\"text\":\"\$:/languages/$code\"}]")
+            File(wl, "tiddlers/_td-active-language.tid").delete() // drop any stale .tid form
+        }
+    }
+
     /** Where the collab LAN helper is extracted: {filesDir}/lan (lan-helper.js + lan-node.js + ws). */
     fun lanDir(context: Context): File = File(context.filesDir, "lan")
 
@@ -249,6 +318,20 @@ object NodeEnvironment {
 
         val tmp = File(context.filesDir, "tmp").apply { mkdirs() }
         env["TMPDIR"] = tmp.absolutePath
+
+        // ── Node startup caches (arm64 boot is dominated by parse/compile + node bootstrap) ──
+        // NODE_COMPILE_CACHE: Node ≥22 caches compiled bytecode of require()-loaded modules
+        // (boot.js, tiddlywiki.js, ws, …) — cuts Node's own bootstrap cost. Self-healing across
+        // node upgrades (V8 tags the cache; a mismatch is ignored + rebuilt).
+        env["NODE_COMPILE_CACHE"] = File(context.filesDir, "node-compile-cache").apply { mkdirs() }.absolutePath
+        // TW_COMPILE_CACHE_DIR: consumed by the boot.js compile-cache patch (bin/patch-boot-compile-cache.js)
+        // to cache the vm.Script bytecode of TiddlyWiki's module tiddlers. The patch creates the
+        // version-scoped subdir itself and degrades to plain compilation on any error.
+        env["TW_COMPILE_CACHE_DIR"] = File(context.filesDir, "tw-compile-cache").absolutePath
+        // TW_STORE_CACHE_DIR: consumed by the boot.js store-cache patch (bin/patch-boot-store-cache.js)
+        // to v8-serialize loadPluginFolder's output — skips re-reading/re-parsing packed plugins
+        // (esp. the 1.97 MB $:/core) each boot. ~22% faster boot; degrades to plain load on any error.
+        env["TW_STORE_CACHE_DIR"] = File(context.filesDir, "tw-store-cache").absolutePath
 
         env["TZDIR"] = "/system/usr/share/zoneinfo"
 

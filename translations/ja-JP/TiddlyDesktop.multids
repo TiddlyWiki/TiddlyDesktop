@@ -66,6 +66,9 @@ PluginChooser/Updated: 更新しました
 Row/PluginUpdates: プラグインの更新があります
 Toolbar/ThemeLabel: テーマ
 Toolbar/PaletteLabel: パレット
+Toolbar/ViewLabel: リスト表示
+Toolbar/ViewFull: フル
+Toolbar/ViewCompact: コンパクト
 Toolbar/CustomPluginFolder: カスタムプラグインフォルダー
 Toolbar/ConfigFolder: 設定フォルダー
 Toolbar/OpenConfigFolder: 設定フォルダーを開く

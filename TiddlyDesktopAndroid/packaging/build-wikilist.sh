@@ -94,6 +94,30 @@ if [ -d "$ENGINE_LANGS" ]; then
 		fi
 	done
 	echo "Backstage languages built: $(ls "$OUT/languages" | wc -l) languages"
+
+	# Available-language stubs for the switcher. Only the ACTIVE language is loaded at runtime
+	# (NodeServer trims the rest — the full language plugins are ~80% of the served page), so the
+	# language switcher lists these tiny stubs (title + display name) instead of the real plugins.
+	printf 'title: $:/TiddlyDesktop/AvailableLanguage/en-GB\ntags: $:/tags/TiddlyDesktopLanguage\nlanguage: $:/languages/en-GB\ncaption: English (British)\n' \
+		> "$OUT/tiddlers/AvailableLanguage-en-GB.tid"
+	for ldir in "$OUT"/languages/*/ ; do
+		lang=$(basename "$ldir")
+		desc=$(python3 -c "import json;print(json.load(open('$ldir/plugin.info')).get('description') or '$lang')" 2>/dev/null || echo "$lang")
+		printf 'title: $:/TiddlyDesktop/AvailableLanguage/%s\ntags: $:/tags/TiddlyDesktopLanguage\nlanguage: $:/languages/%s\ncaption: %s\n' \
+			"$lang" "$lang" "$desc" > "$OUT/tiddlers/AvailableLanguage-$lang.tid"
+	done
+	# Engine languages NOT in the translated backstage set (English variants en-US / en-PH). They
+	# aren't copied into languages-all, but selecting one loads it from the engine's clean languages
+	# (tiddlywiki.info languages=[code]) with the plugin's English UI defaults.
+	for ldir in "$REPO"/source/tiddlywiki/languages/*/ ; do
+		lang=$(basename "$ldir")
+		[ -f "$OUT/tiddlers/AvailableLanguage-$lang.tid" ] && continue
+		[ "$lang" = "en-GB" ] && continue
+		desc=$(python3 -c "import json;print(json.load(open('$ldir/plugin.info')).get('description') or '$lang')" 2>/dev/null || echo "$lang")
+		printf 'title: $:/TiddlyDesktop/AvailableLanguage/%s\ntags: $:/tags/TiddlyDesktopLanguage\nlanguage: $:/languages/%s\ncaption: %s\n' \
+			"$lang" "$lang" "$desc" > "$OUT/tiddlers/AvailableLanguage-$lang.tid"
+	done
+	echo "Available-language stubs: $(ls "$OUT"/tiddlers/AvailableLanguage-*.tid | wc -l)"
 fi
 
 echo "Done. Now build the app (Gradle zips this into assets/wikilist.zip)."

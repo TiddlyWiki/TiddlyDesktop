@@ -16,6 +16,14 @@ cp -RH node_modules/ws source/node_modules/ws
 # Copy TiddlyWiki core files into the source directory
 cp -RH node_modules/tiddlywiki source/tiddlywiki
 
+# Speed up Node boot: inject a persistent V8 compile cache into boot.js so module tiddlers are
+# deserialized from cachedData instead of recompiled every launch (gated by TW_COMPILE_CACHE_DIR,
+# set by the Android app; a no-op everywhere else). Fail-safe — falls back to plain compilation.
+node bin/patch-boot-compile-cache.js source/tiddlywiki/boot/boot.js
+# ...and cache loadPluginFolder's output (v8-serialized) so packed plugins — above all the 1.97 MB
+# $:/core — aren't re-read/re-parsed/re-stringified every launch (gated by TW_STORE_CACHE_DIR).
+node bin/patch-boot-store-cache.js source/tiddlywiki/boot/boot.js
+
 # Add the /attachments/ range-capable server route (external attachments) to the bundled core-server
 # plugin, mirroring core's /files/ route. Copied post-core-copy so pack-bundled-plugins captures it.
 cp overrides/core-server/server/routes/get-attachments.js source/tiddlywiki/core-server/server/routes/

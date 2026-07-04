@@ -6,10 +6,10 @@ landing page, and opens single-file / folder wikis in their own tasks — mirror
 desktop app. See the design writeup in [`../ANDROID.md`](../ANDROID.md).
 
 > **Status: released (v0.1.0).** Single-file + folder wikis, the classic WikiList UI, SAF folder
-> mirroring, the single-file save server, collab (relay transport), external attachments, native
-> media, the plugin manager, share-to-wiki, and a home-screen Quick Note widget all work. A build
-> needs the prebuilt `libnode.so` + the TiddlyWiki asset zips — both **generated** by the scripts
-> below (nothing to hand-supply).
+> mirroring, the single-file save server, collab (relay **and LAN** transports), external
+> attachments, native media, the plugin manager, share-to-wiki, a per-device language switcher, and
+> a home-screen Quick Note widget all work. A build needs the prebuilt `libnode.so` + the TiddlyWiki
+> asset zips — both **generated** by the scripts below (nothing to hand-supply).
 
 Package: `com.tiddlywiki.tiddlydesktop`  ·  minSdk 24 (Android 7.0)  ·  compileSdk/targetSdk 36  ·  ABI: `arm64-v8a`  ·  version `0.1.0`
 
@@ -31,27 +31,49 @@ Release/signing/CI is documented separately in [`RELEASE.md`](RELEASE.md).
 - **Collab plugin bridge** — `collab/CollabBridge.kt` (`@JavascriptInterface TDCollab`) plus
   `assets/bridge/collab-bridge.js` reimplement the `window._nwjs*` contract the
   codemirror-6-collab-nwjs plugin expects: CORS-free HTTP GET, WebSocket with custom
-  headers (via OkHttp), open-in-browser for OAuth, and SAF-backed asset file I/O (`fileCmd`).
-  **The LAN peer transport is deliberately not implemented — see below.**
+  headers (via OkHttp), open-in-browser for OAuth, SAF-backed asset file I/O (`fileCmd`), and —
+  since Android ships a real Node runtime — the **LAN peer transport** (`_nwjsLan*`, see below).
 
-### Collab: relay only, no LAN transport
+### Collab: relay + LAN
 
 The collab plugin supports two transports: a **relay** (WSS over the internet, end-to-end
-encrypted) and an optional **LAN P2P** transport (direct device-to-device on the local network).
-**On Android only the relay works.** The plugin's LAN transport is a set of `_nwjsLan*` functions
-(`_nwjsLanInit`/`_nwjsLanBroadcast`/`_nwjsLanAddPeer`/…) that on desktop are provided by NW.js via
-`source/js/utils/lan-node.js`; the Android bridge (`assets/bridge/collab-bridge.js`) leaves them
-**absent by design**, so an Android device never advertises or accepts LAN peers and every
-connection — including Android↔desktop on the same network — falls back to the relay.
+encrypted) and a **LAN P2P** transport (direct device-to-device on the local network). **Both work
+on Android.** The relay runs in the WebView over OkHttp; the LAN transport runs in Node.
 
-**Why not:** the desktop LAN node gets it almost for free from Node — it runs a WebSocket
-**server + client** via the `ws` module and performs the **X25519 + ChaCha20-Poly1305** handshake
-with Node's `crypto`. Android's WebView has neither, so LAN support would need a native (Kotlin)
-reimplementation: a WebSocket *server* (Android only ships a WS *client* via OkHttp), the
-X25519/ChaCha20-Poly1305 handshake byte-for-byte wire-compatible with `lan-node.js`, and the
-`_nwjsLan*` bridge + relay-bootstrapped peer discovery. That's a sizable, security-sensitive,
-device-testing-heavy feature, so the app ships **relay-only**. Relay collab (Android↔desktop and
-Android↔Android) works with a configured relay URL + room + OAuth sign-in.
+The desktop LAN node runs a WebSocket **server + client** (the `ws` module) and performs the
+**X25519 + ChaCha20-Poly1305** handshake with Node's `crypto` — none of which a WebView has. Rather
+than reimplement all of that natively in Kotlin, Android reuses the exact same code: a dedicated
+Node **helper process** runs `app/lan/lan-helper.js`, which drives the shared
+`source/js/utils/lan-node.js` (bundled with the `ws` module into `lan.zip`). `node/LanNodeHelper.kt`
+spawns it and exchanges line-delimited JSON over stdin/stdout; `CollabBridge.kt` (bridge D) maps the
+plugin's `_nwjsLan*` calls to it and forwards its events back. So LAN discovery/handshake/transport
+are byte-for-byte wire-compatible with the desktop, and Android↔desktop and Android↔Android peers
+connect directly on the same network.
+
+It is **fully guarded and best-effort**: if the helper can't start, dies, or the pipe breaks,
+`LanNodeHelper` logs and stops, and collab silently continues over the **relay** — nothing there can
+reach the wiki WebView or crash the `:wiki` process. A missing `lan.zip` simply means relay-only.
+
+### Startup performance & language loading
+
+TiddlyWiki boots **twice** per wiki — once in Node to *serve* it, once in the WebView to *render*
+it — so startup is dominated by TiddlyWiki, not by process spawn (linking `libnode.so` is ~20 ms).
+Two levers cut it roughly in half:
+
+- **Node boot caches.** `bld.sh` patches the bundled `boot.js` (`bin/patch-boot-compile-cache.js`
+  + `bin/patch-boot-store-cache.js`) to add a persistent V8 **compile cache** and a `v8.serialize`
+  **store cache** of `loadPluginFolder` — so packed plugins (above all the ~2 MB `$:/core`) aren't
+  re-read/re-parsed every launch. Both are gated by env vars `NodeEnvironment` sets
+  (`TW_COMPILE_CACHE_DIR` / `TW_STORE_CACHE_DIR`) and fail safe to plain loading. Warm boot ≈ 1 s.
+- **Active-language-only WikiList.** The 32 bundled language plugins are ~80 % of the served page,
+  but only one is active. `NodeEnvironment.applyWikiListLanguage` trims **both** language sources —
+  the `tiddlywiki.info` `languages` list and the wiki-folder `languages/` subdir (the full set is
+  kept in `languages-all/`) — to the one active language before boot, and writes `$:/language`. The
+  switcher lists lightweight `$:/TiddlyDesktop/AvailableLanguage/*` stubs (built by
+  `build-wikilist.sh`) and hands the choice to native, which reboots the WikiList server (fixed
+  port) with the new language.
+- **`node/WarmNodeServers.kt`** keeps a small pool of pre-booted folder-wiki servers so opening a
+  wiki can skip the cold boot.
 
 ## Layout
 
@@ -60,21 +82,28 @@ TiddlyDesktopAndroid/
 ├── settings.gradle.kts, build.gradle.kts, gradle.properties
 ├── gradle/wrapper/gradle-wrapper.properties      # wrapper jar/scripts: see "Building"
 └── app/
-    ├── build.gradle.kts, proguard-rules.pro
+    ├── build.gradle.kts, proguard-rules.pro       # incl. packageLanHelper -> lan.zip
+    ├── lan/lan-helper.js                           # LAN collab helper (drives ../../source/js/utils/lan-node.js)
     └── src/main/
         ├── AndroidManifest.xml
         ├── assets/
-        │   ├── bridge/collab-bridge.js            # collab window._nwjs* shim
-        │   └── README.md                          # tiddlywiki.zip / wikilist.zip go here
-        ├── jniLibs/README.md                      # libnode.so + deps go in arm64-v8a/
+        │   ├── bridge/*.js                         # injected per wiki: collab _nwjs* shim, meta-push, savers, …
+        │   └── README.md                           # tiddlywiki.zip / wikilist.zip / lan.zip go here
+        ├── jniLibs/README.md                       # libnode.so + deps go in arm64-v8a/
         ├── java/com/tiddlywiki/tiddlydesktop/
-        │   ├── MainActivity.kt                     # WikiList host
-        │   ├── WikiActivity.kt                     # per-wiki host (:wiki process)
-        │   ├── WikiServerService.kt                # foreground service
-        │   ├── node/NodeEnvironment.kt             # node paths, symlinks, env, extraction
-        │   ├── node/NodeServer.kt                  # spawn + supervise tiddlywiki --listen
-        │   └── collab/CollabBridge.kt              # TDCollab @JavascriptInterface
-        └── res/ ...                                # manifest theme, net-security, icons
+        │   ├── MainActivity.kt                      # WikiList host (active-language boot, switcher reboot)
+        │   ├── WikiActivity.kt                      # per-wiki host (:wiki process)
+        │   ├── WikiServerService.kt                 # foreground service
+        │   ├── QuickNoteActivity.kt, QuickNoteWidget.kt  # home-screen Quick Note
+        │   ├── host/  (TDHost, MetaBridge, WikiUrl, WikiLauncher, WikiListStore, SystemBars…)
+        │   ├── node/NodeEnvironment.kt              # node paths, symlinks, env, extraction, caches, language trim
+        │   ├── node/NodeServer.kt                   # spawn + supervise tiddlywiki --listen
+        │   ├── node/WarmNodeServers.kt              # pool of pre-booted folder-wiki servers
+        │   ├── node/LanNodeHelper.kt                # spawns/supervises the LAN collab helper process
+        │   ├── node/WikiMeta.kt                     # extract SiteTitle/subtitle/favicon (5.2 JSON + ≤5.1.22 div store)
+        │   ├── node/SafMirror.kt, WikiOps.kt, PluginBridge.kt, Backups.kt, Share*.kt
+        │   └── collab/CollabBridge.kt               # TDCollab @JavascriptInterface (HTTP/WS/OAuth/file + LAN bridge D)
+        └── res/ ...                                 # manifest theme, net-security, icons
 ```
 
 ## Building
@@ -95,7 +124,8 @@ Prerequisites (both git-ignored, both generated):
    ```sh
    sh packaging/build-wikilist.sh      # -> packaging/wikilist/ (git-ignored)
    ```
-   Gradle zips the engine + WikiList into `assets/` automatically before each build.
+   Gradle zips the engine + WikiList (and the LAN collab helper → `lan.zip`) into `assets/`
+   automatically before each build.
 4. Android SDK (compileSdk 36), JDK 17.
 
 ```sh
@@ -110,8 +140,6 @@ Prerequisites (both git-ignored, both generated):
   A dedicated full-screen page template would be cleaner.
 - **Incremental SAF folder sync** — `node/SafMirror.kt` does a full copy-in / copy-back on
   open/close; make it incremental (changed tiddler files only) and handle conflicts.
-- **Collab LAN transport (`_nwjsLan*`)** — **not planned.** Relay-only by design; see
-  "Collab: relay only, no LAN transport" above.
 - **Reveal-in-file-manager** for wikis/backups is best-effort (SAF has no universal "reveal").
 - **On-device verification** of the newer bits (classic-TW saving, Quick Note delivery, the
   Node 26 runtime) as they change.
@@ -129,6 +157,12 @@ Prerequisites (both git-ignored, both generated):
   `TDHost`. Backstage opens as a second synced client of the WikiList Node server.
 - **SAF folder mirroring (M3)** — `node/SafMirror.kt` copies a `content://` folder wiki to a
   local dir for Node and syncs it back on close.
+- **Collab LAN fast path** — a bundled Node helper (`app/lan/lan-helper.js` + `lan-node.js` + `ws`,
+  zipped as `lan.zip`) driven by `node/LanNodeHelper.kt`, bridged via `CollabBridge` (`_nwjsLan*`),
+  so LAN peers connect directly and wire-compatibly with the desktop; relay is the fallback.
+- **Fast startup + active-language WikiList** — V8 compile/store caches patched into `boot.js`
+  (`bin/patch-boot-*.js`), single-active-language loading (`applyWikiListLanguage` + switcher stubs),
+  and a warm folder-wiki server pool (`WarmNodeServers`). Warm launch ~halved.
 
 ## The WikiList
 
@@ -141,6 +175,7 @@ second synced client of the same Node server.
 
 Extra native bridges are injected into each wiki window (`assets/bridge/*.js`): wiki UX
 (print/fullscreen), external-attachment import, media-embed hardening, tm-open-window child
-windows, share-a-tiddler + share-import, the collab `_nwjs*` shim, classic-TiddlyWiki saving, and
-the Quick Note delivery path.
+windows, share-a-tiddler + share-import, the collab `_nwjs*` shim (relay + LAN), classic-TiddlyWiki
+saving, live SiteTitle/subtitle/favicon push to the WikiList (`meta-push.js`), and the Quick Note
+delivery path.
 ```

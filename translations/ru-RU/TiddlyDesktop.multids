@@ -66,6 +66,9 @@ PluginChooser/Updated: Обновлено
 Row/PluginUpdates: Доступны обновления плагинов
 Toolbar/ThemeLabel: Тема
 Toolbar/PaletteLabel: Палитра
+Toolbar/ViewLabel: Вид списка
+Toolbar/ViewFull: Полный
+Toolbar/ViewCompact: Компактный
 Toolbar/CustomPluginFolder: Своя папка плагинов
 Toolbar/ConfigFolder: Папка настроек
 Toolbar/OpenConfigFolder: Открыть папку настроек

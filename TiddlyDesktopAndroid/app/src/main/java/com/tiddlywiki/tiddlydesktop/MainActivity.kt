@@ -244,11 +244,7 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
                 NodeEnvironment.ensureResourcesExtracted(this)
                 NodeEnvironment.ensureWikiListExtracted(this)
                 NodeEnvironment.verifyNodeBinary(this)?.let { Log.e(TAG, it) }
-
-                val server = NodeServer(this, NodeEnvironment.wikiListDir(this))
-                wikiListServer = server
-                val url = server.start()
-                runOnUiThread { runCatching { webView.loadUrl(url) } }
+                startWikiListServer()
                 // Warm the plugin-library enumeration cache so the PluginChooser opens instantly.
                 pluginBridge.listAvailable()
             }.onFailure { Log.e(TAG, "WikiList boot failed: ${it.message}", it) }
@@ -270,6 +266,35 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
     override fun openWikiUrl(url: String, title: String, isFolder: Boolean, backupsEnabled: Boolean, backupCount: Int, backupDir: String) = runOnUiThread {
         val decoded = WikiUrl.decode(url) ?: return@runOnUiThread
         ensureAccessAndOpen(PendingOpen(url, title, decoded.isFolder, backupsEnabled, backupCount, backupDir, decoded.path))
+    }
+
+    /** Boot (or reboot) the WikiList Node server for the active language only, then load it. */
+    private fun startWikiListServer() {
+        NodeEnvironment.applyWikiListLanguage(this, NodeEnvironment.activeWikiListLanguage(this))
+        // Fixed port so a language-switch reboot rebinds the SAME url (stable page).
+        val server = NodeServer(this, NodeEnvironment.wikiListDir(this), port = WIKILIST_PORT)
+        wikiListServer = server
+        val url = server.start()
+        runOnUiThread { runCatching { webView.loadUrl(url) } }
+    }
+
+    /**
+     * Switch the WikiList language: only the active language is loaded, so a switch reboots the
+     * server with the new one (and reloads the page). Rare action; runs off the UI thread.
+     */
+    override fun setLanguage(languageTitle: String) {
+        val code = languageTitle.substringAfterLast("/").ifBlank { "en-GB" }
+        if (code == NodeEnvironment.activeWikiListLanguage(this)) return
+        // Tear down the current page first so its tiddlyweb syncer stops polling the server we're
+        // about to kill (otherwise a poll mid-reboot surfaces a network error).
+        runOnUiThread { runCatching { webView.loadUrl("about:blank") } }
+        Thread {
+            runCatching {
+                wikiListServer?.stop()
+                NodeEnvironment.setActiveWikiListLanguage(this, code)
+                startWikiListServer()
+            }.onFailure { Log.e(TAG, "language switch failed: ${it.message}", it) }
+        }.apply { isDaemon = true; start() }
     }
 
     /** Whether we still hold a persisted SAF grant for [uriStr] (non-content:// paths need none). */
@@ -750,6 +775,8 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
 
     companion object {
         private const val TAG = "MainActivity"
+        /** Fixed WikiList server port so a language-switch reboot keeps the same url. */
+        private const val WIKILIST_PORT = 38000
         private const val SETTINGS_FILE = "tiddlydesktop-settings.json"
     }
 }

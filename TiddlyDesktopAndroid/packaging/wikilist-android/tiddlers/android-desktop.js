@@ -259,6 +259,9 @@ exports.startup = function () {
 	on("tiddlydesktop-android-add-file", function () { if (host) host.addSingleFileWiki(); });
 	on("tiddlydesktop-android-add-folder", function () { if (host) host.addFolderWiki(); });
 	on("tiddlydesktop-android-pick-plugin-folder", function () { if (host) host.pickPluginFolder(); });
+	// Language switch: only the active language is loaded, so native reboots the WikiList server
+	// with the chosen one and reloads. e.param is the language title, e.g. "$:/languages/de-DE".
+	on("tiddlydesktop-android-set-language", function (e) { if (host && host.setLanguage) host.setLanguage(e.param); });
 
 	// Native reports the chosen custom plugin folder's readable path (for display).
 	window.__tdSetPluginPath = function (path) {

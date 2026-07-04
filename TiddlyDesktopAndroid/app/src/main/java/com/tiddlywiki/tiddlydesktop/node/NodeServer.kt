@@ -107,8 +107,14 @@ class NodeServer(
 
     fun stop() {
         isRunning = false
-        process?.destroy()
+        val p = process
         process = null
+        if (p != null) {
+            p.destroy()
+            // Wait for the process to actually exit so its port is released before any restart
+            // (a language switch reboots on the same port). Force-kill if it lingers.
+            if (!p.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)) p.destroyForcibly()
+        }
     }
 
     /** One-shot `tiddlywiki <folder> --init server` to turn an empty folder into a wiki folder. */

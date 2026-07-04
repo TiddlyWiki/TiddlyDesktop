@@ -66,6 +66,9 @@ PluginChooser/Updated: עודכן
 Row/PluginUpdates: קיימים עדכוני תוספים
 Toolbar/ThemeLabel: ערכת נושא
 Toolbar/PaletteLabel: פלטה
+Toolbar/ViewLabel: תצוגת רשימה
+Toolbar/ViewFull: מלא
+Toolbar/ViewCompact: קומפקטי
 Toolbar/CustomPluginFolder: תיקיית תוספים מותאמת
 Toolbar/ConfigFolder: תיקיית הגדרות
 Toolbar/OpenConfigFolder: פתח תיקיית הגדרות

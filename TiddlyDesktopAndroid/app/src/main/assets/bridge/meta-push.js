@@ -19,13 +19,22 @@
 		} catch (e) { return ""; }
 	}
 
+	// Render SiteTitle/SiteSubtitle to plain text here, in the wiki's own context — the same thing
+	// TiddlyWiki does for document.title (which the desktop app reads directly). So wikitext markup
+	// like @@color:blue;My Wiki@@ (and transclusions) resolve, instead of the row showing raw source.
+	function renderPlain(title) {
+		try {
+			var t = $tw.wiki.getTiddler(title);
+			if (!t || !t.fields.text) { return ""; }
+			return $tw.wiki.renderTiddler("text/plain", title).trim();
+		} catch (e) {
+			return $tw.wiki.getTiddlerText(title, "");
+		}
+	}
+
 	function push() {
 		try {
-			TDMeta.setMeta(
-				$tw.wiki.getTiddlerText("$:/SiteTitle", ""),
-				$tw.wiki.getTiddlerText("$:/SiteSubtitle", ""),
-				faviconData()
-			);
+			TDMeta.setMeta(renderPlain("$:/SiteTitle"), renderPlain("$:/SiteSubtitle"), faviconData());
 		} catch (e) {}
 	}
 

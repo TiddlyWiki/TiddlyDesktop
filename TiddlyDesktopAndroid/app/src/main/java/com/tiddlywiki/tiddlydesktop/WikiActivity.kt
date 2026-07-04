@@ -39,6 +39,8 @@ class WikiActivity : ComponentActivity() {
     private var singleFileServer: SingleFileWikiServer? = null
     /** Owns the collab LAN helper process; disposed on destroy. */
     private var collabBridge: CollabBridge? = null
+    /** Key (wiki path) this folder wiki's server is parked under in WarmNodeServers on close (#3). */
+    private var warmKey: String? = null
     /** Non-null when this folder wiki is a SAF mirror that must be synced back to SAF. */
     private var mirroredTreeUri: String? = null
     private var syncThread: Thread? = null
@@ -250,18 +252,28 @@ class WikiActivity : ComponentActivity() {
                     // Backstage: just load an already-running server (the WikiList itself).
                     serverUrl != null -> serverUrl
                     isFolder -> {
-                        // M3: SAF folder wikis are mirrored to a local dir Node can serve.
-                        val localFolder = if (wikiPath.startsWith("content://")) {
-                            mirroredTreeUri = wikiPath
-                            SafMirror.copyIn(this, wikiPath)
+                        val isSaf = wikiPath.startsWith("content://")
+                        warmKey = wikiPath
+                        // #3: reuse a warm server parked for this wiki — skips BOTH the SAF re-mirror
+                        // and the multi-second Node boot. (Assumes the folder wasn't edited by another
+                        // app between close and reopen; our own saves were flushed to SAF on close.)
+                        val warmed = com.tiddlywiki.tiddlydesktop.node.WarmNodeServers.take(this, wikiPath)
+                        val server = if (warmed != null) {
+                            if (isSaf) mirroredTreeUri = wikiPath
+                            folderServer = warmed
+                            warmed
                         } else {
-                            File(wikiPath)
+                            // M3: SAF folder wikis are mirrored to a local dir Node can serve.
+                            val localFolder = if (isSaf) {
+                                mirroredTreeUri = wikiPath
+                                SafMirror.copyIn(this, wikiPath)
+                            } else {
+                                File(wikiPath)
+                            }
+                            NodeServer(this, localFolder).also { folderServer = it; it.start() }
                         }
-                        val server = NodeServer(this, localFolder)
-                        folderServer = server
-                        val u = server.start()
                         if (mirroredTreeUri != null) startMirrorSync()
-                        u
+                        server.url
                     }
                     else -> {
                         val backupsEnabled = intent.getBooleanExtra(EXTRA_BACKUPS_ENABLED, true)
@@ -579,16 +591,34 @@ class WikiActivity : ComponentActivity() {
             if (intent.getStringExtra(EXTRA_SERVER_URL) == null) {
                 loadedServerUrl?.let { com.tiddlywiki.tiddlydesktop.host.WikiLauncher.closeChildWindows(this, it) }
             }
-            folderServer?.stop()
-            singleFileServer?.stop()
-            // Final full sync of a mirrored SAF folder wiki back to its content:// tree.
+            // Flush a mirrored SAF folder wiki back to its content:// tree BEFORE parking/stopping
+            // the server (the mirror is static while parked, so this is the authoritative state).
             mirroredTreeUri?.let { treeUri ->
                 val ctx = applicationContext
                 Thread { runCatching { SafMirror.copyBack(ctx, treeUri, 0L) } }.start()
             }
+            // #3: park the folder server warm for an instant reopen instead of killing it. park()
+            // sets the warm hold BEFORE wikiClosed() drops the open count, so :wiki is never briefly
+            // reap-eligible. Single-file servers are cheap (no Node boot) — just stop them.
+            val fs = folderServer
+            val key = warmKey
+            if (fs != null && key != null) {
+                com.tiddlywiki.tiddlydesktop.node.WarmNodeServers.park(this, key, fs)
+            } else {
+                fs?.stop()
+            }
+            singleFileServer?.stop()
             WikiServerService.wikiClosed(this, intent.getStringExtra(EXTRA_WIKI_PATH) ?: "")
         }
         super.onDestroy()
+    }
+
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        // Warm servers cost ~150 MB each — the moment Android signals memory pressure, drop them.
+        if (level >= android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW) {
+            com.tiddlywiki.tiddlydesktop.node.WarmNodeServers.clear(applicationContext)
+        }
     }
 
     companion object {

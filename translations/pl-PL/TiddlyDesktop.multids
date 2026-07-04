@@ -66,6 +66,9 @@ PluginChooser/Updated: Zaktualizowano
 Row/PluginUpdates: Dostępne aktualizacje wtyczek
 Toolbar/ThemeLabel: Motyw
 Toolbar/PaletteLabel: Paleta
+Toolbar/ViewLabel: Widok listy
+Toolbar/ViewFull: Pełny
+Toolbar/ViewCompact: Kompaktowy
 Toolbar/CustomPluginFolder: Własny folder wtyczek
 Toolbar/ConfigFolder: Folder konfiguracji
 Toolbar/OpenConfigFolder: Otwórz folder konfiguracji

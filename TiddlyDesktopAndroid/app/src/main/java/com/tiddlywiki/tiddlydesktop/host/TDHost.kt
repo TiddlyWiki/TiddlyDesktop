@@ -64,7 +64,12 @@ class TDHost(
         fun shareToWiki(url: String, title: String, isFolder: Boolean, backupsEnabled: Boolean, backupCount: Int, backupDir: String, tiddlersJson: String)
         /** Discard the pending shared payload. */
         fun cancelShare()
+        /** Switch the WikiList language ([languageTitle] like "$:/languages/de-DE"); reboots + reloads. */
+        fun setLanguage(languageTitle: String)
     }
+
+    @JavascriptInterface
+    fun setLanguage(languageTitle: String) = callbacks.setLanguage(languageTitle)
 
     @JavascriptInterface
     fun openWiki(url: String, title: String, isFolder: Boolean, backupsEnabled: Boolean, backupCount: Int, backupDir: String) =

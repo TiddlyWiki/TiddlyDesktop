@@ -74,12 +74,25 @@ object WikiMeta {
                 if (end >= 0) return unescapeJson(rem.substring(0, end))
             }
         }
-        // Old div store: <div title="…"><pre>text</pre></div> (only carries the text field).
+        // Old div store (TiddlyWiki 5.1.22 and earlier): the tiddler is
+        //   <div ATTRS><pre>HTML-encoded text</pre></div>
+        // (or without the <pre> in even older saves). The text lives in the optional <pre>; other
+        // fields — e.g. the favicon's "type" — live in the div's attributes. The previous code
+        // returned the raw inner HTML, so SiteTitle/SiteSubtitle came back wrapped in "<pre>…</pre>"
+        // and the favicon base64 was unusable.
+        // Require whitespace before title= so a rendered body div (data-tiddler-title="…") can't
+        // be mistaken for the storeArea div.
+        val div = Regex(
+            "<div([^>]*\\stitle=\"${Regex.escape(title)}\"[^>]*)>([\\s\\S]*?)</div>",
+            RegexOption.IGNORE_CASE
+        ).find(html) ?: return null
         if (field == "text") {
-            Regex("<div[^>]*\\stitle=\"${Regex.escape(title)}\"[^>]*>([\\s\\S]*?)</div>")
-                .find(html)?.let { return htmlDecode(it.groupValues[1].removePrefix("\n").trim()) }
+            var inner = div.groupValues[2].trim()
+            Regex("^<pre>([\\s\\S]*?)</pre>$", RegexOption.IGNORE_CASE).find(inner)?.let { inner = it.groupValues[1] }
+            return htmlDecode(inner)
         }
-        return null
+        return Regex("\\b${Regex.escape(field)}=\"([^\"]*)\"", RegexOption.IGNORE_CASE)
+            .find(div.groupValues[1])?.let { htmlDecode(it.groupValues[1]) }
     }
 
     private fun firstUnescapedQuote(s: String): Int {

@@ -39,8 +39,8 @@ class WikiServerService : Service() {
         } else {
             startForeground(NOTIFICATION_ID, notif)
         }
-        // No open wikis in THIS process → nothing to keep alive; drop the notification and stop.
-        if (activeCount.get() <= 0) {
+        // Nothing to keep alive (no open wikis AND no parked warm server) → drop notification, stop.
+        if (activeCount.get() <= 0 && !warmHeld.get()) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) stopForeground(STOP_FOREGROUND_REMOVE)
             else @Suppress("DEPRECATION") stopForeground(true)
             stopSelf()
@@ -52,8 +52,11 @@ class WikiServerService : Service() {
         private const val CHANNEL_ID = "wiki_server_channel"
         private const val NOTIFICATION_ID = 2001
 
-        // WikiList + each open wiki bump this; the service stops at zero.
+        // WikiList + each open wiki bump this; the service stops at zero (and no warm server held).
         private val activeCount = AtomicInteger(0)
+        // True while WarmNodeServers holds a parked server — keeps :wiki alive so it isn't reaped
+        // (which would kill the warm servers). See node/WarmNodeServers.kt (#3).
+        private val warmHeld = java.util.concurrent.atomic.AtomicBoolean(false)
 
         /** Called by MainActivity when the WikiList comes up. */
         fun start(context: Context) = bump(context, +1)
@@ -61,16 +64,26 @@ class WikiServerService : Service() {
         fun wikiOpened(context: Context, wikiKey: String, wikiTitle: String) = bump(context, +1)
         fun wikiClosed(context: Context, wikiKey: String) = bump(context, -1)
 
+        /** WarmNodeServers → keep the process alive iff at least one server is parked warm. */
+        fun setWarmHeld(context: Context, held: Boolean) {
+            warmHeld.set(held)
+            refresh(context)
+        }
+
         private fun bump(context: Context, delta: Int) {
-            val now = activeCount.addAndGet(delta).coerceAtLeast(0)
-            if (delta > 0) {
+            activeCount.addAndGet(delta).coerceAtLeast(0)
+            refresh(context)
+        }
+
+        private fun refresh(context: Context) {
+            if (activeCount.get() > 0 || warmHeld.get()) {
                 val intent = Intent(context, WikiServerService::class.java)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(intent)
                 } else {
                     context.startService(intent)
                 }
-            } else if (now == 0) {
+            } else {
                 context.stopService(Intent(context, WikiServerService::class.java))
             }
         }

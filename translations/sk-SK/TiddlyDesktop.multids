@@ -66,6 +66,9 @@ PluginChooser/Updated: Aktualizované
 Row/PluginUpdates: Sú dostupné aktualizácie pluginov
 Toolbar/ThemeLabel: Motív
 Toolbar/PaletteLabel: Paleta
+Toolbar/ViewLabel: Zobrazenie zoznamu
+Toolbar/ViewFull: Úplné
+Toolbar/ViewCompact: Kompaktné
 Toolbar/CustomPluginFolder: Vlastný priečinok pluginov
 Toolbar/ConfigFolder: Priečinok konfigurácie
 Toolbar/OpenConfigFolder: Otvoriť priečinok konfigurácie

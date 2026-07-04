@@ -4,6 +4,8 @@ TiddlyDesktop is a special purpose web browser for working with locally stored T
 
 It works with both single-file wikis and TiddlyWiki folder (server) wikis, and supports both TiddlyWiki 5 and the classic 2.x.x version. This build adds real-time collaboration, per-wiki plugin management, single-file ⇄ folder conversion, serving folder wikis over the LAN, and window conveniences (fullscreen, zoom, find-in-page).
 
+An **Android** port (Kotlin + WebView + embedded Node.js) lives in [`TiddlyDesktopAndroid/`](TiddlyDesktopAndroid/README.md) — the same classic WikiList UI and most features (including relay + LAN collaboration).
+
 See this video tutorial for an overview of installing and using TiddlyDesktop on Windows and OS X:
 
 https://www.youtube.com/watch?v=i3Bggkm7paA
