@@ -49,4 +49,26 @@
     <string name="quicknote_failed">Δεν ήταν δυνατή η προσθήκη της σημείωσης</string>
     <string name="quicknote_tiddler_title">Σημείωση %1$s</string>
     <string name="quicknote_widget_description">Προσθήκη γρήγορης σημείωσης σε ένα wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Να επιτρέπεται η πρόσβαση στον χώρο αποθήκευσης</string>
+    <string name="storage_access_message">Το TiddlyDesktop ανοίγει τα wiki σας απευθείας από τον χώρο αποθήκευσης. Παραχωρήστε την άδεια «Πρόσβαση σε όλα τα αρχεία» ώστε να μπορεί να διαβάζει και να αποθηκεύει τα αρχεία και τους φακέλους των wiki σας.</string>
+    <string name="storage_access_open_settings">Άνοιγμα ρυθμίσεων</string>
+    <string name="storage_access_later">Αργότερα</string>
+    <string name="toast_pick_on_device_folder">Επιλέξτε έναν φάκελο σε αυτήν τη συσκευή (η αποθήκευση στο cloud δεν υποστηρίζεται)</string>
+    <string name="toast_pick_on_device_file">Επιλέξτε ένα αρχείο σε αυτήν τη συσκευή (η αποθήκευση στο cloud δεν υποστηρίζεται)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Μη αποθηκευμένες αλλαγές</string>
+    <string name="unsaved_message">Αυτό το wiki έχει μη αποθηκευμένες αλλαγές. Αποθήκευση πριν το κλείσιμο;</string>
+    <string name="unsaved_save">Αποθήκευση και κλείσιμο</string>
+    <string name="unsaved_discard">Κλείσιμο χωρίς αποθήκευση</string>
+    <string name="wiki_group_title">Ανοιχτά wiki</string>
+    <string name="wiki_keepalive_title">Το wiki είναι έτοιμο</string>
+    <string name="wiki_keepalive_text">Διατήρηση ενός wiki έτοιμου για συνέχιση</string>
+    <string name="wiki_notification_running">Πατήστε για άνοιγμα</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d ανοιχτό wiki</item>
+        <item quantity="other">%d ανοιχτά wiki</item>
+    </plurals>
 </resources>

@@ -49,4 +49,26 @@
     <string name="quicknote_failed">नोट नहीं जोड़ा जा सका</string>
     <string name="quicknote_tiddler_title">नोट %1$s</string>
     <string name="quicknote_widget_description">किसी विकी में एक त्वरित नोट जोड़ें</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">संग्रहण तक पहुँच की अनुमति दें</string>
+    <string name="storage_access_message">TiddlyDesktop आपकी विकी को सीधे संग्रहण से खोलता है। कृपया "सभी फ़ाइलों तक पहुँच" की अनुमति दें ताकि यह आपकी विकी फ़ाइलों और फ़ोल्डरों को पढ़ और सहेज सके।</string>
+    <string name="storage_access_open_settings">सेटिंग खोलें</string>
+    <string name="storage_access_later">बाद में</string>
+    <string name="toast_pick_on_device_folder">कृपया इस डिवाइस पर एक फ़ोल्डर चुनें (क्लाउड संग्रहण समर्थित नहीं है)</string>
+    <string name="toast_pick_on_device_file">कृपया इस डिवाइस पर एक फ़ाइल चुनें (क्लाउड संग्रहण समर्थित नहीं है)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">असहेजे गए परिवर्तन</string>
+    <string name="unsaved_message">इस विकी में असहेजे गए परिवर्तन हैं। बंद करने से पहले सहेजें?</string>
+    <string name="unsaved_save">सहेजें और बंद करें</string>
+    <string name="unsaved_discard">बिना सहेजे बंद करें</string>
+    <string name="wiki_group_title">खुली विकी</string>
+    <string name="wiki_keepalive_title">विकी तैयार</string>
+    <string name="wiki_keepalive_text">एक विकी फिर से शुरू करने के लिए तैयार रखी जा रही है</string>
+    <string name="wiki_notification_running">खोलने के लिए टैप करें</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d खुली विकी</item>
+        <item quantity="other">%d खुली विकी</item>
+    </plurals>
 </resources>

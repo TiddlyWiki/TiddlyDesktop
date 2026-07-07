@@ -51,4 +51,26 @@
     <string name="quicknote_failed">Opombe ni bilo mogoče dodati</string>
     <string name="quicknote_tiddler_title">Opomba %1$s</string>
     <string name="quicknote_widget_description">Dodajte hitro opombo v wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Dovoli dostop do shrambe</string>
+    <string name="storage_access_message">TiddlyDesktop odpre vaše wikije neposredno iz shrambe. Dovolite dovoljenje »Dostop do vseh datotek«, da lahko bere in shranjuje vaše wiki datoteke in mape.</string>
+    <string name="storage_access_open_settings">Odpri nastavitve</string>
+    <string name="storage_access_later">Pozneje</string>
+    <string name="toast_pick_on_device_folder">Izberite mapo v tej napravi (shramba v oblaku ni podprta)</string>
+    <string name="toast_pick_on_device_file">Izberite datoteko v tej napravi (shramba v oblaku ni podprta)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Neshranjene spremembe</string>
+    <string name="unsaved_message">Ta wiki ima neshranjene spremembe. Shrani pred zaprtjem?</string>
+    <string name="unsaved_save">Shrani in zapri</string>
+    <string name="unsaved_discard">Zapri brez shranjevanja</string>
+    <string name="wiki_group_title">Odprti wikiji</string>
+    <string name="wiki_keepalive_title">Wiki pripravljen</string>
+    <string name="wiki_keepalive_text">Wiki je pripravljen za nadaljevanje</string>
+    <string name="wiki_notification_running">Tapnite za odpiranje</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d odprt wiki</item>
+        <item quantity="other">%d odprtih wikijev</item>
+    </plurals>
 </resources>

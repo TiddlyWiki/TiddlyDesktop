@@ -1,5 +1,9 @@
 title: WikiListToolbar
 
+\whitespace trim
+<div class="td-toolbar-responsive">
+
+<!-- Wide (at/above the sidebar breakpoint): the classic flat toolbar. -->
 <div class="td-toolbar">
 <!-- currentLanguage makes this subtree depend on $:/language, so switching language
 re-renders the toolbar buttons live: their lingo transcludes don't refresh on their own
@@ -12,4 +16,33 @@ different render path). -->
 </div>
 </$list>
 </$set>
+</div>
+
+<!-- Narrow (below the sidebar breakpoint): a top bar whose menu icon slides the nav in/out.
+The slide-in panel and backdrop are always mounted; only their `class` toggles, so the CSS
+transform transition can animate (a wrapping <$let> would rebuild the subtree and make it jump). -->
+<div class="td-topbar">
+<$button class="tc-btn-invisible td-menu-button" tooltip={{$:/language/TiddlyDesktop/Toolbar/Backstage}}>
+<$action-setfield $tiddler="$:/state/td-sidebar" text={{{ [{$:/state/td-sidebar}match[open]then[closed]else[open]] }}}/>
+<$image source="AppIcon.svg" class="td-logo"/>
+</$button>
+<div class="td-topbar-title"><$view tiddler="WikiListWindow" field="page-title"/></div>
+</div>
+<div class={{{ [{$:/state/td-sidebar}match[open]then[td-sidebar td-open]] :else[[td-sidebar]] }}}>
+<div class="td-sidebar-head">
+<$image source="AppIcon.svg" class="td-logo"/>
+<$button set="$:/state/td-sidebar" setTo="closed" class="tc-btn-invisible td-sidebar-close" tooltip={{$:/language/Close/Caption}}>{{$:/core/images/close-button}}</$button>
+</div>
+<div class="td-sidebar-items">
+<$set name="currentLanguage" value={{$:/language}}>
+<$list filter="[all[tiddlers+shadows]tag[toolbar]] -[[WikiListToolbar/Logo]]" variable="toolbar">
+<div class="td-sidebar-item"><$transclude tiddler=<<toolbar>>/></div>
+</$list>
+</$set>
+</div>
+</div>
+<div class={{{ [{$:/state/td-sidebar}match[open]then[td-backdrop td-open]] :else[[td-backdrop]] }}}>
+<$button set="$:/state/td-sidebar" setTo="closed" class="tc-btn-invisible td-backdrop-hit"/>
+</div>
+
 </div>

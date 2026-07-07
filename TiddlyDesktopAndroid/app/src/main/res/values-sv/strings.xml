@@ -49,4 +49,26 @@
     <string name="quicknote_failed">Det gick inte att lägga till anteckningen</string>
     <string name="quicknote_tiddler_title">Anteckning %1$s</string>
     <string name="quicknote_widget_description">Lägg till en snabbanteckning i en wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Tillåt lagringsåtkomst</string>
+    <string name="storage_access_message">TiddlyDesktop öppnar dina wikis direkt från lagringen. Bevilja behörigheten "Åtkomst till alla filer" så att den kan läsa och spara dina wiki-filer och -mappar.</string>
+    <string name="storage_access_open_settings">Öppna inställningar</string>
+    <string name="storage_access_later">Senare</string>
+    <string name="toast_pick_on_device_folder">Välj en mapp på den här enheten (molnlagring stöds inte)</string>
+    <string name="toast_pick_on_device_file">Välj en fil på den här enheten (molnlagring stöds inte)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Osparade ändringar</string>
+    <string name="unsaved_message">Den här wikin har osparade ändringar. Spara innan du stänger?</string>
+    <string name="unsaved_save">Spara och stäng</string>
+    <string name="unsaved_discard">Stäng utan att spara</string>
+    <string name="wiki_group_title">Öppna wikier</string>
+    <string name="wiki_keepalive_title">Wiki redo</string>
+    <string name="wiki_keepalive_text">Håller en wiki redo att återupptas</string>
+    <string name="wiki_notification_running">Tryck för att öppna</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d öppen wiki</item>
+        <item quantity="other">%d öppna wikier</item>
+    </plurals>
 </resources>

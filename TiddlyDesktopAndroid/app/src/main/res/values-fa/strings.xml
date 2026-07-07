@@ -49,4 +49,26 @@
     <string name="quicknote_failed">افزودن یادداشت ممکن نشد</string>
     <string name="quicknote_tiddler_title">یادداشت %1$s</string>
     <string name="quicknote_widget_description">افزودن یک یادداشت سریع به یک ویکی</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">اجازهٔ دسترسی به حافظه</string>
+    <string name="storage_access_message">TiddlyDesktop ویکی‌های شما را مستقیماً از حافظه باز می‌کند. لطفاً مجوز «دسترسی به همهٔ فایل‌ها» را بدهید تا بتواند فایل‌ها و پوشه‌های ویکی شما را بخواند و ذخیره کند.</string>
+    <string name="storage_access_open_settings">باز کردن تنظیمات</string>
+    <string name="storage_access_later">بعداً</string>
+    <string name="toast_pick_on_device_folder">لطفاً پوشه‌ای در این دستگاه انتخاب کنید (فضای ابری پشتیبانی نمی‌شود)</string>
+    <string name="toast_pick_on_device_file">لطفاً فایلی در این دستگاه انتخاب کنید (فضای ابری پشتیبانی نمی‌شود)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">تغییرات ذخیره‌نشده</string>
+    <string name="unsaved_message">این ویکی تغییرات ذخیره‌نشده دارد. قبل از بستن ذخیره شود؟</string>
+    <string name="unsaved_save">ذخیره و بستن</string>
+    <string name="unsaved_discard">بستن بدون ذخیره</string>
+    <string name="wiki_group_title">ویکی‌های باز</string>
+    <string name="wiki_keepalive_title">ویکی آماده است</string>
+    <string name="wiki_keepalive_text">یک ویکی برای ازسرگیری آماده نگه داشته می‌شود</string>
+    <string name="wiki_notification_running">برای باز کردن ضربه بزنید</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d ویکی باز</item>
+        <item quantity="other">%d ویکی باز</item>
+    </plurals>
 </resources>

@@ -49,4 +49,26 @@
     <string name="quicknote_failed">Poznámku se nepodařilo přidat</string>
     <string name="quicknote_tiddler_title">Poznámka %1$s</string>
     <string name="quicknote_widget_description">Přidat rychlou poznámku do wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Povolit přístup k úložišti</string>
+    <string name="storage_access_message">TiddlyDesktop otevírá vaše wiki přímo z úložiště. Udělte prosím oprávnění „Přístup ke všem souborům“, aby mohl číst a ukládat vaše soubory a složky wiki.</string>
+    <string name="storage_access_open_settings">Otevřít nastavení</string>
+    <string name="storage_access_later">Později</string>
+    <string name="toast_pick_on_device_folder">Vyberte prosím složku v tomto zařízení (cloudové úložiště není podporováno)</string>
+    <string name="toast_pick_on_device_file">Vyberte prosím soubor v tomto zařízení (cloudové úložiště není podporováno)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Neuložené změny</string>
+    <string name="unsaved_message">Tento wiki má neuložené změny. Uložit před zavřením?</string>
+    <string name="unsaved_save">Uložit a zavřít</string>
+    <string name="unsaved_discard">Zavřít bez uložení</string>
+    <string name="wiki_group_title">Otevřené wiki</string>
+    <string name="wiki_keepalive_title">Wiki připraven</string>
+    <string name="wiki_keepalive_text">Wiki je připraven k pokračování</string>
+    <string name="wiki_notification_running">Klepnutím otevřete</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d otevřený wiki</item>
+        <item quantity="other">%d otevřených wiki</item>
+    </plurals>
 </resources>

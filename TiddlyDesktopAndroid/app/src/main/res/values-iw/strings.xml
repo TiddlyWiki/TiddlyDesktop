@@ -49,4 +49,26 @@
     <string name="quicknote_failed">לא ניתן להוסיף את ההערה</string>
     <string name="quicknote_tiddler_title">הערה %1$s</string>
     <string name="quicknote_widget_description">הוסף הערה מהירה לוויקי</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">אפשר גישה לאחסון</string>
+    <string name="storage_access_message">‏TiddlyDesktop פותח את הוויקי שלך ישירות מהאחסון. יש להעניק את ההרשאה "גישה לכל הקבצים" כדי שיוכל לקרוא ולשמור את קובצי ותיקיות הוויקי שלך.</string>
+    <string name="storage_access_open_settings">פתיחת ההגדרות</string>
+    <string name="storage_access_later">מאוחר יותר</string>
+    <string name="toast_pick_on_device_folder">יש לבחור תיקייה במכשיר הזה (אחסון בענן אינו נתמך)</string>
+    <string name="toast_pick_on_device_file">יש לבחור קובץ במכשיר הזה (אחסון בענן אינו נתמך)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">שינויים שלא נשמרו</string>
+    <string name="unsaved_message">לוויקי הזה יש שינויים שלא נשמרו. לשמור לפני הסגירה?</string>
+    <string name="unsaved_save">שמירה וסגירה</string>
+    <string name="unsaved_discard">סגירה ללא שמירה</string>
+    <string name="wiki_group_title">ויקי פתוחים</string>
+    <string name="wiki_keepalive_title">ויקי מוכן</string>
+    <string name="wiki_keepalive_text">ויקי מוכן להמשך נשמר</string>
+    <string name="wiki_notification_running">הקש כדי לפתוח</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">ויקי פתוח אחד</item>
+        <item quantity="other">%d ויקי פתוחים</item>
+    </plurals>
 </resources>

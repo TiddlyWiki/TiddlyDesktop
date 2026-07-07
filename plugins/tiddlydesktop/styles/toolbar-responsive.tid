@@ -1,0 +1,73 @@
+title: $:/TiddlyDesktop/styles/toolbar-responsive
+tags: $:/tags/Stylesheet
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/* Responsive WikiList toolbar. Below the sidebar breakpoint the flat toolbar collapses to a top
+bar with a menu icon that slides a nav panel in/out (mirrors the Android layout). Every rule is
+scoped under .td-toolbar-responsive so it never touches the Android WikiList, which renders its
+own .td-topbar / .td-sidebar markup and styles them in $:/TiddlyDesktop/android/styles. */
+
+/* Collapsed pieces are hidden at/above the breakpoint. */
+.td-toolbar-responsive .td-topbar,
+.td-toolbar-responsive .td-sidebar,
+.td-toolbar-responsive .td-backdrop { display: none; }
+
+.td-toolbar-responsive .td-topbar {
+	position: sticky; top: 0; z-index: 20; align-items: center; gap: 0.5em;
+	padding: 0.4em 0.75em;
+	color: <<colour wikilist-toolbar-foreground>>;
+	fill: <<colour wikilist-toolbar-foreground>>;
+	background-color: <<colour wikilist-toolbar-background>>;
+	box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.3);
+}
+.td-toolbar-responsive .td-menu-button { display: flex; align-items: center; padding: 0.1em; cursor: pointer; }
+.td-toolbar-responsive .td-topbar .td-logo { height: 2.4em; }
+.td-toolbar-responsive .td-topbar-title {
+	font-weight: 600; font-size: 1.05em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.td-toolbar-responsive .td-sidebar {
+	position: fixed; top: 0; left: 0; bottom: 0; width: 80%; max-width: 320px; z-index: 10001;
+	flex-direction: column; overflow-y: auto;
+	color: <<colour foreground>>; background-color: <<colour background>>;
+	box-shadow: 2px 0 14px rgba(0, 0, 0, 0.35);
+	transform: translateX(-102%); transition: transform 0.25s ease; will-change: transform;
+}
+.td-toolbar-responsive .td-sidebar.td-open { transform: translateX(0); }
+.td-toolbar-responsive .td-sidebar-head {
+	display: flex; align-items: center; justify-content: space-between;
+	padding: 0.6em 0.7em; border-bottom: 1px solid <<colour muted-foreground>>;
+}
+.td-toolbar-responsive .td-sidebar-head .td-logo { height: 2.2em; }
+.td-toolbar-responsive .td-sidebar-close { cursor: pointer; }
+.td-toolbar-responsive .td-sidebar-close svg { width: 22px; height: 22px; }
+.td-toolbar-responsive .td-sidebar-items { display: flex; flex-direction: column; gap: 0.5em; padding: 0.6em; }
+.td-toolbar-responsive .td-sidebar-item { margin: 0; }
+/* Add/Create wiki (file & folder) wrap their button in a .td-file-input-wrapper for <$browse>,
+so the button is a grandchild — stretch the wrapper too and target the nested button. */
+.td-toolbar-responsive .td-sidebar-item > .td-file-input-wrapper { display: block; width: 100%; }
+.td-toolbar-responsive .td-sidebar-item > .td-button,
+.td-toolbar-responsive .td-sidebar-item > button,
+.td-toolbar-responsive .td-sidebar-item > .td-file-input-wrapper > .td-button {
+	display: flex; align-items: center; gap: 0.5em; width: 100%; box-sizing: border-box;
+	justify-content: flex-start; text-align: left;
+}
+
+.td-toolbar-responsive .td-backdrop {
+	position: fixed; inset: 0; z-index: 10000;
+	background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+	opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+}
+.td-toolbar-responsive .td-backdrop.td-open { opacity: 1; pointer-events: auto; }
+.td-toolbar-responsive .td-backdrop-hit {
+	position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: transparent; cursor: default;
+}
+
+/* The breakpoint switch: flip from the flat toolbar to the collapsed top bar + slide-in nav. */
+@media (max-width: {{{ [[$:/themes/tiddlywiki/vanilla/metrics/sidebarbreakpoint]get[text]] ~[[960px]] }}}) {
+	.td-toolbar-responsive .td-toolbar { display: none; }
+	.td-toolbar-responsive .td-topbar { display: flex; }
+	.td-toolbar-responsive .td-sidebar { display: flex; }
+	.td-toolbar-responsive .td-backdrop { display: block; }
+}

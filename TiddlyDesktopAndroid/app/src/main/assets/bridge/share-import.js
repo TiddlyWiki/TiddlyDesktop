@@ -31,11 +31,30 @@
 				function importOne(fields) {
 					fields = JSON.parse(JSON.stringify(fields)); // clone
 					fields.title = uniqueTitle(fields.title || "shared");
-					// Binary file + external attachments enabled → keep external.
-					var isBinary = fields.type && fields.type.indexOf("text/") !== 0 && fields.text && !fields._canonical_uri;
-					if (isBinary && extAttach && typeof TDAttach !== "undefined") {
-						var rel = TDAttach.saveAttachment(fields.text, fields.title, fields.type);
-						if (rel) { delete fields.text; fields._canonical_uri = rel; }
+					var type = fields.type || "";
+					// A file staged natively (streamed to a temp file, not base64'd into the payload).
+					var staged = fields.__sharedFile;
+					if (staged != null) { delete fields.__sharedFile; }
+					if (staged && typeof TDAttach !== "undefined") {
+						if (type.indexOf("text/") === 0) {
+							// Shared text file → import its text.
+							fields.text = TDAttach.sharedFileText(staged);
+						} else if (extAttach) {
+							// Binary + External Attachments ON → attach (streamed into attachments/, kept external).
+							var rel = TDAttach.importSharedFile(staged, fields.title, type);
+							if (rel) { fields._canonical_uri = rel; }
+							else { fields.text = TDAttach.sharedFileBase64(staged); } // fallback: embed
+						} else {
+							// External Attachments OFF → import (embed) the file as base64.
+							fields.text = TDAttach.sharedFileBase64(staged);
+						}
+					} else {
+						// Legacy: base64 already in the payload (small files) — attach it if EA is on.
+						var isBinary = type && type.indexOf("text/") !== 0 && fields.text && !fields._canonical_uri;
+						if (isBinary && extAttach && typeof TDAttach !== "undefined") {
+							var rel2 = TDAttach.saveAttachment(fields.text, fields.title, type);
+							if (rel2) { delete fields.text; fields._canonical_uri = rel2; }
+						}
 					}
 					$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(), fields, $tw.wiki.getModificationFields()));
 					if (!firstTitle) { firstTitle = fields.title; }

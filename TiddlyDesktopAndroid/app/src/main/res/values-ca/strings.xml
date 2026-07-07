@@ -49,4 +49,26 @@
     <string name="quicknote_failed">No s\'ha pogut afegir la nota</string>
     <string name="quicknote_tiddler_title">Nota %1$s</string>
     <string name="quicknote_widget_description">Afegeix una nota ràpida a un wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Permet l\'accés a l\'emmagatzematge</string>
+    <string name="storage_access_message">El TiddlyDesktop obre els vostres wikis directament des de l\'emmagatzematge. Concediu l\'accés a tots els fitxers perquè pugui llegir i desar els fitxers i les carpetes dels wikis.</string>
+    <string name="storage_access_open_settings">Obre la configuració</string>
+    <string name="storage_access_later">Més tard</string>
+    <string name="toast_pick_on_device_folder">Trieu una carpeta d\'aquest dispositiu (l\'emmagatzematge al núvol no és compatible)</string>
+    <string name="toast_pick_on_device_file">Trieu un fitxer d\'aquest dispositiu (l\'emmagatzematge al núvol no és compatible)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Canvis sense desar</string>
+    <string name="unsaved_message">Aquest wiki té canvis sense desar. Voleu desar-los abans de tancar?</string>
+    <string name="unsaved_save">Desa i tanca</string>
+    <string name="unsaved_discard">Tanca sense desar</string>
+    <string name="wiki_group_title">Wikis oberts</string>
+    <string name="wiki_keepalive_title">Wiki a punt</string>
+    <string name="wiki_keepalive_text">Es manté un wiki a punt per reprendre</string>
+    <string name="wiki_notification_running">Toca per obrir</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d wiki obert</item>
+        <item quantity="other">%d wikis oberts</item>
+    </plurals>
 </resources>

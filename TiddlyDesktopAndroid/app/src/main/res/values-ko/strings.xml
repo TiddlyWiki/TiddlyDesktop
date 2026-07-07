@@ -49,4 +49,25 @@
     <string name="quicknote_failed">메모를 추가할 수 없습니다</string>
     <string name="quicknote_tiddler_title">메모 %1$s</string>
     <string name="quicknote_widget_description">위키에 빠른 메모 추가</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">저장소 접근 허용</string>
+    <string name="storage_access_message">TiddlyDesktop은 저장소에서 위키를 직접 엽니다. 위키 파일과 폴더를 읽고 저장할 수 있도록 "모든 파일에 대한 접근" 권한을 허용해 주세요.</string>
+    <string name="storage_access_open_settings">설정 열기</string>
+    <string name="storage_access_later">나중에</string>
+    <string name="toast_pick_on_device_folder">이 기기의 폴더를 선택해 주세요 (클라우드 저장소는 지원되지 않습니다)</string>
+    <string name="toast_pick_on_device_file">이 기기의 파일을 선택해 주세요 (클라우드 저장소는 지원되지 않습니다)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">저장되지 않은 변경사항</string>
+    <string name="unsaved_message">이 위키에 저장되지 않은 변경사항이 있습니다. 닫기 전에 저장할까요?</string>
+    <string name="unsaved_save">저장 후 닫기</string>
+    <string name="unsaved_discard">저장하지 않고 닫기</string>
+    <string name="wiki_group_title">열린 위키</string>
+    <string name="wiki_keepalive_title">위키 준비됨</string>
+    <string name="wiki_keepalive_text">위키를 재개할 수 있도록 유지 중</string>
+    <string name="wiki_notification_running">탭하여 열기</string>
+    <plurals name="wiki_group_count">
+        <item quantity="other">열린 위키 %d개</item>
+    </plurals>
 </resources>

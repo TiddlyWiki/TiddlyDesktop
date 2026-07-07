@@ -101,6 +101,16 @@
             android:taskAffinity=""
             android:windowSoftInputMode="adjustResize" />
 
+        <!-- Invisible trampoline: a wiki's foreground-service notification taps here to open/focus
+             that wiki (via WikiLauncher) instead of the WikiList. Runs in the main process. -->
+        <activity
+            android:name=".OpenWikiActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:taskAffinity=""
+            android:theme="@android:style/Theme.NoDisplay" />
+
         <!-- Quick Note: dialog launched by the home-screen widget (wiki chooser + note box). -->
         <activity
             android:name=".QuickNoteActivity"

@@ -675,26 +675,44 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         }
     }
 
-    /** Build a payload from shared/opened files (base64, or raw text for .tid); null if none. */
+    /** Scratch dir for streamed share payloads (cleared per share). */
+    private fun shareTempDir(): File = File(cacheDir, "shared").apply { mkdirs() }
+
+    /**
+     * Build a payload from shared/opened files. `.tid` files ride along as text; every other file is
+     * STREAMED to a temp file (referenced by `__sharedFile`) rather than base64-encoded into the
+     * payload — otherwise a shared video (tens/hundreds of MB) would OOM here. The wiki side
+     * (share-import.js) then attaches it (streamed into attachments/) or embeds it, per the External
+     * Attachments setting. Returns null if nothing usable was shared.
+     */
     private fun buildFilePayload(intent: Intent, action: String?): String? {
         val uris = when (action) {
             Intent.ACTION_SEND_MULTIPLE -> intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM) ?: arrayListOf()
             Intent.ACTION_VIEW -> intent.data?.let { arrayListOf(it) } ?: arrayListOf()
             else -> intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)?.let { arrayListOf(it) } ?: arrayListOf()
         }
+        if (uris.isEmpty()) return null
+        // Drop temp files from a previous (possibly abandoned) share before staging new ones.
+        runCatching { shareTempDir().listFiles()?.forEach { it.delete() } }
         val arr = org.json.JSONArray()
         for (uri in uris) {
             runCatching {
-                val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: return@runCatching
                 val name = androidx.documentfile.provider.DocumentFile.fromSingleUri(this, uri)?.name ?: uri.lastPathSegment ?: ""
                 if (name.endsWith(".tid", true) || uri.toString().endsWith(".tid", true)) {
+                    val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: return@runCatching
                     arr.put(org.json.JSONObject().put("__tid", String(bytes, Charsets.UTF_8)))
                 } else {
+                    // Stream to a temp file (small 8K buffer) — no whole-file-in-RAM, no base64 here.
+                    val temp = File(shareTempDir(), "s${System.nanoTime()}")
+                    val copied = contentResolver.openInputStream(uri)?.use { input ->
+                        temp.outputStream().use { input.copyTo(it) }; true
+                    } ?: false
+                    if (!copied || temp.length() == 0L) { temp.delete(); return@runCatching }
                     arr.put(org.json.JSONObject()
                         .put("title", sanitizeShareTitle(name).ifBlank { "shared-${System.currentTimeMillis()}" })
                         .put("type", contentResolver.getType(uri) ?: "application/octet-stream")
-                        .put("text", android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP))
-                        .put("tags", "shared"))
+                        .put("tags", "shared")
+                        .put("__sharedFile", temp.absolutePath))
                 }
             }
         }

@@ -51,4 +51,26 @@
     <string name="quicknote_failed">ਨੋਟ ਸ਼ਾਮਲ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ</string>
     <string name="quicknote_tiddler_title">ਨੋਟ %1$s</string>
     <string name="quicknote_widget_description">ਕਿਸੇ ਵਿਕੀ ਵਿੱਚ ਤੁਰੰਤ ਨੋਟ ਸ਼ਾਮਲ ਕਰੋ</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">ਸਟੋਰੇਜ ਤੱਕ ਪਹੁੰਚ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ</string>
+    <string name="storage_access_message">TiddlyDesktop ਤੁਹਾਡੀਆਂ ਵਿਕੀਆਂ ਨੂੰ ਸਿੱਧਾ ਸਟੋਰੇਜ ਤੋਂ ਖੋਲ੍ਹਦਾ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ "ਸਾਰੀਆਂ ਫ਼ਾਈਲਾਂ ਤੱਕ ਪਹੁੰਚ" ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ ਤਾਂ ਜੋ ਇਹ ਤੁਹਾਡੀਆਂ ਵਿਕੀ ਫ਼ਾਈਲਾਂ ਅਤੇ ਫੋਲਡਰਾਂ ਨੂੰ ਪੜ੍ਹ ਅਤੇ ਸੰਭਾਲ ਸਕੇ।</string>
+    <string name="storage_access_open_settings">ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ</string>
+    <string name="storage_access_later">ਬਾਅਦ ਵਿੱਚ</string>
+    <string name="toast_pick_on_device_folder">ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਡੀਵਾਈਸ \'ਤੇ ਇੱਕ ਫੋਲਡਰ ਚੁਣੋ (ਕਲਾਊਡ ਸਟੋਰੇਜ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ)</string>
+    <string name="toast_pick_on_device_file">ਕਿਰਪਾ ਕਰਕੇ ਇਸ ਡੀਵਾਈਸ \'ਤੇ ਇੱਕ ਫ਼ਾਈਲ ਚੁਣੋ (ਕਲਾਊਡ ਸਟੋਰੇਜ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">ਨਾ-ਸੰਭਾਲੀਆਂ ਤਬਦੀਲੀਆਂ</string>
+    <string name="unsaved_message">ਇਸ ਵਿਕੀ ਵਿੱਚ ਨਾ-ਸੰਭਾਲੀਆਂ ਤਬਦੀਲੀਆਂ ਹਨ। ਬੰਦ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਸੰਭਾਲਣਾ ਹੈ?</string>
+    <string name="unsaved_save">ਸੰਭਾਲੋ ਅਤੇ ਬੰਦ ਕਰੋ</string>
+    <string name="unsaved_discard">ਸੰਭਾਲੇ ਬਿਨਾਂ ਬੰਦ ਕਰੋ</string>
+    <string name="wiki_group_title">ਖੁੱਲ੍ਹੀਆਂ ਵਿਕੀਆਂ</string>
+    <string name="wiki_keepalive_title">ਵਿਕੀ ਤਿਆਰ</string>
+    <string name="wiki_keepalive_text">ਇੱਕ ਵਿਕੀ ਮੁੜ ਸ਼ੁਰੂ ਕਰਨ ਲਈ ਤਿਆਰ ਰੱਖੀ ਜਾ ਰਹੀ ਹੈ</string>
+    <string name="wiki_notification_running">ਖੋਲ੍ਹਣ ਲਈ ਟੈਪ ਕਰੋ</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d ਖੁੱਲ੍ਹੀ ਵਿਕੀ</item>
+        <item quantity="other">%d ਖੁੱਲ੍ਹੀਆਂ ਵਿਕੀਆਂ</item>
+    </plurals>
 </resources>

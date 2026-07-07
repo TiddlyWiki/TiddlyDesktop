@@ -51,4 +51,26 @@
     <string name="quicknote_failed">Белешката не можеше да се додаде</string>
     <string name="quicknote_tiddler_title">Белешка %1$s</string>
     <string name="quicknote_widget_description">Додајте брза белешка во вики</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Дозволи пристап до складиштето</string>
+    <string name="storage_access_message">TiddlyDesktop ги отвора вашите викија директно од складиштето. Дозволете „Пристап до сите датотеки“ за да може да ги чита и зачувува вашите вики-датотеки и папки.</string>
+    <string name="storage_access_open_settings">Отвори поставки</string>
+    <string name="storage_access_later">Подоцна</string>
+    <string name="toast_pick_on_device_folder">Изберете папка на овој уред (складиштето во облак не е поддржано)</string>
+    <string name="toast_pick_on_device_file">Изберете датотека на овој уред (складиштето во облак не е поддржано)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Незачувани промени</string>
+    <string name="unsaved_message">Ова вики има незачувани промени. Да се зачува пред затворање?</string>
+    <string name="unsaved_save">Зачувај и затвори</string>
+    <string name="unsaved_discard">Затвори без зачувување</string>
+    <string name="wiki_group_title">Отворени викија</string>
+    <string name="wiki_keepalive_title">Вики подготвено</string>
+    <string name="wiki_keepalive_text">Се одржува вики подготвено за продолжување</string>
+    <string name="wiki_notification_running">Допрете за отворање</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d отворено вики</item>
+        <item quantity="other">%d отворени викија</item>
+    </plurals>
 </resources>

@@ -49,4 +49,26 @@
     <string name="quicknote_failed">Kunne ikke tilføje noten</string>
     <string name="quicknote_tiddler_title">Note %1$s</string>
     <string name="quicknote_widget_description">Tilføj en hurtig note til en wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Tillad lagringsadgang</string>
+    <string name="storage_access_message">TiddlyDesktop åbner dine wikier direkte fra lageret. Giv venligst tilladelsen "Adgang til alle filer", så den kan læse og gemme dine wiki-filer og -mapper.</string>
+    <string name="storage_access_open_settings">Åbn indstillinger</string>
+    <string name="storage_access_later">Senere</string>
+    <string name="toast_pick_on_device_folder">Vælg venligst en mappe på denne enhed (cloud-lagring understøttes ikke)</string>
+    <string name="toast_pick_on_device_file">Vælg venligst en fil på denne enhed (cloud-lagring understøttes ikke)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Ikke-gemte ændringer</string>
+    <string name="unsaved_message">Denne wiki har ikke-gemte ændringer. Gem før lukning?</string>
+    <string name="unsaved_save">Gem og luk</string>
+    <string name="unsaved_discard">Luk uden at gemme</string>
+    <string name="wiki_group_title">Åbne wikier</string>
+    <string name="wiki_keepalive_title">Wiki klar</string>
+    <string name="wiki_keepalive_text">Holder en wiki klar til at genoptage</string>
+    <string name="wiki_notification_running">Tryk for at åbne</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d åben wiki</item>
+        <item quantity="other">%d åbne wikier</item>
+    </plurals>
 </resources>

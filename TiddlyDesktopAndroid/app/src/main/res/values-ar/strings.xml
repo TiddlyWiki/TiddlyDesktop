@@ -49,4 +49,26 @@
     <string name="quicknote_failed">تعذّرت إضافة الملاحظة</string>
     <string name="quicknote_tiddler_title">ملاحظة %1$s</string>
     <string name="quicknote_widget_description">أضف ملاحظة سريعة إلى ويكي</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">السماح بالوصول إلى وحدة التخزين</string>
+    <string name="storage_access_message">يفتح TiddlyDesktop الويكي مباشرة من وحدة التخزين. يُرجى منح إذن "الوصول إلى جميع الملفات" حتى يتمكن من قراءة وحفظ ملفات ومجلدات الويكي.</string>
+    <string name="storage_access_open_settings">فتح الإعدادات</string>
+    <string name="storage_access_later">لاحقًا</string>
+    <string name="toast_pick_on_device_folder">يُرجى اختيار مجلد على هذا الجهاز (التخزين السحابي غير مدعوم)</string>
+    <string name="toast_pick_on_device_file">يُرجى اختيار ملف على هذا الجهاز (التخزين السحابي غير مدعوم)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">تغييرات غير محفوظة</string>
+    <string name="unsaved_message">يحتوي هذا الويكي على تغييرات غير محفوظة. الحفظ قبل الإغلاق؟</string>
+    <string name="unsaved_save">حفظ وإغلاق</string>
+    <string name="unsaved_discard">إغلاق دون حفظ</string>
+    <string name="wiki_group_title">ويكي مفتوحة</string>
+    <string name="wiki_keepalive_title">الويكي جاهز</string>
+    <string name="wiki_keepalive_text">يتم إبقاء ويكي جاهزًا للاستئناف</string>
+    <string name="wiki_notification_running">اضغط للفتح</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">ويكي مفتوح واحد</item>
+        <item quantity="other">%d ويكي مفتوحة</item>
+    </plurals>
 </resources>

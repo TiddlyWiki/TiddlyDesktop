@@ -247,7 +247,20 @@ class WikiActivity : ComponentActivity() {
         }
         setContentView(root)
 
-        WikiServerService.wikiOpened(this, wikiPath, wikiTitle)
+        // Back closes the wiki window. If it has unsaved changes, prompt first (like the desktop
+        // "leave wiki" confirmation) instead of silently discarding them.
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                confirmCloseIfDirty { finish() }
+            }
+        })
+
+        WikiServerService.wikiOpened(
+            this, wikiPath, wikiTitle, isFolder,
+            intent.getBooleanExtra(EXTRA_BACKUPS_ENABLED, true),
+            intent.getIntExtra(EXTRA_BACKUP_COUNT, 20),
+            intent.getStringExtra(EXTRA_BACKUP_DIR) ?: ""
+        )
 
         Thread {
             val url = try {
@@ -466,6 +479,47 @@ class WikiActivity : ComponentActivity() {
             runCatching { writeAttachment(base64, filename) }
                 .getOrElse { Log.w(TAG, "saveAttachment failed: ${it.message}"); "" }
 
+        /**
+         * Attach a shared file staged by MainActivity (share-import.js, External Attachments ON):
+         * stream it from [tempPath] into the wiki's attachments/ folder — no base64, so large media
+         * (video) works. Deletes the temp on success. Returns "./attachments/<name>" or "".
+         */
+        @android.webkit.JavascriptInterface
+        fun importSharedFile(tempPath: String, filename: String, mime: String): String =
+            runCatching {
+                val src = File(tempPath)
+                if (!src.exists()) return ""
+                val dir = attachmentsDir()?.apply { mkdirs() } ?: error("no folder for attachments")
+                val safe = sanitizeAttachmentName(filename)
+                var name = safe; var n = 1
+                while (File(dir, name).exists()) { name = bump(safe, n++) }
+                src.inputStream().use { i -> File(dir, name).outputStream().use { o -> i.copyTo(o) } }
+                runCatching { src.delete() }
+                "./attachments/$name"
+            }.getOrElse { Log.w(TAG, "importSharedFile failed: ${it.message}"); "" }
+
+        /** Base64 of a staged shared file (embed/import when External Attachments is OFF). "" on failure. */
+        @android.webkit.JavascriptInterface
+        fun sharedFileBase64(tempPath: String): String =
+            runCatching {
+                val src = File(tempPath)
+                if (!src.exists()) return ""
+                val b64 = android.util.Base64.encodeToString(src.readBytes(), android.util.Base64.NO_WRAP)
+                runCatching { src.delete() }
+                b64
+            }.getOrElse { Log.w(TAG, "sharedFileBase64 failed: ${it.message}"); "" }
+
+        /** UTF-8 text of a staged shared text file (shared .txt etc.). "" on failure. */
+        @android.webkit.JavascriptInterface
+        fun sharedFileText(tempPath: String): String =
+            runCatching {
+                val src = File(tempPath)
+                if (!src.exists()) return ""
+                val txt = src.readText(Charsets.UTF_8)
+                runCatching { src.delete() }
+                txt
+            }.getOrElse { Log.w(TAG, "sharedFileText failed: ${it.message}"); "" }
+
         /** Localized note (caption+body) explaining EA absolute-path options don't apply on Android. */
         @android.webkit.JavascriptInterface
         fun note(): String = org.json.JSONObject(
@@ -517,6 +571,34 @@ class WikiActivity : ComponentActivity() {
         android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
     private fun toast(resId: Int) = toast(getString(resId))
 
+    /**
+     * Ask the wiki whether it has unsaved changes; if so, prompt (Save / Discard / Cancel) before
+     * running [onClose]. Covers single-file savers ($tw.saverHandler) and folder-wiki syncers.
+     */
+    private fun confirmCloseIfDirty(onClose: () -> Unit) {
+        if (!pageReady) { onClose(); return }
+        webView.evaluateJavascript(DIRTY_JS) { result ->
+            if (result == "true") showUnsavedDialog(onClose) else onClose()
+        }
+    }
+
+    private fun showUnsavedDialog(onClose: () -> Unit) {
+        android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.unsaved_title)
+            .setMessage(R.string.unsaved_message)
+            .setCancelable(true)
+            .setPositiveButton(R.string.unsaved_save) { _, _ -> saveThenClose(onClose) }
+            .setNegativeButton(R.string.unsaved_discard) { _, _ -> onClose() }
+            .setNeutralButton(android.R.string.cancel, null)
+            .show()
+    }
+
+    /** Trigger a save, then close once the save has had time to flush to the (loopback) server. */
+    private fun saveThenClose(onClose: () -> Unit) {
+        webView.evaluateJavascript("try{\$tw.rootWidget.dispatchEvent({type:'tm-save-wiki'});}catch(e){}", null)
+        webView.postDelayed({ onClose() }, 900)
+    }
+
     override fun onDestroy() {
         // Always tear down the collab LAN helper process — even on a non-finishing recreate, so a
         // config change can't orphan it.
@@ -531,9 +613,12 @@ class WikiActivity : ComponentActivity() {
             // #3: park the folder server warm for an instant reopen instead of killing it. park()
             // sets the warm hold BEFORE wikiClosed() drops the open count, so :wiki is never briefly
             // reap-eligible. Single-file servers are cheap (no Node boot) — just stop them.
+            // BUT if this wiki was swiped out of the Overview, the user wants it gone: stop the
+            // server (don't park) so the foreground service can actually shut down.
+            val swiped = WikiServerService.consumeSwiped(wikiPathField)
             val fs = folderServer
             val key = warmKey
-            if (fs != null && key != null) {
+            if (fs != null && key != null && !swiped) {
                 com.tiddlywiki.tiddlydesktop.node.WarmNodeServers.park(this, key, fs)
             } else {
                 fs?.stop()
@@ -554,6 +639,16 @@ class WikiActivity : ComponentActivity() {
 
     companion object {
         private const val TAG = "WikiActivity"
+
+        // Returns "true" if the wiki has unsaved changes — single-file savers ($tw.saverHandler) or
+        // folder-wiki syncer tasks still pending. Any error → "false" (don't block closing).
+        private const val DIRTY_JS =
+            "(function(){try{if(window.\$tw){" +
+                "if(\$tw.saverHandler&&typeof \$tw.saverHandler.isDirty==='function'&&\$tw.saverHandler.isDirty())return true;" +
+                "if(\$tw.syncer){" +
+                "if(\$tw.syncer.taskQueue&&Object.keys(\$tw.syncer.taskQueue).length>0)return true;" +
+                "if(\$tw.syncer.taskInProgress&&Object.keys(\$tw.syncer.taskInProgress).length>0)return true;" +
+                "}}}catch(e){}return false;})()"
         const val EXTRA_WIKI_PATH = "wiki_path"
         const val EXTRA_WIKI_TITLE = "wiki_title"
         const val EXTRA_IS_FOLDER = "is_folder"

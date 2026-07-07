@@ -49,4 +49,25 @@
     <string name="quicknote_failed">無法新增筆記</string>
     <string name="quicknote_tiddler_title">筆記 %1$s</string>
     <string name="quicknote_widget_description">向 wiki 新增一則快速筆記</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">允許儲存空間存取</string>
+    <string name="storage_access_message">TiddlyDesktop 會直接從儲存空間開啟您的 wiki。請授予「所有檔案存取權」，以便讀取及儲存您的 wiki 檔案與資料夾。</string>
+    <string name="storage_access_open_settings">開啟設定</string>
+    <string name="storage_access_later">稍後</string>
+    <string name="toast_pick_on_device_folder">請選擇此裝置上的資料夾（不支援雲端儲存空間）</string>
+    <string name="toast_pick_on_device_file">請選擇此裝置上的檔案（不支援雲端儲存空間）</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">未儲存的變更</string>
+    <string name="unsaved_message">此 wiki 有未儲存的變更。關閉前要儲存嗎？</string>
+    <string name="unsaved_save">儲存並關閉</string>
+    <string name="unsaved_discard">不儲存並關閉</string>
+    <string name="wiki_group_title">開啟的 wiki</string>
+    <string name="wiki_keepalive_title">wiki 就緒</string>
+    <string name="wiki_keepalive_text">正在保留一個 wiki 以便恢復</string>
+    <string name="wiki_notification_running">輕觸以開啟</string>
+    <plurals name="wiki_group_count">
+        <item quantity="other">%d 個開啟的 wiki</item>
+    </plurals>
 </resources>

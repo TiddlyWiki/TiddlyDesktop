@@ -4,6 +4,19 @@
     <string name="wiki_server_channel_name">Open wikis</string>
     <string name="wiki_server_notification_title">TiddlyDesktop is running</string>
     <string name="wiki_server_notification_text">Wiki servers are active</string>
+    <string name="wiki_notification_running">Tap to open</string>
+    <!-- Unsaved-changes prompt when closing a wiki with the back button. -->
+    <string name="unsaved_title">Unsaved changes</string>
+    <string name="unsaved_message">This wiki has unsaved changes. Save before closing?</string>
+    <string name="unsaved_save">Save &amp; close</string>
+    <string name="unsaved_discard">Close without saving</string>
+    <string name="wiki_group_title">Open wikis</string>
+    <string name="wiki_keepalive_title">Wiki ready</string>
+    <string name="wiki_keepalive_text">Keeping a wiki ready to resume</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d open wiki</item>
+        <item quantity="other">%d open wikis</item>
+    </plurals>
 
     <!-- All-Files-Access gate (direct filesystem access to wikis). -->
     <string name="storage_access_title">Allow storage access</string>

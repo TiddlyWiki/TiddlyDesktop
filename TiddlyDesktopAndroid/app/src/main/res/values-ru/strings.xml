@@ -49,4 +49,26 @@
     <string name="quicknote_failed">Не удалось добавить заметку</string>
     <string name="quicknote_tiddler_title">Заметка %1$s</string>
     <string name="quicknote_widget_description">Добавить быструю заметку в вики</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Разрешить доступ к хранилищу</string>
+    <string name="storage_access_message">TiddlyDesktop открывает ваши вики напрямую из хранилища. Пожалуйста, предоставьте разрешение «Доступ ко всем файлам», чтобы приложение могло читать и сохранять файлы и папки ваших вики.</string>
+    <string name="storage_access_open_settings">Открыть настройки</string>
+    <string name="storage_access_later">Позже</string>
+    <string name="toast_pick_on_device_folder">Пожалуйста, выберите папку на этом устройстве (облачное хранилище не поддерживается)</string>
+    <string name="toast_pick_on_device_file">Пожалуйста, выберите файл на этом устройстве (облачное хранилище не поддерживается)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Несохранённые изменения</string>
+    <string name="unsaved_message">В этой вики есть несохранённые изменения. Сохранить перед закрытием?</string>
+    <string name="unsaved_save">Сохранить и закрыть</string>
+    <string name="unsaved_discard">Закрыть без сохранения</string>
+    <string name="wiki_group_title">Открытые вики</string>
+    <string name="wiki_keepalive_title">Вики готова</string>
+    <string name="wiki_keepalive_text">Вики удерживается готовой к продолжению</string>
+    <string name="wiki_notification_running">Нажмите, чтобы открыть</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d открытая вики</item>
+        <item quantity="other">%d открытых вики</item>
+    </plurals>
 </resources>

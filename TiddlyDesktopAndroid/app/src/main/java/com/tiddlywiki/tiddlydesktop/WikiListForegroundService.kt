@@ -22,7 +22,11 @@ class WikiListForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // Promote to foreground within the ~5s window Android allows, then bail if no longer needed.
         ForegroundNotification.ensureChannel(this)
-        val notif: Notification = ForegroundNotification.build(this, WikiListForegroundService::class.java, getString(R.string.wiki_server_notification_text))
+        val notif: Notification = ForegroundNotification.build(
+            this, WikiListForegroundService::class.java,
+            getString(R.string.wiki_server_notification_title),
+            getString(R.string.wiki_server_notification_text),
+            ForegroundNotification.mainActivityIntent(this))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(NOTIFICATION_ID, notif, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
         } else {
@@ -34,6 +38,20 @@ class WikiListForegroundService : Service() {
             stopSelf()
         }
         return START_NOT_STICKY
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        // onTaskRemoved fires on ALL of the app's started services for ANY removed task. Only stop
+        // when the WikiList's OWN task is swiped — a wiki task carries EXTRA_WIKI_PATH; the WikiList
+        // task doesn't. Otherwise swiping a wiki would wrongly kill the WikiList notification.
+        val isWikiTask = rootIntent?.hasExtra(WikiActivity.EXTRA_WIKI_PATH) == true
+        if (!isWikiTask) {
+            active.set(false)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) stopForeground(STOP_FOREGROUND_REMOVE)
+            else @Suppress("DEPRECATION") stopForeground(true)
+            stopSelf()
+        }
+        super.onTaskRemoved(rootIntent)
     }
 
     companion object {

@@ -7,8 +7,10 @@ title: WikiListToolbar
 </$button>
 <div class="td-topbar-title"><$view tiddler="WikiListWindow" field="page-title"/></div>
 </div>
-<$let sidebarState={{$:/state/td-sidebar}}>
-<div class={{{ [<sidebarState>match[open]then[td-sidebar td-open]] :else[[td-sidebar]] }}}>
+<!-- The panel + backdrop stay mounted; only their `class` toggles, so the CSS transform can
+animate. A wrapping <$let sidebarState=…> would rebuild this subtree on every state change
+(LetWidget.refreshSelf), remounting the panel and making it jump instead of slide. -->
+<div class={{{ [{$:/state/td-sidebar}match[open]then[td-sidebar td-open]] :else[[td-sidebar]] }}}>
 <div class="td-sidebar-head">
 <$image source="AppIcon.svg" class="td-logo"/>
 <$button set="$:/state/td-sidebar" setTo="" class="tc-btn-invisible td-sidebar-close" tooltip={{$:/language/TiddlyDesktop/List/ClearSearch}}>{{$:/core/images/close-button}}</$button>
@@ -21,10 +23,9 @@ title: WikiListToolbar
 </$set>
 </div>
 </div>
-<div class={{{ [<sidebarState>match[open]then[td-backdrop td-open]] :else[[td-backdrop]] }}}>
+<div class={{{ [{$:/state/td-sidebar}match[open]then[td-backdrop td-open]] :else[[td-backdrop]] }}}>
 <$button set="$:/state/td-sidebar" setTo="" class="tc-btn-invisible td-backdrop-hit"/>
 </div>
-</$let>
 <$reveal type="match" state="$:/state/td-share-mode" text="yes">
 <div class="td-share-overlay">
 <div class="td-share-panel">

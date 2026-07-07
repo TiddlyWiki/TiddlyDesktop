@@ -49,4 +49,25 @@
     <string name="quicknote_failed">无法添加笔记</string>
     <string name="quicknote_tiddler_title">笔记 %1$s</string>
     <string name="quicknote_widget_description">向 wiki 添加一条快速笔记</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">允许存储访问权限</string>
+    <string name="storage_access_message">TiddlyDesktop 直接从存储中打开您的维基。请授予“所有文件访问权限”，以便读取和保存您的维基文件和文件夹。</string>
+    <string name="storage_access_open_settings">打开设置</string>
+    <string name="storage_access_later">以后</string>
+    <string name="toast_pick_on_device_folder">请选择此设备上的文件夹（不支持云存储）</string>
+    <string name="toast_pick_on_device_file">请选择此设备上的文件（不支持云存储）</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">未保存的更改</string>
+    <string name="unsaved_message">此维基有未保存的更改。关闭前保存吗？</string>
+    <string name="unsaved_save">保存并关闭</string>
+    <string name="unsaved_discard">不保存并关闭</string>
+    <string name="wiki_group_title">打开的维基</string>
+    <string name="wiki_keepalive_title">维基就绪</string>
+    <string name="wiki_keepalive_text">正在保持一个维基以便恢复</string>
+    <string name="wiki_notification_running">点按以打开</string>
+    <plurals name="wiki_group_count">
+        <item quantity="other">%d 个打开的维基</item>
+    </plurals>
 </resources>

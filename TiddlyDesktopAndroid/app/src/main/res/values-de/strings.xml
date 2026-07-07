@@ -49,4 +49,26 @@
     <string name="quicknote_failed">Notiz konnte nicht hinzugefügt werden</string>
     <string name="quicknote_tiddler_title">Notiz %1$s</string>
     <string name="quicknote_widget_description">Eine Schnellnotiz zu einem Wiki hinzufügen</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Speicherzugriff erlauben</string>
+    <string name="storage_access_message">TiddlyDesktop öffnet deine Wikis direkt aus dem Speicher. Bitte erteile die Berechtigung „Zugriff auf alle Dateien“, damit es deine Wiki-Dateien und -Ordner lesen und speichern kann.</string>
+    <string name="storage_access_open_settings">Einstellungen öffnen</string>
+    <string name="storage_access_later">Später</string>
+    <string name="toast_pick_on_device_folder">Bitte wähle einen Ordner auf diesem Gerät (Cloud-Speicher wird nicht unterstützt)</string>
+    <string name="toast_pick_on_device_file">Bitte wähle eine Datei auf diesem Gerät (Cloud-Speicher wird nicht unterstützt)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Ungespeicherte Änderungen</string>
+    <string name="unsaved_message">Dieses Wiki hat ungespeicherte Änderungen. Vor dem Schließen speichern?</string>
+    <string name="unsaved_save">Speichern &amp; schließen</string>
+    <string name="unsaved_discard">Ohne Speichern schließen</string>
+    <string name="wiki_group_title">Offene Wikis</string>
+    <string name="wiki_keepalive_title">Wiki bereit</string>
+    <string name="wiki_keepalive_text">Ein Wiki wird zum Fortsetzen bereitgehalten</string>
+    <string name="wiki_notification_running">Zum Öffnen tippen</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d offenes Wiki</item>
+        <item quantity="other">%d offene Wikis</item>
+    </plurals>
 </resources>

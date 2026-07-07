@@ -49,4 +49,25 @@
     <string name="quicknote_failed">メモを追加できませんでした</string>
     <string name="quicknote_tiddler_title">メモ %1$s</string>
     <string name="quicknote_widget_description">ウィキにクイックメモを追加</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">ストレージへのアクセスを許可</string>
+    <string name="storage_access_message">TiddlyDesktop はウィキをストレージから直接開きます。ウィキのファイルとフォルダーを読み書きできるように、「すべてのファイルへのアクセス」を許可してください。</string>
+    <string name="storage_access_open_settings">設定を開く</string>
+    <string name="storage_access_later">後で</string>
+    <string name="toast_pick_on_device_folder">この端末内のフォルダーを選択してください（クラウドストレージには対応していません）</string>
+    <string name="toast_pick_on_device_file">この端末内のファイルを選択してください（クラウドストレージには対応していません）</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">未保存の変更</string>
+    <string name="unsaved_message">このウィキには未保存の変更があります。閉じる前に保存しますか？</string>
+    <string name="unsaved_save">保存して閉じる</string>
+    <string name="unsaved_discard">保存せずに閉じる</string>
+    <string name="wiki_group_title">開いているウィキ</string>
+    <string name="wiki_keepalive_title">ウィキの準備完了</string>
+    <string name="wiki_keepalive_text">再開できるようウィキを保持しています</string>
+    <string name="wiki_notification_running">タップして開く</string>
+    <plurals name="wiki_group_count">
+        <item quantity="other">開いているウィキ %d 件</item>
+    </plurals>
 </resources>

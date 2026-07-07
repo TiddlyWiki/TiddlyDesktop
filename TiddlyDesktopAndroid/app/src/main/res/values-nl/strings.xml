@@ -49,4 +49,26 @@
     <string name="quicknote_failed">Kon de notitie niet toevoegen</string>
     <string name="quicknote_tiddler_title">Notitie %1$s</string>
     <string name="quicknote_widget_description">Voeg een snelle notitie toe aan een wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Opslagtoegang toestaan</string>
+    <string name="storage_access_message">TiddlyDesktop opent je wiki\'s rechtstreeks vanuit de opslag. Verleen de machtiging "Toegang tot alle bestanden" zodat het je wikibestanden en -mappen kan lezen en opslaan.</string>
+    <string name="storage_access_open_settings">Instellingen openen</string>
+    <string name="storage_access_later">Later</string>
+    <string name="toast_pick_on_device_folder">Kies een map op dit apparaat (cloudopslag wordt niet ondersteund)</string>
+    <string name="toast_pick_on_device_file">Kies een bestand op dit apparaat (cloudopslag wordt niet ondersteund)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Niet-opgeslagen wijzigingen</string>
+    <string name="unsaved_message">Deze wiki heeft niet-opgeslagen wijzigingen. Opslaan voor het sluiten?</string>
+    <string name="unsaved_save">Opslaan en sluiten</string>
+    <string name="unsaved_discard">Sluiten zonder opslaan</string>
+    <string name="wiki_group_title">Open wiki\'s</string>
+    <string name="wiki_keepalive_title">Wiki gereed</string>
+    <string name="wiki_keepalive_text">Een wiki wordt gereed gehouden om te hervatten</string>
+    <string name="wiki_notification_running">Tik om te openen</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d open wiki</item>
+        <item quantity="other">%d open wiki\'s</item>
+    </plurals>
 </resources>

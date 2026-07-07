@@ -51,4 +51,26 @@
     <string name="quicknote_failed">Non poteva adder le nota</string>
     <string name="quicknote_tiddler_title">Nota %1$s</string>
     <string name="quicknote_widget_description">Adder un nota rapide a un wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Permitter le accesso al immagazinage</string>
+    <string name="storage_access_message">TiddlyDesktop aperi tu wikis directemente ab le immagazinage. Per favor concede le permission «Accesso a tote le files» pro que illo pote leger e salveguardar tu files e dossieres de wiki.</string>
+    <string name="storage_access_open_settings">Aperir le configurationes</string>
+    <string name="storage_access_later">Plus tarde</string>
+    <string name="toast_pick_on_device_folder">Per favor selige un dossier in iste dispositivo (le immagazinage in nube non es supportate)</string>
+    <string name="toast_pick_on_device_file">Per favor selige un file in iste dispositivo (le immagazinage in nube non es supportate)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Modificationes non salveguardate</string>
+    <string name="unsaved_message">Iste wiki ha modificationes non salveguardate. Salveguardar ante de clauder?</string>
+    <string name="unsaved_save">Salveguardar e clauder</string>
+    <string name="unsaved_discard">Clauder sin salveguardar</string>
+    <string name="wiki_group_title">Wikis aperte</string>
+    <string name="wiki_keepalive_title">Wiki preste</string>
+    <string name="wiki_keepalive_text">Un wiki es mantenite preste a reprender</string>
+    <string name="wiki_notification_running">Tocca pro aperir</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d wiki aperte</item>
+        <item quantity="other">%d wikis aperte</item>
+    </plurals>
 </resources>
