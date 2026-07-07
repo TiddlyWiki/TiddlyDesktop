@@ -138,6 +138,14 @@ class WikiActivity : ComponentActivity() {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             settings.mediaPlaybackRequiresUserGesture = false
+            // Pinch-zoom. Folder wikis (bundled recent core) already allow it, but many single-file
+            // wikis ship a viewport with user-scalable=no / maximum-scale=1 that the WebView honours,
+            // blocking the gesture. Enable the built-in zoom mechanism (pinch + double-tap) and hide
+            // the deprecated on-screen +/- controls; bridge/pinch-zoom.js neutralises restrictive
+            // viewports so both wiki types behave the same.
+            settings.setSupportZoom(true)
+            settings.builtInZoomControls = true
+            settings.displayZoomControls = false
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, false)
             }
@@ -161,6 +169,7 @@ class WikiActivity : ComponentActivity() {
                     injectAsset(view, SystemBarsBridge.SCRIPT_ASSET)
                     injectAsset(view, "bridge/no-save-notify.js")
                     injectAsset(view, "bridge/wiki-ux.js") // print / fullscreen hooks
+                    injectAsset(view, "bridge/pinch-zoom.js") // allow pinch-zoom on single-file wikis
                     injectAsset(view, "bridge/attachments.js") // external-attachments import hook
                     injectAsset(view, "bridge/embeds.js") // harden allowlisted media embeds (YouTube, …)
                     injectAsset(view, "bridge/collab-getasset.js") // collab "save asset to disk" → SAF

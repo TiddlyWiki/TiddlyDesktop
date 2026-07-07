@@ -237,6 +237,9 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         // here also mis-fires: activeCount is per-process, so starting the :wiki service from the
         // main process finds count 0 there and crashed on Android 14+.
 
+        // Ask for POST_NOTIFICATIONS up front so the persistent keep-alive notification is visible.
+        ensureNotificationPermission()
+
         Thread {
             // Guard the entire boot: an uncaught exception in this thread (e.g. a transient
             // extraction/Node startup error on reopen) would crash the whole app.
@@ -245,6 +248,9 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
                 NodeEnvironment.ensureWikiListExtracted(this)
                 NodeEnvironment.verifyNodeBinary(this)?.let { Log.e(TAG, it) }
                 startWikiListServer()
+                // Persistent foreground notification keeps THIS (main) process — and its WikiList
+                // Node server on 127.0.0.1:38000 — alive in the background so it isn't reaped.
+                WikiListForegroundService.start(this)
                 // Warm the plugin-library enumeration cache so the PluginChooser opens instantly.
                 pluginBridge.listAvailable()
             }.onFailure { Log.e(TAG, "WikiList boot failed: ${it.message}", it) }
@@ -768,9 +774,22 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
     override fun onDestroy() {
         runCatching { unregisterReceiver(metaReceiver) }
         if (isFinishing) {
+            // Only release the keep-alive when the WikiList task is actually closed (swiped away) —
+            // NOT when merely backgrounded, so the Node server survives in the background.
+            WikiListForegroundService.stop(this)
             wikiListServer?.stop()
         }
         super.onDestroy()
+    }
+
+    /** Android 13+: the persistent foreground notification only shows with POST_NOTIFICATIONS. */
+    private fun ensureNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) !=
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            runCatching { requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 9911) }
+        }
     }
 
     companion object {

@@ -1,15 +1,12 @@
 package com.tiddlywiki.tiddlydesktop
 
 import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
-import androidx.core.app.NotificationCompat
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
@@ -27,13 +24,8 @@ class WikiServerService : Service() {
         // Started via startForegroundService(): Android requires startForeground() within ~5s or it
         // kills the process (ForegroundServiceDidNotStartInTimeException). So ALWAYS promote to
         // foreground first — even if we're about to stop — then bail if there's nothing to keep alive.
-        ensureChannel(this)
-        val notif: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(getString(R.string.wiki_server_notification_title))
-            .setContentText(getString(R.string.wiki_server_notification_text))
-            .setSmallIcon(android.R.drawable.stat_notify_sync)
-            .setOngoing(true)
-            .build()
+        ForegroundNotification.ensureChannel(this)
+        val notif: Notification = ForegroundNotification.build(this, WikiServerService::class.java, getString(R.string.wiki_server_notification_text))
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(NOTIFICATION_ID, notif, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
         } else {
@@ -49,7 +41,6 @@ class WikiServerService : Service() {
     }
 
     companion object {
-        private const val CHANNEL_ID = "wiki_server_channel"
         private const val NOTIFICATION_ID = 2001
 
         // WikiList + each open wiki bump this; the service stops at zero (and no warm server held).
@@ -85,21 +76,6 @@ class WikiServerService : Service() {
                 }
             } else {
                 context.stopService(Intent(context, WikiServerService::class.java))
-            }
-        }
-
-        private fun ensureChannel(context: Context) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                val mgr = context.getSystemService(NotificationManager::class.java)
-                if (mgr.getNotificationChannel(CHANNEL_ID) == null) {
-                    mgr.createNotificationChannel(
-                        NotificationChannel(
-                            CHANNEL_ID,
-                            context.getString(R.string.wiki_server_channel_name),
-                            NotificationManager.IMPORTANCE_LOW
-                        )
-                    )
-                }
             }
         }
     }

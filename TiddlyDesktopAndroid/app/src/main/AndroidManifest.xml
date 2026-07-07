@@ -113,11 +113,21 @@
                 android:resource="@xml/quick_note_widget_info" />
         </receiver>
 
-        <!-- Foreground service keeping Node servers / open wikis alive in the background. -->
+        <!-- Foreground service keeping the :wiki-process Node servers / open wikis alive. -->
         <service
             android:name=".WikiServerService"
             android:exported="false"
             android:process=":wiki"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="wiki_server" />
+        </service>
+
+        <!-- Foreground service keeping the MAIN-process WikiList Node server alive in the background. -->
+        <service
+            android:name=".WikiListForegroundService"
+            android:exported="false"
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
