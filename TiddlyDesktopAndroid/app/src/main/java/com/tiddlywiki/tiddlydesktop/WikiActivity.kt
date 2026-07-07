@@ -17,7 +17,6 @@ import com.tiddlywiki.tiddlydesktop.host.MetaBridge
 import com.tiddlywiki.tiddlydesktop.host.SystemBarsBridge
 import com.tiddlywiki.tiddlydesktop.host.WikiUrl
 import com.tiddlywiki.tiddlydesktop.node.NodeServer
-import com.tiddlywiki.tiddlydesktop.node.SafMirror
 import com.tiddlywiki.tiddlydesktop.server.SingleFileWikiServer
 import java.io.File
 
@@ -41,11 +40,6 @@ class WikiActivity : ComponentActivity() {
     private var collabBridge: CollabBridge? = null
     /** Key (wiki path) this folder wiki's server is parked under in WarmNodeServers on close (#3). */
     private var warmKey: String? = null
-    /** Non-null when this folder wiki is a SAF mirror that must be synced back to SAF. */
-    private var mirroredTreeUri: String? = null
-    private var syncThread: Thread? = null
-    @Volatile private var syncing = false
-    @Volatile private var lastSync = 0L
     /** The server URL this window loaded — passed to child (tm-open-window) windows. */
     @Volatile private var loadedServerUrl: String? = null
     @Volatile private var pageReady = false
@@ -261,27 +255,12 @@ class WikiActivity : ComponentActivity() {
                     // Backstage: just load an already-running server (the WikiList itself).
                     serverUrl != null -> serverUrl
                     isFolder -> {
-                        val isSaf = wikiPath.startsWith("content://")
                         warmKey = wikiPath
-                        // #3: reuse a warm server parked for this wiki — skips BOTH the SAF re-mirror
-                        // and the multi-second Node boot. (Assumes the folder wasn't edited by another
-                        // app between close and reopen; our own saves were flushed to SAF on close.)
+                        // #3: reuse a warm server parked for this wiki — skips the multi-second Node
+                        // boot. Node serves the wiki folder directly off its real filesystem path.
                         val warmed = com.tiddlywiki.tiddlydesktop.node.WarmNodeServers.take(this, wikiPath)
-                        val server = if (warmed != null) {
-                            if (isSaf) mirroredTreeUri = wikiPath
-                            folderServer = warmed
-                            warmed
-                        } else {
-                            // M3: SAF folder wikis are mirrored to a local dir Node can serve.
-                            val localFolder = if (isSaf) {
-                                mirroredTreeUri = wikiPath
-                                SafMirror.copyIn(this, wikiPath)
-                            } else {
-                                File(wikiPath)
-                            }
-                            NodeServer(this, localFolder).also { folderServer = it; it.start() }
-                        }
-                        if (mirroredTreeUri != null) startMirrorSync()
+                        val server = warmed?.also { folderServer = it }
+                            ?: NodeServer(this, File(wikiPath)).also { folderServer = it; it.start() }
                         server.url
                     }
                     else -> {
@@ -304,39 +283,6 @@ class WikiActivity : ComponentActivity() {
             val loadUrl = if (!focus.isNullOrBlank()) "$url#${android.net.Uri.encode(focus)}" else url
             runOnUiThread { webView.loadUrl(loadUrl) }
         }.apply { isDaemon = true; start() }
-    }
-
-    /**
-     * Periodically push tiddler files the Node server wrote in the local mirror back to the
-     * SAF folder, so edits persist during the session (not only on close). Incremental: only
-     * files changed since the previous sync.
-     */
-    private fun startMirrorSync() {
-        if (syncThread != null) return
-        syncing = true
-        syncThread = Thread {
-            while (syncing) {
-                try { Thread.sleep(SYNC_INTERVAL_MS) } catch (_: InterruptedException) { break }
-                val tree = mirroredTreeUri ?: continue
-                // Never let a sync failure escape — an uncaught exception here would kill the
-                // whole :wiki process (Android's "app keeps stopping").
-                runCatching { lastSync = SafMirror.copyBack(applicationContext, tree, lastSync) }
-                    .onFailure { Log.w(TAG, "mirror sync failed: ${it.message}") }
-            }
-        }.apply { name = "SafMirrorSync"; isDaemon = true; start() }
-    }
-
-    /** Force a sync now (used on background/close). Runs a full pass to be safe. */
-    private fun syncMirrorNow() {
-        val tree = mirroredTreeUri ?: return
-        val ctx = applicationContext
-        Thread { runCatching { lastSync = SafMirror.copyBack(ctx, tree, 0L) } }.start()
-    }
-
-    override fun onStop() {
-        // Backgrounding (home button) doesn't finish the activity, so sync here too.
-        syncMirrorNow()
-        super.onStop()
     }
 
     override fun onResume() {
@@ -530,42 +476,30 @@ class WikiActivity : ComponentActivity() {
         ).toString()
     }
 
+    /**
+     * The wiki's attachments/ folder on disk: inside the folder wiki itself, or (single-file) in
+     * the wiki's containing folder. Both are now absolute paths (direct file access, no SAF mirror).
+     */
+    private fun attachmentsDir(): File? {
+        val base = if (isFolderFlag) wikiPathField else backupDirField?.ifBlank { null } ?: return null
+        return File(base, "attachments")
+    }
+
     private fun writeAttachment(base64: String, filename: String): String {
         val bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
         val safe = sanitizeAttachmentName(filename)
-        if (isFolderFlag) {
-            val dir = File(SafMirror.localDir(this, wikiPathField), "attachments").apply { mkdirs() }
-            var name = safe; var n = 1
-            while (File(dir, name).exists()) { name = bump(safe, n++) }
-            File(dir, name).writeBytes(bytes)
-            return "./attachments/$name"
-        }
-        // Single-file: store in the wiki's own SAF folder (we hold folder permission for backups).
-        val treeUri = backupDirField?.ifBlank { null } ?: error("no folder access for attachments")
-        val root = androidx.documentfile.provider.DocumentFile.fromTreeUri(this, android.net.Uri.parse(treeUri))
-            ?: error("bad tree")
-        val dir = root.findFile("attachments")?.takeIf { it.isDirectory }
-            ?: root.createDirectory("attachments") ?: error("mkdir attachments failed")
+        val dir = attachmentsDir()?.apply { mkdirs() } ?: error("no folder for attachments")
         var name = safe; var n = 1
-        while (dir.findFile(name) != null) { name = bump(safe, n++) }
-        val f = dir.createFile(mimeFor(name), name) ?: error("createFile failed")
-        contentResolver.openOutputStream(f.uri)?.use { it.write(bytes) }
+        while (File(dir, name).exists()) { name = bump(safe, n++) }
+        File(dir, name).writeBytes(bytes)
         return "./attachments/$name"
     }
 
     /** Read a stored attachment's raw bytes from the wiki's attachments/ folder (null if absent). */
     fun readAttachmentBytes(name: String): ByteArray? = runCatching {
-        val safe = sanitizeAttachmentName(name)
-        if (isFolderFlag) {
-            val f = File(File(SafMirror.localDir(this, wikiPathField), "attachments"), safe)
-            if (f.exists()) f.readBytes() else null
-        } else {
-            val treeUri = backupDirField?.ifBlank { null } ?: return@runCatching null
-            val root = androidx.documentfile.provider.DocumentFile.fromTreeUri(this, android.net.Uri.parse(treeUri)) ?: return@runCatching null
-            val dir = root.findFile("attachments") ?: return@runCatching null
-            val f = dir.findFile(safe) ?: return@runCatching null
-            contentResolver.openInputStream(f.uri)?.use { it.readBytes() }
-        }
+        val dir = attachmentsDir() ?: return@runCatching null
+        val f = File(dir, sanitizeAttachmentName(name))
+        if (f.exists()) f.readBytes() else null
     }.getOrNull()
 
 
@@ -578,18 +512,12 @@ class WikiActivity : ComponentActivity() {
         return if (dot > 0) "${name.substring(0, dot)}-$n${name.substring(dot)}" else "$name-$n"
     }
 
-    private fun mimeFor(name: String): String {
-        val ext = name.substringAfterLast('.', "").lowercase()
-        return android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext) ?: "application/octet-stream"
-    }
 
     private fun toast(msg: String) =
         android.widget.Toast.makeText(this, msg, android.widget.Toast.LENGTH_SHORT).show()
     private fun toast(resId: Int) = toast(getString(resId))
 
     override fun onDestroy() {
-        syncing = false
-        syncThread?.interrupt()
         // Always tear down the collab LAN helper process — even on a non-finishing recreate, so a
         // config change can't orphan it.
         runCatching { collabBridge?.dispose() }
@@ -599,12 +527,6 @@ class WikiActivity : ComponentActivity() {
             // it first — otherwise they'd be left showing a dead (connection-refused) server.
             if (intent.getStringExtra(EXTRA_SERVER_URL) == null) {
                 loadedServerUrl?.let { com.tiddlywiki.tiddlydesktop.host.WikiLauncher.closeChildWindows(this, it) }
-            }
-            // Flush a mirrored SAF folder wiki back to its content:// tree BEFORE parking/stopping
-            // the server (the mirror is static while parked, so this is the authoritative state).
-            mirroredTreeUri?.let { treeUri ->
-                val ctx = applicationContext
-                Thread { runCatching { SafMirror.copyBack(ctx, treeUri, 0L) } }.start()
             }
             // #3: park the folder server warm for an instant reopen instead of killing it. park()
             // sets the warm hold BEFORE wikiClosed() drops the open count, so :wiki is never briefly
@@ -632,7 +554,6 @@ class WikiActivity : ComponentActivity() {
 
     companion object {
         private const val TAG = "WikiActivity"
-        private const val SYNC_INTERVAL_MS = 4000L
         const val EXTRA_WIKI_PATH = "wiki_path"
         const val EXTRA_WIKI_TITLE = "wiki_title"
         const val EXTRA_IS_FOLDER = "is_folder"

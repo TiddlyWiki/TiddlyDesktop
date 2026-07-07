@@ -5,6 +5,14 @@
     <string name="wiki_server_notification_title">TiddlyDesktop is running</string>
     <string name="wiki_server_notification_text">Wiki servers are active</string>
 
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Allow storage access</string>
+    <string name="storage_access_message">TiddlyDesktop opens your wikis directly from storage. Please grant "All files access" so it can read and save your wiki files and folders.</string>
+    <string name="storage_access_open_settings">Open settings</string>
+    <string name="storage_access_later">Later</string>
+    <string name="toast_pick_on_device_folder">Please pick a folder on this device (cloud storage isn\'t supported)</string>
+    <string name="toast_pick_on_device_file">Please pick a file on this device (cloud storage isn\'t supported)</string>
+
     <!-- Toasts / share sheet titles (localized to the system language). -->
     <string name="toast_access_not_granted">Access not granted</string>
     <string name="toast_backup_folder_set">Backup folder set</string>

@@ -9,6 +9,8 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import android.provider.Settings
+import java.io.File
 import android.util.Log
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -56,36 +58,13 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
     }
 
     // SAF pickers, registered before onStart. Persist permission so the wiki reopens later.
-    private var pendingWikiFile: Uri? = null
     private val pickFile = registerForActivityResult(
         OpenWritableDocument()
-    ) { uri ->
-        uri?.let {
-            persistPermission(it)
-            // Also ask for the containing folder so backups can live next to the wiki and
-            // "Reveal" works. Hint the picker at the file's location.
-            pendingWikiFile = it
-            pickWikiFolder.launch(it)
-        }
-    }
-
-    private val pickWikiFolder = registerForActivityResult(
-        ActivityResultContracts.OpenDocumentTree()
-    ) { treeUri ->
-        val file = pendingWikiFile ?: return@registerForActivityResult
-        pendingWikiFile = null
-        if (treeUri == null) {
-            // Folder access is required (backups + attachments live there) — abort the add.
-            toast(R.string.toast_folder_required_not_added)
-            return@registerForActivityResult
-        }
-        persistPermission(treeUri)
-        registerAndOpenWiki(file, isFolder = false, folderUri = treeUri.toString())
-    }
+    ) { uri -> uri?.let { onSingleFilePicked(it) } }
 
     private val pickFolder = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
-    ) { uri -> uri?.let { onWikiPicked(it, isFolder = true) } }
+    ) { uri -> uri?.let { onFolderWikiPicked(it) } }
 
     // Re-grant SAF access before opening a wiki whose persisted permission was lost (e.g. after
     // a reinstall, or restoring the wiki list from a config folder).
@@ -164,18 +143,6 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         ActivityResultContracts.OpenDocumentTree()
     ) { uri -> uri?.let { onBackupFolderPicked(it) } }
 
-    // A freshly-created single-file wiki whose containing folder we're asking the user to grant
-    // (CreateDocument only grants the file; backups + attachments live in the folder).
-    private var pendingNewWiki: Uri? = null
-    private val newWikiFolder = registerForActivityResult(
-        ActivityResultContracts.OpenDocumentTree()
-    ) { treeUri ->
-        val dest = pendingNewWiki ?: return@registerForActivityResult
-        pendingNewWiki = null
-        val folder = if (treeUri != null) { persistPermission(treeUri); treeUri.toString() } else ""
-        registerAndOpenWiki(dest, isFolder = false, folderUri = folder)
-    }
-
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -239,6 +206,8 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
 
         // Ask for POST_NOTIFICATIONS up front so the persistent keep-alive notification is visible.
         ensureNotificationPermission()
+        // Direct-path wiki access needs All-Files-Access; prompt (with a link to Settings) if missing.
+        ensureStorageAccess()
 
         Thread {
             // Guard the entire boot: an uncaught exception in this thread (e.g. a transient
@@ -341,23 +310,37 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
 
     // ── picker result handling ───────────────────────────────────────────────────
 
-    private fun onWikiPicked(uri: Uri, isFolder: Boolean) {
-        persistPermission(uri)
-        registerAndOpenWiki(uri, isFolder)
-    }
-
     private fun persistPermission(uri: Uri) {
         val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
         runCatching { contentResolver.takePersistableUriPermission(uri, flags) }
     }
 
-    /** Register a wiki as a tiddler in the (node-served, persisted) WikiList, then open it. */
-    private fun registerAndOpenWiki(uri: Uri, isFolder: Boolean, folderUri: String = "") {
-        val url = WikiUrl.encode(uri.toString(), isFolder)
-        val title = displayName(uri, isFolder)
-        val readablePath = readablePath(uri, isFolder)
+    /** A folder wiki was picked: resolve to an absolute path (on-device only) and register it. */
+    private fun onFolderWikiPicked(uri: Uri) {
+        val path = com.tiddlywiki.tiddlydesktop.host.SafPaths.toFilePath(uri)
+        if (path == null) { toast(R.string.toast_pick_on_device_folder); return }
+        registerAndOpenWiki(path, isFolder = true)
+    }
+
+    /** A single-file wiki was picked: resolve to an absolute path; its folder is the parent dir. */
+    private fun onSingleFilePicked(uri: Uri) {
+        val path = com.tiddlywiki.tiddlydesktop.host.SafPaths.toFilePath(uri)
+        if (path == null) { toast(R.string.toast_pick_on_device_file); return }
+        registerAndOpenWiki(path, isFolder = false, folderPath = File(path).parent ?: "")
+    }
+
+    /**
+     * Register a wiki as a tiddler in the (node-served, persisted) WikiList, then open it. [path]
+     * is an absolute filesystem path; [folderPath] is the containing folder (backups + attachments)
+     * for single-file wikis, defaulting to the wiki's own folder.
+     */
+    private fun registerAndOpenWiki(path: String, isFolder: Boolean, folderPath: String = "") {
+        val url = WikiUrl.encode(path, isFolder)
+        val name = File(path).name
+        val title = (if (isFolder) name else name.substringBeforeLast('.')).ifBlank { "Wiki" }
+        val folder = folderPath.ifBlank { if (isFolder) path else File(path).parent ?: "" }
         val js = "window.__tdAddWiki && window.__tdAddWiki(" +
-            "${q(url)},${q(title)},\"\",${isFolder},${q(readablePath)},${q(folderUri)});"
+            "${q(url)},${q(title)},\"\",${isFolder},${q(path)},${q(folder)});"
         // Register with the filename first, then fill in live SiteTitle/subtitle/favicon.
         webView.post { webView.evaluateJavascript(js) { refreshMeta(url) } }
     }
@@ -368,20 +351,20 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
 
     // ── config folder (persistent settings) ─────────────────────────────────────────
 
+    // Holds an absolute folder path (was a content:// URI before direct-file access).
     private val configFolderUriFile get() = java.io.File(filesDir, "config-folder.uri")
-    private fun configFolderUri(): String? =
+    private fun configFolderPathOrNull(): String? =
         configFolderUriFile.takeIf { it.exists() }?.readText()?.trim()?.ifBlank { null }
-    private fun configTree(): androidx.documentfile.provider.DocumentFile? =
-        configFolderUri()?.let { androidx.documentfile.provider.DocumentFile.fromTreeUri(this, Uri.parse(it)) }
+    private fun configDir(): File? = configFolderPathOrNull()?.let { File(it) }
 
     override fun pickConfigFolder() = runOnUiThread { pickConfigFolderLauncher.launch(null) }
 
     private fun onConfigFolderPicked(uri: Uri) {
-        persistPermission(uri)
-        configFolderUriFile.writeText(uri.toString())
-        val display = readablePath(uri, isFolder = true)
+        val path = com.tiddlywiki.tiddlydesktop.host.SafPaths.toFilePath(uri)
+        if (path == null) { toast(R.string.toast_pick_on_device_folder); return }
+        configFolderUriFile.writeText(path)
         webView.evaluateJavascript(
-            "window.__tdSetConfigPath && window.__tdSetConfigPath(${q(display)});" +
+            "window.__tdSetConfigPath && window.__tdSetConfigPath(${q(path)});" +
                 "window.__tdConfigFolderPicked && window.__tdConfigFolderPicked();", null
         )
         toast(R.string.toast_config_folder_set)
@@ -390,64 +373,65 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
     override fun exportSettings(json: String) {
         Thread {
             runCatching {
-                val root = configTree() ?: return@runCatching
-                val f = root.findFile(SETTINGS_FILE)
-                    ?: root.createFile("application/json", SETTINGS_FILE) ?: return@runCatching
-                contentResolver.openOutputStream(f.uri, "wt")?.use { it.write(json.toByteArray()) }
+                val dir = configDir()?.apply { mkdirs() } ?: return@runCatching
+                File(dir, SETTINGS_FILE).writeText(json)
             }.onFailure { Log.w(TAG, "exportSettings failed: ${it.message}") }
         }.apply { isDaemon = true; start() }
     }
 
     override fun readConfigJson(): String = runCatching {
-        val f = configTree()?.findFile(SETTINGS_FILE) ?: return ""
-        contentResolver.openInputStream(f.uri)?.use { it.readBytes().toString(Charsets.UTF_8) } ?: ""
+        val f = configDir()?.let { File(it, SETTINGS_FILE) } ?: return ""
+        if (f.exists()) f.readText() else ""
     }.getOrElse { "" }
 
     override fun saveWikiList(json: String) =
         com.tiddlywiki.tiddlydesktop.host.WikiListStore.save(this, json)
 
-    override fun configFolderPath(): String =
-        configFolderUri()?.let { runCatching { readablePath(Uri.parse(it), isFolder = true) }.getOrDefault("") } ?: ""
+    override fun configFolderPath(): String = configFolderPathOrNull() ?: ""
 
     override fun openConfigFolder() = runOnUiThread {
-        configFolderUri()?.let { openTree(it) } ?: toast(R.string.toast_no_config_folder)
+        configFolderPathOrNull()?.let { openPath(it) } ?: toast(R.string.toast_no_config_folder)
     }
 
     // ── global backup folder ─────────────────────────────────────────────────────────
 
-    private fun backupFolderUri(): String? = com.tiddlywiki.tiddlydesktop.node.Backups
+    // Holds an absolute folder path (was a content:// URI before direct-file access).
+    private fun backupFolderPathOrNull(): String? = com.tiddlywiki.tiddlydesktop.node.Backups
         .backupFolderUriFile(this).takeIf { it.exists() }?.readText()?.trim()?.ifBlank { null }
 
     override fun pickBackupFolder() = runOnUiThread { pickBackupFolderLauncher.launch(null) }
 
     private fun onBackupFolderPicked(uri: Uri) {
-        persistPermission(uri)
-        com.tiddlywiki.tiddlydesktop.node.Backups.backupFolderUriFile(this).writeText(uri.toString())
-        val display = readablePath(uri, isFolder = true)
-        webView.evaluateJavascript("window.__tdSetBackupPath && window.__tdSetBackupPath(${q(display)});", null)
+        val path = com.tiddlywiki.tiddlydesktop.host.SafPaths.toFilePath(uri)
+        if (path == null) { toast(R.string.toast_pick_on_device_folder); return }
+        com.tiddlywiki.tiddlydesktop.node.Backups.backupFolderUriFile(this).writeText(path)
+        webView.evaluateJavascript("window.__tdSetBackupPath && window.__tdSetBackupPath(${q(path)});", null)
         toast(R.string.toast_backup_folder_set)
     }
 
-    override fun backupFolderPath(): String =
-        backupFolderUri()?.let { runCatching { readablePath(Uri.parse(it), isFolder = true) }.getOrDefault("") } ?: ""
+    override fun backupFolderPath(): String = backupFolderPathOrNull() ?: ""
 
     override fun openBackupFolder() = runOnUiThread {
-        backupFolderUri()?.let { openTree(it) } ?: toast(R.string.toast_no_backup_folder)
+        backupFolderPathOrNull()?.let { openPath(it) } ?: toast(R.string.toast_no_backup_folder)
     }
 
     private fun onPluginFolderPicked(uri: Uri) {
-        persistPermission(uri)
-        val display = readablePath(uri, isFolder = true)
+        val path = com.tiddlywiki.tiddlydesktop.host.SafPaths.toFilePath(uri)
+        if (path == null) { toast(R.string.toast_pick_on_device_folder); return }
         toast(R.string.toast_importing_plugins)
         Thread {
-            val ok = com.tiddlywiki.tiddlydesktop.node.SafMirror
-                .importTreeTo(this, uri.toString(), NodeEnvironment.customPluginsDir(this))
+            val dest = NodeEnvironment.customPluginsDir(this)
+            val ok = runCatching {
+                if (dest.exists()) dest.deleteRecursively()
+                dest.mkdirs()
+                File(path).copyRecursively(dest, overwrite = true)
+            }.getOrElse { Log.e(TAG, "plugin import failed: ${it.message}"); false }
             pluginBridge.invalidateCache()
             runCatching { pluginBridge.listAvailable() } // re-warm
             runOnUiThread {
                 if (ok) {
                     webView.evaluateJavascript(
-                        "window.__tdSetPluginPath && window.__tdSetPluginPath(${q(display)});", null
+                        "window.__tdSetPluginPath && window.__tdSetPluginPath(${q(path)});", null
                     )
                     toast(R.string.toast_custom_plugin_folder_set)
                 } else toast(R.string.toast_import_folder_failed)
@@ -456,35 +440,23 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
     }
 
     override fun revealFolder(treeUri: String) = runOnUiThread {
-        if (treeUri.isBlank()) {
-            toast(R.string.toast_no_folder_access_reveal)
-            return@runOnUiThread
-        }
-        openTree(treeUri)
+        if (treeUri.isBlank()) { toast(R.string.toast_no_folder_access_reveal); return@runOnUiThread }
+        openPath(treeUri)
     }
 
-    /** Open a SAF *tree* URI in the file manager (as its root document, not the raw tree URI). */
-    private fun openTree(treeUri: String) {
-        val tree = Uri.parse(treeUri)
-        val docUri = runCatching {
-            DocumentsContract.buildDocumentUriUsingTree(tree, DocumentsContract.getTreeDocumentId(tree))
-        }.getOrNull() ?: tree
+    /** Open a folder path in the device file manager (via its external-storage document URI). */
+    private fun openPath(path: String) {
+        val docUri = com.tiddlywiki.tiddlydesktop.host.SafPaths.documentUri(path)
+        if (docUri == null) { toast(R.string.toast_open_folder_failed); return }
         openDirectory(docUri)
     }
 
     override fun revealBackups(treeUri: String, url: String) = runOnUiThread {
-        if (treeUri.isBlank()) {
-            toast(R.string.toast_no_folder_access_reveal)
-            return@runOnUiThread
-        }
-        val path = WikiUrl.decode(url)?.path
-        val fileName = path?.let { Uri.parse(it).lastPathSegment?.substringAfterLast('/')?.substringAfterLast(':') }
-            ?: "wiki.html"
-        val backups = runCatching {
-            androidx.documentfile.provider.DocumentFile.fromTreeUri(this, Uri.parse(treeUri))
-                ?.findFile(com.tiddlywiki.tiddlydesktop.node.Backups.backupDirName(fileName))
-        }.getOrNull()
-        if (backups != null) openDirectory(backups.uri) else revealFolder(treeUri)
+        if (treeUri.isBlank()) { toast(R.string.toast_no_folder_access_reveal); return@runOnUiThread }
+        val wikiPath = WikiUrl.decode(url)?.path
+        val fileName = wikiPath?.let { File(it).name } ?: "wiki.html"
+        val backupDir = File(treeUri, com.tiddlywiki.tiddlydesktop.node.Backups.backupDirName(fileName))
+        if (backupDir.isDirectory) openPath(backupDir.absolutePath) else openPath(treeUri)
     }
 
     private fun openDirectory(dirUri: Uri) {
@@ -557,30 +529,25 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
     private fun onDestPicked(dest: Uri) {
         val op = pendingOp ?: return
         pendingOp = null
-        persistPermission(dest)
+        val destPath = com.tiddlywiki.tiddlydesktop.host.SafPaths.toFilePath(dest)
+        if (destPath == null) {
+            toast(if (op.destIsFolder) R.string.toast_pick_on_device_folder else R.string.toast_pick_on_device_file)
+            return
+        }
         toast(R.string.toast_working)
         Thread {
             val ok = when (op.type) {
-                "clone-url" -> WikiOps.cloneFromUrl(this, op.source, dest.toString())
-                "clone-file" -> WikiOps.cloneFile(this, op.source, dest.toString())
-                "clone-folder" -> WikiOps.cloneFolder(this, op.source, dest.toString())
-                "convert-file2folder" -> WikiOps.fileToFolder(this, op.source, dest.toString())
-                "convert-folder2file" -> WikiOps.folderToFile(this, op.source, dest.toString())
+                "clone-url" -> WikiOps.cloneFromUrl(this, op.source, destPath)
+                "clone-file" -> WikiOps.cloneFile(this, op.source, destPath)
+                "clone-folder" -> WikiOps.cloneFolder(this, op.source, destPath)
+                "convert-file2folder" -> WikiOps.fileToFolder(this, op.source, destPath)
+                "convert-folder2file" -> WikiOps.folderToFile(this, op.source, destPath)
                 else -> false
             }
             runOnUiThread {
-                when {
-                    !ok -> toast(R.string.toast_operation_failed)
-                    // Folder wiki: the picked tree already grants folder access.
-                    op.destIsFolder -> registerAndOpenWiki(dest, isFolder = true)
-                    // New single-file wiki: also ask for its containing folder now (backups +
-                    // attachments live there), so opening it doesn't prompt a re-grant later.
-                    else -> {
-                        pendingNewWiki = dest
-                        toast(R.string.toast_regrant_folder)
-                        newWikiFolder.launch(null)
-                    }
-                }
+                if (!ok) toast(R.string.toast_operation_failed)
+                // Direct paths: the containing folder (backups + attachments) is just the parent dir.
+                else registerAndOpenWiki(destPath, isFolder = op.destIsFolder)
             }
         }.apply { isDaemon = true; start() }
     }
@@ -609,21 +576,6 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         val volName = if (parts[0] == "primary") "Internal storage" else parts[0]
         val rel = parts.getOrElse(1) { "" }
         return if (rel.isEmpty()) volName else "$volName/$rel"
-    }
-
-    private fun displayName(uri: Uri, isFolder: Boolean): String {
-        if (isFolder) {
-            val docId = runCatching { DocumentsContract.getTreeDocumentId(uri) }.getOrNull()
-            docId?.substringAfterLast('/')?.substringAfterLast(':')
-                ?.takeIf { it.isNotBlank() }?.let { return it }
-        }
-        contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)?.use { c ->
-            if (c.moveToFirst()) {
-                val idx = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                if (idx >= 0) c.getString(idx)?.let { return it.substringBeforeLast('.') }
-            }
-        }
-        return uri.lastPathSegment?.substringAfterLast('/') ?: "Wiki"
     }
 
     /** JSON-encode for safe splicing into an evaluateJavascript literal. */
@@ -660,6 +612,8 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
 
     override fun onResume() {
         super.onResume()
+        // Re-check All-Files-Access: the user grants it in Settings and returns here.
+        ensureStorageAccess()
         // Returning to the WikiList (e.g. after editing a wiki): re-extract titles/favicons
         // so rows reflect the latest content. No-op until the page has loaded.
         if (this::webView.isInitialized) {
@@ -780,6 +734,41 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
             wikiListServer?.stop()
         }
         super.onDestroy()
+    }
+
+    private var storageDialog: android.app.AlertDialog? = null
+
+    /**
+     * Direct-path wiki access needs All-Files-Access (MANAGE_EXTERNAL_STORAGE) on Android 11+, or
+     * WRITE_EXTERNAL_STORAGE on 10 and below. If it isn't granted, show a blocking prompt with an
+     * "Open settings" button that deep-links to the toggle. Called on startup and every onResume,
+     * so returning from the Settings screen dismisses it automatically once granted.
+     */
+    private fun ensureStorageAccess() {
+        if (com.tiddlywiki.tiddlydesktop.host.StorageAccess.isGranted(this)) {
+            storageDialog?.dismiss(); storageDialog = null
+            return
+        }
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            runCatching { requestPermissions(arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE), 9912) }
+            return
+        }
+        if (storageDialog?.isShowing == true) return
+        storageDialog = android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.storage_access_title)
+            .setMessage(R.string.storage_access_message)
+            .setCancelable(false)
+            .setPositiveButton(R.string.storage_access_open_settings) { _, _ ->
+                runCatching { startActivity(com.tiddlywiki.tiddlydesktop.host.StorageAccess.settingsIntent(this)) }
+                    .onFailure {
+                        runCatching {
+                            startActivity(Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
+                                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                        }
+                    }
+            }
+            .setNegativeButton(R.string.storage_access_later, null)
+            .show()
     }
 
     /** Android 13+: the persistent foreground notification only shows with POST_NOTIFICATIONS. */

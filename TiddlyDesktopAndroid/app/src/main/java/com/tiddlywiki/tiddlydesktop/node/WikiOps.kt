@@ -41,15 +41,14 @@ object WikiOps {
         return writeBytes(context, destFileUri, bytes)
     }
 
-    /** Copy an existing folder wiki ([sourcePath]: content:// tree) into [destTreeUri]. */
-    fun cloneFolder(context: Context, sourcePath: String, destTreeUri: String): Boolean {
-        val local = if (sourcePath.startsWith("content://"))
-            SafMirror.copyIn(context, sourcePath) else File(sourcePath)
-        return SafMirror.exportFolderToTree(context, local, destTreeUri)
-    }
+    /** Copy an existing folder wiki ([sourcePath]) into [destFolder] (both absolute paths). */
+    fun cloneFolder(context: Context, sourcePath: String, destFolder: String): Boolean = try {
+        val dest = File(destFolder).apply { mkdirs() }
+        File(sourcePath).copyRecursively(dest, overwrite = true); true
+    } catch (e: Exception) { Log.e(TAG, "cloneFolder failed: ${e.message}"); false }
 
-    /** Convert a single-file wiki ([sourcePath]) into a folder wiki at [destTreeUri]. */
-    fun fileToFolder(context: Context, sourcePath: String, destTreeUri: String): Boolean {
+    /** Convert a single-file wiki ([sourcePath]) into a folder wiki at [destFolder]. */
+    fun fileToFolder(context: Context, sourcePath: String, destFolder: String): Boolean {
         val bytes = readBytes(context, sourcePath) ?: return false
         val work = File(NodeEnvironment.workDir(context), "f2f-${System.currentTimeMillis()}")
         val src = File(work, "source.html"); val out = File(work, "output")
@@ -63,17 +62,18 @@ object WikiOps {
         if (ok) {
             ensureServerPlugins(File(out, "tiddlywiki.info"))
             // The conversion only counts as done if the folder (incl. tiddlywiki.info) actually
-            // lands in the user's SAF destination — otherwise the "wiki" they open is empty.
-            ok = SafMirror.exportFolderToTree(context, out, destTreeUri)
+            // lands in the user's destination — otherwise the "wiki" they open is empty.
+            ok = runCatching {
+                out.copyRecursively(File(destFolder).apply { mkdirs() }, overwrite = true); true
+            }.getOrElse { Log.e(TAG, "fileToFolder copy failed: ${it.message}"); false }
         }
         work.deleteRecursively()
         return ok
     }
 
-    /** Convert a folder wiki ([sourcePath]: content:// tree or local) into a file at [destFileUri]. */
+    /** Convert a folder wiki ([sourcePath]) into a single file at [destFileUri]. */
     fun folderToFile(context: Context, sourcePath: String, destFileUri: String): Boolean {
-        val local = if (sourcePath.startsWith("content://"))
-            SafMirror.copyIn(context, sourcePath) else File(sourcePath)
+        val local = File(sourcePath)
         val work = File(NodeEnvironment.workDir(context), "f2file-${System.currentTimeMillis()}")
         val out = File(work, "output"); out.mkdirs()
         val code = NodeEnvironment.runNodeBlocking(context, listOf(
@@ -94,10 +94,10 @@ object WikiOps {
         else File(path).readBytes()
     } catch (e: Exception) { Log.e(TAG, "read $path failed: ${e.message}"); null }
 
-    private fun writeBytes(context: Context, uri: String, bytes: ByteArray): Boolean = try {
-        context.contentResolver.openOutputStream(Uri.parse(uri), "wt")?.use { it.write(bytes) }
+    private fun writeBytes(context: Context, path: String, bytes: ByteArray): Boolean = try {
+        val f = File(path); f.parentFile?.mkdirs(); f.writeBytes(bytes)
         true
-    } catch (e: Exception) { Log.e(TAG, "write $uri failed: ${e.message}"); false }
+    } catch (e: Exception) { Log.e(TAG, "write $path failed: ${e.message}"); false }
 
     /** Ensure a converted folder wiki has tiddlyweb + filesystem plugins so it serves properly. */
     private fun ensureServerPlugins(infoFile: File) {

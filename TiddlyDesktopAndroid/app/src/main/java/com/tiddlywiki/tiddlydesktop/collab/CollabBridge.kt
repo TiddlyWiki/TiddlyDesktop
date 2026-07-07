@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit
  *   - openExternal: system browser for OAuth (bridge A)
  *   - wsCreate/wsSend/wsClose : WebSocket with custom Authorization header (bridge B)
  *   - wikiDir     : base dir string for asset path resolution (bridge C)
- *   - fileCmd     : SAF-backed asset read/write (bridge C) — TODO: wire to SafMirror
+ *   - fileCmd     : asset read/write to the wiki's folder on disk (bridge C)
  *
  * NOT implemented: the LAN peer transport (bridge D) — relay-only works without it.
  *

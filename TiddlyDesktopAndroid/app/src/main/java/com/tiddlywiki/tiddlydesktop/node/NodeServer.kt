@@ -14,8 +14,8 @@ import java.util.concurrent.atomic.AtomicInteger
  * Node servers bind loopback (127.0.0.1) on a free port. The WebView then loads
  * http://127.0.0.1:PORT. One instance per open wiki (and one for the WikiList).
  *
- * NOTE: Node needs a *filesystem* path. SAF (content://) folder wikis must first be
- * copied to a local dir (see SafMirror — TODO) and this server pointed at that copy.
+ * Node needs a *filesystem* path; folder wikis are served directly from their real path in
+ * shared storage (All-Files-Access), so there's no SAF copy/mirror.
  */
 class NodeServer(
     private val context: Context,

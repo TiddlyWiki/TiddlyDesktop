@@ -32,9 +32,27 @@ object Backups {
      */
     fun write(context: Context, wikiPath: String, oldBytes: ByteArray, backupDirUri: String?, backupCount: Int) {
         val target = globalBackupDir(context) ?: backupDirUri
-        if (!target.isNullOrBlank() && writeSaf(context, wikiPath, oldBytes, target, backupCount)) return
+        if (!target.isNullOrBlank()) {
+            // Direct filesystem path (the norm) writes next to the wiki; content:// is legacy SAF.
+            val ok = if (target.startsWith("content://")) writeSaf(context, wikiPath, oldBytes, target, backupCount)
+            else writeFileTree(context, wikiPath, oldBytes, target, backupCount)
+            if (ok) return
+        }
         writeAppPrivate(context, wikiPath, oldBytes, backupCount)
     }
+
+    private fun writeFileTree(context: Context, wikiPath: String, oldBytes: ByteArray, folder: String, count: Int): Boolean =
+        runCatching {
+            val fileName = fileName(wikiPath); val base = baseName(fileName)
+            val dir = File(folder, backupDirName(fileName)).apply { mkdirs() }
+            File(dir, "$base-${ts()}.html").writeBytes(oldBytes)
+            if (count > 0) {
+                dir.listFiles { f -> f.name.startsWith("$base-") }
+                    ?.sortedByDescending { it.lastModified() }?.drop(count)?.forEach { it.delete() }
+            }
+            Log.i(TAG, "Backed up ${oldBytes.size} bytes to $dir")
+            true
+        }.getOrElse { Log.w(TAG, "file backup failed: ${it.message}"); false }
 
     private fun writeSaf(context: Context, wikiPath: String, oldBytes: ByteArray, treeUri: String, count: Int): Boolean =
         runCatching {
