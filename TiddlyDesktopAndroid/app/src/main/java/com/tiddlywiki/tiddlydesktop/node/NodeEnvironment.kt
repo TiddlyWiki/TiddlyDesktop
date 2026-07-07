@@ -9,7 +9,7 @@ import java.util.zip.ZipInputStream
  * Resolves everything the bundled Node.js needs to run on Android and prepares the
  * TiddlyWiki resources on disk.
  *
- * Key facts (see ../../../../../../ANDROID.md Part 2):
+ * Key facts (see README.md → "Node.js integration"):
  *  - The only place Android lets you execute a binary is the app's native library dir,
  *    so the Node binary ships as `libnode.so` in jniLibs and is found there at runtime.
  *  - The Termux-built node links against versioned lib names (libz.so.1, …) that Android
@@ -146,20 +146,16 @@ object NodeEnvironment {
     private fun langPrefs(context: Context) =
         context.getSharedPreferences("wikilist-lang", Context.MODE_PRIVATE)
 
-    /** The active WikiList language code. Defaults to the system language if we ship it, else en-GB. */
-    fun activeWikiListLanguage(context: Context): String {
-        langPrefs(context).getString("active", null)?.let { return it }
-        val all = wikiListLanguagesAll(context)
-        val available = (all.list()?.toSet() ?: emptySet()) + "en-GB"
-        val sys = context.resources.configuration.locales[0]
-        val tag = sys.toLanguageTag()            // e.g. "de-DE"
-        return when {
-            available.contains(tag) -> tag
-            available.contains(sys.language + "-" + sys.language.uppercase()) ->
-                sys.language + "-" + sys.language.uppercase()
-            else -> available.firstOrNull { it.startsWith(sys.language + "-") } ?: "en-GB"
-        }
-    }
+    /**
+     * The active WikiList language code. British English (en-GB) at first start, regardless of the
+     * device locale, and thereafter whatever the user last chose (a saved preference). This MUST be
+     * stable — deriving it from the system locale made it recompute to e.g. "de-DE" once
+     * languages-all/ was populated, so the language switcher's "is this already active?" guard saw
+     * the target language as already active and refused to reload. en-GB lives in the core (no
+     * plugin), so first start needs no language plugin loaded.
+     */
+    fun activeWikiListLanguage(context: Context): String =
+        langPrefs(context).getString("active", null) ?: "en-GB"
 
     fun setActiveWikiListLanguage(context: Context, code: String) {
         langPrefs(context).edit().putString("active", code).apply()

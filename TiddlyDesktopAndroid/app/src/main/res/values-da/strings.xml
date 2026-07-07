@@ -32,6 +32,8 @@
     <string name="share_as_text">Del som tekst</string>
     <string name="share_as_tid">Del som .tid</string>
     <string name="share_as_html">Del som HTML</string>
+    <string name="share_as_json">Del som JSON</string>
+    <string name="share_as_csv">Del som CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">Eksterne vedhæftninger (Android)</string>
@@ -71,4 +73,6 @@
         <item quantity="one">%d åben wiki</item>
         <item quantity="other">%d åbne wikier</item>
     </plurals>
+    <string name="reveal_chooser">Åbn mappe i…</string>
+    <string name="reveal_path_hint">Mappe: %1$s</string>
 </resources>

@@ -39,7 +39,9 @@ animate. A wrapping <$let sidebarState=…> would rebuild this subtree on every 
 </div>
 </$list>
 <div class="td-share-list">
-<$list filter="[tag[wikilist]]" variable="wurl">
+<!-- Exclude TiddlyWiki Classic wikis: sharing uses the TW5 import API ($tw), which they don't have,
+so a share to a classic wiki would silently do nothing. Classic wikis carry Config/classic/<url>=yes. -->
+<$list filter="[tag[wikilist]] :filter[addprefix[$:/TiddlyDesktop/Config/classic/]is[missing]]" variable="wurl">
 <$button class="td-button td-share-item">
 <$action-sendmessage $message="tiddlydesktop-share-to-wiki" $param=<<wurl>>/>
 <$transclude tiddler={{{ [<wurl>addprefix[$:/TiddlyDesktop/Config/title/]] }}} field="text"><$text text=<<wurl>>/></$transclude>

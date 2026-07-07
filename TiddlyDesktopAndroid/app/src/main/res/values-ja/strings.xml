@@ -32,6 +32,8 @@
     <string name="share_as_text">テキストとして共有</string>
     <string name="share_as_tid">.tid として共有</string>
     <string name="share_as_html">HTML として共有</string>
+    <string name="share_as_json">JSON として共有</string>
+    <string name="share_as_csv">CSV として共有</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">外部添付ファイル (Android)</string>
@@ -70,4 +72,6 @@
     <plurals name="wiki_group_count">
         <item quantity="other">開いているウィキ %d 件</item>
     </plurals>
+    <string name="reveal_chooser">フォルダーを開く…</string>
+    <string name="reveal_path_hint">フォルダー: %1$s</string>
 </resources>

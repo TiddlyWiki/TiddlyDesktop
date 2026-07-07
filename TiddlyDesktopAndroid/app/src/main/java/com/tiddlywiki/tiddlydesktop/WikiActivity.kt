@@ -29,7 +29,8 @@ import java.io.File
  * Folder wikis: served by a Node `--listen` server ([NodeServer]).
  *
  * In both cases the collab bridge shim + [CollabBridge] JavascriptInterface are injected
- * so the codemirror-6-collab-nwjs plugin works (see ANDROID.md Part 8).
+ * so the codemirror-6-collab-nwjs plugin works (see README.md → "The `window._nwjs*` bridge
+ * contract").
  */
 class WikiActivity : ComponentActivity() {
 
@@ -158,6 +159,20 @@ class WikiActivity : ComponentActivity() {
                 // The interceptor can't do 206 (Chrome retries endlessly), so we DON'T handle
                 // /attachments/ here at all — let it fall through to the respective HTTP server.
 
+                // Serve the bundled pdf.js from a SAME-ORIGIN virtual path (/__td/pdfjs/…) so the
+                // loopback-served wiki page can load it (and its worker) without CORS. Everything
+                // else returns null → falls through to the wiki's Node/HTTP server.
+                override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): android.webkit.WebResourceResponse? {
+                    val path = request.url.path ?: return null
+                    if (path.startsWith("/__td/pdfjs/")) {
+                        val asset = "pdfjs/" + path.substringAfterLast('/')
+                        return runCatching {
+                            android.webkit.WebResourceResponse("application/javascript", "UTF-8", assets.open(asset))
+                        }.getOrNull()
+                    }
+                    return null
+                }
+
                 override fun onPageFinished(view: WebView, url: String) {
                     injectCollabBridge(wikiPath)
                     injectAsset(view, SystemBarsBridge.SCRIPT_ASSET)
@@ -166,6 +181,7 @@ class WikiActivity : ComponentActivity() {
                     injectAsset(view, "bridge/pinch-zoom.js") // allow pinch-zoom on single-file wikis
                     injectAsset(view, "bridge/attachments.js") // external-attachments import hook
                     injectAsset(view, "bridge/embeds.js") // harden allowlisted media embeds (YouTube, …)
+                    injectAsset(view, "bridge/pdf-viewer.js") // inline PDF via pdf.js (WebView has no PDF plugin)
                     injectAsset(view, "bridge/collab-getasset.js") // collab "save asset to disk" → SAF
                     // Saving for TiddlyWiki Classic single-file wikis (no-op for TW5). Single-file
                     // only — classic wikis are single HTML files served by SingleFileWikiServer.
@@ -369,7 +385,9 @@ class WikiActivity : ComponentActivity() {
                 "tooltip" to getString(R.string.share_btn_tooltip),
                 "text" to getString(R.string.share_as_text),
                 "tid" to getString(R.string.share_as_tid),
-                "html" to getString(R.string.share_as_html)
+                "html" to getString(R.string.share_as_html),
+                "json" to getString(R.string.share_as_json),
+                "csv" to getString(R.string.share_as_csv)
             )
         ).toString()
 
@@ -388,16 +406,25 @@ class WikiActivity : ComponentActivity() {
 
         /** Share the tiddler as an actual <title>.tid file via FileProvider. */
         @android.webkit.JavascriptInterface
-        fun shareTidFile(title: String, tidContent: String) = runOnUiThread {
+        fun shareTidFile(title: String, tidContent: String) = shareFile(title, tidContent, "tid", "application/octet-stream")
+
+        /** Share [content] as a <title>.<ext> file (JSON/CSV/…) via FileProvider. */
+        @android.webkit.JavascriptInterface
+        fun shareFile(title: String, content: String, ext: String, mime: String) = runOnUiThread {
             runCatching {
-                val dir = File(cacheDir, "shared").apply { mkdirs() }
+                // Outgoing shares live in their OWN dir — NOT cache/shared/, which the receiving side
+                // (MainActivity.buildFilePayload) purges, which would delete a file shared to ourselves
+                // before it could be read. Drop stale outgoing files (>10 min) to bound growth.
+                val dir = File(cacheDir, "share-out").apply { mkdirs() }
+                runCatching { dir.listFiles()?.forEach { if (System.currentTimeMillis() - it.lastModified() > 600_000) it.delete() } }
                 val safe = title.substringAfterLast('/').replace(Regex("[^A-Za-z0-9._ -]"), "_").trim().ifBlank { "tiddler" }
-                val f = File(dir, "$safe.tid").apply { writeText(tidContent) }
+                val cleanExt = ext.trim().trim('.').ifBlank { "txt" }
+                val f = File(dir, "$safe.$cleanExt").apply { writeText(content) }
                 val uri = androidx.core.content.FileProvider.getUriForFile(this@WikiActivity, "$packageName.fileprovider", f)
                 val send = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                    type = "application/octet-stream"
+                    type = mime.ifBlank { "application/octet-stream" }
                     putExtra(android.content.Intent.EXTRA_STREAM, uri)
-                    putExtra(android.content.Intent.EXTRA_SUBJECT, "$safe.tid")
+                    putExtra(android.content.Intent.EXTRA_SUBJECT, "$safe.$cleanExt")
                     addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
                 }
                 startActivity(android.content.Intent.createChooser(send, getString(R.string.share_tid_file_chooser))

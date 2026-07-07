@@ -32,6 +32,8 @@
     <string name="share_as_text">مشاركة كنص</string>
     <string name="share_as_tid">مشاركة كـ .tid</string>
     <string name="share_as_html">مشاركة كـ HTML</string>
+    <string name="share_as_json">مشاركة كـ JSON</string>
+    <string name="share_as_csv">مشاركة كـ CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">المرفقات الخارجية (Android)</string>
@@ -71,4 +73,6 @@
         <item quantity="one">ويكي مفتوح واحد</item>
         <item quantity="other">%d ويكي مفتوحة</item>
     </plurals>
+    <string name="reveal_chooser">فتح المجلد في…</string>
+    <string name="reveal_path_hint">المجلد: %1$s</string>
 </resources>

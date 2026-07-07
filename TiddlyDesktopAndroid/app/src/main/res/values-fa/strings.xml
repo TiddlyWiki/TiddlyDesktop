@@ -32,6 +32,8 @@
     <string name="share_as_text">اشتراک‌گذاری به‌صورت متن</string>
     <string name="share_as_tid">اشتراک‌گذاری به‌صورت .tid</string>
     <string name="share_as_html">اشتراک‌گذاری به‌صورت HTML</string>
+    <string name="share_as_json">اشتراک‌گذاری به‌صورت JSON</string>
+    <string name="share_as_csv">اشتراک‌گذاری به‌صورت CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">پیوست‌های خارجی (Android)</string>
@@ -71,4 +73,6 @@
         <item quantity="one">%d ویکی باز</item>
         <item quantity="other">%d ویکی باز</item>
     </plurals>
+    <string name="reveal_chooser">باز کردن پوشه در…</string>
+    <string name="reveal_path_hint">پوشه: %1$s</string>
 </resources>

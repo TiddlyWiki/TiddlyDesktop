@@ -34,6 +34,8 @@
     <string name="share_as_text">ਟੈਕਸਟ ਵਜੋਂ ਸਾਂਝਾ ਕਰੋ</string>
     <string name="share_as_tid">.tid ਵਜੋਂ ਸਾਂਝਾ ਕਰੋ</string>
     <string name="share_as_html">HTML ਵਜੋਂ ਸਾਂਝਾ ਕਰੋ</string>
+    <string name="share_as_json">JSON ਵਜੋਂ ਸਾਂਝਾ ਕਰੋ</string>
+    <string name="share_as_csv">CSV ਵਜੋਂ ਸਾਂਝਾ ਕਰੋ</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">ਬਾਹਰੀ ਅਟੈਚਮੈਂਟ (Android)</string>
@@ -73,4 +75,6 @@
         <item quantity="one">%d ਖੁੱਲ੍ਹੀ ਵਿਕੀ</item>
         <item quantity="other">%d ਖੁੱਲ੍ਹੀਆਂ ਵਿਕੀਆਂ</item>
     </plurals>
+    <string name="reveal_chooser">ਫੋਲਡਰ ਇਸ ਵਿੱਚ ਖੋਲ੍ਹੋ…</string>
+    <string name="reveal_path_hint">ਫੋਲਡਰ: %1$s</string>
 </resources>

@@ -32,6 +32,8 @@
     <string name="share_as_text">टेक्स्ट के रूप में साझा करें</string>
     <string name="share_as_tid">.tid के रूप में साझा करें</string>
     <string name="share_as_html">HTML के रूप में साझा करें</string>
+    <string name="share_as_json">JSON के रूप में साझा करें</string>
+    <string name="share_as_csv">CSV के रूप में साझा करें</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">बाहरी अटैचमेंट (Android)</string>
@@ -71,4 +73,6 @@
         <item quantity="one">%d खुली विकी</item>
         <item quantity="other">%d खुली विकी</item>
     </plurals>
+    <string name="reveal_chooser">फ़ोल्डर इसमें खोलें…</string>
+    <string name="reveal_path_hint">फ़ोल्डर: %1$s</string>
 </resources>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
-    <!-- Generated .tid files to share out (see WikiActivity.ShareBridge.shareTidFile). -->
-    <cache-path name="shared" path="shared/" />
+    <!-- Generated files to share OUT (see WikiActivity.ShareBridge.shareFile). Kept separate from
+         the incoming-share staging dir (cache/shared/), which buildFilePayload purges. -->
+    <cache-path name="share-out" path="share-out/" />
 </paths>

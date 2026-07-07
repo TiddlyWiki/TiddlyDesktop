@@ -32,6 +32,8 @@
     <string name="share_as_text">שתף כטקסט</string>
     <string name="share_as_tid">שתף כ-.tid</string>
     <string name="share_as_html">שתף כ-HTML</string>
+    <string name="share_as_json">שתף כ-JSON</string>
+    <string name="share_as_csv">שתף כ-CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">קבצים מצורפים חיצוניים (Android)</string>
@@ -71,4 +73,6 @@
         <item quantity="one">ויקי פתוח אחד</item>
         <item quantity="other">%d ויקי פתוחים</item>
     </plurals>
+    <string name="reveal_chooser">פתיחת התיקייה ב…</string>
+    <string name="reveal_path_hint">תיקייה: %1$s</string>
 </resources>

@@ -32,6 +32,8 @@
     <string name="share_as_text">Κοινή χρήση ως κείμενο</string>
     <string name="share_as_tid">Κοινή χρήση ως .tid</string>
     <string name="share_as_html">Κοινή χρήση ως HTML</string>
+    <string name="share_as_json">Κοινή χρήση ως JSON</string>
+    <string name="share_as_csv">Κοινή χρήση ως CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">Εξωτερικά συνημμένα (Android)</string>
@@ -71,4 +73,6 @@
         <item quantity="one">%d ανοιχτό wiki</item>
         <item quantity="other">%d ανοιχτά wiki</item>
     </plurals>
+    <string name="reveal_chooser">Άνοιγμα φακέλου σε…</string>
+    <string name="reveal_path_hint">Φάκελος: %1$s</string>
 </resources>

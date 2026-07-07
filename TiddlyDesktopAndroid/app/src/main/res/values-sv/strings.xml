@@ -32,6 +32,8 @@
     <string name="share_as_text">Dela som text</string>
     <string name="share_as_tid">Dela som .tid</string>
     <string name="share_as_html">Dela som HTML</string>
+    <string name="share_as_json">Dela som JSON</string>
+    <string name="share_as_csv">Dela som CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">Externa bilagor (Android)</string>
@@ -71,4 +73,6 @@
         <item quantity="one">%d öppen wiki</item>
         <item quantity="other">%d öppna wikier</item>
     </plurals>
+    <string name="reveal_chooser">Öppna mapp i…</string>
+    <string name="reveal_path_hint">Mapp: %1$s</string>
 </resources>

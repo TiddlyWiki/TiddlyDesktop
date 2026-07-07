@@ -8,7 +8,7 @@
 	window.__tdShareTiddler = true;
 
 	// Labels localized to the device language (native strings.xml), with English fallback.
-	var L = { share: "Share", tooltip: "Share this tiddler", text: "Share as text", tid: "Share as .tid", html: "Share as HTML" };
+	var L = { share: "Share", tooltip: "Share this tiddler", text: "Share as text", tid: "Share as .tid", html: "Share as HTML", json: "Share as JSON", csv: "Share as CSV" };
 	try { if (TDShare.uiStrings) { L = Object.assign(L, JSON.parse(TDShare.uiStrings())); } } catch (e) {}
 
 	function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
@@ -23,6 +23,8 @@
 		shareItem("text", L.text) +
 		shareItem("tid", L.tid) +
 		shareItem("html", L.html) +
+		shareItem("json", L.json) +
+		shareItem("csv", L.csv) +
 		'</div></$reveal>';
 
 	function shareItem(fmt, label) {
@@ -50,10 +52,22 @@
 				var title = po.tiddler || event.param;
 				if (!title) { return false; }
 				var fmt = po.format || "text";
+				var exportFilter = "[[" + title + "]]";
 				if (fmt === "tid") {
 					// Share as an actual <title>.tid file (FileProvider).
 					var tid = $tw.wiki.renderTiddler("text/plain", "$:/core/templates/tid-tiddler", { variables: { currentTiddler: title } });
 					TDShare.shareTidFile(title, tid);
+					return false;
+				}
+				if (fmt === "json") {
+					// Standard TiddlyWiki JSON export (re-importable as tiddlers).
+					var json = $tw.wiki.renderTiddler("text/plain", "$:/core/templates/exporters/JsonFile", { variables: { exportFilter: exportFilter } });
+					TDShare.shareFile(title, json, "json", "application/json");
+					return false;
+				}
+				if (fmt === "csv") {
+					var csv = $tw.wiki.renderTiddler("text/plain", "$:/core/templates/exporters/CsvFile", { variables: { exportFilter: exportFilter } });
+					TDShare.shareFile(title, csv, "csv", "text/csv");
 					return false;
 				}
 				var content;

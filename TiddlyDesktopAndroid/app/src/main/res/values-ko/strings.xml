@@ -32,6 +32,8 @@
     <string name="share_as_text">텍스트로 공유</string>
     <string name="share_as_tid">.tid로 공유</string>
     <string name="share_as_html">HTML로 공유</string>
+    <string name="share_as_json">JSON으로 공유</string>
+    <string name="share_as_csv">CSV로 공유</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">외부 첨부 파일 (Android)</string>
@@ -70,4 +72,6 @@
     <plurals name="wiki_group_count">
         <item quantity="other">열린 위키 %d개</item>
     </plurals>
+    <string name="reveal_chooser">폴더 열기…</string>
+    <string name="reveal_path_hint">폴더: %1$s</string>
 </resources>

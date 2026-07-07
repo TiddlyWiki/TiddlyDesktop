@@ -32,6 +32,8 @@
     <string name="share_as_text">Delen als tekst</string>
     <string name="share_as_tid">Delen als .tid</string>
     <string name="share_as_html">Delen als HTML</string>
+    <string name="share_as_json">Delen als JSON</string>
+    <string name="share_as_csv">Delen als CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">Externe bijlagen (Android)</string>
@@ -71,4 +73,6 @@
         <item quantity="one">%d open wiki</item>
         <item quantity="other">%d open wiki\'s</item>
     </plurals>
+    <string name="reveal_chooser">Map openen in…</string>
+    <string name="reveal_path_hint">Map: %1$s</string>
 </resources>

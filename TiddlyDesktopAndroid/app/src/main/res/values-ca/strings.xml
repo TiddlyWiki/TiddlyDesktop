@@ -32,6 +32,8 @@
     <string name="share_as_text">Comparteix com a text</string>
     <string name="share_as_tid">Comparteix com a .tid</string>
     <string name="share_as_html">Comparteix com a HTML</string>
+    <string name="share_as_json">Comparteix com a JSON</string>
+    <string name="share_as_csv">Comparteix com a CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">Adjuncions externes (Android)</string>
@@ -71,4 +73,6 @@
         <item quantity="one">%d wiki obert</item>
         <item quantity="other">%d wikis oberts</item>
     </plurals>
+    <string name="reveal_chooser">Obre la carpeta amb…</string>
+    <string name="reveal_path_hint">Carpeta: %1$s</string>
 </resources>

@@ -32,6 +32,8 @@
     <string name="toast_config_folder_set">Config folder set</string>
     <string name="toast_import_folder_failed">Couldn\'t import that folder</string>
     <string name="toast_open_folder_failed">Couldn\'t open the folder on this device</string>
+    <string name="reveal_chooser">Open folder in…</string>
+    <string name="reveal_path_hint">Folder: %1$s</string>
     <string name="toast_custom_plugin_folder_set">Custom plugin folder set</string>
     <string name="toast_folder_required_not_added">Folder access is required — wiki not added</string>
     <string name="toast_importing_plugins">Importing plugins…</string>
@@ -56,6 +58,8 @@
     <string name="share_as_text">Share as text</string>
     <string name="share_as_tid">Share as .tid</string>
     <string name="share_as_html">Share as HTML</string>
+    <string name="share_as_json">Share as JSON</string>
+    <string name="share_as_csv">Share as CSV</string>
 
     <!-- Quick Note widget + input dialog. -->
     <string name="quicknote_title">Quick note</string>

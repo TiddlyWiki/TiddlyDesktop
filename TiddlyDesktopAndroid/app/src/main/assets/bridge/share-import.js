@@ -1,9 +1,11 @@
 /*
  * Runs inside each wiki window. Defines window.__tdImportShare(payloadJson): imports a shared
- * payload (JSON array of tiddler fields) queued natively (ShareQueue) — text/links as tiddlers,
- * and binary files (image/pdf/…) as external attachments (attachments/ + _canonical_uri) IF the
- * External Attachments plugin is enabled in this wiki, otherwise embedded as base64. Opens the
- * first imported tiddler and saves.
+ * payload (JSON array of entries) queued natively (ShareQueue):
+ *   - text / links               → a tiddler;
+ *   - tiddler-container files     → deserialized into tiddlers (.tid/.json/.html/.csv/.multids/…);
+ *   - other binary files (media)  → external attachment (attachments/ + _canonical_uri) if the
+ *                                   External Attachments plugin is enabled, else embedded as base64.
+ * Opens the first imported tiddler and saves.
  */
 (function () {
 	if (window.__tdImportShareDefined) { return; }
@@ -19,6 +21,29 @@
 		while ($tw.wiki.tiddlerExists(title + " " + n) || $tw.wiki.isShadowTiddler(title + " " + n)) { n++; }
 		return title + " " + n;
 	}
+	// tm-import-tiddlers is handled only by the navigator widget (it bubbles UP to it). Dispatching
+	// on $tw.rootWidget — an ancestor — never reaches it, so find the navigator and dispatch on it.
+	function findNavigator(widget) {
+		if (!widget) { return null; }
+		if (typeof widget.handleImportTiddlersEvent === "function") { return widget; }
+		var kids = widget.children;
+		if (kids) {
+			for (var i = 0; i < kids.length; i++) {
+				var found = findNavigator(kids[i]);
+				if (found) { return found; }
+			}
+		}
+		return null;
+	}
+
+	// Filename extension → TiddlyWiki deserializer content-type (fallback when the wiki's own
+	// $tw.config.fileExtensionInfo registry doesn't cover it).
+	var EXT_TYPE = {
+		".tid": "application/x-tiddler", ".json": "application/json",
+		".html": "text/html", ".htm": "text/html", ".csv": "text/csv",
+		".multids": "application/x-tiddlers", ".tids": "application/x-tiddlers",
+		".tiddler": "application/x-tiddler-html-div"
+	};
 
 	window.__tdImportShare = function (payloadJson) {
 		if (!payloadJson) { return; }
@@ -28,6 +53,9 @@
 				var fieldsList = JSON.parse(payloadJson);
 				var extAttach = externalEnabled();
 				var firstTitle = null;
+				var directAdded = false;   // media / text / link tiddlers added straight in
+				var importTiddlers = [];   // tiddler-container contents → native $:/Import flow
+
 				function importOne(fields) {
 					fields = JSON.parse(JSON.stringify(fields)); // clone
 					fields.title = uniqueTitle(fields.title || "shared");
@@ -57,18 +85,63 @@
 						}
 					}
 					$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(), fields, $tw.wiki.getModificationFields()));
+					directAdded = true;
 					if (!firstTitle) { firstTitle = fields.title; }
 				}
+
+				// A tiddler-container file (its text): deserialize into tiddlers via the type inferred
+				// from the extension, and collect them for TiddlyWiki's native import. If it isn't a
+				// recognised/parseable container, fall back to a single tiddler holding the raw text.
+				function importContainer(text, name) {
+					var ext = "", dot = (name || "").lastIndexOf(".");
+					if (dot >= 0) { ext = name.slice(dot).toLowerCase(); }
+					var type = "";
+					try {
+						if (ext && $tw.config.fileExtensionInfo && $tw.config.fileExtensionInfo[ext]) {
+							type = $tw.config.fileExtensionInfo[ext].type;
+						}
+					} catch (e) {}
+					if (!type) { type = EXT_TYPE[ext] || ""; }
+					var tiddlers = null;
+					if (type) { try { tiddlers = $tw.wiki.deserializeTiddlers(type, text, {}); } catch (e) { tiddlers = null; } }
+					if (tiddlers && tiddlers.length) {
+						tiddlers.forEach(function (t) {
+							if (!t.title) { t.title = name || "shared"; }
+							importTiddlers.push(t);
+						});
+					} else {
+						importOne({ title: name || "shared", text: text, type: type || "text/plain", tags: "shared" });
+					}
+				}
+
 				fieldsList.forEach(function (entry) {
-					if (entry && entry.__tid != null) {
-						// An opened/shared .tid file: deserialize it as a proper tiddler.
-						$tw.wiki.deserializeTiddlers("application/x-tiddler", String(entry.__tid), {}).forEach(importOne);
+					if (entry && entry.__importText != null) {
+						importContainer(String(entry.__importText), entry.__importName || "");
+					} else if (entry && entry.__tid != null) {
+						// Legacy payload shape (older shares): a bare .tid.
+						importContainer(String(entry.__tid), "shared.tid");
 					} else {
 						importOne(entry);
 					}
 				});
-				if (firstTitle) { $tw.rootWidget.dispatchEvent({ type: "tm-navigate", navigateTo: firstTitle }); }
-				$tw.rootWidget.dispatchEvent({ type: "tm-save-wiki" });
+				// Tiddler-container files → TiddlyWiki's native import: stage into $:/Import and show
+				// its review listing (name clashes, import filters, upgrades, confirm/cancel). On
+				// confirm the wiki saves itself, so we don't force a save here for these.
+				if (importTiddlers.length) {
+					var nav = findNavigator($tw.rootWidget);
+					if (nav) {
+						nav.dispatchEvent({ type: "tm-import-tiddlers", param: JSON.stringify(importTiddlers) });
+					} else {
+						// No navigator (unusual) → import directly so nothing is lost, then save.
+						importTiddlers.forEach(function (t) { $tw.wiki.addTiddler(new $tw.Tiddler(t)); });
+						$tw.rootWidget.dispatchEvent({ type: "tm-save-wiki" });
+					}
+				}
+				// Directly-added shares (media / text / links) → open the first and save.
+				if (directAdded) {
+					if (firstTitle) { $tw.rootWidget.dispatchEvent({ type: "tm-navigate", navigateTo: firstTitle }); }
+					$tw.rootWidget.dispatchEvent({ type: "tm-save-wiki" });
+				}
 			} catch (e) {
 				console.error("[TiddlyDesktop] share import failed:", e);
 			}

@@ -32,6 +32,8 @@
     <string name="share_as_text">Поделиться как текст</string>
     <string name="share_as_tid">Поделиться как .tid</string>
     <string name="share_as_html">Поделиться как HTML</string>
+    <string name="share_as_json">Поделиться как JSON</string>
+    <string name="share_as_csv">Поделиться как CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">Внешние вложения (Android)</string>
@@ -71,4 +73,6 @@
         <item quantity="one">%d открытая вики</item>
         <item quantity="other">%d открытых вики</item>
     </plurals>
+    <string name="reveal_chooser">Открыть папку в…</string>
+    <string name="reveal_path_hint">Папка: %1$s</string>
 </resources>

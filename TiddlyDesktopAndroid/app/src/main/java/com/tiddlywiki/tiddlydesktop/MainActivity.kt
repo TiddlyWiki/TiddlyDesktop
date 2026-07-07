@@ -444,11 +444,25 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         openPath(treeUri)
     }
 
-    /** Open a folder path in the device file manager (via its external-storage document URI). */
+    /**
+     * Open a folder in the device file manager, revealing its contents. Tries, in order: a direct
+     * ACTION_VIEW on the folder's external-storage document URI (respects a default file manager);
+     * then the same via a chooser (surfaces any handler even when there's no default, and shows a
+     * graceful "no apps" dialog otherwise); and finally a toast with the exact path so the user is
+     * never left with nothing.
+     */
     private fun openPath(path: String) {
         val docUri = com.tiddlywiki.tiddlydesktop.host.SafPaths.documentUri(path)
-        if (docUri == null) { toast(R.string.toast_open_folder_failed); return }
-        openDirectory(docUri)
+        if (docUri != null) {
+            val view = Intent(Intent.ACTION_VIEW)
+                .setDataAndType(docUri, DocumentsContract.Document.MIME_TYPE_DIR)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (runCatching { startActivity(view); true }.getOrDefault(false)) return
+            val chooser = Intent.createChooser(view, getString(R.string.reveal_chooser))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            if (runCatching { startActivity(chooser); true }.getOrDefault(false)) return
+        }
+        toast(getString(R.string.reveal_path_hint, path))
     }
 
     override fun revealBackups(treeUri: String, url: String) = runOnUiThread {
@@ -457,15 +471,6 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         val fileName = wikiPath?.let { File(it).name } ?: "wiki.html"
         val backupDir = File(treeUri, com.tiddlywiki.tiddlydesktop.node.Backups.backupDirName(fileName))
         if (backupDir.isDirectory) openPath(backupDir.absolutePath) else openPath(treeUri)
-    }
-
-    private fun openDirectory(dirUri: Uri) {
-        runCatching {
-            startActivity(Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(dirUri, DocumentsContract.Document.MIME_TYPE_DIR)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_ACTIVITY_NEW_TASK)
-            })
-        }.onFailure { toast(R.string.toast_open_folder_failed) }
     }
 
     // Last seen modification time per wiki, so we only re-parse files that actually changed.
@@ -698,9 +703,12 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         for (uri in uris) {
             runCatching {
                 val name = androidx.documentfile.provider.DocumentFile.fromSingleUri(this, uri)?.name ?: uri.lastPathSegment ?: ""
-                if (name.endsWith(".tid", true) || uri.toString().endsWith(".tid", true)) {
-                    val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() } ?: return@runCatching
-                    arr.put(org.json.JSONObject().put("__tid", String(bytes, Charsets.UTF_8)))
+                val lower = name.ifBlank { uri.toString() }.lowercase()
+                if (TIDDLER_CONTAINER_EXTS.any { lower.endsWith(it) }) {
+                    // TiddlyWiki tiddler-container files (.tid/.json/.html/.csv/.multids/…): read as
+                    // text so share-import.js can deserialize them into real tiddlers, not a blob.
+                    val text = contentResolver.openInputStream(uri)?.use { it.readBytes().toString(Charsets.UTF_8) } ?: return@runCatching
+                    arr.put(org.json.JSONObject().put("__importText", text).put("__importName", name.ifBlank { "shared" }))
                 } else {
                     // Stream to a temp file (small 8K buffer) — no whole-file-in-RAM, no base64 here.
                     val temp = File(shareTempDir(), "s${System.nanoTime()}")
@@ -804,5 +812,8 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         /** Fixed WikiList server port so a language-switch reboot keeps the same url. */
         private const val WIKILIST_PORT = 38000
         private const val SETTINGS_FILE = "tiddlydesktop-settings.json"
+        /** Shared files with these extensions are read as text and imported as tiddlers (not blobs). */
+        private val TIDDLER_CONTAINER_EXTS =
+            listOf(".tid", ".json", ".html", ".htm", ".csv", ".multids", ".tids", ".tiddler")
     }
 }

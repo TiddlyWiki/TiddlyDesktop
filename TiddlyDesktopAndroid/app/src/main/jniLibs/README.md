@@ -37,7 +37,17 @@ Versioned names (`.so.3`, `.so.78`, …) are recreated at runtime via symlinks �
 
 TiddlyDesktop-RS bundles the same files under
 `tiddlydesktop-rs/src-tauri/resources/node-bin/arm64-v8a/` — you can reuse those directly
-(copy `node` → `libnode.so`, keep the rest). See ANDROID.md Part 2 for the full rationale.
+(copy `node` → `libnode.so`, keep the rest). See
+[`../../../README.md`](../../../README.md) → "Node.js integration" for the full rationale.
+
+## Licenses
+
+These are prebuilt binaries from a **Termux** build (`termux-packages`, Apache-2.0); each retains
+its upstream license — Node.js (MIT; bundles V8 BSD-3-Clause, libuv MIT, …), OpenSSL
+(`libcrypto`/`libssl`, Apache-2.0), ICU (`libicu*`, Unicode-3.0), zlib (`libz`, Zlib), SQLite
+(`libsqlite3`, public domain), c-ares (`libcares`, MIT), libffi (`libffi`, MIT), and LLVM libc++
+(`libc++_shared`, Apache-2.0 WITH LLVM-exception). Full attribution is in
+[`../../../THIRD_PARTY_NOTICES.md`](../../../THIRD_PARTY_NOTICES.md).
 
 `packaging { jniLibs.useLegacyPackaging = true }` in `app/build.gradle.kts` ensures these
 are extracted to the filesystem (executable) rather than left compressed inside the APK.

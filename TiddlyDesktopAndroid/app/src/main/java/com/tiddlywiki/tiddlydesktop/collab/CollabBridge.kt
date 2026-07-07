@@ -22,7 +22,8 @@ import java.util.concurrent.TimeUnit
 
 /**
  * Native backing for the codemirror-6-collab-nwjs plugin's `window._nwjs*` bridge
- * contract (see ANDROID.md Part 8). Exposed to the wiki WebView as `TDCollab`.
+ * contract (see README.md → "The `window._nwjs*` bridge contract"). Exposed to the wiki WebView
+ * as `TDCollab`.
  *
  * Implemented here (Phase 1 + partial 2):
  *   - httpGet     : CORS-free HTTP GET for the relay REST API (bridge A)

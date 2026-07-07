@@ -34,6 +34,8 @@
     <string name="share_as_text">Сподели како текст</string>
     <string name="share_as_tid">Сподели како .tid</string>
     <string name="share_as_html">Сподели како HTML</string>
+    <string name="share_as_json">Сподели како JSON</string>
+    <string name="share_as_csv">Сподели како CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">Надворешни прилози (Android)</string>
@@ -73,4 +75,6 @@
         <item quantity="one">%d отворено вики</item>
         <item quantity="other">%d отворени викија</item>
     </plurals>
+    <string name="reveal_chooser">Отвори папка во…</string>
+    <string name="reveal_path_hint">Папка: %1$s</string>
 </resources>

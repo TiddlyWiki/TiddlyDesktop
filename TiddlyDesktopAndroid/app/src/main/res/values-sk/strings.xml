@@ -32,6 +32,8 @@
     <string name="share_as_text">Zdieľať ako text</string>
     <string name="share_as_tid">Zdieľať ako .tid</string>
     <string name="share_as_html">Zdieľať ako HTML</string>
+    <string name="share_as_json">Zdieľať ako JSON</string>
+    <string name="share_as_csv">Zdieľať ako CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">Externé prílohy (Android)</string>
@@ -71,4 +73,6 @@
         <item quantity="one">%d otvorený wiki</item>
         <item quantity="other">%d otvorených wiki</item>
     </plurals>
+    <string name="reveal_chooser">Otvoriť priečinok v…</string>
+    <string name="reveal_path_hint">Priečinok: %1$s</string>
 </resources>

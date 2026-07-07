@@ -32,6 +32,8 @@
     <string name="share_as_text">以文字分享</string>
     <string name="share_as_tid">以 .tid 分享</string>
     <string name="share_as_html">以 HTML 分享</string>
+    <string name="share_as_json">以 JSON 分享</string>
+    <string name="share_as_csv">以 CSV 分享</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">外部附件 (Android)</string>
@@ -70,4 +72,6 @@
     <plurals name="wiki_group_count">
         <item quantity="other">%d 個開啟的 wiki</item>
     </plurals>
+    <string name="reveal_chooser">在以下應用程式中開啟資料夾…</string>
+    <string name="reveal_path_hint">資料夾：%1$s</string>
 </resources>

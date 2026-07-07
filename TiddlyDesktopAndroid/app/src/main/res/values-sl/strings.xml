@@ -34,6 +34,8 @@
     <string name="share_as_text">Deli kot besedilo</string>
     <string name="share_as_tid">Deli kot .tid</string>
     <string name="share_as_html">Deli kot HTML</string>
+    <string name="share_as_json">Deli kot JSON</string>
+    <string name="share_as_csv">Deli kot CSV</string>
 
     <!-- External Attachments note -->
     <string name="ea_note_caption">Zunanje priloge (Android)</string>
@@ -73,4 +75,6 @@
         <item quantity="one">%d odprt wiki</item>
         <item quantity="other">%d odprtih wikijev</item>
     </plurals>
+    <string name="reveal_chooser">Odpri mapo v…</string>
+    <string name="reveal_path_hint">Mapa: %1$s</string>
 </resources>
