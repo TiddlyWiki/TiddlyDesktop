@@ -1,0 +1,62 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/ConflictDialog
+tags: $:/tags/AboveStory
+
+\whitespace trim
+<$list filter="[prefix[$:/temp/collab/conflict/]]" variable="conflictTiddler">
+<div class="tc-collab-conflict-overlay">
+<div class="tc-collab-conflict-dialog">
+<h3 class="tc-collab-conflict-title">Resolve sync conflict</h3>
+<p><strong><$text text={{{ [<conflictTiddler>get[tiddler-title]] }}}/></strong> was changed both here and by a collaborator since you were last in sync. Keep one version, or merge them by hand.</p>
+<$reveal type="match" stateTitle=<<conflictTiddler>> stateField="text-differs" text="yes" tag="div">
+<div class="tc-collab-conflict-diff-label">Text difference (your version → their version)</div>
+<div class="tc-collab-conflict-diff">
+<$diff-text source={{{ [<conflictTiddler>get[local-content]] }}} dest={{{ [<conflictTiddler>get[remote-content]] }}} cleanup="semantic"/>
+</div>
+</$reveal>
+<$reveal type="nomatch" stateTitle=<<conflictTiddler>> stateField="text-differs" text="yes" tag="div">
+<div class="tc-collab-conflict-note">The text is identical — only other fields differ (see below).</div>
+</$reveal>
+<$list filter="[<conflictTiddler>get[field-count]!match[0]]" variable="_">
+<$set name="fieldsTiddler" value={{{ [<conflictTiddler>get[tiddler-title]addprefix[$:/temp/collab/conflict-fields/]] }}}>
+<div class="tc-collab-conflict-diff-label">Field differences</div>
+<table class="tc-collab-conflict-fields"><tbody>
+<tr><th>Field</th><th>Yours</th><th>Theirs</th></tr>
+<$list filter="[<fieldsTiddler>jsonindexes[]]" variable="idx">
+<tr>
+<td><code><$text text={{{ [<fieldsTiddler>jsonget<idx>,[field]] }}}/></code></td>
+<td><$text text={{{ [<fieldsTiddler>jsonget<idx>,[mine]] }}}/></td>
+<td><$text text={{{ [<fieldsTiddler>jsonget<idx>,[theirs]] }}}/></td>
+</tr>
+</$list>
+</tbody></table>
+</$set>
+</$list>
+<div class="tc-collab-conflict-actions">
+<$button class="tc-btn-invisible tc-collab-btn-keep">
+<$action-setfield $tiddler=<<conflictTiddler>> resolution="use-mine"/>
+Use mine
+</$button>
+<$button class="tc-btn-invisible tc-collab-btn-discard">
+<$action-setfield $tiddler=<<conflictTiddler>> resolution="use-theirs"/>
+Use theirs
+</$button>
+<$reveal type="nomatch" stateTitle=<<conflictTiddler>> stateField="show-merge" text="yes" tag="span">
+<$button class="tc-btn-invisible tc-collab-btn-merge">
+<$action-setfield $tiddler=<<conflictTiddler>> show-merge="yes"/>
+Merge…
+</$button>
+</$reveal>
+</div>
+<$reveal type="match" stateTitle=<<conflictTiddler>> stateField="show-merge" text="yes" tag="div" class="tc-collab-conflict-merge">
+<div class="tc-collab-conflict-diff-label">Edit the merged version, then apply it</div>
+<$edit-text tiddler=<<conflictTiddler>> field="merged-text" tag="textarea" class="tc-collab-conflict-merge-editor"/>
+<div class="tc-collab-conflict-actions">
+<$button class="tc-btn-invisible tc-collab-btn-merge">
+<$action-setfield $tiddler=<<conflictTiddler>> resolution="merge"/>
+Apply merged version
+</$button>
+</div>
+</$reveal>
+</div>
+</div>
+</$list>

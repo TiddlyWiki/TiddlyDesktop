@@ -4,7 +4,7 @@ tags: toolbar
 <div class="td-file-input-wrapper">
 <$button class="td-button">
 {{$:/core/images/folder}}
-<$text text="Add wiki folder"/>
+{{$:/language/TiddlyDesktop/Toolbar/AddWikiFolder}}
 </$button>
 <$browse nwdirectory message="tiddlydesktop-add-wiki-path"/>
 </div>

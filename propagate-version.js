@@ -27,3 +27,9 @@ fs.writeFileSync("./source/tiddlywiki/plugins/tiddlywiki/tiddlydesktop/plugin.in
 
 // Create $:/plugins/tiddlywiki/tiddlydesktop/version
 fs.writeFileSync("./source/tiddlywiki/plugins/tiddlywiki/tiddlydesktop/system/version.txt",packageInfo.version);
+
+// NOTE: the collaborative-editing plugin keeps its OWN independent version (see its
+// plugin.info), derived at build time by bin/stamp-collab-version.js (run from bld.sh) as
+// major.minor + git commit count of its source. We deliberately no longer overwrite it with
+// the app version here, so that a wiki can detect a newer bundled collab plugin and offer to
+// update it.

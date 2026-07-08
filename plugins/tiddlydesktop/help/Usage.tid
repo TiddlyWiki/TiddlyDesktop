@@ -30,8 +30,6 @@ Each wiki offers the following toolbar buttons:
 
 !! ~TiddlyWiki Folders Advanced Options
 
-{{Wiki Folder Warning}}
-
 These advanced options allow wiki folders to be accessed over HTTP from any browser
 
 * ''Host'': the IP address on which the server should listen. Choose `127.0.0.1` to restrict access to the wiki to browsers on the same machine, or `0.0.0.0` to allow access on all network adaptors

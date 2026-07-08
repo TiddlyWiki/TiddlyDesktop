@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">खुले विकी</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop चल रहा है</string>
+    <string name="wiki_server_notification_text">विकी सर्वर सक्रिय हैं</string>
+    <string name="toast_access_not_granted">पहुँच नहीं दी गई</string>
+    <string name="toast_backup_folder_set">बैकअप फ़ोल्डर सेट किया गया</string>
+    <string name="toast_config_folder_set">कॉन्फ़िग फ़ोल्डर सेट किया गया</string>
+    <string name="toast_import_folder_failed">वह फ़ोल्डर आयात नहीं किया जा सका</string>
+    <string name="toast_open_folder_failed">इस डिवाइस पर फ़ोल्डर नहीं खोला जा सकता</string>
+    <string name="toast_custom_plugin_folder_set">कस्टम प्लगइन फ़ोल्डर सेट किया गया</string>
+    <string name="toast_folder_required_not_added">फ़ोल्डर पहुँच आवश्यक है — विकी नहीं जोड़ा गया</string>
+    <string name="toast_importing_plugins">प्लगइन आयात हो रहे हैं…</string>
+    <string name="toast_no_backup_folder">कोई बैकअप फ़ोल्डर सेट नहीं</string>
+    <string name="toast_no_config_folder">कोई कॉन्फ़िग फ़ोल्डर सेट नहीं</string>
+    <string name="toast_no_folder_access_reveal">इस विकी के फ़ोल्डर तक पहुँच नहीं — अनुमति देने के लिए इसे फिर से जोड़ें।</string>
+    <string name="toast_nothing_to_share">साझा करने के लिए कुछ नहीं</string>
+    <string name="toast_operation_failed">कार्य विफल — logcat देखें</string>
+    <string name="toast_regrant_wiki">इस विकी तक पहुँच फिर से दें</string>
+    <string name="toast_regrant_folder">फ़ोल्डर पहुँच फिर से दें (बैकअप और अटैचमेंट)</string>
+    <string name="toast_working">काम जारी है…</string>
+    <string name="toast_saved">सहेजा गया</string>
+    <string name="toast_save_failed">सहेजना विफल</string>
+    <string name="toast_share_failed">साझा करना विफल</string>
+    <string name="toast_window_not_ready">विंडो अभी तैयार नहीं</string>
+    <string name="share_tiddler_chooser">tiddler साझा करें</string>
+    <string name="share_tid_file_chooser">tiddler साझा करें (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">साझा करें</string>
+    <string name="share_btn_tooltip">इस टिडलर को साझा करें</string>
+    <string name="share_as_text">टेक्स्ट के रूप में साझा करें</string>
+    <string name="share_as_tid">.tid के रूप में साझा करें</string>
+    <string name="share_as_html">HTML के रूप में साझा करें</string>
+    <string name="share_as_json">JSON के रूप में साझा करें</string>
+    <string name="share_as_csv">CSV के रूप में साझा करें</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">बाहरी अटैचमेंट (Android)</string>
+    <string name="ea_note_body">Android पर, आयात किए गए अटैचमेंट हमेशा इस विकी के attachments/ फ़ोल्डर में कॉपी किए जाते हैं और एक सापेक्ष पथ से जोड़े जाते हैं। यहाँ पूर्ण पथ के विकल्पों का कोई प्रभाव नहीं होता — Android के माध्यम से साझा किए गए फ़ोल्डरों (content://) का कोई फ़ाइल-सिस्टम पथ नहीं होता।</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">त्वरित नोट</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">अपना नोट लिखें…</string>
+    <string name="quicknote_done">पूर्ण</string>
+    <string name="quicknote_cancel">रद्द करें</string>
+    <string name="quicknote_no_wikis">अभी कोई विकी नहीं — पहले TiddlyDesktop में एक जोड़ें</string>
+    <string name="quicknote_empty">पहले एक नोट लिखें</string>
+    <string name="quicknote_sent">नोट जोड़ा गया</string>
+    <string name="quicknote_failed">नोट नहीं जोड़ा जा सका</string>
+    <string name="quicknote_tiddler_title">नोट %1$s</string>
+    <string name="quicknote_widget_description">किसी विकी में एक त्वरित नोट जोड़ें</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">संग्रहण तक पहुँच की अनुमति दें</string>
+    <string name="storage_access_message">TiddlyDesktop आपकी विकी को सीधे संग्रहण से खोलता है। कृपया "सभी फ़ाइलों तक पहुँच" की अनुमति दें ताकि यह आपकी विकी फ़ाइलों और फ़ोल्डरों को पढ़ और सहेज सके।</string>
+    <string name="storage_access_open_settings">सेटिंग खोलें</string>
+    <string name="storage_access_later">बाद में</string>
+    <string name="toast_pick_on_device_folder">कृपया इस डिवाइस पर एक फ़ोल्डर चुनें (क्लाउड संग्रहण समर्थित नहीं है)</string>
+    <string name="toast_pick_on_device_file">कृपया इस डिवाइस पर एक फ़ाइल चुनें (क्लाउड संग्रहण समर्थित नहीं है)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">असहेजे गए परिवर्तन</string>
+    <string name="unsaved_message">इस विकी में असहेजे गए परिवर्तन हैं। बंद करने से पहले सहेजें?</string>
+    <string name="unsaved_save">सहेजें और बंद करें</string>
+    <string name="unsaved_discard">बिना सहेजे बंद करें</string>
+    <string name="wiki_group_title">खुली विकी</string>
+    <string name="wiki_keepalive_title">विकी तैयार</string>
+    <string name="wiki_keepalive_text">एक विकी फिर से शुरू करने के लिए तैयार रखी जा रही है</string>
+    <string name="wiki_notification_running">खोलने के लिए टैप करें</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d खुली विकी</item>
+        <item quantity="other">%d खुली विकी</item>
+    </plurals>
+    <string name="reveal_chooser">फ़ोल्डर इसमें खोलें…</string>
+    <string name="reveal_path_hint">फ़ोल्डर: %1$s</string>
+</resources>

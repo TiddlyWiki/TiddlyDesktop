@@ -35,9 +35,9 @@ zip --symlinks -r "../tiddlydesktop-macapplesilicon-v$VERSION.zip" *
 popd
 }
 
-package_linux32() {
-pushd ./output/linux32
-zip -r "../tiddlydesktop-linux32-v$VERSION.zip" *
+package_linuxarm64() {
+pushd ./output/linuxarm64
+zip -r "../tiddlydesktop-linuxarm64-v$VERSION.zip" *
 popd
 }
 
@@ -63,8 +63,8 @@ if [ "$CI" = "true" ]; then
 		win-x64)
 			package_win64
 			;;
-		linux-ia32)
-			package_linux32
+		linux-arm64)
+			package_linuxarm64
 			;;
 		linux-x64)
 			package_linux64
@@ -76,6 +76,6 @@ else
 	package_macapplesilicon
 	package_win32
 	package_win64
-	package_linux32
+	package_linuxarm64
 	package_linux64
 fi

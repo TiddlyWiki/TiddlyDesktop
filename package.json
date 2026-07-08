@@ -1,6 +1,6 @@
 {
     "name": "tiddlydesktop",
-    "version": "0.0.22",
+    "version": "0.0.23",
     "author": "Jeremy Ruston <jeremy@jermolene.com>",
     "description": "a desktop application for TiddlyWiki",
     "contributors": [
@@ -21,6 +21,10 @@
     "bundleDependencies": [],
     "license": "BSD",
     "dependencies": {
-        "tiddlywiki": "github:Jermolene/TiddlyWiki5#e8d4ce2ad017592c444ffddc77f232432f5a603a"
+        "tiddlywiki": "5.4.0",
+        "ws": "^8.18.0"
+    },
+    "devDependencies": {
+        "resedit": "^3.0.2"
     }
 }

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">Wikis abertos</string>
+    <string name="wiki_server_notification_title">O TiddlyDesktop está em execução</string>
+    <string name="wiki_server_notification_text">Os servidores wiki estão ativos</string>
+    <string name="toast_access_not_granted">Acesso não concedido</string>
+    <string name="toast_backup_folder_set">Pasta de backups definida</string>
+    <string name="toast_config_folder_set">Pasta de configuração definida</string>
+    <string name="toast_import_folder_failed">Não foi possível importar essa pasta</string>
+    <string name="toast_open_folder_failed">Não é possível abrir a pasta neste dispositivo</string>
+    <string name="toast_custom_plugin_folder_set">Pasta de plugins personalizada definida</string>
+    <string name="toast_folder_required_not_added">Acesso à pasta necessário — wiki não adicionado</string>
+    <string name="toast_importing_plugins">Importando plugins…</string>
+    <string name="toast_no_backup_folder">Nenhuma pasta de backups definida</string>
+    <string name="toast_no_config_folder">Nenhuma pasta de configuração definida</string>
+    <string name="toast_no_folder_access_reveal">Sem acesso à pasta deste wiki — adicione-o novamente para conceder a permissão.</string>
+    <string name="toast_nothing_to_share">Nada para compartilhar</string>
+    <string name="toast_operation_failed">Falha na operação — veja o logcat</string>
+    <string name="toast_regrant_wiki">Conceder novamente o acesso a este wiki</string>
+    <string name="toast_regrant_folder">Conceder novamente o acesso à pasta (backups e anexos)</string>
+    <string name="toast_working">Trabalhando…</string>
+    <string name="toast_saved">Salvo</string>
+    <string name="toast_save_failed">Falha ao salvar</string>
+    <string name="toast_share_failed">Falha ao compartilhar</string>
+    <string name="toast_window_not_ready">Janela ainda não pronta</string>
+    <string name="share_tiddler_chooser">Compartilhar tiddler</string>
+    <string name="share_tid_file_chooser">Compartilhar tiddler (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Compartilhar</string>
+    <string name="share_btn_tooltip">Compartilhar este tiddler</string>
+    <string name="share_as_text">Compartilhar como texto</string>
+    <string name="share_as_tid">Compartilhar como .tid</string>
+    <string name="share_as_html">Compartilhar como HTML</string>
+    <string name="share_as_json">Compartilhar como JSON</string>
+    <string name="share_as_csv">Compartilhar como CSV</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Anexos externos (Android)</string>
+    <string name="ea_note_body">No Android, os anexos importados são sempre copiados para a pasta attachments/ deste wiki e vinculados por um caminho relativo. As opções de caminho absoluto não têm efeito aqui — as pastas compartilhadas pelo Android (content://) não têm caminho de sistema de arquivos.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Nota rápida</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Escreva sua nota…</string>
+    <string name="quicknote_done">Concluir</string>
+    <string name="quicknote_cancel">Cancelar</string>
+    <string name="quicknote_no_wikis">Ainda sem wikis — adicione um no TiddlyDesktop primeiro</string>
+    <string name="quicknote_empty">Escreva uma nota primeiro</string>
+    <string name="quicknote_sent">Nota adicionada</string>
+    <string name="quicknote_failed">Não foi possível adicionar a nota</string>
+    <string name="quicknote_tiddler_title">Nota %1$s</string>
+    <string name="quicknote_widget_description">Adicionar uma nota rápida a um wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Permitir acesso ao armazenamento</string>
+    <string name="storage_access_message">O TiddlyDesktop abre seus wikis diretamente do armazenamento. Conceda a permissão "Acesso a todos os arquivos" para que ele possa ler e salvar seus arquivos e pastas de wiki.</string>
+    <string name="storage_access_open_settings">Abrir configurações</string>
+    <string name="storage_access_later">Mais tarde</string>
+    <string name="toast_pick_on_device_folder">Escolha uma pasta neste dispositivo (o armazenamento em nuvem não é compatível)</string>
+    <string name="toast_pick_on_device_file">Escolha um arquivo neste dispositivo (o armazenamento em nuvem não é compatível)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Alterações não salvas</string>
+    <string name="unsaved_message">Este wiki tem alterações não salvas. Salvar antes de fechar?</string>
+    <string name="unsaved_save">Salvar e fechar</string>
+    <string name="unsaved_discard">Fechar sem salvar</string>
+    <string name="wiki_group_title">Wikis abertos</string>
+    <string name="wiki_keepalive_title">Wiki pronto</string>
+    <string name="wiki_keepalive_text">Mantendo um wiki pronto para retomar</string>
+    <string name="wiki_notification_running">Toque para abrir</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d wiki aberto</item>
+        <item quantity="other">%d wikis abertos</item>
+    </plurals>
+    <string name="reveal_chooser">Abrir pasta em…</string>
+    <string name="reveal_path_hint">Pasta: %1$s</string>
+</resources>

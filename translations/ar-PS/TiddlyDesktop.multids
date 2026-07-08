@@ -1,0 +1,90 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: إضافة ملف ويكي
+Toolbar/AddWikiFolder: إضافة مجلد ويكي
+Toolbar/Backstage: الكواليس
+Toolbar/CreateWikiFolder: إنشاء مجلد ويكي جديد
+Toolbar/CreateWiki: إنشاء ويكي جديد
+Toolbar/CreateFromTemplate: إنشاء من قالب
+Toolbar/NoTemplates: لا توجد قوالب معرّفة – راجع الإعدادات
+Toolbar/From: من
+Toolbar/CloneExisting: استنساخ ويكي موجود
+Toolbar/NoWikisToClone: لا توجد ويكي متاحة للاستنساخ
+Toolbar/Help: مساعدة
+Toolbar/Settings: الإعدادات
+Toolbar/Language: اللغة
+List/SearchPlaceholder: بحث
+List/ClearSearch: مسح البحث
+Row/Untitled: بدون عنوان
+Row/Open: فتح
+Row/Reveal: إظهار
+Row/Remove: إزالة
+Row/ToFolder: إلى مجلد
+Row/ToFile: إلى ملف
+Row/ToFolderTooltip: اختر (أو أنشئ) مجلدًا فارغًا لمجلد الويكي الجديد
+Row/ToFileTooltip: اختر مكان حفظ الويكي الجديد كملف واحد
+Row/Advanced: متقدم
+Row/Plugins: الإضافات
+Advanced/Backups: النسخ الاحتياطية
+Advanced/SaveBackup: حفظ نسخة احتياطية عند كل حفظ
+Advanced/KeepBackups: النسخ الاحتياطية المحفوظة (فارغ = الكل)
+Advanced/RevealBackups: إظهار النسخ الاحتياطية
+Advanced/ServerNote: تتحكم هذه الخيارات في كيفية تقديم مجلد الويكي عبر HTTP. تصبح سارية المفعول في المرة القادمة التي يُفتح فيها مجلد الويكي.
+Advanced/Server: الخادم
+Advanced/Host: المضيف
+Advanced/Port: المنفذ
+Advanced/PathPrefix: بادئة المسار
+Advanced/RootTiddler: تيدلر الجذر
+Advanced/Gzip: ضغط الاستجابات (gzip)
+Advanced/Access: الوصول
+Advanced/Credentials: ملف بيانات الاعتماد
+Advanced/AnonUsername: اسم مستخدم مجهول
+Advanced/Readers: القُرّاء
+Advanced/Writers: الكُتّاب
+PluginChooser/Tab/plugin: إضافات
+PluginChooser/Tab/language: اللغات
+PluginChooser/Tab/theme: السمات
+PluginChooser/Heading: إدارة الإضافات
+PluginChooser/Close: إغلاق
+PluginChooser/OpenWarning: هذا الويكي مفتوح حاليًا. أغلق نافذته أولًا ثم انقر على تطبيق.
+PluginChooser/FilterPlaceholder: تصفية الإضافات…
+PluginChooser/Clear: مسح
+PluginChooser/NoMatch: لا توجد إضافات تطابق عامل التصفية.
+PluginChooser/Apply: تطبيق التغييرات
+PluginChooser/Cancel: إلغاء
+PluginChooser/Reinstall: إعادة التثبيت
+PluginChooser/ReinstallTooltip: إعادة تثبيت النسخة المضمّنة من هذه الإضافة
+PluginChooser/Reinstalled: تمت إعادة التثبيت
+PluginChooser/Installed: مثبّت
+PluginChooser/NotInstalled: غير مثبّت
+PluginChooser/Versions: إصدارات
+PluginChooser/SourceBundled: مضمّن
+PluginChooser/SourceExternal: خارجي
+PluginChooser/Update: تحديث
+PluginChooser/UpdateAvailable: يتوفّر إصدار أحدث — انقر للتحديث
+PluginChooser/Updated: تم التحديث
+Row/PluginUpdates: تتوفّر تحديثات للإضافات
+Toolbar/ThemeLabel: السمة
+Toolbar/PaletteLabel: لوحة الألوان
+Toolbar/ViewLabel: عرض القائمة
+Toolbar/ViewFull: كامل
+Toolbar/ViewCompact: مُصغّر
+Toolbar/CustomPluginFolder: مجلد إضافات مخصص
+Toolbar/ConfigFolder: مجلد الإعدادات
+Toolbar/OpenConfigFolder: فتح مجلد الإعدادات
+Toolbar/BackupFolder: مجلد النسخ الاحتياطية
+Toolbar/OpenBackupFolder: فتح مجلد النسخ الاحتياطية
+Share/Heading: أضف المحتوى المشترك إلى…
+Share/Cancel: إلغاء
+Share/TemplatesHeading: قوالب المشاركة
+Share/TemplatesHelp: عند مشاركة رابط في ويكي، يقوم TiddlyDesktop بإثرائه (العنوان، الوصف، الصورة، التضمين) وينشئ تيدلر من القالب المطابق أدناه. العناصر النائبة:
+Share/DeleteTemplate: حذف هذا القالب
+Share/TagsLabel: الوسوم:
+Share/AddHeading: أضف قالبك الخاص
+Share/AddHelp: امنحه اسمًا (لاستهدافه من قاعدة نطاق أدناه)، ثم عدّل محتواه أعلاه. يبدأ كنسخة من القالب العام.
+Share/NamePlaceholder: مثال: mastodon
+Share/CreateTemplate: إنشاء قالب
+Share/RulesHeading: قواعد النطاق
+Share/RulesHelp: قاعدة واحدة في كل سطر بالشكل <code>domain=kind</code> (مثل <code>vimeo.com=youtube</code>، أو <code>mastodon.social=mastodon</code> لقالب أضفته أعلاه) لتوجيه موقع إلى قالب معيّن.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: تُكتب النسخ الاحتياطية لويكيات الملف الواحد بجانب كل ويكي افتراضيًا. اختر مجلدًا هنا لتجميع كل النسخ الاحتياطية في مكان واحد بدلاً من ذلك.

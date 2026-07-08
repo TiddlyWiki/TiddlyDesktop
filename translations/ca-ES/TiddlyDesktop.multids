@@ -1,0 +1,90 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Afegeix un fitxer wiki
+Toolbar/AddWikiFolder: Afegeix una carpeta wiki
+Toolbar/Backstage: Rebost
+Toolbar/CreateWikiFolder: Crea una carpeta wiki nova
+Toolbar/CreateWiki: Crea un wiki nou
+Toolbar/CreateFromTemplate: Crea a partir d’una plantilla
+Toolbar/NoTemplates: No hi ha plantilles definides: vegeu Configuració
+Toolbar/From: de
+Toolbar/CloneExisting: Clona un wiki existent
+Toolbar/NoWikisToClone: No hi ha cap wiki disponible per clonar
+Toolbar/Help: Ajuda
+Toolbar/Settings: Configuració
+Toolbar/Language: Idioma
+List/SearchPlaceholder: cerca
+List/ClearSearch: Esborra la cerca
+Row/Untitled: Sense títol
+Row/Open: obre
+Row/Reveal: mostra
+Row/Remove: elimina
+Row/ToFolder: a carpeta
+Row/ToFile: a fitxer
+Row/ToFolderTooltip: Trieu (o creeu) una carpeta buida per a la nova carpeta wiki
+Row/ToFileTooltip: Trieu on desar el nou wiki de fitxer únic
+Row/Advanced: avançat
+Row/Plugins: connectors
+Advanced/Backups: Còpies de seguretat
+Advanced/SaveBackup: Desa una còpia de seguretat a cada desada
+Advanced/KeepBackups: Còpies a conservar (buit = totes)
+Advanced/RevealBackups: mostra les còpies de seguretat
+Advanced/ServerNote: Aquestes opcions controlen com es serveix la carpeta wiki per HTTP. Tenen efecte la propera vegada que s’obri la carpeta wiki.
+Advanced/Server: Servidor
+Advanced/Host: Amfitrió
+Advanced/Port: Port
+Advanced/PathPrefix: Prefix de camí
+Advanced/RootTiddler: Tiddler arrel
+Advanced/Gzip: Comprimeix les respostes (gzip)
+Advanced/Access: Accés
+Advanced/Credentials: Fitxer de credencials
+Advanced/AnonUsername: Nom d’usuari anònim
+Advanced/Readers: Lectors
+Advanced/Writers: Escriptors
+PluginChooser/Tab/plugin: Connectors
+PluginChooser/Tab/language: Idiomes
+PluginChooser/Tab/theme: Temes
+PluginChooser/Heading: Gestiona els connectors
+PluginChooser/Close: Tanca
+PluginChooser/OpenWarning: Aquest wiki està obert actualment. Tanqueu-ne primer la finestra i després feu clic a Aplica.
+PluginChooser/FilterPlaceholder: Filtra els connectors…
+PluginChooser/Clear: Esborra
+PluginChooser/NoMatch: Cap connector coincideix amb el filtre.
+PluginChooser/Apply: Aplica els canvis
+PluginChooser/Cancel: Cancel·la
+PluginChooser/Reinstall: Reinstal·la
+PluginChooser/ReinstallTooltip: Reinstal·la la versió inclosa d’aquest connector
+PluginChooser/Reinstalled: Reinstal·lat
+PluginChooser/Installed: instal·lat
+PluginChooser/NotInstalled: No instal·lat
+PluginChooser/Versions: versions
+PluginChooser/SourceBundled: inclòs
+PluginChooser/SourceExternal: extern
+PluginChooser/Update: Actualitza
+PluginChooser/UpdateAvailable: S’inclou una versió més recent: fes clic per actualitzar
+PluginChooser/Updated: Actualitzat
+Row/PluginUpdates: Hi ha actualitzacions de connectors
+Toolbar/ThemeLabel: Tema
+Toolbar/PaletteLabel: Paleta
+Toolbar/ViewLabel: Vista de llista
+Toolbar/ViewFull: Complet
+Toolbar/ViewCompact: Compacte
+Toolbar/CustomPluginFolder: Carpeta de connectors personalitzada
+Toolbar/ConfigFolder: Carpeta de configuració
+Toolbar/OpenConfigFolder: Obre la carpeta de configuració
+Toolbar/BackupFolder: Carpeta de còpies de seguretat
+Toolbar/OpenBackupFolder: Obre la carpeta de còpies de seguretat
+Share/Heading: Afegeix el contingut compartit a…
+Share/Cancel: Cancel·la
+Share/TemplatesHeading: Plantilles de compartició
+Share/TemplatesHelp: Quan comparteixes un enllaç en un wiki, TiddlyDesktop l'enriqueix (títol, descripció, imatge, incrustació) i crea un tiddler a partir de la plantilla coincident de sota. Marcadors de posició:
+Share/DeleteTemplate: Elimina aquesta plantilla
+Share/TagsLabel: Etiquetes:
+Share/AddHeading: Afegeix la teva pròpia plantilla
+Share/AddHelp: Posa-li un nom (per orientar-la des d'una regla de domini a sota) i després edita'n el contingut a dalt. Comença com una còpia de la plantilla genèrica.
+Share/NamePlaceholder: p. ex. mastodon
+Share/CreateTemplate: Crea la plantilla
+Share/RulesHeading: Regles de domini
+Share/RulesHelp: Una regla per línia com <code>domain=kind</code> (p. ex. <code>vimeo.com=youtube</code>, o <code>mastodon.social=mastodon</code> per a una plantilla que hagis afegit a dalt) per dirigir un lloc a una plantilla concreta.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Les còpies de seguretat dels wikis d'un sol fitxer s'escriuen al costat de cada wiki de manera predeterminada. Tria una carpeta aquí per recollir totes les còpies en un sol lloc.

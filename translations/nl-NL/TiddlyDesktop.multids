@@ -1,0 +1,90 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Wiki-bestand toevoegen
+Toolbar/AddWikiFolder: Wiki-map toevoegen
+Toolbar/Backstage: Backstage
+Toolbar/CreateWikiFolder: Nieuwe wiki-map maken
+Toolbar/CreateWiki: Nieuwe wiki maken
+Toolbar/CreateFromTemplate: Maken op basis van een sjabloon
+Toolbar/NoTemplates: Geen sjablonen gedefinieerd – zie Instellingen
+Toolbar/From: uit
+Toolbar/CloneExisting: Een bestaande wiki klonen
+Toolbar/NoWikisToClone: Geen wiki's beschikbaar om te klonen
+Toolbar/Help: Help
+Toolbar/Settings: Instellingen
+Toolbar/Language: Taal
+List/SearchPlaceholder: zoeken
+List/ClearSearch: Zoekopdracht wissen
+Row/Untitled: Naamloos
+Row/Open: openen
+Row/Reveal: tonen
+Row/Remove: verwijderen
+Row/ToFolder: naar map
+Row/ToFile: naar bestand
+Row/ToFolderTooltip: Kies (of maak) een lege map voor de nieuwe wiki-map
+Row/ToFileTooltip: Kies waar de nieuwe enkelbestands-wiki moet worden opgeslagen
+Row/Advanced: geavanceerd
+Row/Plugins: plug-ins
+Advanced/Backups: Back-ups
+Advanced/SaveBackup: Een back-up maken bij elke keer opslaan
+Advanced/KeepBackups: Back-ups bewaren (leeg = alle)
+Advanced/RevealBackups: back-ups tonen
+Advanced/ServerNote: Deze opties bepalen hoe de wiki-map via HTTP wordt aangeboden. Ze worden van kracht de volgende keer dat de wiki-map wordt geopend.
+Advanced/Server: Server
+Advanced/Host: Host
+Advanced/Port: Poort
+Advanced/PathPrefix: Padvoorvoegsel
+Advanced/RootTiddler: Root-tiddler
+Advanced/Gzip: Antwoorden comprimeren (gzip)
+Advanced/Access: Toegang
+Advanced/Credentials: Inloggegevensbestand
+Advanced/AnonUsername: Anonieme gebruikersnaam
+Advanced/Readers: Lezers
+Advanced/Writers: Schrijvers
+PluginChooser/Tab/plugin: Plug-ins
+PluginChooser/Tab/language: Talen
+PluginChooser/Tab/theme: Thema's
+PluginChooser/Heading: Plug-ins beheren
+PluginChooser/Close: Sluiten
+PluginChooser/OpenWarning: Deze wiki is momenteel geopend. Sluit eerst het venster en klik daarna op Toepassen.
+PluginChooser/FilterPlaceholder: Plug-ins filteren…
+PluginChooser/Clear: Wissen
+PluginChooser/NoMatch: Geen plug-ins komen overeen met je filter.
+PluginChooser/Apply: Wijzigingen toepassen
+PluginChooser/Cancel: Annuleren
+PluginChooser/Reinstall: Opnieuw installeren
+PluginChooser/ReinstallTooltip: De meegeleverde versie van deze plug-in opnieuw installeren
+PluginChooser/Reinstalled: Opnieuw geïnstalleerd
+PluginChooser/Installed: geïnstalleerd
+PluginChooser/NotInstalled: Niet geïnstalleerd
+PluginChooser/Versions: versies
+PluginChooser/SourceBundled: meegeleverd
+PluginChooser/SourceExternal: extern
+PluginChooser/Update: Bijwerken
+PluginChooser/UpdateAvailable: Een nieuwere versie is meegeleverd — klik om bij te werken
+PluginChooser/Updated: Bijgewerkt
+Row/PluginUpdates: Plug-in-updates beschikbaar
+Toolbar/ThemeLabel: Thema
+Toolbar/PaletteLabel: Palet
+Toolbar/ViewLabel: Lijstweergave
+Toolbar/ViewFull: Volledig
+Toolbar/ViewCompact: Compact
+Toolbar/CustomPluginFolder: Aangepaste plug-inmap
+Toolbar/ConfigFolder: Configuratiemap
+Toolbar/OpenConfigFolder: Configuratiemap openen
+Toolbar/BackupFolder: Back-upmap
+Toolbar/OpenBackupFolder: Back-upmap openen
+Share/Heading: Gedeelde inhoud toevoegen aan…
+Share/Cancel: Annuleren
+Share/TemplatesHeading: Deelsjablonen
+Share/TemplatesHelp: Wanneer je een link in een wiki deelt, verrijkt TiddlyDesktop deze (titel, beschrijving, afbeelding, insluiting) en bouwt een tiddler op basis van het overeenkomende sjabloon hieronder. Plaatsaanduidingen:
+Share/DeleteTemplate: Dit sjabloon verwijderen
+Share/TagsLabel: Labels:
+Share/AddHeading: Eigen sjabloon toevoegen
+Share/AddHelp: Geef het een naam (om het aan te sturen vanuit een domeinregel hieronder) en bewerk vervolgens de inhoud hierboven. Het begint als een kopie van het generieke sjabloon.
+Share/NamePlaceholder: bijv. mastodon
+Share/CreateTemplate: Sjabloon maken
+Share/RulesHeading: Domeinregels
+Share/RulesHelp: Eén regel per regel als <code>domain=kind</code> (bijv. <code>vimeo.com=youtube</code>, of <code>mastodon.social=mastodon</code> voor een sjabloon dat je hierboven hebt toegevoegd) om een site naar een bepaald sjabloon te leiden.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Back-ups van enkelbestandswiki's worden standaard naast elke wiki opgeslagen. Kies hier een map om in plaats daarvan alle back-ups op één plek te verzamelen.

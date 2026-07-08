@@ -1,0 +1,69 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/Settings
+
+\whitespace trim
+
+<h2>Real-time collaboration (CodeMirror 6)</h2>
+<p>Edits to any CodeMirror 6 tiddler are synced in real-time with peers in the same room. Settings take effect immediately - no reload needed.</p>
+<table class="tc-edit-fields">
+<tbody>
+<tr class="tc-edit-field">
+<td class="tc-edit-field-name">Relay server URL</td>
+<td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/relay-url" tag="input" placeholder="wss://your-relay-server/"/></td>
+</tr>
+<tr class="tc-edit-field">
+<td class="tc-edit-field-name">Room code</td>
+<td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/room-code" tag="input" placeholder="shared-room-name"/></td>
+</tr>
+<tr class="tc-edit-field">
+<td class="tc-edit-field-name">Room token</td>
+<td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/room-token" tag="input" placeholder="(shared secret for E2E encryption)"/></td>
+</tr>
+<tr class="tc-edit-field">
+<td class="tc-edit-field-name">Display name</td>
+<td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/user-name" tag="input" placeholder="Your name"/></td>
+</tr>
+<tr class="tc-edit-field">
+<td class="tc-edit-field-name">Colour</td>
+<td class="tc-edit-field-value"><$edit-text tiddler="$:/config/codemirror-6-collab/user-color" tag="input" type="color" class="tc-collab-color-picker"/></td>
+</tr>
+</tbody>
+</table>
+<p><$checkbox tiddler="$:/config/codemirror-6-collab/relay-only" field="text" checked="yes" unchecked="no" default="no"/><span class="tc-tiny-gap-left"><strong>Relay only</strong> — disable the direct LAN connection (avoids the listening socket and the firewall prompt; collaboration still works through the relay).</span></p>
+<p><$checkbox tiddler="$:/config/codemirror-6-collab/allow-system-tiddlers" field="text" checked="yes" unchecked="no" default="no"/><span class="tc-tiny-gap-left"><strong>Allow system tiddlers</strong> — let peers share, and let you get, <code>$:/</code> tiddlers (palettes, macros, templates…). Executable tiddlers (JavaScript, raw markup, plugins) are <em>always</em> refused, and your collaboration/security config can never be overwritten by a peer. Leave off unless you trust the room.</span></p>
+<p><strong>Maximum attachment size (MB):</strong><$edit-text tiddler="$:/config/codemirror-6-collab/max-asset-mb" tag="input" default="25" size="6" class="tc-tiny-gap-left tc-tiny-gap-right"/><span>— attachments larger than this are refused (they stream through the relay, paced under its rate limit). Whether a received attachment is saved as an external file or embedded follows your External Attachments plugin setting.</span></p>
+<div class="tc-collab-auth-section">
+<h3>Account</h3>
+<$reveal type="nomatch" state="$:/temp/collab/auth-username" text="">
+<div class="tc-collab-auth-user">
+<$button message="codemirror-6-collab-oauth-signout" class="tc-btn-invisible tc-collab-signout-btn">Sign out (<$text text={{$:/temp/collab/auth-provider-display}}/>: @<$text text={{$:/temp/collab/auth-username}}/>)</$button>
+</div>
+</$reveal>
+<$reveal type="match" state="$:/temp/collab/auth-username" text="">
+<div class="tc-collab-signin-row">
+<$list filter="[prefix[$:/temp/collab/auth-providers/]sort[display-name]]">
+<$button message="codemirror-6-collab-oauth-start" param={{{ [<currentTiddler>get[name]] }}} class="tc-btn-invisible tc-collab-signin-btn"><$text text="Sign in with "/><$text text={{{ [<currentTiddler>get[display-name]] }}}/></$button>
+</$list>
+<$list filter="[prefix[$:/temp/collab/auth-providers/]count[]compare:number:lt[1]]" variable="_">
+<em class="tc-collab-auth-hint">Set a relay server URL above to see sign-in options.</em>
+</$list>
+</div>
+</$reveal>
+<$list filter="[[$:/temp/collab/auth-status]!is[missing]!field:text[]]" variable="_">
+<div class="tc-collab-auth-status"><$text text={{$:/temp/collab/auth-status}}/></div>
+</$list>
+</div>
+<h3>How it works</h3>
+<ol>
+<li>Sign in with GitHub or Google to authenticate with the relay server.</li>
+<li>All peers must use the same relay server URL and room code. Use the Collab sidebar to share an invite code.</li>
+<li>When peers are on the same network, a direct LAN channel is established automatically (shown as "LAN ⚡" in the Collab sidebar tab).</li>
+<li>Settings take effect immediately - the connection reconnects automatically when you change relay URL, room code, or any other field.</li>
+</ol>
+
+<h3>Encryption</h3>
+<p>All messages sent through the relay are encrypted on your device with AES-256-GCM before they leave it; the relay only ever sees ciphertext. There are two levels:</p>
+<ul>
+<li><strong>End-to-end (room token set):</strong> the encryption key is derived from your room token, which is <em>never</em> sent to the relay. Not even the relay operator can read your content. Set the same room token on every device - the easiest way is to share an invite code from the Collab sidebar, which carries the token out-of-band.</li>
+<li><strong>Room-code only (no token):</strong> traffic is still encrypted, but the key is derived from the room code, which the relay necessarily knows. This protects against passive network eavesdroppers and other peers, but <em>not</em> against the relay itself. Set a room token to get true end-to-end privacy.</li>
+</ul>
+<p>The direct LAN channel is additionally encrypted with ChaCha20-Poly1305 using an X25519 key exchange bound to your room token, so in end-to-end mode it cannot be intercepted even by a malicious relay.</p>

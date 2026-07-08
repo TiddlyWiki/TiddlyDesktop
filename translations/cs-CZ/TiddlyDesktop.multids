@@ -1,0 +1,90 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Přidat soubor wiki
+Toolbar/AddWikiFolder: Přidat složku wiki
+Toolbar/Backstage: Zákulisí
+Toolbar/CreateWikiFolder: Vytvořit novou složku wiki
+Toolbar/CreateWiki: Vytvořit nové wiki
+Toolbar/CreateFromTemplate: Vytvořit ze šablony
+Toolbar/NoTemplates: Nejsou definovány žádné šablony – viz Nastavení
+Toolbar/From: z
+Toolbar/CloneExisting: Klonovat existující wiki
+Toolbar/NoWikisToClone: Žádná wiki k klonování
+Toolbar/Help: Nápověda
+Toolbar/Settings: Nastavení
+Toolbar/Language: Jazyk
+List/SearchPlaceholder: hledat
+List/ClearSearch: Vymazat hledání
+Row/Untitled: Bez názvu
+Row/Open: otevřít
+Row/Reveal: zobrazit
+Row/Remove: odebrat
+Row/ToFolder: do složky
+Row/ToFile: do souboru
+Row/ToFolderTooltip: Vyberte (nebo vytvořte) prázdnou složku pro novou složku wiki
+Row/ToFileTooltip: Vyberte, kam uložit nové jednosouborové wiki
+Row/Advanced: pokročilé
+Row/Plugins: pluginy
+Advanced/Backups: Zálohy
+Advanced/SaveBackup: Uložit zálohu při každém uložení
+Advanced/KeepBackups: Počet záloh k zachování (prázdné = vše)
+Advanced/RevealBackups: zobrazit zálohy
+Advanced/ServerNote: Tyto možnosti řídí, jak je složka wiki poskytována přes HTTP. Projeví se při příštím otevření složky wiki.
+Advanced/Server: Server
+Advanced/Host: Hostitel
+Advanced/Port: Port
+Advanced/PathPrefix: Předpona cesty
+Advanced/RootTiddler: Kořenový tiddler
+Advanced/Gzip: Komprimovat odpovědi (gzip)
+Advanced/Access: Přístup
+Advanced/Credentials: Soubor s přihlašovacími údaji
+Advanced/AnonUsername: Anonymní uživatelské jméno
+Advanced/Readers: Čtenáři
+Advanced/Writers: Zapisovatelé
+PluginChooser/Tab/plugin: Pluginy
+PluginChooser/Tab/language: Jazyky
+PluginChooser/Tab/theme: Motivy
+PluginChooser/Heading: Spravovat pluginy
+PluginChooser/Close: Zavřít
+PluginChooser/OpenWarning: Toto wiki je momentálně otevřené. Nejprve zavřete jeho okno a poté klikněte na Použít.
+PluginChooser/FilterPlaceholder: Filtrovat pluginy…
+PluginChooser/Clear: Vymazat
+PluginChooser/NoMatch: Filtru neodpovídají žádné pluginy.
+PluginChooser/Apply: Použít změny
+PluginChooser/Cancel: Zrušit
+PluginChooser/Reinstall: Přeinstalovat
+PluginChooser/ReinstallTooltip: Přeinstalovat přiloženou verzi tohoto pluginu
+PluginChooser/Reinstalled: Přeinstalováno
+PluginChooser/Installed: nainstalováno
+PluginChooser/NotInstalled: Nenainstalováno
+PluginChooser/Versions: verze
+PluginChooser/SourceBundled: součástí
+PluginChooser/SourceExternal: externí
+PluginChooser/Update: Aktualizovat
+PluginChooser/UpdateAvailable: Je přiložena novější verze — aktualizujte kliknutím
+PluginChooser/Updated: Aktualizováno
+Row/PluginUpdates: Jsou dostupné aktualizace pluginů
+Toolbar/ThemeLabel: Motiv
+Toolbar/PaletteLabel: Paleta
+Toolbar/ViewLabel: Zobrazení seznamu
+Toolbar/ViewFull: Úplné
+Toolbar/ViewCompact: Kompaktní
+Toolbar/CustomPluginFolder: Vlastní složka zásuvných modulů
+Toolbar/ConfigFolder: Složka konfigurace
+Toolbar/OpenConfigFolder: Otevřít složku konfigurace
+Toolbar/BackupFolder: Složka záloh
+Toolbar/OpenBackupFolder: Otevřít složku záloh
+Share/Heading: Přidat sdílený obsah do…
+Share/Cancel: Zrušit
+Share/TemplatesHeading: Šablony sdílení
+Share/TemplatesHelp: Když sdílíte odkaz do wiki, TiddlyDesktop jej obohatí (název, popis, obrázek, vložení) a vytvoří tiddler z odpovídající šablony níže. Zástupné symboly:
+Share/DeleteTemplate: Smazat tuto šablonu
+Share/TagsLabel: Štítky:
+Share/AddHeading: Přidejte vlastní šablonu
+Share/AddHelp: Pojmenujte ji (abyste na ni cílili z pravidla domény níže) a poté upravte její obsah výše. Začíná jako kopie obecné šablony.
+Share/NamePlaceholder: např. mastodon
+Share/CreateTemplate: Vytvořit šablonu
+Share/RulesHeading: Pravidla domén
+Share/RulesHelp: Jedno pravidlo na řádek jako <code>domain=kind</code> (např. <code>vimeo.com=youtube</code> nebo <code>mastodon.social=mastodon</code> pro šablonu přidanou výše) pro nasměrování webu na konkrétní šablonu.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Zálohy jednosouborových wiki se ve výchozím nastavení ukládají vedle každé wiki. Zde vyberte složku, abyste místo toho shromáždili všechny zálohy na jednom místě.

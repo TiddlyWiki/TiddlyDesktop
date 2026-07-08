@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">Otevřená wiki</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop běží</string>
+    <string name="wiki_server_notification_text">Wiki servery jsou aktivní</string>
+    <string name="toast_access_not_granted">Přístup nebyl udělen</string>
+    <string name="toast_backup_folder_set">Složka záloh nastavena</string>
+    <string name="toast_config_folder_set">Složka konfigurace nastavena</string>
+    <string name="toast_import_folder_failed">Tuto složku nelze importovat</string>
+    <string name="toast_open_folder_failed">Složku nelze v tomto zařízení otevřít</string>
+    <string name="toast_custom_plugin_folder_set">Vlastní složka zásuvných modulů nastavena</string>
+    <string name="toast_folder_required_not_added">Vyžadován přístup ke složce — wiki nepřidána</string>
+    <string name="toast_importing_plugins">Importování zásuvných modulů…</string>
+    <string name="toast_no_backup_folder">Není nastavena složka záloh</string>
+    <string name="toast_no_config_folder">Není nastavena složka konfigurace</string>
+    <string name="toast_no_folder_access_reveal">Žádný přístup ke složce této wiki — přidejte ji znovu pro udělení oprávnění.</string>
+    <string name="toast_nothing_to_share">Není co sdílet</string>
+    <string name="toast_operation_failed">Operace selhala — viz logcat</string>
+    <string name="toast_regrant_wiki">Znovu udělit přístup k této wiki</string>
+    <string name="toast_regrant_folder">Znovu udělit přístup ke složce (zálohy a přílohy)</string>
+    <string name="toast_working">Pracuji…</string>
+    <string name="toast_saved">Uloženo</string>
+    <string name="toast_save_failed">Uložení se nezdařilo</string>
+    <string name="toast_share_failed">Sdílení se nezdařilo</string>
+    <string name="toast_window_not_ready">Okno ještě není připraveno</string>
+    <string name="share_tiddler_chooser">Sdílet tiddler</string>
+    <string name="share_tid_file_chooser">Sdílet tiddler (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Sdílet</string>
+    <string name="share_btn_tooltip">Sdílet tento tiddler</string>
+    <string name="share_as_text">Sdílet jako text</string>
+    <string name="share_as_tid">Sdílet jako .tid</string>
+    <string name="share_as_html">Sdílet jako HTML</string>
+    <string name="share_as_json">Sdílet jako JSON</string>
+    <string name="share_as_csv">Sdílet jako CSV</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Externí přílohy (Android)</string>
+    <string name="ea_note_body">V systému Android se importované přílohy vždy kopírují do složky attachments/ této wiki a odkazují se relativní cestou. Volby absolutní cesty zde nemají žádný účinek — složky sdílené přes Android (content://) nemají cestu v souborovém systému.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Rychlá poznámka</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Napište svou poznámku…</string>
+    <string name="quicknote_done">Hotovo</string>
+    <string name="quicknote_cancel">Zrušit</string>
+    <string name="quicknote_no_wikis">Zatím žádné wiki — nejprve nějakou přidejte v TiddlyDesktop</string>
+    <string name="quicknote_empty">Nejprve napište poznámku</string>
+    <string name="quicknote_sent">Poznámka přidána</string>
+    <string name="quicknote_failed">Poznámku se nepodařilo přidat</string>
+    <string name="quicknote_tiddler_title">Poznámka %1$s</string>
+    <string name="quicknote_widget_description">Přidat rychlou poznámku do wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Povolit přístup k úložišti</string>
+    <string name="storage_access_message">TiddlyDesktop otevírá vaše wiki přímo z úložiště. Udělte prosím oprávnění „Přístup ke všem souborům“, aby mohl číst a ukládat vaše soubory a složky wiki.</string>
+    <string name="storage_access_open_settings">Otevřít nastavení</string>
+    <string name="storage_access_later">Později</string>
+    <string name="toast_pick_on_device_folder">Vyberte prosím složku v tomto zařízení (cloudové úložiště není podporováno)</string>
+    <string name="toast_pick_on_device_file">Vyberte prosím soubor v tomto zařízení (cloudové úložiště není podporováno)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Neuložené změny</string>
+    <string name="unsaved_message">Tento wiki má neuložené změny. Uložit před zavřením?</string>
+    <string name="unsaved_save">Uložit a zavřít</string>
+    <string name="unsaved_discard">Zavřít bez uložení</string>
+    <string name="wiki_group_title">Otevřené wiki</string>
+    <string name="wiki_keepalive_title">Wiki připraven</string>
+    <string name="wiki_keepalive_text">Wiki je připraven k pokračování</string>
+    <string name="wiki_notification_running">Klepnutím otevřete</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d otevřený wiki</item>
+        <item quantity="other">%d otevřených wiki</item>
+    </plurals>
+    <string name="reveal_chooser">Otevřít složku v…</string>
+    <string name="reveal_path_hint">Složka: %1$s</string>
+</resources>

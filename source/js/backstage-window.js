@@ -16,16 +16,26 @@ function BackstageWindow(options) {
 	this.info = options.info || {};
 	this.tiddler = this.info.tiddler;
 	this.mustQuitOnClose = options.mustQuitOnClose;
-	// Open the window
-	$tw.desktop.gui.Window.open("html/backstage-tiddler-window.html",{
+	this.windowLoaded = false;
+	this.rendered = false;
+	// Open the window. Persist and restore position/size + maximized state like the
+	// wiki windows do (the wiki list is itself a backstage window).
+	$tw.desktop.gui.Window.open("html/backstage-tiddler-window.html",this.applyGeometryToOpenOptions({
 		id: hash.simpleHash(this.getIdentifier()),
 		show: true,
-		icon: "images/app_icon.png"
-	},function(win) {
+		icon: "images/app-icon256.png"
+	}),function(win) {
 		self.window_nwjs = win;
 		self.window_nwjs.once("loaded",self.onloaded.bind(self));
 		self.window_nwjs.on("close",self.onclose.bind(self));
+		self.trackGeometry();
+		self.restoreMaximizedState();
 	});
+}
+
+// True when $tw has finished booting and we can render TiddlyWiki content
+function isBootComplete() {
+	return !!($tw && $tw.wiki && $tw.utils && $tw.popup && $tw.rootWidget && $tw.fakeDocument);
 }
 
 // Static method for getting the identifier for the specified info
@@ -45,29 +55,50 @@ BackstageWindow.prototype.getIdentifier = function() {
 	return BackstageWindow.getIdentifierFromInfo({tiddler: this.tiddler});
 };
 
-// Load handler for window
+// Load handler for window — the splash is visible at this point.
+// Defers the TiddlyWiki-dependent setup until boot has completed.
 BackstageWindow.prototype.onloaded = function(event) {
-	// Make $tw available in the window
+	this.windowLoaded = true;
+	// Always make $tw visible in the new window (the reference is stable
+	// across boot; boot mutates the same object)
 	this.window_nwjs.window.$tw = $tw;
-	// Show dev tools
-	// this.window_nwjs.showDevTools();
-	// Trap links
+	this.window_nwjs.show();
+	this.window_nwjs.focus();
+	this.tryRender();
+};
+
+// Render the page content once both the window has loaded AND $tw has booted.
+// Idempotent — safe to call from onloaded or from main.js after boot.
+BackstageWindow.prototype.tryRender = function() {
+	if(this.rendered) { return; }
+	if(!this.windowLoaded) { return; }
+	if(!isBootComplete()) { return; }
+	this.rendered = true;
+	// TiddlyWiki-dependent setup that used to live in onloaded
 	$tw.desktop.utils.links.trapLinks(this.window_nwjs.window.document);
-	// Handle popups
 	$tw.utils.addEventListeners(this.window_nwjs.window.document,[{
 		name: "click",
 		handlerObject: $tw.popup,
 		handlerMethod: "handleEvent"
 	}]);
-	// Show dev tools on F12
 	$tw.desktop.utils.devtools.trapDevTools(this.window_nwjs,this.window_nwjs.window.document);
-	// Add menu
 	$tw.desktop.utils.menu.createMenuBar(this.window_nwjs);
-	// Show the window
-	this.window_nwjs.show();
-	this.window_nwjs.focus();
-	// Render the window content
+	// Render the page content
 	this.renderWindow();
+	// Safe external media embeds (YouTube etc.): route allowlisted media through the local
+	// loopback shim so videos play in backstage windows (the wiki list, Settings, and Help)
+	// just like they do in single-file and folder wikis. Backstage windows render TW content
+	// directly into this Node-enabled document, so this matches the folder-wiki install.
+	try {
+		require("../js/utils/embeds.js").install(this.window_nwjs.window.document,this.window_nwjs.window);
+	} catch(e) {
+		console.error("[TiddlyDesktop] embeds install failed:",e);
+	}
+	// Remove the loading splash now that real content is rendered
+	var splash = this.window_nwjs.window.document.getElementById("td-loading-splash");
+	if(splash && splash.parentNode) {
+		splash.parentNode.removeChild(splash);
+	}
 };
 
 BackstageWindow.prototype.renderWindow = function() {
@@ -112,8 +143,11 @@ BackstageWindow.prototype.changeHandler = function (changes) {
 
 // Close handler for window
 BackstageWindow.prototype.onclose = function(event) {
-	// Remove our wiki change event handler
-	$tw.wiki.removeEventListener("change",this.boundChangeHandler);
+	// Remove our wiki change event handler (may not exist if the window was
+	// closed before TiddlyWiki finished booting and rendering)
+	if($tw && $tw.wiki && this.boundChangeHandler) {
+		$tw.wiki.removeEventListener("change",this.boundChangeHandler);
+	}
 	// Close the window, remove it from the window list
 	this.windowList.handleClose(this);
 };

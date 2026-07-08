@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">Wikis ouverts</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop est en cours d’exécution</string>
+    <string name="wiki_server_notification_text">Les serveurs wiki sont actifs</string>
+    <string name="toast_access_not_granted">Accès non accordé</string>
+    <string name="toast_backup_folder_set">Dossier de sauvegarde défini</string>
+    <string name="toast_config_folder_set">Dossier de configuration défini</string>
+    <string name="toast_import_folder_failed">Impossible d’importer ce dossier</string>
+    <string name="toast_open_folder_failed">Impossible d’ouvrir le dossier sur cet appareil</string>
+    <string name="toast_custom_plugin_folder_set">Dossier de plugins personnalisé défini</string>
+    <string name="toast_folder_required_not_added">Accès au dossier requis – wiki non ajouté</string>
+    <string name="toast_importing_plugins">Importation des plugins…</string>
+    <string name="toast_no_backup_folder">Aucun dossier de sauvegarde défini</string>
+    <string name="toast_no_config_folder">Aucun dossier de configuration défini</string>
+    <string name="toast_no_folder_access_reveal">Aucun accès au dossier pour ce wiki – ajoutez-le à nouveau pour accorder l’autorisation.</string>
+    <string name="toast_nothing_to_share">Rien à partager</string>
+    <string name="toast_operation_failed">Échec de l’opération – voir logcat</string>
+    <string name="toast_regrant_wiki">Accorder à nouveau l’accès à ce wiki</string>
+    <string name="toast_regrant_folder">Accorder à nouveau l’accès au dossier (sauvegardes et pièces jointes)</string>
+    <string name="toast_working">En cours…</string>
+    <string name="toast_saved">Enregistré</string>
+    <string name="toast_save_failed">Échec de l’enregistrement</string>
+    <string name="toast_share_failed">Échec du partage</string>
+    <string name="toast_window_not_ready">Fenêtre pas encore prête</string>
+    <string name="share_tiddler_chooser">Partager le tiddler</string>
+    <string name="share_tid_file_chooser">Partager le tiddler (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Partager</string>
+    <string name="share_btn_tooltip">Partager ce tiddler</string>
+    <string name="share_as_text">Partager comme texte</string>
+    <string name="share_as_tid">Partager comme .tid</string>
+    <string name="share_as_html">Partager comme HTML</string>
+    <string name="share_as_json">Partager comme JSON</string>
+    <string name="share_as_csv">Partager comme CSV</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Pièces jointes externes (Android)</string>
+    <string name="ea_note_body">Sous Android, les pièces jointes importées sont toujours copiées dans le dossier attachments/ de ce wiki et liées par un chemin relatif. Les options de chemin absolu n\'ont aucun effet ici — les dossiers partagés via Android (content://) n\'ont pas de chemin de système de fichiers.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Note rapide</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Écrivez votre note…</string>
+    <string name="quicknote_done">Terminé</string>
+    <string name="quicknote_cancel">Annuler</string>
+    <string name="quicknote_no_wikis">Aucun wiki pour l\'instant — ajoutez-en un dans TiddlyDesktop d\'abord</string>
+    <string name="quicknote_empty">Écrivez d\'abord une note</string>
+    <string name="quicknote_sent">Note ajoutée</string>
+    <string name="quicknote_failed">Impossible d\'ajouter la note</string>
+    <string name="quicknote_tiddler_title">Note %1$s</string>
+    <string name="quicknote_widget_description">Ajouter une note rapide à un wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Autoriser l\'accès au stockage</string>
+    <string name="storage_access_message">TiddlyDesktop ouvre vos wikis directement depuis le stockage. Veuillez accorder l\'autorisation « Accès à tous les fichiers » afin qu\'il puisse lire et enregistrer vos fichiers et dossiers de wiki.</string>
+    <string name="storage_access_open_settings">Ouvrir les paramètres</string>
+    <string name="storage_access_later">Plus tard</string>
+    <string name="toast_pick_on_device_folder">Veuillez choisir un dossier sur cet appareil (le stockage cloud n\'est pas pris en charge)</string>
+    <string name="toast_pick_on_device_file">Veuillez choisir un fichier sur cet appareil (le stockage cloud n\'est pas pris en charge)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Modifications non enregistrées</string>
+    <string name="unsaved_message">Ce wiki contient des modifications non enregistrées. Enregistrer avant de fermer ?</string>
+    <string name="unsaved_save">Enregistrer et fermer</string>
+    <string name="unsaved_discard">Fermer sans enregistrer</string>
+    <string name="wiki_group_title">Wikis ouverts</string>
+    <string name="wiki_keepalive_title">Wiki prêt</string>
+    <string name="wiki_keepalive_text">Un wiki est gardé prêt à reprendre</string>
+    <string name="wiki_notification_running">Toucher pour ouvrir</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d wiki ouvert</item>
+        <item quantity="other">%d wikis ouverts</item>
+    </plurals>
+    <string name="reveal_chooser">Ouvrir le dossier dans…</string>
+    <string name="reveal_path_hint">Dossier : %1$s</string>
+</resources>

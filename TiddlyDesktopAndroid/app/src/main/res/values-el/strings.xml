@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">Ανοιχτά wiki</string>
+    <string name="wiki_server_notification_title">Το TiddlyDesktop εκτελείται</string>
+    <string name="wiki_server_notification_text">Οι διακομιστές wiki είναι ενεργοί</string>
+    <string name="toast_access_not_granted">Δεν δόθηκε πρόσβαση</string>
+    <string name="toast_backup_folder_set">Ορίστηκε φάκελος αντιγράφων ασφαλείας</string>
+    <string name="toast_config_folder_set">Ορίστηκε φάκελος ρυθμίσεων</string>
+    <string name="toast_import_folder_failed">Δεν ήταν δυνατή η εισαγωγή του φακέλου</string>
+    <string name="toast_open_folder_failed">Δεν είναι δυνατό το άνοιγμα του φακέλου σε αυτή τη συσκευή</string>
+    <string name="toast_custom_plugin_folder_set">Ορίστηκε προσαρμοσμένος φάκελος προσθέτων</string>
+    <string name="toast_folder_required_not_added">Απαιτείται πρόσβαση στον φάκελο — το wiki δεν προστέθηκε</string>
+    <string name="toast_importing_plugins">Εισαγωγή προσθέτων…</string>
+    <string name="toast_no_backup_folder">Δεν ορίστηκε φάκελος αντιγράφων ασφαλείας</string>
+    <string name="toast_no_config_folder">Δεν ορίστηκε φάκελος ρυθμίσεων</string>
+    <string name="toast_no_folder_access_reveal">Δεν υπάρχει πρόσβαση στον φάκελο αυτού του wiki — προσθέστε το ξανά για να δώσετε άδεια.</string>
+    <string name="toast_nothing_to_share">Τίποτα για κοινή χρήση</string>
+    <string name="toast_operation_failed">Η λειτουργία απέτυχε — δείτε το logcat</string>
+    <string name="toast_regrant_wiki">Δώστε ξανά πρόσβαση σε αυτό το wiki</string>
+    <string name="toast_regrant_folder">Δώστε ξανά πρόσβαση στον φάκελο (αντίγραφα και συνημμένα)</string>
+    <string name="toast_working">Εργασία σε εξέλιξη…</string>
+    <string name="toast_saved">Αποθηκεύτηκε</string>
+    <string name="toast_save_failed">Η αποθήκευση απέτυχε</string>
+    <string name="toast_share_failed">Η κοινή χρήση απέτυχε</string>
+    <string name="toast_window_not_ready">Το παράθυρο δεν είναι ακόμη έτοιμο</string>
+    <string name="share_tiddler_chooser">Κοινή χρήση tiddler</string>
+    <string name="share_tid_file_chooser">Κοινή χρήση tiddler (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Κοινή χρήση</string>
+    <string name="share_btn_tooltip">Κοινή χρήση αυτού του tiddler</string>
+    <string name="share_as_text">Κοινή χρήση ως κείμενο</string>
+    <string name="share_as_tid">Κοινή χρήση ως .tid</string>
+    <string name="share_as_html">Κοινή χρήση ως HTML</string>
+    <string name="share_as_json">Κοινή χρήση ως JSON</string>
+    <string name="share_as_csv">Κοινή χρήση ως CSV</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Εξωτερικά συνημμένα (Android)</string>
+    <string name="ea_note_body">Στο Android, τα εισαγόμενα συνημμένα αντιγράφονται πάντα στον φάκελο attachments/ αυτού του wiki και συνδέονται με σχετική διαδρομή. Οι επιλογές απόλυτης διαδρομής δεν έχουν καμία επίδραση εδώ — οι φάκελοι που κοινοποιούνται μέσω Android (content://) δεν έχουν διαδρομή συστήματος αρχείων.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Γρήγορη σημείωση</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Γράψτε τη σημείωσή σας…</string>
+    <string name="quicknote_done">Τέλος</string>
+    <string name="quicknote_cancel">Άκυρο</string>
+    <string name="quicknote_no_wikis">Δεν υπάρχουν ακόμη wiki — προσθέστε ένα στο TiddlyDesktop πρώτα</string>
+    <string name="quicknote_empty">Γράψτε πρώτα μια σημείωση</string>
+    <string name="quicknote_sent">Η σημείωση προστέθηκε</string>
+    <string name="quicknote_failed">Δεν ήταν δυνατή η προσθήκη της σημείωσης</string>
+    <string name="quicknote_tiddler_title">Σημείωση %1$s</string>
+    <string name="quicknote_widget_description">Προσθήκη γρήγορης σημείωσης σε ένα wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Να επιτρέπεται η πρόσβαση στον χώρο αποθήκευσης</string>
+    <string name="storage_access_message">Το TiddlyDesktop ανοίγει τα wiki σας απευθείας από τον χώρο αποθήκευσης. Παραχωρήστε την άδεια «Πρόσβαση σε όλα τα αρχεία» ώστε να μπορεί να διαβάζει και να αποθηκεύει τα αρχεία και τους φακέλους των wiki σας.</string>
+    <string name="storage_access_open_settings">Άνοιγμα ρυθμίσεων</string>
+    <string name="storage_access_later">Αργότερα</string>
+    <string name="toast_pick_on_device_folder">Επιλέξτε έναν φάκελο σε αυτήν τη συσκευή (η αποθήκευση στο cloud δεν υποστηρίζεται)</string>
+    <string name="toast_pick_on_device_file">Επιλέξτε ένα αρχείο σε αυτήν τη συσκευή (η αποθήκευση στο cloud δεν υποστηρίζεται)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Μη αποθηκευμένες αλλαγές</string>
+    <string name="unsaved_message">Αυτό το wiki έχει μη αποθηκευμένες αλλαγές. Αποθήκευση πριν το κλείσιμο;</string>
+    <string name="unsaved_save">Αποθήκευση και κλείσιμο</string>
+    <string name="unsaved_discard">Κλείσιμο χωρίς αποθήκευση</string>
+    <string name="wiki_group_title">Ανοιχτά wiki</string>
+    <string name="wiki_keepalive_title">Το wiki είναι έτοιμο</string>
+    <string name="wiki_keepalive_text">Διατήρηση ενός wiki έτοιμου για συνέχιση</string>
+    <string name="wiki_notification_running">Πατήστε για άνοιγμα</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d ανοιχτό wiki</item>
+        <item quantity="other">%d ανοιχτά wiki</item>
+    </plurals>
+    <string name="reveal_chooser">Άνοιγμα φακέλου σε…</string>
+    <string name="reveal_path_hint">Φάκελος: %1$s</string>
+</resources>

@@ -1,0 +1,20 @@
+title: $:/TiddlyDesktop/settings/BackupFolder
+caption: {{$:/language/TiddlyDesktop/Advanced/Backups}}
+tags: $:/tags/ControlPanel/SettingsTab
+
+\whitespace trim
+! {{$:/language/TiddlyDesktop/Toolbar/BackupFolder}}
+
+<p>{{$:/language/TiddlyDesktop/Advanced/BackupsHelp}}</p>
+
+<$button class="tc-btn-invisible tc-tiddlylink">
+<$action-sendmessage $message="tiddlydesktop-android-pick-backup-folder"/>
+{{$:/core/images/folder}} {{$:/language/TiddlyDesktop/Toolbar/BackupFolder}}
+</$button>
+<$list filter="[[$:/TiddlyDesktop/Config/backup-folder-path]!is[missing]]" variable="ignore">
+<div class="td-custom-plugin-path"><$text text={{$:/TiddlyDesktop/Config/backup-folder-path}}/></div>
+<$button class="tc-btn-invisible tc-tiddlylink">
+<$action-sendmessage $message="tiddlydesktop-android-open-backup-folder"/>
+{{$:/core/images/link}} {{$:/language/TiddlyDesktop/Toolbar/OpenBackupFolder}}
+</$button>
+</$list>

@@ -7,20 +7,39 @@ tags: $:/tags/Stylesheet
 	padding: 1em;
 	background: <<colour wikilist-background>>;
 	width: 100%;
-	margin: 0;
+	margin: 5px 0 0 0;
+	box-sizing: border-box;
+	/* Grow to fill the remaining window height inside the flex-column droplink, so
+	   the list's background spans the full window even with only a few wikis. Doesn't
+	   shrink below its content, so a long list still scrolls (the droplink scrolls). */
+	flex: 1 0 auto;
 }
 
 .td-wikilist .td-wikilist-item {
 	border: none;
-	border-left: 5px solid transparent;
-	margin: 0 0 1em 0;
-    box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-    background: <<colour wikilist-item>>;
+	border-left: 4px solid transparent;
+	margin: 0 0 0.85em 0;
+	border-radius: 7px;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+	background: <<colour wikilist-item>>;
+	transition: box-shadow 0.15s ease, border-left-color 0.15s ease;
 }
 
 .td-wikilist .td-wikilist-item:hover {
-	border-left: 5px solid <<colour wikilist-item-border-hover>>;
-    box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
+	border-left: 4px solid <<colour wikilist-item-border-hover>>;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+/* TiddlyWiki adds .tc-dragging to the row synchronously, just before it captures the
+   native drag image (setDragImage(rowNode)) — so this state is what the snapshot sees.
+   isolate gives the row its own stacking context ONLY during the drag, so the snapshot
+   is just that row and not every following sibling (setDragImage paints the node's
+   stacking-context subtree). It is deliberately NOT on the base rule: a permanent
+   stacking context traps a row's tags-dropdown popup beneath later rows. box-shadow is
+   dropped so its blur doesn't bleed past the border box in the ghost. */
+.td-wikilist .td-wikilist-item.tc-dragging {
+	isolation: isolate;
+	box-shadow: none;
 }
 
 .td-wikilist .td-wikilist-item .td-wikilist-thumbnail {
@@ -66,7 +85,26 @@ tags: $:/tags/Stylesheet
 	color: <<colour wikilist-url>>;
 }
 
+.td-language-switcher {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+.td-language-switcher svg {
+	width: 1.2em;
+	height: 1.2em;
+	fill: currentColor;
+}
+
+.td-language-select {
+	font: inherit;
+}
+
 .td-wikilist .td-wikilist-item .td-wiki-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
 	font-size: 0.8em;
 	margin-top: 0.5em;
 }
@@ -77,6 +115,30 @@ tags: $:/tags/Stylesheet
 .td-wikilist .td-wiki-toolbar-item {
 	display: inline-block;
 	margin-right: 1em;
+}
+
+/* The Convert/Plugins buttons are <$reveal>s that hide via the `hidden` attribute, not by
+   emitting nothing. The UA rule `[hidden] { display: none }` (specificity 0,1,0) loses to the
+   `display: inline-block` above (0,3,0), so a hidden reveal stayed laid out as an empty box —
+   contributing its margin-right: 1em as a dangling gap. Re-assert the hide at matching
+   specificity so a hidden item leaves no space (and flips back to inline-block when shown). */
+.td-wikilist .td-wiki-toolbar-item[hidden] {
+	display: none;
+}
+
+/* Per-row tag pills: each is wrapped in this element so the "pop" storyview always has a real,
+   transformable element as the list item's first DOM node (the tag-body/$wikify content can
+   momentarily be a text node, which makes pop skip the animation). inline-block so the pills
+   still flow inline and transform: scale() actually applies. */
+.td-wikilist .td-wikilist-tag-pop {
+	display: inline-block;
+}
+
+/* Top filter tag-row (the .td-tags row above the wiki rows): space the pills out. Each pill's
+   colours are computed per tag in WikiList.tid (background = the tag tiddler's colour via the
+   TiddlerColourFilter cascade, with a contrasting foreground/fill), so only layout lives here. */
+.td-tags .tc-tag-label {
+	margin-right: 7px;
 }
 
 .td-wikilist .td-wikilist-button-open {
@@ -105,4 +167,574 @@ tags: $:/tags/Stylesheet
 
 .td-wikilist-info .td-wiki-toolbar .tc-add-tag-name input {
 	border: none;
+}
+
+.td-wikilist .td-wikilist-button-plugins {
+	background-color: <<colour wikilist-button-background>>;
+}
+
+.td-wikilist .td-wikilist-button-plugins:hover {
+	background-color: <<colour wikilist-button-reveal>>;
+}
+
+.td-wikilist .td-wikilist-button-convert {
+	background-color: <<colour wikilist-button-background>>;
+}
+
+.td-wikilist .td-wikilist-button-convert:hover {
+	background-color: <<colour wikilist-button-reveal>>;
+}
+
+.td-wikilist .td-wikilist-button-advanced {
+	background-color: <<colour wikilist-button-background>>;
+}
+
+.td-wikilist .td-wikilist-button-advanced:hover {
+	background-color: <<colour wikilist-button-reveal>>;
+}
+
+.td-wikilist .td-wikilist-button-reveal-backups {
+	background-color: <<colour wikilist-button-background>>;
+}
+
+.td-wikilist .td-wikilist-button-reveal-backups:hover {
+	background-color: <<colour wikilist-button-reveal>>;
+}
+
+/* ── Advanced options panel ─────────────────────────────────────────────── */
+
+.td-wikilist .td-wiki-advanced {
+	margin-top: 0.85em;
+	padding: 0.9em 1em;
+	background: <<colour page-background>>;
+	border: 1px solid <<colour wikilist-item-border-hover>>;
+	border-radius: 5px;
+	font-size: 0.85em;
+}
+
+.td-wiki-advanced-note {
+	color: <<colour muted-foreground>>;
+	margin-bottom: 0.85em;
+	line-height: 1.45;
+}
+
+.td-wiki-advanced-section {
+	margin-bottom: 1em;
+}
+
+.td-wiki-advanced-section:last-child {
+	margin-bottom: 0;
+}
+
+.td-wiki-advanced-heading {
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-size: 0.78em;
+	color: <<colour muted-foreground>>;
+	margin-bottom: 0.55em;
+	padding-bottom: 0.3em;
+	border-bottom: 1px solid <<colour wikilist-item-border-hover>>;
+}
+
+.td-wiki-advanced-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.55em 1.1em;
+}
+
+.td-wiki-advanced-field {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	cursor: text;
+}
+
+.td-wiki-advanced-field > span {
+	font-size: 0.88em;
+	color: <<colour muted-foreground>>;
+}
+
+.td-wiki-advanced-field input {
+	width: 100%;
+	box-sizing: border-box;
+	padding: 4px 7px;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 3px;
+	background: <<colour tiddler-background>>;
+	color: <<colour foreground>>;
+	font: inherit;
+}
+
+.td-wiki-advanced-field input:focus {
+	outline: none;
+	border-color: <<colour wikilist-item-border-hover>>;
+}
+
+.td-wiki-backup-count {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	margin-top: 0.7em;
+}
+
+.td-wiki-backup-count input {
+	width: 8em;
+}
+
+.td-wiki-advanced-toggle {
+	display: flex;
+	align-items: center;
+	gap: 7px;
+	margin-top: 0.7em;
+	cursor: pointer;
+}
+
+.td-wiki-advanced-toggle input {
+	margin: 0;
+}
+
+.td-wiki-advanced-actions {
+	margin-top: 0.7em;
+}
+
+/* ── Plugin Chooser overlay ─────────────────────────────────────────────── */
+
+/* Collapse any <p> artifacts TW may inject between flex children */
+.td-plugin-dialog > p,
+.td-plugin-list > p {
+	margin: 0;
+	padding: 0;
+	line-height: 0;
+	font-size: 0;
+}
+
+.td-plugin-overlay {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.55);
+	z-index: 9000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.td-plugin-dialog {
+	background: <<colour page-background>>;
+	border-radius: 5px;
+	box-shadow: 0 8px 32px rgba(0,0,0,0.32);
+	width: 700px;
+	max-width: 94vw;
+	height: 85vh;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.td-plugin-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 1em 1.2em 0.5em;
+	border-bottom: 1px solid <<colour tiddler-border>>;
+	flex-shrink: 0;
+}
+
+.td-plugin-heading {
+	margin: 0;
+	font-size: 1.2em;
+}
+
+.td-plugin-close-btn {
+	font-size: 1.1em;
+	opacity: 0.6;
+	padding: 2px 6px;
+}
+
+.td-plugin-close-btn:hover {
+	opacity: 1;
+}
+
+.td-plugin-wiki-url {
+	padding: 0.5em 1.2em;
+	font-size: 0.82em;
+	color: <<colour muted-foreground>>;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+.td-plugin-wiki-url svg {
+	width: 1em;
+	height: 1em;
+	flex-shrink: 0;
+}
+
+.td-plugin-wiki-url code {
+	word-break: break-all;
+}
+
+.td-plugin-open-warning {
+	margin: 0 1.2em 0.4em;
+	padding: 8px 12px;
+	background: rgba(255, 193, 7, 0.16);
+	border: 1px solid rgba(255, 193, 7, 0.55);
+	border-radius: 4px;
+	color: <<colour foreground>>;
+	font-size: 0.88em;
+	flex-shrink: 0;
+}
+
+.td-plugin-tabs {
+	display: flex;
+	gap: 4px;
+	padding: 0.4em 1.2em 0;
+	flex-shrink: 0;
+	border-bottom: 1px solid <<colour muted-foreground>>;
+}
+
+.td-plugin-tab {
+	background: none;
+	border: 1px solid transparent;
+	border-bottom: none;
+	border-radius: 5px 5px 0 0;
+	padding: 5px 12px;
+	cursor: pointer;
+	color: <<colour muted-foreground>>;
+	font-size: 0.9em;
+	margin-bottom: -1px;
+}
+
+.td-plugin-tab:hover {
+	color: <<colour foreground>>;
+}
+
+.td-plugin-tab-active {
+	color: <<colour foreground>>;
+	font-weight: 600;
+	border-color: <<colour muted-foreground>>;
+	background: <<colour background>>;
+}
+
+.td-plugin-search-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0.4em 1.2em;
+	flex-shrink: 0;
+}
+
+.td-plugin-search {
+	flex: 1;
+	padding: 5px 8px;
+	border: 1px solid <<colour tiddler-border>>;
+	border-radius: 3px;
+	background: <<colour tiddler-background>>;
+	color: <<colour foreground>>;
+	font-size: 0.9em;
+}
+
+.td-plugin-search-clear {
+	opacity: 0.5;
+	padding: 2px 5px;
+}
+
+.td-plugin-search-clear:hover {
+	opacity: 1;
+}
+
+.td-plugin-list {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 0.2em 1.2em;
+}
+
+.td-plugin-row {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	padding: 6px 0;
+	border-bottom: 1px solid <<colour tiddler-border>>;
+}
+
+.td-plugin-row:last-child {
+	border-bottom: none;
+}
+
+/* TiddlyWiki wraps a run of inline content (the checkbox/radio widget + the action span) in
+   a <p>, which would become the row's only flex child and drop the right-hand actions onto a
+   new line. display:contents removes the <p> box so its children are the real flex items. */
+.td-plugin-row p {
+	display: contents;
+}
+
+/* The checkbox is a <label> that wraps the plugin info, so clicking the title
+   (or description) toggles selection — not just the little box itself. */
+.td-plugin-checkbox {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	cursor: pointer;
+}
+
+.td-plugin-checkbox input {
+	flex-shrink: 0;
+}
+
+.td-plugin-info {
+	flex: 1;
+	min-width: 0;
+}
+
+.td-plugin-title {
+	font-size: 0.85em;
+	font-family: monospace;
+	word-break: break-all;
+}
+
+.td-plugin-type-badge {
+	display: inline-block;
+	font-size: 0.72em;
+	padding: 1px 5px;
+	border-radius: 3px;
+	background: <<colour tag-background>>;
+	color: <<colour tag-foreground>>;
+	margin-left: 4px;
+	vertical-align: middle;
+}
+
+.td-plugin-desc {
+	font-size: 0.82em;
+	color: <<colour muted-foreground>>;
+}
+
+.td-plugin-version {
+	font-size: 0.75em;
+	color: <<colour muted-foreground>>;
+	flex-shrink: 0;
+	white-space: nowrap;
+}
+
+.td-plugin-version-outdated {
+	color: #b3261c;
+	font-weight: 600;
+}
+
+/* The "update available" hint shown beside a collapsed version list: a small download glyph
+   + "v<installed> → v<newest>", so an outstanding update is visible without expanding the group. */
+.td-plugin-version-outdated svg {
+	width: 0.9em;
+	height: 0.9em;
+	fill: currentColor;
+	vertical-align: -0.15em;
+}
+
+/* Update and Reinstall sit in the same slot but mean different things, so they are
+   deliberately distinct: Update is the solid blue "there's a newer version" call to
+   action with a download glyph; Reinstall is a quiet outlined "repair the bundled
+   copy" action with a circular-refresh glyph.
+
+   The colour/border rules are scoped under .td-plugin-row on purpose: the base
+   `button.td-button` rule (buttons.tid) has specificity 0,1,1, so a bare
+   `.td-plugin-btn-update` (0,1,0) would lose to it and every button would fall back to
+   the same grey base background — which is exactly what made Update and Reinstall
+   indistinguishable. The descendant selector lifts these to 0,2,x so the colours win. */
+.td-plugin-btn-update,
+.td-plugin-btn-reinstall {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	white-space: nowrap;
+}
+
+.td-plugin-btn-update svg,
+.td-plugin-btn-reinstall svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+.td-plugin-row .td-plugin-btn-update {
+	background-color: #1a73e8;
+	color: #fff;
+}
+
+.td-plugin-row .td-plugin-btn-update:hover {
+	background-color: #1666c1;
+}
+
+.td-plugin-row .td-plugin-btn-reinstall {
+	background-color: transparent;
+	color: <<colour wikilist-button-open>>;
+	border: 1px solid <<colour wikilist-button-open>>;
+	/* the 1px border would otherwise make it 2px taller than the solid Update button */
+	padding: 2px 6px;
+}
+
+.td-plugin-row .td-plugin-btn-reinstall:hover {
+	background-color: <<colour wikilist-button-open>>;
+	color: <<colour wikilist-button-foreground>>;
+}
+
+/* ── multiple versions of one plugin ─────────────────────────────────────────
+   When the same plugin title is found in several library paths, the row shows the
+   plugin once and lists its versions as radio choices (pick one to install, or none). */
+.td-plugin-group {
+	flex: 1;
+	min-width: 0;
+}
+
+.td-plugin-versions {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	margin-top: 6px;
+	padding-inline-start: 26px;
+}
+
+/* One version inside the reveal: the radio choice grows; its Update/Reinstall button (if
+   any) floats to the right, matching the single-version row. */
+.td-plugin-version-row {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+}
+
+.td-plugin-version-actions {
+	margin-inline-start: auto;
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: baseline;
+	gap: 6px;
+}
+
+.td-plugin-version-choice {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	align-items: baseline;
+	gap: 7px;
+	cursor: pointer;
+	font-size: 0.85em;
+}
+
+.td-plugin-version-choice input {
+	flex-shrink: 0;
+}
+
+/* The $radio widget wraps its children in a <span>; lay those out with spacing. */
+.td-plugin-version-choice > span {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 7px;
+}
+
+.td-plugin-source {
+	color: <<colour muted-foreground>>;
+	font-size: 0.9em;
+}
+
+.td-plugin-installed-tag {
+	font-size: 0.85em;
+	padding: 0 6px;
+	border-radius: 9px;
+	background: <<colour wikilist-button-open>>;
+	color: <<colour wikilist-button-foreground>>;
+}
+
+.td-plugin-version-none .td-plugin-none {
+	color: <<colour muted-foreground>>;
+	font-style: italic;
+}
+
+/* Single-version row: keep the version label + Update/Reinstall button together at the far
+   right of the row, on one line (never wrapped below the title). */
+.td-plugin-row-actions {
+	margin-inline-start: auto;
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: baseline;
+	white-space: nowrap;
+}
+
+/* Disclosure toggle that reveals the version list. */
+.td-plugin-versions-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-top: 5px;
+	padding: 2px 4px;
+	font-size: 0.82em;
+	color: <<colour muted-foreground>>;
+}
+
+.td-plugin-versions-toggle:hover {
+	color: <<colour foreground>>;
+}
+
+.td-plugin-versions-toggle svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+/* Count badge on the wiki-list Plugins button when a wiki has outdated plugins. */
+.td-plugin-update-badge {
+	display: inline-block;
+	min-width: 1.3em;
+	margin-inline-start: 4px;
+	padding: 0 4px;
+	border-radius: 9px;
+	background: #1a73e8;
+	color: #fff;
+	font-size: 0.85em;
+	font-weight: 700;
+	text-align: center;
+	line-height: 1.4;
+}
+
+.td-plugin-empty {
+	color: <<colour muted-foreground>>;
+	padding: 1em 0;
+	font-style: italic;
+	font-size: 0.9em;
+}
+
+.td-plugin-status {
+	margin: 0.5em 0 0;
+	padding: 8px 12px;
+	border-radius: 4px;
+	font-size: 0.88em;
+	background: <<colour tiddler-background>>;
+	border: 1px solid <<colour tiddler-border>>;
+}
+
+.td-plugin-actions {
+	display: flex;
+	gap: 0.8em;
+	padding: 0.8em 1.2em;
+	border-top: 1px solid <<colour tiddler-border>>;
+	flex-shrink: 0;
+}
+
+/* Scoped under .td-plugin-actions for the same specificity reason as the row buttons
+   above — otherwise the base `button.td-button` grey wins and Apply isn't highlighted. */
+.td-plugin-actions .td-plugin-btn-apply {
+	background-color: <<colour wikilist-button-open>>;
+	color: <<colour wikilist-button-foreground>>;
+}
+
+.td-plugin-actions .td-plugin-btn-apply:hover {
+	background-color: <<colour wikilist-button-open-hover>>;
+}
+
+.td-plugin-actions .td-plugin-btn-cancel {
+	background-color: <<colour wikilist-button-background>>;
+	color: <<colour wikilist-button-foreground>>;
 }

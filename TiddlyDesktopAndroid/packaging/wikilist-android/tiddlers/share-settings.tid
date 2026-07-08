@@ -1,0 +1,48 @@
+title: $:/TiddlyDesktop/settings/ShareTemplates
+caption: {{$:/language/TiddlyDesktop/Share/TemplatesHeading}}
+tags: $:/tags/ControlPanel/SettingsTab
+
+\whitespace trim
+\define lingo-base() $:/language/TiddlyDesktop/
+! <<lingo Share/TemplatesHeading>>
+
+<<lingo Share/TemplatesHelp>>
+
+`{{$title}}` `{{$url}}` `{{$description}}` `{{$image}}` `{{$embed}}` `{{$author}}` `{{$siteName}}` `{{$text}}`
+
+<$list filter="[all[tiddlers]tag[$:/tags/TiddlyDesktop/ShareTemplate]sort[share-kind]]">
+<div class="td-share-tpl-edit">
+<h3><$view field="share-kind"/>
+<$button class="tc-btn-invisible" tooltip={{$:/language/TiddlyDesktop/Share/DeleteTemplate}} style="float:right">
+<$action-deletetiddler $tiddler=<<currentTiddler>>/>
+{{$:/core/images/delete-button}}
+</$button>
+</h3>
+<div><<lingo Share/TagsLabel>> <$edit-text tiddler=<<currentTiddler>> field="share-tags" tag="input" default="" class="tc-edit-texteditor"/></div>
+<$edit-text tiddler=<<currentTiddler>> tag="textarea" class="tc-edit-texteditor"/>
+</div>
+</$list>
+
+! <<lingo Share/AddHeading>>
+
+<<lingo Share/AddHelp>>
+
+<$edit-text tiddler="$:/temp/TiddlyDesktop/NewShareTemplate" tag="input" class="tc-edit-texteditor" placeholder={{$:/language/TiddlyDesktop/Share/NamePlaceholder}}/>
+<$list filter="[[$:/temp/TiddlyDesktop/NewShareTemplate]get[text]!is[blank]]" variable="kind">
+<$button class="tc-btn">
+<$action-setfield
+	$tiddler={{{ [<kind>addprefix[$:/config/TiddlyDesktop/ShareTemplates/]] }}}
+	tags="$:/tags/TiddlyDesktop/ShareTemplate"
+	share-kind=<<kind>>
+	share-tags="shared"
+	text={{{ [[$:/config/TiddlyDesktop/ShareTemplates/generic]get[text]] }}}/>
+<$action-deletetiddler $tiddler="$:/temp/TiddlyDesktop/NewShareTemplate"/>
+<<lingo Share/CreateTemplate>>
+</$button>
+</$list>
+
+! <<lingo Share/RulesHeading>>
+
+<<lingo Share/RulesHelp>>
+
+<$edit-text tiddler="$:/config/TiddlyDesktop/ShareTemplates/rules" tag="textarea" class="tc-edit-texteditor" placeholder={{$:/language/TiddlyDesktop/Share/RulePlaceholder}}/>

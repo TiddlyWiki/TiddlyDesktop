@@ -1,0 +1,90 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Adicionar ficheiro wiki
+Toolbar/AddWikiFolder: Adicionar pasta wiki
+Toolbar/Backstage: Bastidores
+Toolbar/CreateWikiFolder: Criar nova pasta wiki
+Toolbar/CreateWiki: Criar novo wiki
+Toolbar/CreateFromTemplate: Criar a partir de um modelo
+Toolbar/NoTemplates: Nenhum modelo definido — ver Definições
+Toolbar/From: de
+Toolbar/CloneExisting: Clonar um wiki existente
+Toolbar/NoWikisToClone: Nenhum wiki disponível para clonar
+Toolbar/Help: Ajuda
+Toolbar/Settings: Definições
+Toolbar/Language: Idioma
+List/SearchPlaceholder: pesquisar
+List/ClearSearch: Limpar pesquisa
+Row/Untitled: Sem título
+Row/Open: abrir
+Row/Reveal: revelar
+Row/Remove: remover
+Row/ToFolder: para pasta
+Row/ToFile: para ficheiro
+Row/ToFolderTooltip: Escolha (ou crie) uma pasta vazia para a nova pasta wiki
+Row/ToFileTooltip: Escolha onde guardar o novo wiki de ficheiro único
+Row/Advanced: avançado
+Row/Plugins: plugins
+Advanced/Backups: Cópias de segurança
+Advanced/SaveBackup: Guardar uma cópia de segurança em cada gravação
+Advanced/KeepBackups: Backups a manter (vazio = todos)
+Advanced/RevealBackups: revelar cópias de segurança
+Advanced/ServerNote: Estas opções controlam como a pasta wiki é servida por HTTP. Entram em vigor da próxima vez que a pasta wiki for aberta.
+Advanced/Server: Servidor
+Advanced/Host: Anfitrião
+Advanced/Port: Porta
+Advanced/PathPrefix: Prefixo de caminho
+Advanced/RootTiddler: Tiddler raiz
+Advanced/Gzip: Comprimir respostas (gzip)
+Advanced/Access: Acesso
+Advanced/Credentials: Ficheiro de credenciais
+Advanced/AnonUsername: Nome de utilizador anónimo
+Advanced/Readers: Leitores
+Advanced/Writers: Escritores
+PluginChooser/Tab/plugin: Plugins
+PluginChooser/Tab/language: Idiomas
+PluginChooser/Tab/theme: Temas
+PluginChooser/Heading: Gerir plugins
+PluginChooser/Close: Fechar
+PluginChooser/OpenWarning: Este wiki está aberto neste momento. Feche primeiro a respetiva janela e depois clique em Aplicar.
+PluginChooser/FilterPlaceholder: Filtrar plugins…
+PluginChooser/Clear: Limpar
+PluginChooser/NoMatch: Nenhum plugin corresponde ao seu filtro.
+PluginChooser/Apply: Aplicar alterações
+PluginChooser/Cancel: Cancelar
+PluginChooser/Reinstall: Reinstalar
+PluginChooser/ReinstallTooltip: Reinstalar a versão incluída deste plugin
+PluginChooser/Reinstalled: Reinstalado
+PluginChooser/Installed: instalado
+PluginChooser/NotInstalled: Não instalado
+PluginChooser/Versions: versões
+PluginChooser/SourceBundled: incluído
+PluginChooser/SourceExternal: externo
+PluginChooser/Update: Atualizar
+PluginChooser/UpdateAvailable: Está incluída uma versão mais recente — clique para atualizar
+PluginChooser/Updated: Atualizado
+Row/PluginUpdates: Atualizações de plugins disponíveis
+Toolbar/ThemeLabel: Tema
+Toolbar/PaletteLabel: Paleta
+Toolbar/ViewLabel: Vista de lista
+Toolbar/ViewFull: Completa
+Toolbar/ViewCompact: Compacta
+Toolbar/CustomPluginFolder: Pasta de plugins personalizada
+Toolbar/ConfigFolder: Pasta de configuração
+Toolbar/OpenConfigFolder: Abrir a pasta de configuração
+Toolbar/BackupFolder: Pasta de cópias de segurança
+Toolbar/OpenBackupFolder: Abrir a pasta de cópias de segurança
+Share/Heading: Adicionar o conteúdo partilhado a…
+Share/Cancel: Cancelar
+Share/TemplatesHeading: Modelos de partilha
+Share/TemplatesHelp: Quando partilha uma ligação num wiki, o TiddlyDesktop enriquece-a (título, descrição, imagem, incorporação) e cria um tiddler a partir do modelo correspondente abaixo. Marcadores:
+Share/DeleteTemplate: Eliminar este modelo
+Share/TagsLabel: Etiquetas:
+Share/AddHeading: Adicione o seu próprio modelo
+Share/AddHelp: Dê-lhe um nome (para o referenciar a partir de uma regra de domínio abaixo) e depois edite o seu conteúdo acima. Começa como uma cópia do modelo genérico.
+Share/NamePlaceholder: p. ex. mastodon
+Share/CreateTemplate: Criar modelo
+Share/RulesHeading: Regras de domínio
+Share/RulesHelp: Uma regra por linha como <code>domain=kind</code> (p. ex. <code>vimeo.com=youtube</code>, ou <code>mastodon.social=mastodon</code> para um modelo que adicionou acima) para encaminhar um site para um modelo específico.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: As cópias de segurança de wikis de ficheiro único são guardadas junto a cada wiki por predefinição. Escolha aqui uma pasta para reunir todas as cópias num só local.

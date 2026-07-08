@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">열린 위키</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop 실행 중</string>
+    <string name="wiki_server_notification_text">위키 서버가 활성화됨</string>
+    <string name="toast_access_not_granted">접근이 허용되지 않음</string>
+    <string name="toast_backup_folder_set">백업 폴더가 설정됨</string>
+    <string name="toast_config_folder_set">설정 폴더가 설정됨</string>
+    <string name="toast_import_folder_failed">그 폴더를 가져올 수 없습니다</string>
+    <string name="toast_open_folder_failed">이 기기에서 폴더를 열 수 없습니다</string>
+    <string name="toast_custom_plugin_folder_set">사용자 지정 플러그인 폴더가 설정됨</string>
+    <string name="toast_folder_required_not_added">폴더 접근이 필요합니다 — 위키를 추가하지 않았습니다</string>
+    <string name="toast_importing_plugins">플러그인 가져오는 중…</string>
+    <string name="toast_no_backup_folder">백업 폴더가 설정되지 않음</string>
+    <string name="toast_no_config_folder">설정 폴더가 설정되지 않음</string>
+    <string name="toast_no_folder_access_reveal">이 위키의 폴더에 접근할 수 없습니다 — 다시 추가하여 권한을 부여하세요.</string>
+    <string name="toast_nothing_to_share">공유할 항목 없음</string>
+    <string name="toast_operation_failed">작업 실패 — logcat 확인</string>
+    <string name="toast_regrant_wiki">이 위키에 대한 접근 다시 허용</string>
+    <string name="toast_regrant_folder">폴더 접근 다시 허용(백업 및 첨부)</string>
+    <string name="toast_working">작업 중…</string>
+    <string name="toast_saved">저장됨</string>
+    <string name="toast_save_failed">저장 실패</string>
+    <string name="toast_share_failed">공유 실패</string>
+    <string name="toast_window_not_ready">창이 아직 준비되지 않음</string>
+    <string name="share_tiddler_chooser">티들러 공유</string>
+    <string name="share_tid_file_chooser">티들러 공유 (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">공유</string>
+    <string name="share_btn_tooltip">이 티들러 공유</string>
+    <string name="share_as_text">텍스트로 공유</string>
+    <string name="share_as_tid">.tid로 공유</string>
+    <string name="share_as_html">HTML로 공유</string>
+    <string name="share_as_json">JSON으로 공유</string>
+    <string name="share_as_csv">CSV로 공유</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">외부 첨부 파일 (Android)</string>
+    <string name="ea_note_body">Android에서는 가져온 첨부 파일이 항상 이 위키의 attachments/ 폴더로 복사되고 상대 경로로 연결됩니다. 절대 경로 옵션은 여기서 아무 효과가 없습니다 — Android를 통해 공유된 폴더(content://)에는 파일 시스템 경로가 없습니다.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">빠른 메모</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">메모를 입력하세요…</string>
+    <string name="quicknote_done">완료</string>
+    <string name="quicknote_cancel">취소</string>
+    <string name="quicknote_no_wikis">아직 위키가 없습니다 — 먼저 TiddlyDesktop에서 추가하세요</string>
+    <string name="quicknote_empty">먼저 메모를 입력하세요</string>
+    <string name="quicknote_sent">메모가 추가되었습니다</string>
+    <string name="quicknote_failed">메모를 추가할 수 없습니다</string>
+    <string name="quicknote_tiddler_title">메모 %1$s</string>
+    <string name="quicknote_widget_description">위키에 빠른 메모 추가</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">저장소 접근 허용</string>
+    <string name="storage_access_message">TiddlyDesktop은 저장소에서 위키를 직접 엽니다. 위키 파일과 폴더를 읽고 저장할 수 있도록 "모든 파일에 대한 접근" 권한을 허용해 주세요.</string>
+    <string name="storage_access_open_settings">설정 열기</string>
+    <string name="storage_access_later">나중에</string>
+    <string name="toast_pick_on_device_folder">이 기기의 폴더를 선택해 주세요 (클라우드 저장소는 지원되지 않습니다)</string>
+    <string name="toast_pick_on_device_file">이 기기의 파일을 선택해 주세요 (클라우드 저장소는 지원되지 않습니다)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">저장되지 않은 변경사항</string>
+    <string name="unsaved_message">이 위키에 저장되지 않은 변경사항이 있습니다. 닫기 전에 저장할까요?</string>
+    <string name="unsaved_save">저장 후 닫기</string>
+    <string name="unsaved_discard">저장하지 않고 닫기</string>
+    <string name="wiki_group_title">열린 위키</string>
+    <string name="wiki_keepalive_title">위키 준비됨</string>
+    <string name="wiki_keepalive_text">위키를 재개할 수 있도록 유지 중</string>
+    <string name="wiki_notification_running">탭하여 열기</string>
+    <plurals name="wiki_group_count">
+        <item quantity="other">열린 위키 %d개</item>
+    </plurals>
+    <string name="reveal_chooser">폴더 열기…</string>
+    <string name="reveal_path_hint">폴더: %1$s</string>
+</resources>

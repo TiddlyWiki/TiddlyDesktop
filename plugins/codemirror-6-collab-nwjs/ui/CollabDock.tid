@@ -1,0 +1,25 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/CollabDock
+tags: $:/tags/PageTemplate
+
+\whitespace trim
+
+<$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
+<div class="tc-collab-dock">
+<$list filter="[prefix[$:/temp/collab/share/available/]field:diverged[yes]limit[1]]" variable="_">
+<$button class="tc-btn-invisible tc-collab-dock-conflict" tooltip="Sync conflicts — click to review and resolve">
+<$action-setfield $tiddler="$:/temp/collab/state/dock-hidden" text="no"/>
+<$action-setfield $tiddler="$:/temp/collab/state/get-open" text="yes"/>
+{{$:/core/images/warning}} <$text text={{{ [prefix[$:/temp/collab/share/available/]field:diverged[yes]count[]] }}}/> conflict<$list filter="[prefix[$:/temp/collab/share/available/]field:diverged[yes]count[]!match[1]]" variable="_">s</$list>
+</$button>
+</$list>
+<$reveal type="match" state="$:/temp/collab/state/dock-hidden" text="yes">
+<$button set="$:/temp/collab/state/dock-hidden" setTo="no" class="tc-btn-invisible tc-collab-dock-show" tooltip="Show the collaboration panel">⌃ Collab</$button>
+</$reveal>
+<$reveal type="nomatch" state="$:/temp/collab/state/dock-hidden" text="yes" tag="div" class="tc-collab-dock-stack">
+<div class="tc-collab-dock-hidebar"><$button set="$:/temp/collab/state/dock-hidden" setTo="yes" class="tc-btn-invisible tc-collab-dock-hide" tooltip="Hide the collaboration panel">hide ⌄</$button></div>
+<$transclude tiddler="$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/GetPanel" mode="block"/>
+<$transclude tiddler="$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/ChatPanel" mode="block"/>
+<$transclude tiddler="$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/StatusBar" mode="block"/>
+</$reveal>
+</div>
+</$reveal>

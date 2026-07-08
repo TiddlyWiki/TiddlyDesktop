@@ -1,0 +1,7 @@
+title: $:/TiddlyDesktop/Settings/Flags
+caption: Chromium Flags
+tags: $:/TiddlyDesktop/Settings
+
+Chromium flags aren't available on Android: the app uses the system Android WebView, which
+doesn't expose a `chrome://flags` page or accept command-line switches the way the desktop
+(NW.js) build does. This section is intentionally disabled here.

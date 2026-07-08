@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/quicknote_widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:background="@drawable/quicknote_widget_bg"
+    android:padding="8dp">
+    <ImageView
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_marginEnd="8dp"
+        android:src="@drawable/ic_quicknote"
+        android:contentDescription="@string/quicknote_title" />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/quicknote_title"
+        android:textColor="@color/quicknote_widget_fg"
+        android:textStyle="bold"
+        android:textSize="15sp" />
+</LinearLayout>

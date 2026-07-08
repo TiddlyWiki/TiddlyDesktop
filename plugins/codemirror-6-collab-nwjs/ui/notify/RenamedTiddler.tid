@@ -1,0 +1,8 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/notify/RenamedTiddler
+tags: $:/tags/Notification
+
+<<renameBy>> renamed a shared tiddler:
+
+''<$text text=<<renameFrom>>/>'' → ''<$text text=<<renameTo>>/>''
+
+It stays in your wiki under the new title and keeps syncing.

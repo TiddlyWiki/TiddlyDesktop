@@ -1,0 +1,15 @@
+title: WikiListToolbar/ConfigFolder
+tags: toolbar
+
+\whitespace trim
+<$button class="td-button">
+<$action-sendmessage $message="tiddlydesktop-android-pick-config-folder"/>
+{{$:/core/images/folder}} {{$:/language/TiddlyDesktop/Toolbar/ConfigFolder}}
+</$button>
+<$list filter="[[$:/TiddlyDesktop/Config/config-folder-path]!is[missing]]" variable="ignore">
+<div class="td-custom-plugin-path"><$text text={{$:/TiddlyDesktop/Config/config-folder-path}}/></div>
+<$button class="td-button">
+<$action-sendmessage $message="tiddlydesktop-android-open-config-folder"/>
+{{$:/core/images/link}} {{$:/language/TiddlyDesktop/Toolbar/OpenConfigFolder}}
+</$button>
+</$list>

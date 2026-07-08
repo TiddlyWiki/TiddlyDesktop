@@ -16,4 +16,6 @@ The path of the backup file can be an absolute path or a relative path to the di
 Reset to default
 </$button>
 
+The ''number of backups to keep'' is configured ''per wiki'': open a wiki's **advanced** options in the list and set it under Backups (empty keeps all backups).
+
 (Note that backups for ~TiddlyWiki Classic wikis are managed within the TWC wiki - see "txtBackupFolder" in ~AdvancedOptions).

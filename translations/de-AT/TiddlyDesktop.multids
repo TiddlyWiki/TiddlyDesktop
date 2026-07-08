@@ -1,0 +1,90 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Wiki-Datei hinzufügen
+Toolbar/AddWikiFolder: Wiki-Ordner hinzufügen
+Toolbar/Backstage: Backstage
+Toolbar/CreateWikiFolder: Neuen Wiki-Ordner erstellen
+Toolbar/CreateWiki: Neues Wiki erstellen
+Toolbar/CreateFromTemplate: Aus einer Vorlage erstellen
+Toolbar/NoTemplates: Keine Vorlagen definiert – siehe Einstellungen
+Toolbar/From: aus
+Toolbar/CloneExisting: Bestehendes Wiki klonen
+Toolbar/NoWikisToClone: Keine Wikis zum Klonen verfügbar
+Toolbar/Help: Hilfe
+Toolbar/Settings: Einstellungen
+Toolbar/Language: Sprache
+List/SearchPlaceholder: suchen
+List/ClearSearch: Suche löschen
+Row/Untitled: Ohne Titel
+Row/Open: öffnen
+Row/Reveal: anzeigen
+Row/Remove: entfernen
+Row/ToFolder: in Ordner
+Row/ToFile: in Datei
+Row/ToFolderTooltip: Wähle (oder erstelle) einen leeren Ordner für den neuen Wiki-Ordner
+Row/ToFileTooltip: Wähle, wo das neue Einzeldatei-Wiki gespeichert werden soll
+Row/Advanced: erweitert
+Row/Plugins: Plugins
+Advanced/Backups: Sicherungen
+Advanced/SaveBackup: Bei jedem Speichern eine Sicherung anlegen
+Advanced/KeepBackups: Backups behalten (leer = alle)
+Advanced/RevealBackups: Sicherungen anzeigen
+Advanced/ServerNote: Diese Optionen steuern, wie der Wiki-Ordner über HTTP bereitgestellt wird. Sie werden beim nächsten Öffnen des Wiki-Ordners wirksam.
+Advanced/Server: Server
+Advanced/Host: Host
+Advanced/Port: Port
+Advanced/PathPrefix: Pfadpräfix
+Advanced/RootTiddler: Wurzel-Tiddler
+Advanced/Gzip: Antworten komprimieren (gzip)
+Advanced/Access: Zugriff
+Advanced/Credentials: Anmeldedatei
+Advanced/AnonUsername: Anonymer Benutzername
+Advanced/Readers: Leser
+Advanced/Writers: Schreiber
+PluginChooser/Tab/plugin: Plugins
+PluginChooser/Tab/language: Sprachen
+PluginChooser/Tab/theme: Designs
+PluginChooser/Heading: Plugins verwalten
+PluginChooser/Close: Schließen
+PluginChooser/OpenWarning: Dieses Wiki ist derzeit geöffnet. Schließe zuerst sein Fenster und klicke dann auf Anwenden.
+PluginChooser/FilterPlaceholder: Plugins filtern…
+PluginChooser/Clear: Löschen
+PluginChooser/NoMatch: Keine Plugins entsprechen deinem Filter.
+PluginChooser/Apply: Änderungen anwenden
+PluginChooser/Cancel: Abbrechen
+PluginChooser/Reinstall: Neu installieren
+PluginChooser/ReinstallTooltip: Die mitgelieferte Version dieses Plugins neu installieren
+PluginChooser/Reinstalled: Neu installiert
+PluginChooser/Installed: installiert
+PluginChooser/NotInstalled: Nicht installiert
+PluginChooser/Versions: Versionen
+PluginChooser/SourceBundled: mitgeliefert
+PluginChooser/SourceExternal: extern
+PluginChooser/Update: Aktualisieren
+PluginChooser/UpdateAvailable: Eine neuere Version ist enthalten – zum Aktualisieren klicken
+PluginChooser/Updated: Aktualisiert
+Row/PluginUpdates: Plugin-Updates verfügbar
+Toolbar/ThemeLabel: Design
+Toolbar/PaletteLabel: Palette
+Toolbar/ViewLabel: Listenansicht
+Toolbar/ViewFull: Vollständig
+Toolbar/ViewCompact: Kompakt
+Toolbar/CustomPluginFolder: Eigener Plugin-Ordner
+Toolbar/ConfigFolder: Konfigurationsordner
+Toolbar/OpenConfigFolder: Konfigurationsordner öffnen
+Toolbar/BackupFolder: Sicherungsordner
+Toolbar/OpenBackupFolder: Sicherungsordner öffnen
+Share/Heading: Geteilten Inhalt hinzufügen zu…
+Share/Cancel: Abbrechen
+Share/TemplatesHeading: Freigabe-Vorlagen
+Share/TemplatesHelp: Wenn du einen Link in ein Wiki teilst, reichert TiddlyDesktop ihn an (Titel, Beschreibung, Bild, Einbettung) und erstellt aus der passenden Vorlage unten einen Tiddler. Platzhalter:
+Share/DeleteTemplate: Diese Vorlage löschen
+Share/TagsLabel: Schlagwörter:
+Share/AddHeading: Eigene Vorlage hinzufügen
+Share/AddHelp: Gib ihr einen Namen (um sie über eine Domänenregel unten anzusprechen) und bearbeite dann oben ihren Inhalt. Sie beginnt als Kopie der generischen Vorlage.
+Share/NamePlaceholder: z. B. mastodon
+Share/CreateTemplate: Vorlage erstellen
+Share/RulesHeading: Domänenregeln
+Share/RulesHelp: Eine Regel pro Zeile als <code>domain=kind</code> (z. B. <code>vimeo.com=youtube</code> oder <code>mastodon.social=mastodon</code> für eine oben hinzugefügte Vorlage), um eine Website einer bestimmten Vorlage zuzuordnen.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Sicherungen von Einzeldatei-Wikis werden standardmäßig neben jedem Wiki gespeichert. Wähle hier einen Ordner, um stattdessen alle Sicherungen an einem Ort zu sammeln.

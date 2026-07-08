@@ -1,9 +1,11 @@
 title: WikiListWindow
 page-title: TiddlyDesktop -- Main 
 
-<$importvariables filter="[[$:/core/ui/PageMacros]] [all[shadows+tiddlers]tag[$:/tags/Macro]!has[draft.of]]">
+<$importvariables filter="[[$:/core/ui/PageMacros]] [all[shadows+tiddlers]tag[$:/tags/Macro]!has[draft.of]] [all[shadows+tiddlers]tag[$:/tags/Global]!has[draft.of]]">
 
 <$transclude tiddler="$:/core/ui/PageTemplate/alerts" mode="inline"/>
+
+<$transclude tiddler="$:/TiddlyDesktop/PluginChooser" mode="inline"/>
 
 <$droplink>
 

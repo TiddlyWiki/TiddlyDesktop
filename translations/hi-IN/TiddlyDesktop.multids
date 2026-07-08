@@ -1,0 +1,90 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: विकि फ़ाइल जोड़ें
+Toolbar/AddWikiFolder: विकि फ़ोल्डर जोड़ें
+Toolbar/Backstage: बैकस्टेज
+Toolbar/CreateWikiFolder: नया विकि फ़ोल्डर बनाएँ
+Toolbar/CreateWiki: नई विकि बनाएँ
+Toolbar/CreateFromTemplate: टेम्पलेट से बनाएँ
+Toolbar/NoTemplates: कोई टेम्पलेट परिभाषित नहीं – सेटिंग्स देखें
+Toolbar/From: से
+Toolbar/CloneExisting: मौजूदा विकि का क्लोन बनाएँ
+Toolbar/NoWikisToClone: क्लोन करने के लिए कोई विकि उपलब्ध नहीं
+Toolbar/Help: सहायता
+Toolbar/Settings: सेटिंग्स
+Toolbar/Language: भाषा
+List/SearchPlaceholder: खोजें
+List/ClearSearch: खोज साफ़ करें
+Row/Untitled: बिना शीर्षक
+Row/Open: खोलें
+Row/Reveal: दिखाएँ
+Row/Remove: हटाएँ
+Row/ToFolder: फ़ोल्डर में
+Row/ToFile: फ़ाइल में
+Row/ToFolderTooltip: नए विकि फ़ोल्डर के लिए एक खाली फ़ोल्डर चुनें (या बनाएँ)
+Row/ToFileTooltip: नई एकल-फ़ाइल विकि को सहेजने का स्थान चुनें
+Row/Advanced: उन्नत
+Row/Plugins: प्लगइन
+Advanced/Backups: बैकअप
+Advanced/SaveBackup: हर बार सहेजने पर एक बैकअप सहेजें
+Advanced/KeepBackups: रखने योग्य बैकअप (खाली = सभी)
+Advanced/RevealBackups: बैकअप दिखाएँ
+Advanced/ServerNote: ये विकल्प नियंत्रित करते हैं कि विकि फ़ोल्डर HTTP पर कैसे परोसा जाए। ये अगली बार विकि फ़ोल्डर खोलने पर प्रभावी होते हैं।
+Advanced/Server: सर्वर
+Advanced/Host: होस्ट
+Advanced/Port: पोर्ट
+Advanced/PathPrefix: पथ उपसर्ग
+Advanced/RootTiddler: रूट टिड्लर
+Advanced/Gzip: प्रतिक्रियाएँ संपीड़ित करें (gzip)
+Advanced/Access: पहुँच
+Advanced/Credentials: क्रेडेंशियल फ़ाइल
+Advanced/AnonUsername: अनाम उपयोगकर्ता नाम
+Advanced/Readers: पाठक
+Advanced/Writers: लेखक
+PluginChooser/Tab/plugin: प्लगइन
+PluginChooser/Tab/language: भाषाएँ
+PluginChooser/Tab/theme: थीम
+PluginChooser/Heading: प्लगइन प्रबंधित करें
+PluginChooser/Close: बंद करें
+PluginChooser/OpenWarning: यह विकि अभी खुली है। पहले इसकी विंडो बंद करें, फिर लागू करें पर क्लिक करें।
+PluginChooser/FilterPlaceholder: प्लगइन फ़िल्टर करें…
+PluginChooser/Clear: साफ़ करें
+PluginChooser/NoMatch: आपके फ़िल्टर से कोई प्लगइन मेल नहीं खाता।
+PluginChooser/Apply: परिवर्तन लागू करें
+PluginChooser/Cancel: रद्द करें
+PluginChooser/Reinstall: पुनः इंस्टॉल करें
+PluginChooser/ReinstallTooltip: इस प्लगइन का साथ-शामिल संस्करण पुनः इंस्टॉल करें
+PluginChooser/Reinstalled: पुनः इंस्टॉल किया गया
+PluginChooser/Installed: इंस्टॉल किया गया
+PluginChooser/NotInstalled: इंस्टॉल नहीं है
+PluginChooser/Versions: संस्करण
+PluginChooser/SourceBundled: साथ-शामिल
+PluginChooser/SourceExternal: बाहरी
+PluginChooser/Update: अपडेट करें
+PluginChooser/UpdateAvailable: एक नया संस्करण शामिल है — अपडेट करने के लिए क्लिक करें
+PluginChooser/Updated: अपडेट किया गया
+Row/PluginUpdates: प्लगइन अपडेट उपलब्ध हैं
+Toolbar/ThemeLabel: थीम
+Toolbar/PaletteLabel: पैलेट
+Toolbar/ViewLabel: सूची दृश्य
+Toolbar/ViewFull: पूर्ण
+Toolbar/ViewCompact: संक्षिप्त
+Toolbar/CustomPluginFolder: कस्टम प्लगइन फ़ोल्डर
+Toolbar/ConfigFolder: कॉन्फ़िग फ़ोल्डर
+Toolbar/OpenConfigFolder: कॉन्फ़िग फ़ोल्डर खोलें
+Toolbar/BackupFolder: बैकअप फ़ोल्डर
+Toolbar/OpenBackupFolder: बैकअप फ़ोल्डर खोलें
+Share/Heading: साझा सामग्री यहाँ जोड़ें…
+Share/Cancel: रद्द करें
+Share/TemplatesHeading: साझा टेम्पलेट
+Share/TemplatesHelp: जब आप किसी विकी में लिंक साझा करते हैं, तो TiddlyDesktop उसे समृद्ध करता है (शीर्षक, विवरण, छवि, एम्बेड) और नीचे मिलान वाले टेम्पलेट से एक टिडलर बनाता है। प्लेसहोल्डर:
+Share/DeleteTemplate: यह टेम्पलेट हटाएँ
+Share/TagsLabel: टैग:
+Share/AddHeading: अपना टेम्पलेट जोड़ें
+Share/AddHelp: इसे एक नाम दें (नीचे किसी डोमेन नियम से इसे लक्षित करने के लिए), फिर ऊपर इसकी सामग्री संपादित करें। यह सामान्य टेम्पलेट की प्रति के रूप में शुरू होता है।
+Share/NamePlaceholder: जैसे mastodon
+Share/CreateTemplate: टेम्पलेट बनाएँ
+Share/RulesHeading: डोमेन नियम
+Share/RulesHelp: प्रति पंक्ति एक नियम <code>domain=kind</code> के रूप में (जैसे <code>vimeo.com=youtube</code>, या ऊपर जोड़े गए टेम्पलेट के लिए <code>mastodon.social=mastodon</code>) किसी साइट को किसी विशेष टेम्पलेट पर भेजने के लिए।
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: एकल-फ़ाइल विकी के बैकअप डिफ़ॉल्ट रूप से प्रत्येक विकी के साथ लिखे जाते हैं। इसके बजाय सभी बैकअप एक स्थान पर एकत्र करने के लिए यहाँ एक फ़ोल्डर चुनें।

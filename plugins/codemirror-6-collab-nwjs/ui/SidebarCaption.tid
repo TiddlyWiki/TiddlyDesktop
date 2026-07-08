@@ -1,0 +1,4 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption
+
+\whitespace trim
+Collab<$list filter="[prefix[$:/temp/collab/share/available/]field:diverged[yes]limit[1]]" variable="_"> <span class="tc-collab-conflict-badge" title="Sync conflicts need resolving">⚠ <$text text={{{ [prefix[$:/temp/collab/share/available/]field:diverged[yes]count[]] }}}/></span></$list>

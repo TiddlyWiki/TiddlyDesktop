@@ -1,0 +1,6 @@
+title: $:/TiddlyDesktop/styles/dark-mode
+tags: $:/tags/Stylesheet
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+:root { color-scheme: {{{ [{$:/palette}get[color-scheme]] }}}; }

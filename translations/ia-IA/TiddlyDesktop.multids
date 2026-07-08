@@ -1,0 +1,90 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Adder file wiki
+Toolbar/AddWikiFolder: Adder dossier wiki
+Toolbar/Backstage: Coulisses
+Toolbar/CreateWikiFolder: Crear nove dossier wiki
+Toolbar/CreateWiki: Crear nove wiki
+Toolbar/CreateFromTemplate: Crear ex un patrono
+Toolbar/NoTemplates: Nulle patronos definite – vide Configuration
+Toolbar/From: ex
+Toolbar/CloneExisting: Clonar un wiki existente
+Toolbar/NoWikisToClone: Nulle wikis disponibile a clonar
+Toolbar/Help: Adjuta
+Toolbar/Settings: Configuration
+Toolbar/Language: Lingua
+List/SearchPlaceholder: cercar
+List/ClearSearch: Rader le recerca
+Row/Untitled: Sin titulo
+Row/Open: aperir
+Row/Reveal: revelar
+Row/Remove: remover
+Row/ToFolder: a dossier
+Row/ToFile: a file
+Row/ToFolderTooltip: Selige (o crea) un dossier vacue pro le nove dossier wiki
+Row/ToFileTooltip: Selige ubi salveguardar le nove wiki in un sol file
+Row/Advanced: avantiate
+Row/Plugins: plugins
+Advanced/Backups: Copias de reserva
+Advanced/SaveBackup: Salveguardar un copia de reserva a cata salveguarda
+Advanced/KeepBackups: Copias de reserva a mantener (vacue = totes)
+Advanced/RevealBackups: revelar copias de reserva
+Advanced/ServerNote: Iste optiones controla como le dossier wiki es servite via HTTP. Illos entra in vigor le proxime vice que le dossier wiki es aperite.
+Advanced/Server: Servitor
+Advanced/Host: Hospite
+Advanced/Port: Porto
+Advanced/PathPrefix: Prefixo de cammino
+Advanced/RootTiddler: Tiddler radice
+Advanced/Gzip: Comprimer le responsas (gzip)
+Advanced/Access: Accesso
+Advanced/Credentials: File de credentiales
+Advanced/AnonUsername: Nomine de usator anonyme
+Advanced/Readers: Lectores
+Advanced/Writers: Scriptores
+PluginChooser/Tab/plugin: Plugins
+PluginChooser/Tab/language: Linguas
+PluginChooser/Tab/theme: Themas
+PluginChooser/Heading: Gerer le plugins
+PluginChooser/Close: Clauder
+PluginChooser/OpenWarning: Iste wiki es actualmente aperte. Claude prime su fenestra, postea clicca Applicar.
+PluginChooser/FilterPlaceholder: Filtrar plugins…
+PluginChooser/Clear: Rader
+PluginChooser/NoMatch: Nulle plugin corresponde a tu filtro.
+PluginChooser/Apply: Applicar cambiamentos
+PluginChooser/Cancel: Cancellar
+PluginChooser/Reinstall: Reinstallar
+PluginChooser/ReinstallTooltip: Reinstallar le version includite de iste plugin
+PluginChooser/Reinstalled: Reinstallate
+PluginChooser/Installed: installate
+PluginChooser/NotInstalled: Non installate
+PluginChooser/Versions: versiones
+PluginChooser/SourceBundled: includite
+PluginChooser/SourceExternal: externe
+PluginChooser/Update: Actualisar
+PluginChooser/UpdateAvailable: Un version plus recente es includite — clicca pro actualisar
+PluginChooser/Updated: Actualisate
+Row/PluginUpdates: Actualisationes de plugins disponibile
+Toolbar/ThemeLabel: Thema
+Toolbar/PaletteLabel: Paletta
+Toolbar/ViewLabel: Vista de lista
+Toolbar/ViewFull: Complete
+Toolbar/ViewCompact: Compacte
+Toolbar/CustomPluginFolder: Dossier de plugins personalisate
+Toolbar/ConfigFolder: Dossier de configuration
+Toolbar/OpenConfigFolder: Aperir le dossier de configuration
+Toolbar/BackupFolder: Dossier de copias de reserva
+Toolbar/OpenBackupFolder: Aperir le dossier de copias de reserva
+Share/Heading: Adder le contento compartite a…
+Share/Cancel: Cancellar
+Share/TemplatesHeading: Modellos de compartir
+Share/TemplatesHelp: Quando tu comparti un ligamine in un wiki, TiddlyDesktop lo inricchi (titulo, description, imagine, incorporation) e construe un tiddler ex le modello concordante infra. Substitutos:
+Share/DeleteTemplate: Deler iste modello
+Share/TagsLabel: Etiquettas:
+Share/AddHeading: Adde tu proprie modello
+Share/AddHelp: Da lo un nomine (pro appellar lo ab un regula de dominio infra), pois redige su contento supra. Illo comencia como un copia del modello generic.
+Share/NamePlaceholder: p.ex. mastodon
+Share/CreateTemplate: Crear modello
+Share/RulesHeading: Regulas de dominio
+Share/RulesHelp: Un regula per linea como <code>domain=kind</code> (p.ex. <code>vimeo.com=youtube</code>, o <code>mastodon.social=mastodon</code> pro un modello que tu addeva supra) pro diriger un sito a un modello specific.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Le copias de reserva de wikis de file unic es scribite juxta cata wiki per predefecto. Selige un dossier hic pro colliger in loco tote le copias de reserva in un sol loco.

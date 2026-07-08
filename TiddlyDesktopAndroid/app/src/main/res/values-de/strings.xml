@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">Offene Wikis</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop läuft</string>
+    <string name="wiki_server_notification_text">Wiki-Server sind aktiv</string>
+    <string name="toast_access_not_granted">Zugriff nicht gewährt</string>
+    <string name="toast_backup_folder_set">Sicherungsordner festgelegt</string>
+    <string name="toast_config_folder_set">Konfigurationsordner festgelegt</string>
+    <string name="toast_import_folder_failed">Ordner konnte nicht importiert werden</string>
+    <string name="toast_open_folder_failed">Ordner kann auf diesem Gerät nicht geöffnet werden</string>
+    <string name="toast_custom_plugin_folder_set">Eigener Plugin-Ordner festgelegt</string>
+    <string name="toast_folder_required_not_added">Ordnerzugriff erforderlich – Wiki nicht hinzugefügt</string>
+    <string name="toast_importing_plugins">Plugins werden importiert…</string>
+    <string name="toast_no_backup_folder">Kein Sicherungsordner festgelegt</string>
+    <string name="toast_no_config_folder">Kein Konfigurationsordner festgelegt</string>
+    <string name="toast_no_folder_access_reveal">Kein Ordnerzugriff für dieses Wiki – füge es erneut hinzu, um die Ordnerberechtigung zu erteilen.</string>
+    <string name="toast_nothing_to_share">Nichts zum Teilen</string>
+    <string name="toast_operation_failed">Vorgang fehlgeschlagen – siehe Logcat</string>
+    <string name="toast_regrant_wiki">Zugriff auf dieses Wiki erneut gewähren</string>
+    <string name="toast_regrant_folder">Ordnerzugriff erneut gewähren (Sicherungen &amp; Anhänge)</string>
+    <string name="toast_working">Wird ausgeführt…</string>
+    <string name="toast_saved">Gespeichert</string>
+    <string name="toast_save_failed">Speichern fehlgeschlagen</string>
+    <string name="toast_share_failed">Teilen fehlgeschlagen</string>
+    <string name="toast_window_not_ready">Fenster noch nicht bereit</string>
+    <string name="share_tiddler_chooser">Tiddler teilen</string>
+    <string name="share_tid_file_chooser">Tiddler teilen (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Teilen</string>
+    <string name="share_btn_tooltip">Diesen Tiddler teilen</string>
+    <string name="share_as_text">Als Text teilen</string>
+    <string name="share_as_tid">Als .tid teilen</string>
+    <string name="share_as_html">Als HTML teilen</string>
+    <string name="share_as_json">Als JSON teilen</string>
+    <string name="share_as_csv">Als CSV teilen</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Externe Anhänge (Android)</string>
+    <string name="ea_note_body">Unter Android werden importierte Anhänge immer in den Ordner attachments/ dieses Wikis kopiert und über einen relativen Pfad verknüpft. Die Optionen für absolute Pfade haben hier keine Wirkung — über Android freigegebene Ordner (content://) haben keinen Dateisystempfad.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Schnellnotiz</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Schreibe deine Notiz…</string>
+    <string name="quicknote_done">Fertig</string>
+    <string name="quicknote_cancel">Abbrechen</string>
+    <string name="quicknote_no_wikis">Noch keine Wikis — füge zuerst eines in TiddlyDesktop hinzu</string>
+    <string name="quicknote_empty">Schreibe zuerst eine Notiz</string>
+    <string name="quicknote_sent">Notiz hinzugefügt</string>
+    <string name="quicknote_failed">Notiz konnte nicht hinzugefügt werden</string>
+    <string name="quicknote_tiddler_title">Notiz %1$s</string>
+    <string name="quicknote_widget_description">Eine Schnellnotiz zu einem Wiki hinzufügen</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Speicherzugriff erlauben</string>
+    <string name="storage_access_message">TiddlyDesktop öffnet deine Wikis direkt aus dem Speicher. Bitte erteile die Berechtigung „Zugriff auf alle Dateien“, damit es deine Wiki-Dateien und -Ordner lesen und speichern kann.</string>
+    <string name="storage_access_open_settings">Einstellungen öffnen</string>
+    <string name="storage_access_later">Später</string>
+    <string name="toast_pick_on_device_folder">Bitte wähle einen Ordner auf diesem Gerät (Cloud-Speicher wird nicht unterstützt)</string>
+    <string name="toast_pick_on_device_file">Bitte wähle eine Datei auf diesem Gerät (Cloud-Speicher wird nicht unterstützt)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Ungespeicherte Änderungen</string>
+    <string name="unsaved_message">Dieses Wiki hat ungespeicherte Änderungen. Vor dem Schließen speichern?</string>
+    <string name="unsaved_save">Speichern &amp; schließen</string>
+    <string name="unsaved_discard">Ohne Speichern schließen</string>
+    <string name="wiki_group_title">Offene Wikis</string>
+    <string name="wiki_keepalive_title">Wiki bereit</string>
+    <string name="wiki_keepalive_text">Ein Wiki wird zum Fortsetzen bereitgehalten</string>
+    <string name="wiki_notification_running">Zum Öffnen tippen</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d offenes Wiki</item>
+        <item quantity="other">%d offene Wikis</item>
+    </plurals>
+    <string name="reveal_chooser">Ordner öffnen mit…</string>
+    <string name="reveal_path_hint">Ordner: %1$s</string>
+</resources>

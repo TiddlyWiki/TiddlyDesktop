@@ -1,0 +1,90 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Lägg till wiki-fil
+Toolbar/AddWikiFolder: Lägg till wiki-mapp
+Toolbar/Backstage: Backstage
+Toolbar/CreateWikiFolder: Skapa ny wiki-mapp
+Toolbar/CreateWiki: Skapa ny wiki
+Toolbar/CreateFromTemplate: Skapa från en mall
+Toolbar/NoTemplates: Inga mallar definierade – se Inställningar
+Toolbar/From: från
+Toolbar/CloneExisting: Klona en befintlig wiki
+Toolbar/NoWikisToClone: Inga wikier tillgängliga att klona
+Toolbar/Help: Hjälp
+Toolbar/Settings: Inställningar
+Toolbar/Language: Språk
+List/SearchPlaceholder: sök
+List/ClearSearch: Rensa sökning
+Row/Untitled: Namnlös
+Row/Open: öppna
+Row/Reveal: visa
+Row/Remove: ta bort
+Row/ToFolder: till mapp
+Row/ToFile: till fil
+Row/ToFolderTooltip: Välj (eller skapa) en tom mapp för den nya wiki-mappen
+Row/ToFileTooltip: Välj var den nya enkelfils-wikin ska sparas
+Row/Advanced: avancerat
+Row/Plugins: tillägg
+Advanced/Backups: Säkerhetskopior
+Advanced/SaveBackup: Spara en säkerhetskopia vid varje sparning
+Advanced/KeepBackups: Säkerhetskopior att behålla (tomt = alla)
+Advanced/RevealBackups: visa säkerhetskopior
+Advanced/ServerNote: Dessa alternativ styr hur wiki-mappen serveras över HTTP. De träder i kraft nästa gång wiki-mappen öppnas.
+Advanced/Server: Server
+Advanced/Host: Värd
+Advanced/Port: Port
+Advanced/PathPrefix: Sökvägsprefix
+Advanced/RootTiddler: Rot-tiddler
+Advanced/Gzip: Komprimera svar (gzip)
+Advanced/Access: Åtkomst
+Advanced/Credentials: Autentiseringsfil
+Advanced/AnonUsername: Anonymt användarnamn
+Advanced/Readers: Läsare
+Advanced/Writers: Skribenter
+PluginChooser/Tab/plugin: Tillägg
+PluginChooser/Tab/language: Språk
+PluginChooser/Tab/theme: Teman
+PluginChooser/Heading: Hantera tillägg
+PluginChooser/Close: Stäng
+PluginChooser/OpenWarning: Den här wikin är öppen just nu. Stäng först dess fönster och klicka sedan på Tillämpa.
+PluginChooser/FilterPlaceholder: Filtrera tillägg…
+PluginChooser/Clear: Rensa
+PluginChooser/NoMatch: Inga tillägg matchar ditt filter.
+PluginChooser/Apply: Tillämpa ändringar
+PluginChooser/Cancel: Avbryt
+PluginChooser/Reinstall: Installera om
+PluginChooser/ReinstallTooltip: Installera om den medföljande versionen av detta tillägg
+PluginChooser/Reinstalled: Ominstallerad
+PluginChooser/Installed: installerad
+PluginChooser/NotInstalled: Inte installerad
+PluginChooser/Versions: versioner
+PluginChooser/SourceBundled: medföljande
+PluginChooser/SourceExternal: extern
+PluginChooser/Update: Uppdatera
+PluginChooser/UpdateAvailable: En nyare version medföljer — klicka för att uppdatera
+PluginChooser/Updated: Uppdaterad
+Row/PluginUpdates: Tilläggsuppdateringar tillgängliga
+Toolbar/ThemeLabel: Tema
+Toolbar/PaletteLabel: Palett
+Toolbar/ViewLabel: Listvy
+Toolbar/ViewFull: Fullständig
+Toolbar/ViewCompact: Kompakt
+Toolbar/CustomPluginFolder: Anpassad tilläggsmapp
+Toolbar/ConfigFolder: Konfigurationsmapp
+Toolbar/OpenConfigFolder: Öppna konfigurationsmapp
+Toolbar/BackupFolder: Säkerhetskopieringsmapp
+Toolbar/OpenBackupFolder: Öppna säkerhetskopieringsmapp
+Share/Heading: Lägg till delat innehåll i…
+Share/Cancel: Avbryt
+Share/TemplatesHeading: Delningsmallar
+Share/TemplatesHelp: När du delar en länk till en wiki berikar TiddlyDesktop den (titel, beskrivning, bild, inbäddning) och bygger en tiddler från den matchande mallen nedan. Platshållare:
+Share/DeleteTemplate: Ta bort den här mallen
+Share/TagsLabel: Taggar:
+Share/AddHeading: Lägg till din egen mall
+Share/AddHelp: Ge den ett namn (för att rikta in den från en domänregel nedan) och redigera sedan dess innehåll ovan. Den börjar som en kopia av den generiska mallen.
+Share/NamePlaceholder: t.ex. mastodon
+Share/CreateTemplate: Skapa mall
+Share/RulesHeading: Domänregler
+Share/RulesHelp: En regel per rad som <code>domain=kind</code> (t.ex. <code>vimeo.com=youtube</code>, eller <code>mastodon.social=mastodon</code> för en mall du lagt till ovan) för att styra en webbplats till en viss mall.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Säkerhetskopior av enfilswikis skrivs som standard bredvid varje wiki. Välj en mapp här för att i stället samla alla säkerhetskopior på ett ställe.

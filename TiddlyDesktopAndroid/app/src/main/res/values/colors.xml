@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Quick Note widget tile — light theme (overridden in values-night). -->
+    <color name="quicknote_widget_bg">#F2FFFFFF</color>
+    <color name="quicknote_widget_fg">#DE1C1B1F</color>
+</resources>

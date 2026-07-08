@@ -1,0 +1,24 @@
+# Gradle / Android build outputs
+.gradle/
+build/
+local.properties
+*.iml
+.idea/
+
+# Native binary (large; provided out-of-band — see app/src/main/jniLibs/README.md)
+app/src/main/jniLibs/**/*.so
+
+# Generated asset zips (see app/src/main/assets/README.md)
+app/src/main/assets/tiddlywiki.zip
+app/src/main/assets/wikilist.zip
+app/src/main/assets/tiddlywiki/
+app/src/main/assets/wikilist/
+
+# Generated WikiList folder wiki (assembled by packaging/build-wikilist.sh)
+packaging/wikilist/
+
+# Signing
+*.jks
+*.keystore
+keystore.properties
+

@@ -1,0 +1,90 @@
+title: $:/language/TiddlyDesktop/
+
+Toolbar/AddWikiFile: Προσθήκη αρχείου wiki
+Toolbar/AddWikiFolder: Προσθήκη φακέλου wiki
+Toolbar/Backstage: Παρασκήνιο
+Toolbar/CreateWikiFolder: Δημιουργία νέου φακέλου wiki
+Toolbar/CreateWiki: Δημιουργία νέου wiki
+Toolbar/CreateFromTemplate: Δημιουργία από πρότυπο
+Toolbar/NoTemplates: Δεν έχουν οριστεί πρότυπα – δείτε Ρυθμίσεις
+Toolbar/From: από
+Toolbar/CloneExisting: Κλωνοποίηση υπάρχοντος wiki
+Toolbar/NoWikisToClone: Δεν υπάρχουν διαθέσιμα wiki για κλωνοποίηση
+Toolbar/Help: Βοήθεια
+Toolbar/Settings: Ρυθμίσεις
+Toolbar/Language: Γλώσσα
+List/SearchPlaceholder: αναζήτηση
+List/ClearSearch: Καθαρισμός αναζήτησης
+Row/Untitled: Χωρίς τίτλο
+Row/Open: άνοιγμα
+Row/Reveal: εμφάνιση
+Row/Remove: αφαίρεση
+Row/ToFolder: σε φάκελο
+Row/ToFile: σε αρχείο
+Row/ToFolderTooltip: Επιλέξτε (ή δημιουργήστε) έναν κενό φάκελο για τον νέο φάκελο wiki
+Row/ToFileTooltip: Επιλέξτε πού θα αποθηκευτεί το νέο wiki ενός αρχείου
+Row/Advanced: για προχωρημένους
+Row/Plugins: πρόσθετα
+Advanced/Backups: Αντίγραφα ασφαλείας
+Advanced/SaveBackup: Αποθήκευση αντιγράφου ασφαλείας σε κάθε αποθήκευση
+Advanced/KeepBackups: Αντίγραφα προς διατήρηση (κενό = όλα)
+Advanced/RevealBackups: εμφάνιση αντιγράφων ασφαλείας
+Advanced/ServerNote: Αυτές οι επιλογές ελέγχουν πώς ο φάκελος wiki διανέμεται μέσω HTTP. Τίθενται σε ισχύ την επόμενη φορά που θα ανοίξει ο φάκελος wiki.
+Advanced/Server: Διακομιστής
+Advanced/Host: Κεντρικός υπολογιστής
+Advanced/Port: Θύρα
+Advanced/PathPrefix: Πρόθεμα διαδρομής
+Advanced/RootTiddler: Ριζικό tiddler
+Advanced/Gzip: Συμπίεση αποκρίσεων (gzip)
+Advanced/Access: Πρόσβαση
+Advanced/Credentials: Αρχείο διαπιστευτηρίων
+Advanced/AnonUsername: Ανώνυμο όνομα χρήστη
+Advanced/Readers: Αναγνώστες
+Advanced/Writers: Συντάκτες
+PluginChooser/Tab/plugin: Πρόσθετα
+PluginChooser/Tab/language: Γλώσσες
+PluginChooser/Tab/theme: Θέματα
+PluginChooser/Heading: Διαχείριση προσθέτων
+PluginChooser/Close: Κλείσιμο
+PluginChooser/OpenWarning: Αυτό το wiki είναι αυτή τη στιγμή ανοιχτό. Κλείστε πρώτα το παράθυρό του και μετά κάντε κλικ στο Εφαρμογή.
+PluginChooser/FilterPlaceholder: Φιλτράρισμα προσθέτων…
+PluginChooser/Clear: Καθαρισμός
+PluginChooser/NoMatch: Κανένα πρόσθετο δεν ταιριάζει με το φίλτρο σας.
+PluginChooser/Apply: Εφαρμογή αλλαγών
+PluginChooser/Cancel: Άκυρο
+PluginChooser/Reinstall: Επανεγκατάσταση
+PluginChooser/ReinstallTooltip: Επανεγκατάσταση της ενσωματωμένης έκδοσης αυτού του προσθέτου
+PluginChooser/Reinstalled: Επανεγκαταστάθηκε
+PluginChooser/Installed: εγκατεστημένο
+PluginChooser/NotInstalled: Δεν είναι εγκατεστημένο
+PluginChooser/Versions: εκδόσεις
+PluginChooser/SourceBundled: ενσωματωμένο
+PluginChooser/SourceExternal: εξωτερικό
+PluginChooser/Update: Ενημέρωση
+PluginChooser/UpdateAvailable: Περιλαμβάνεται νεότερη έκδοση — κάντε κλικ για ενημέρωση
+PluginChooser/Updated: Ενημερώθηκε
+Row/PluginUpdates: Διαθέσιμες ενημερώσεις προσθέτων
+Toolbar/ThemeLabel: Θέμα
+Toolbar/PaletteLabel: Παλέτα
+Toolbar/ViewLabel: Προβολή λίστας
+Toolbar/ViewFull: Πλήρης
+Toolbar/ViewCompact: Συμπαγής
+Toolbar/CustomPluginFolder: Προσαρμοσμένος φάκελος προσθέτων
+Toolbar/ConfigFolder: Φάκελος ρυθμίσεων
+Toolbar/OpenConfigFolder: Άνοιγμα φακέλου ρυθμίσεων
+Toolbar/BackupFolder: Φάκελος αντιγράφων ασφαλείας
+Toolbar/OpenBackupFolder: Άνοιγμα φακέλου αντιγράφων ασφαλείας
+Share/Heading: Προσθήκη κοινόχρηστου περιεχομένου σε…
+Share/Cancel: Άκυρο
+Share/TemplatesHeading: Πρότυπα κοινοποίησης
+Share/TemplatesHelp: Όταν κοινοποιείτε έναν σύνδεσμο σε ένα wiki, το TiddlyDesktop τον εμπλουτίζει (τίτλος, περιγραφή, εικόνα, ενσωμάτωση) και δημιουργεί ένα tiddler από το αντίστοιχο πρότυπο παρακάτω. Σύμβολα κράτησης θέσης:
+Share/DeleteTemplate: Διαγραφή αυτού του προτύπου
+Share/TagsLabel: Ετικέτες:
+Share/AddHeading: Προσθέστε το δικό σας πρότυπο
+Share/AddHelp: Δώστε του ένα όνομα (για να το στοχεύσετε από έναν κανόνα τομέα παρακάτω) και έπειτα επεξεργαστείτε το περιεχόμενό του παραπάνω. Ξεκινά ως αντίγραφο του γενικού προτύπου.
+Share/NamePlaceholder: π.χ. mastodon
+Share/CreateTemplate: Δημιουργία προτύπου
+Share/RulesHeading: Κανόνες τομέα
+Share/RulesHelp: Ένας κανόνας ανά γραμμή ως <code>domain=kind</code> (π.χ. <code>vimeo.com=youtube</code> ή <code>mastodon.social=mastodon</code> για ένα πρότυπο που προσθέσατε παραπάνω) για να δρομολογήσετε έναν ιστότοπο σε ένα συγκεκριμένο πρότυπο.
+Share/RulePlaceholder: vimeo.com=youtube
+Advanced/BackupsHelp: Τα αντίγραφα ασφαλείας των wiki ενός αρχείου γράφονται από προεπιλογή δίπλα σε κάθε wiki. Επιλέξτε έναν φάκελο εδώ για να συγκεντρώσετε όλα τα αντίγραφα ασφαλείας σε ένα μέρος.

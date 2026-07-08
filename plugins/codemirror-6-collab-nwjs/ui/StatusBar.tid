@@ -1,0 +1,34 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/StatusBar
+caption: Collab status bar
+
+\whitespace trim
+
+<$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
+<div class="tc-collab-statusbar">
+
+<span class="tc-collab-statusbar-badge">
+<$set name="connStatus" value={{{ [[$:/temp/collab/status]get[status]] }}}>
+<span class={{{ [<connStatus>addprefix[tc-collab-statusbar-dot tc-collab-statusbar-dot-]] }}}></span>
+</$set>
+<$reveal type="nomatch" state="$:/config/codemirror-6-collab/room-code" text="">Room: <code><$text text={{$:/config/codemirror-6-collab/room-code}}/></code></$reveal>
+<$reveal type="match" state="$:/config/codemirror-6-collab/room-code" text=""><span class="tc-collab-statusbar-dim">not connected</span></$reveal>
+<$list filter="[[$:/temp/collab/status]has[lan-peers]!field:lan-peers[0]]" variable="_"> <span class="tc-collab-lan-badge" title="Direct encrypted LAN connection active">⚡ LAN</span></$list>
+<$list filter="[[$:/temp/collab/status]field:status[connected]]" variable="_"><$list filter="[[$:/temp/collab/status]field:e2e[strong]]" variable="_"> <span class="tc-collab-e2e-badge tc-collab-e2e-strong" title="End-to-end encrypted - the room token is never sent to the relay">🔒</span></$list><$list filter="[[$:/temp/collab/status]field:e2e[room-code]]" variable="_"> <span class="tc-collab-e2e-badge tc-collab-e2e-weak" title="Encrypted with a room-code-derived key the relay also knows. Set a room token for end-to-end privacy.">🔓</span></$list></$list>
+</span>
+
+<span class="tc-collab-statusbar-sep">·</span>
+
+<$reveal type="nomatch" state="$:/temp/collab/auth-username" text="">
+<span class="tc-collab-statusbar-badge"><span class="tc-tiny-gap-right">Username:</span>@<$text text={{$:/temp/collab/auth-username}}/></span>
+</$reveal>
+<$reveal type="match" state="$:/temp/collab/auth-username" text="">
+<$reveal type="nomatch" state="$:/config/codemirror-6-collab/user-name" text="">
+<span class="tc-collab-statusbar-badge"><span class="tc-tiny-gap-right">Username:</span><$text text={{$:/config/codemirror-6-collab/user-name}}/></span>
+</$reveal>
+<$reveal type="match" state="$:/config/codemirror-6-collab/user-name" text="">
+<span class="tc-collab-statusbar-badge tc-collab-statusbar-dim">not signed in</span>
+</$reveal>
+</$reveal>
+
+</div>
+</$reveal>

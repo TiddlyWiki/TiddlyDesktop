@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">Wikis oberts</string>
+    <string name="wiki_server_notification_title">El TiddlyDesktop s’està executant</string>
+    <string name="wiki_server_notification_text">Els servidors wiki estan actius</string>
+    <string name="toast_access_not_granted">Accés no concedit</string>
+    <string name="toast_backup_folder_set">Carpeta de còpies definida</string>
+    <string name="toast_config_folder_set">Carpeta de configuració definida</string>
+    <string name="toast_import_folder_failed">No s’ha pogut importar la carpeta</string>
+    <string name="toast_open_folder_failed">No es pot obrir la carpeta en aquest dispositiu</string>
+    <string name="toast_custom_plugin_folder_set">Carpeta de connectors personalitzada definida</string>
+    <string name="toast_folder_required_not_added">Cal accés a la carpeta — wiki no afegit</string>
+    <string name="toast_importing_plugins">S’estan important els connectors…</string>
+    <string name="toast_no_backup_folder">No s’ha definit cap carpeta de còpies</string>
+    <string name="toast_no_config_folder">No s’ha definit cap carpeta de configuració</string>
+    <string name="toast_no_folder_access_reveal">Sense accés a la carpeta d’aquest wiki — torna a afegir-lo per concedir el permís.</string>
+    <string name="toast_nothing_to_share">Res per compartir</string>
+    <string name="toast_operation_failed">L’operació ha fallat — vegeu logcat</string>
+    <string name="toast_regrant_wiki">Torna a concedir l’accés a aquest wiki</string>
+    <string name="toast_regrant_folder">Torna a concedir l’accés a la carpeta (còpies i adjunts)</string>
+    <string name="toast_working">Treballant…</string>
+    <string name="toast_saved">Desat</string>
+    <string name="toast_save_failed">Ha fallat el desament</string>
+    <string name="toast_share_failed">Ha fallat la compartició</string>
+    <string name="toast_window_not_ready">La finestra encara no està a punt</string>
+    <string name="share_tiddler_chooser">Comparteix el tiddler</string>
+    <string name="share_tid_file_chooser">Comparteix el tiddler (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Comparteix</string>
+    <string name="share_btn_tooltip">Comparteix aquest tiddler</string>
+    <string name="share_as_text">Comparteix com a text</string>
+    <string name="share_as_tid">Comparteix com a .tid</string>
+    <string name="share_as_html">Comparteix com a HTML</string>
+    <string name="share_as_json">Comparteix com a JSON</string>
+    <string name="share_as_csv">Comparteix com a CSV</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Adjuncions externes (Android)</string>
+    <string name="ea_note_body">A Android, les adjuncions importades sempre es copien a la carpeta attachments/ d\'aquest wiki i s\'enllacen mitjançant una ruta relativa. Les opcions de ruta absoluta no tenen cap efecte aquí — les carpetes compartides mitjançant Android (content://) no tenen ruta de sistema de fitxers.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Nota ràpida</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Escriu la teva nota…</string>
+    <string name="quicknote_done">Fet</string>
+    <string name="quicknote_cancel">Cancel·la</string>
+    <string name="quicknote_no_wikis">Encara no hi ha cap wiki — afegeix-ne un a TiddlyDesktop primer</string>
+    <string name="quicknote_empty">Escriu primer una nota</string>
+    <string name="quicknote_sent">Nota afegida</string>
+    <string name="quicknote_failed">No s\'ha pogut afegir la nota</string>
+    <string name="quicknote_tiddler_title">Nota %1$s</string>
+    <string name="quicknote_widget_description">Afegeix una nota ràpida a un wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Permet l\'accés a l\'emmagatzematge</string>
+    <string name="storage_access_message">El TiddlyDesktop obre els vostres wikis directament des de l\'emmagatzematge. Concediu l\'accés a tots els fitxers perquè pugui llegir i desar els fitxers i les carpetes dels wikis.</string>
+    <string name="storage_access_open_settings">Obre la configuració</string>
+    <string name="storage_access_later">Més tard</string>
+    <string name="toast_pick_on_device_folder">Trieu una carpeta d\'aquest dispositiu (l\'emmagatzematge al núvol no és compatible)</string>
+    <string name="toast_pick_on_device_file">Trieu un fitxer d\'aquest dispositiu (l\'emmagatzematge al núvol no és compatible)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Canvis sense desar</string>
+    <string name="unsaved_message">Aquest wiki té canvis sense desar. Voleu desar-los abans de tancar?</string>
+    <string name="unsaved_save">Desa i tanca</string>
+    <string name="unsaved_discard">Tanca sense desar</string>
+    <string name="wiki_group_title">Wikis oberts</string>
+    <string name="wiki_keepalive_title">Wiki a punt</string>
+    <string name="wiki_keepalive_text">Es manté un wiki a punt per reprendre</string>
+    <string name="wiki_notification_running">Toca per obrir</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d wiki obert</item>
+        <item quantity="other">%d wikis oberts</item>
+    </plurals>
+    <string name="reveal_chooser">Obre la carpeta amb…</string>
+    <string name="reveal_path_hint">Carpeta: %1$s</string>
+</resources>

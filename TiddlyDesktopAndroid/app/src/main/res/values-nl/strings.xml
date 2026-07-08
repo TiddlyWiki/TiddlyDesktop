@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="wiki_server_channel_name">Open wiki’s</string>
+    <string name="wiki_server_notification_title">TiddlyDesktop is actief</string>
+    <string name="wiki_server_notification_text">Wikiservers zijn actief</string>
+    <string name="toast_access_not_granted">Toegang niet verleend</string>
+    <string name="toast_backup_folder_set">Back-upmap ingesteld</string>
+    <string name="toast_config_folder_set">Configuratiemap ingesteld</string>
+    <string name="toast_import_folder_failed">Kan die map niet importeren</string>
+    <string name="toast_open_folder_failed">Kan de map op dit apparaat niet openen</string>
+    <string name="toast_custom_plugin_folder_set">Aangepaste plug-inmap ingesteld</string>
+    <string name="toast_folder_required_not_added">Maptoegang vereist — wiki niet toegevoegd</string>
+    <string name="toast_importing_plugins">Plug-ins importeren…</string>
+    <string name="toast_no_backup_folder">Geen back-upmap ingesteld</string>
+    <string name="toast_no_config_folder">Geen configuratiemap ingesteld</string>
+    <string name="toast_no_folder_access_reveal">Geen maptoegang voor deze wiki — voeg hem opnieuw toe om toegang te verlenen.</string>
+    <string name="toast_nothing_to_share">Niets om te delen</string>
+    <string name="toast_operation_failed">Bewerking mislukt — zie logcat</string>
+    <string name="toast_regrant_wiki">Toegang tot deze wiki opnieuw verlenen</string>
+    <string name="toast_regrant_folder">Maptoegang opnieuw verlenen (back-ups en bijlagen)</string>
+    <string name="toast_working">Bezig…</string>
+    <string name="toast_saved">Opgeslagen</string>
+    <string name="toast_save_failed">Opslaan mislukt</string>
+    <string name="toast_share_failed">Delen mislukt</string>
+    <string name="toast_window_not_ready">Venster nog niet gereed</string>
+    <string name="share_tiddler_chooser">Tiddler delen</string>
+    <string name="share_tid_file_chooser">Tiddler delen (.tid)</string>
+
+    <!-- In-wiki "Share" button -->
+    <string name="share_btn">Delen</string>
+    <string name="share_btn_tooltip">Deze tiddler delen</string>
+    <string name="share_as_text">Delen als tekst</string>
+    <string name="share_as_tid">Delen als .tid</string>
+    <string name="share_as_html">Delen als HTML</string>
+    <string name="share_as_json">Delen als JSON</string>
+    <string name="share_as_csv">Delen als CSV</string>
+
+    <!-- External Attachments note -->
+    <string name="ea_note_caption">Externe bijlagen (Android)</string>
+    <string name="ea_note_body">Op Android worden geïmporteerde bijlagen altijd naar de map attachments/ van deze wiki gekopieerd en via een relatief pad gekoppeld. De opties voor absolute paden hebben hier geen effect — via Android gedeelde mappen (content://) hebben geen bestandssysteempad.</string>
+
+    <!-- Quick Note widget -->
+    <string name="quicknote_title">Snelle notitie</string>
+    <string name="quicknote_wiki_label">Wiki</string>
+    <string name="quicknote_hint">Schrijf je notitie…</string>
+    <string name="quicknote_done">Klaar</string>
+    <string name="quicknote_cancel">Annuleren</string>
+    <string name="quicknote_no_wikis">Nog geen wiki\'s — voeg er eerst een toe in TiddlyDesktop</string>
+    <string name="quicknote_empty">Schrijf eerst een notitie</string>
+    <string name="quicknote_sent">Notitie toegevoegd</string>
+    <string name="quicknote_failed">Kon de notitie niet toevoegen</string>
+    <string name="quicknote_tiddler_title">Notitie %1$s</string>
+    <string name="quicknote_widget_description">Voeg een snelle notitie toe aan een wiki</string>
+
+    <!-- All-Files-Access gate (direct filesystem access to wikis). -->
+    <string name="storage_access_title">Opslagtoegang toestaan</string>
+    <string name="storage_access_message">TiddlyDesktop opent je wiki\'s rechtstreeks vanuit de opslag. Verleen de machtiging "Toegang tot alle bestanden" zodat het je wikibestanden en -mappen kan lezen en opslaan.</string>
+    <string name="storage_access_open_settings">Instellingen openen</string>
+    <string name="storage_access_later">Later</string>
+    <string name="toast_pick_on_device_folder">Kies een map op dit apparaat (cloudopslag wordt niet ondersteund)</string>
+    <string name="toast_pick_on_device_file">Kies een bestand op dit apparaat (cloudopslag wordt niet ondersteund)</string>
+
+    <!-- Notification lifecycle + unsaved-changes prompt. -->
+    <string name="unsaved_title">Niet-opgeslagen wijzigingen</string>
+    <string name="unsaved_message">Deze wiki heeft niet-opgeslagen wijzigingen. Opslaan voor het sluiten?</string>
+    <string name="unsaved_save">Opslaan en sluiten</string>
+    <string name="unsaved_discard">Sluiten zonder opslaan</string>
+    <string name="wiki_group_title">Open wiki\'s</string>
+    <string name="wiki_keepalive_title">Wiki gereed</string>
+    <string name="wiki_keepalive_text">Een wiki wordt gereed gehouden om te hervatten</string>
+    <string name="wiki_notification_running">Tik om te openen</string>
+    <plurals name="wiki_group_count">
+        <item quantity="one">%d open wiki</item>
+        <item quantity="other">%d open wiki\'s</item>
+    </plurals>
+    <string name="reveal_chooser">Map openen in…</string>
+    <string name="reveal_path_hint">Map: %1$s</string>
+</resources>

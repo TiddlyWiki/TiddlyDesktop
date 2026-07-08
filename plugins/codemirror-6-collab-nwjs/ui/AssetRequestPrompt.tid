@@ -1,0 +1,51 @@
+title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/AssetRequestPrompt
+tags: $:/tags/PageTemplate
+
+\whitespace trim
+
+<$reveal type="nomatch" state="$:/config/codemirror-6-collab/relay-url" text="">
+
+<!-- Owner consent: a peer asked for one of our attachments. Show who, which tiddler,
+     and the exact local file that would be sent. Nothing leaves the machine until Allow. -->
+<$list filter="[prefix[$:/temp/collab/asset-request/]]">
+<div class="tc-collab-asset-prompt-overlay">
+<div class="tc-collab-asset-prompt">
+<div class="tc-collab-asset-prompt-head">📤 Attachment requested</div>
+<div class="tc-collab-asset-prompt-body">
+<p><span class="tc-collab-asset-prompt-who"><$text text={{!!requester-name}}/></span> wants to get the attachment <strong><$text text={{!!asset-name}}/></strong> from your tiddler <strong><$text text={{!!tiddler-title}}/></strong>.</p>
+<p class="tc-collab-asset-prompt-detail">This will send the file from your computer:</p>
+<div class="tc-collab-asset-prompt-path"><$text text={{!!asset-path}}/></div>
+</div>
+<div class="tc-collab-asset-prompt-actions">
+<$button class="tc-btn-invisible tc-collab-asset-prompt-deny" message="codemirror-6-collab-deny-asset" param={{!!request-id}}>Deny</$button>
+<$button class="tc-btn-invisible tc-collab-asset-prompt-allow" message="codemirror-6-collab-allow-asset" param={{!!request-id}}>Allow &amp; send</$button>
+</div>
+</div>
+</div>
+</$list>
+
+<!-- Receiver inspection: an attachment we requested has fully arrived. Show exactly what
+     it is and where it will land before anything is written to the wiki or disk. -->
+<$list filter="[prefix[$:/temp/collab/asset-incoming/]]">
+<div class="tc-collab-asset-prompt-overlay">
+<div class="tc-collab-asset-prompt">
+<div class="tc-collab-asset-prompt-head">📥 Attachment received</div>
+<div class="tc-collab-asset-prompt-body">
+<p>An attachment for <strong><$text text={{!!tiddler-title}}/></strong> has arrived. Inspect it before it is written:</p>
+<table class="tc-collab-asset-prompt-meta">
+<tr><td>Name</td><td><$text text={{!!asset-name}}/></td></tr>
+<tr><td>Type</td><td><code><$text text={{!!asset-type}}/></code></td></tr>
+<tr><td>Size</td><td><$text text={{{ [{!!asset-size}divide[1024]round[]] }}}/> KB</td></tr>
+<tr><td>Stored</td><td><$text text={{!!asset-dest}}/></td></tr>
+<$list filter="[<currentTiddler>!field:asset-fields[]]" variable="_"><tr><td>Extra fields</td><td><code><$text text={{!!asset-fields}}/></code></td></tr></$list>
+</table>
+</div>
+<div class="tc-collab-asset-prompt-actions">
+<$button class="tc-btn-invisible tc-collab-asset-prompt-deny" message="codemirror-6-collab-reject-incoming" param={{!!request-id}}>Reject</$button>
+<$button class="tc-btn-invisible tc-collab-asset-prompt-allow" message="codemirror-6-collab-accept-incoming" param={{!!request-id}}>Accept</$button>
+</div>
+</div>
+</div>
+</$list>
+
+</$reveal>
