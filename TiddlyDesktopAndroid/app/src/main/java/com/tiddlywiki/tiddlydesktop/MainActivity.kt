@@ -441,6 +441,14 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         backupFolderPathOrNull()?.let { openPath(it) } ?: toast(R.string.toast_no_backup_folder)
     }
 
+    // The WikiList reports $:/TiddlyDesktop/BackupPath here (on load and on change). Persisted
+    // app-wide so the :wiki-process saver and the PluginChooser lay backups out per the setting.
+    override fun setBackupPathTemplate(template: String) {
+        runCatching {
+            com.tiddlywiki.tiddlydesktop.node.Backups.backupPathTemplateFile(this).writeText(template.trim())
+        }
+    }
+
     private fun onPluginFolderPicked(uri: Uri) {
         val path = com.tiddlywiki.tiddlydesktop.host.SafPaths.toFilePath(uri)
         if (path == null) { toast(R.string.toast_pick_on_device_folder); return }
@@ -495,7 +503,8 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         if (treeUri.isBlank()) { toast(R.string.toast_no_folder_access_reveal); return@runOnUiThread }
         val wikiPath = WikiUrl.decode(url)?.path
         val fileName = wikiPath?.let { File(it).name } ?: "wiki.html"
-        val backupDir = File(treeUri, com.tiddlywiki.tiddlydesktop.node.Backups.backupDirName(fileName))
+        val subPath = com.tiddlywiki.tiddlydesktop.node.Backups.backupSubPath(this, fileName, wikiPath ?: "")
+        val backupDir = File(treeUri, subPath)
         if (backupDir.isDirectory) openPath(backupDir.absolutePath) else openPath(treeUri)
     }
 

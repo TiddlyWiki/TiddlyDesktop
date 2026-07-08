@@ -338,6 +338,22 @@ exports.startup = function () {
 		try { var bp = host.backupFolderPath(); if (bp) { window.__tdSetBackupPath(bp); } } catch (e) {}
 	}
 
+	// Report the backup-path template ($:/TiddlyDesktop/BackupPath) to native so the saver (which
+	// runs in the separate :wiki process) and the PluginChooser lay backups out per the user's
+	// setting — the same template the desktop app reads at save time. Reported on load and whenever
+	// the setting changes; native persists it app-wide (see MainActivity.setBackupPathTemplate).
+	window.__tdReportBackupTemplate = function () {
+		if (host && host.setBackupPathTemplate) {
+			try {
+				host.setBackupPathTemplate($tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath", "./$filename$_backup/"));
+			} catch (e) {}
+		}
+	};
+	window.__tdReportBackupTemplate();
+	$tw.wiki.addEventListener("change", function (changes) {
+		if (changes["$:/TiddlyDesktop/BackupPath"]) { window.__tdReportBackupTemplate(); }
+	});
+
 	window.__tdSetConfigPath = function (path) {
 		$tw.wiki.addTiddler(new $tw.Tiddler({ title: "$:/TiddlyDesktop/Config/config-folder-path", text: path }));
 	};

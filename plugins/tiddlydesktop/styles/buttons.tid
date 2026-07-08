@@ -35,3 +35,12 @@ a.td-button {
 a.td-button:hover {
 	text-decoration: none;
 }
+
+/* TiddlyWiki's vanilla base sizes toolbar icons with `button svg.tc-image-button { height/width:
+   1em }` — but that only matches icons inside a <button>. The Support control is an <a>, so its
+   heart icon would otherwise render at its full intrinsic size (22pt). Clamp icons in any td-button
+   (button or link) to 1em so they all match. */
+.td-button svg.tc-image-button {
+	height: 1em;
+	width: 1em;
+}

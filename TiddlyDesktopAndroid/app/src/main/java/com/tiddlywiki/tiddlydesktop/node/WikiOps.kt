@@ -67,6 +67,17 @@ object WikiOps {
                 out.copyRecursively(File(destFolder).apply { mkdirs() }, overwrite = true); true
             }.getOrElse { Log.e(TAG, "fileToFolder copy failed: ${it.message}"); false }
         }
+        // Carry an external-attachments folder across the conversion (mirrors desktop convertWiki):
+        // both wiki forms keep attachments in a sibling "attachments/" dir referenced relatively as
+        // "./attachments/<name>", so the conversion just copies that directory — here from beside
+        // the source .html into the new folder. On-device paths only (content:// has no fs parent).
+        if (ok && !sourcePath.startsWith("content://")) {
+            runCatching {
+                val srcAttach = File(sourcePath).parentFile?.let { File(it, "attachments") }
+                if (srcAttach != null && srcAttach.isDirectory)
+                    srcAttach.copyRecursively(File(File(destFolder), "attachments"), overwrite = true)
+            }.onFailure { Log.w(TAG, "fileToFolder attachments copy: ${it.message}") }
+        }
         work.deleteRecursively()
         return ok
     }
@@ -82,6 +93,17 @@ object WikiOps {
         ))
         val result = File(out, "wiki.html")
         val ok = code == 0 && result.exists() && writeBytes(context, destFileUri, result.readBytes())
+        // Carry the external-attachments folder across (mirrors desktop convertWiki): copy the
+        // folder wiki's attachments/ next to the produced .html so its relative "./attachments/<name>"
+        // references keep resolving. On-device destinations only (content:// has no fs parent).
+        if (ok && !destFileUri.startsWith("content://")) {
+            runCatching {
+                val srcAttach = File(local, "attachments")
+                val dstParent = File(destFileUri).parentFile
+                if (srcAttach.isDirectory && dstParent != null)
+                    srcAttach.copyRecursively(File(dstParent, "attachments"), overwrite = true)
+            }.onFailure { Log.w(TAG, "folderToFile attachments copy: ${it.message}") }
+        }
         work.deleteRecursively()
         return ok
     }
