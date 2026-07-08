@@ -217,6 +217,14 @@ jobs:
             mv "$f" "${f%.*}-preview-${sha}.${f##*.}"
           done
           echo "Preview artifacts:"; ls -1 tiddlydesktop-*-preview-* 2>/dev/null || echo "(none)"
+      - name: "🧹 Clearing the previous preview release..."
+        # The preview filenames carry the commit's short-SHA, so a re-run's assets never overwrite the
+        # previous run's (different names) — action-gh-release would just pile the new ones on top of
+        # the old. And once the `preview` tag exists it won't move to the new commit. So delete the
+        # whole rolling release + its tag first; the publish step below recreates both at this commit.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release delete preview --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
       - name: "🚀 Publishing preview pre-release..."
         uses: softprops/action-gh-release@v1
         with:
