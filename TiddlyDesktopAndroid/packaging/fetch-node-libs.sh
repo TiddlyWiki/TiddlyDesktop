@@ -8,18 +8,27 @@
 # See app/src/main/jniLibs/README.md.
 set -euo pipefail
 
-BASE="https://packages.termux.dev/apt/termux-main/pool/main"
+BASE="https://packages.termux.dev/apt/termux-main"
+INDEX="$BASE/dists/stable/main/binary-aarch64/Packages.gz"
 
-# Pinned Termux package .deb paths (aarch64).
-DEBS=(
-	"n/nodejs/nodejs_26.3.1_aarch64.deb"
-	"o/openssl/openssl_1:3.6.3_aarch64.deb"
-	"c/c-ares/c-ares_1.34.6_aarch64.deb"
-	"libi/libicu/libicu_78.3_aarch64.deb"
-	"libs/libsqlite/libsqlite_3.53.3_aarch64.deb"
-	"z/zlib/zlib_1.3.2_aarch64.deb"
-	"libf/libffi/libffi_3.5.2_aarch64.deb"
-	"libc/libc++/libc++_29_aarch64.deb"
+# Termux keeps ONLY the current version of each package in its pool — a hard-pinned .deb URL
+# eventually 404s when the package is bumped (that's what breaks CI). So we resolve each
+# package's CURRENT .deb filename from the repo index at build time instead of pinning the URL.
+#
+# The versions below are the ones this app was last TESTED against; they are used only to WARN
+# when the repo has drifted, so a soname-major change (ICU/OpenSSL/libc++) that needs LIB_SYMLINKS
+# updated in NodeEnvironment.kt — or a Node bump that needs a device re-test — is surfaced loudly.
+# The build itself always downloads whatever is current, so it can't 404. See jniLibs/README.md.
+PACKAGES=(nodejs openssl c-ares libicu libsqlite zlib libffi "libc++")
+declare -A TESTED=(
+	[nodejs]="26.3.1"
+	[openssl]="1:3.6.3"
+	[c-ares]="1.34.8"
+	[libicu]="78.3"
+	[libsqlite]="3.53.3"
+	[zlib]="1.3.2"
+	[libffi]="3.5.2"
+	[libc++]="29"
 )
 
 # Unversioned sonames to place in jniLibs. Each is resolved to its REAL file inside the extracted
@@ -33,10 +42,26 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 mkdir -p "$JNI" "$TMP/x"
-for d in "${DEBS[@]}"; do
-	echo "↓ $(basename "$d")"
-	curl -fsSL --retry 3 "$BASE/$d" -o "$TMP/$(basename "$d")"
-	( cd "$TMP/x" && ar x "$TMP/$(basename "$d")" && tar xf data.tar.* && rm -f control.tar.* debian-binary data.tar.* )
+
+# Fetch the aarch64 package index once, then look up each package's current Version + Filename.
+echo "↓ package index"
+curl -fsSL --retry 3 "$INDEX" | gzip -dc > "$TMP/Packages"
+
+for pkg in "${PACKAGES[@]}"; do
+	# Parse the package's stanza: capture Version, emit "<version> <filename>" at its Filename line.
+	read -r ver file < <(awk -v p="$pkg" '
+		$1=="Package:"{cur=($2==p); v=""}
+		cur&&$1=="Version:"{v=$2}
+		cur&&$1=="Filename:"{print v, $2; exit}' "$TMP/Packages")
+	[ -n "$file" ] || { echo "✗ '$pkg' not found in the Termux aarch64 index" >&2; exit 1; }
+	want="${TESTED[$pkg]}"
+	if [ "$ver" != "$want" ]; then
+		echo "⚠ $pkg: repo has $ver, last tested $want — re-test on device" \
+		     "(a soname-major change also needs LIB_SYMLINKS in NodeEnvironment.kt)"
+	fi
+	echo "↓ $(basename "$file")  ($ver)"
+	curl -fsSL --retry 3 "$BASE/$file" -o "$TMP/$(basename "$file")"
+	( cd "$TMP/x" && ar x "$TMP/$(basename "$file")" && tar xf data.tar.* && rm -f control.tar.* debian-binary data.tar.* )
 done
 
 L="$TMP/x/data/data/com.termux/files/usr/lib"
