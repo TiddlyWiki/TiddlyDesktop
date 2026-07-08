@@ -613,6 +613,23 @@ WindowList.prototype.convertWiki = function(sourceUrl, destPath, callback) {
 				// instead, leaving only genuinely custom plugins in the folder.
 				try { self.pruneResolvablePluginsFromFolder(destPath); } catch(_e) {}
 			}
+			// Carry an external-attachments folder across the conversion. Both wiki forms keep
+			// attachments in a sibling "attachments/" directory — folder wikis inside the folder,
+			// single-file wikis next to the .html — and reference them relatively as
+			// "./attachments/<name>", so the conversion only has to copy that directory to the
+			// destination; the relative _canonical_uri values keep resolving unchanged. No-op
+			// when the source has no attachments/ folder.
+			try {
+				var srcAttach = isFolder
+					? path.resolve(sourcePath,"attachments")                // folder -> file: from inside the folder
+					: path.resolve(path.dirname(sourcePath),"attachments"); // file -> folder: from beside the .html
+				var dstAttach = isFolder
+					? path.resolve(path.dirname(destPath),"attachments")    // -> beside the produced .html
+					: path.resolve(destPath,"attachments");                 // -> inside the produced folder
+				if(fs.existsSync(srcAttach) && fs.statSync(srcAttach).isDirectory()) {
+					$tw.utils.copyDirectory(srcAttach,dstAttach);
+				}
+			} catch(_e) { console.error("[TiddlyDesktop] convertWiki: attachments copy failed:",_e); }
 			console.log("[TiddlyDesktop] convertWiki: opening converted wiki",newUrl);
 			self.openByUrl(newUrl);
 			callback(null);

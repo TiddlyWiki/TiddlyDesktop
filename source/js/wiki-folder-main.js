@@ -86,6 +86,69 @@ if (queryObject.host && queryObject.port) {
 	}
 }
 
+// External attachments for folder wikis (part 1 of 2 — see the import hook after boot). A folder
+// wiki renders from the html/ app page, so document.baseURI is that app directory: a wiki-relative
+// _canonical_uri (e.g. "pics/foo.png" or "../media/foo.png", relative to the WIKI FOLDER) would
+// resolve against html/ and 404. We must NOT rewrite the STORED value — it stays relative so the
+// tiddler still works when the folder is served over the LAN. Instead we wrap setAttribute on THIS
+// window so that, at the instant TiddlyWiki sets a media element's src (or an <a> href) to a
+// wiki-relative value, it is rewritten to resolve against file://<wikiFolder>/ . Doing this
+// synchronously inside setAttribute — installed BEFORE boot renders — means the browser never sees
+// the wrong URL, so there is no transient failed request. It covers every path uniformly: the
+// image/audio/video widgets AND raw HTML <img>/<audio> in wikitext all set src via setAttribute,
+// with no core-widget overrides. Absolute file:// URIs (the default for files outside the wiki, and
+// what collab records in "use absolute" mode) carry a scheme, so they're left untouched and load
+// directly. This also fixes collab-received attachments that are stored relative.
+var wikiFolderPath = $tw.boot.wikiPath || queryObject.pathname;
+
+// The wiki folder as a trailing-slashed file:// base (for resolving wiki-relative URIs).
+function wikiFolderFileBase() {
+	if (!wikiFolderPath) {
+		return null;
+	}
+	var p = String(wikiFolderPath).replace(/\\/g, "/");
+	if (p.charAt(0) !== "/") {
+		p = "/" + p;
+	} // C:/… -> /C:/… so it becomes file:///C:/…
+	if (p.slice(-1) !== "/") {
+		p += "/";
+	}
+	return "file://" + encodeURI(p);
+}
+
+(function () {
+	var base = wikiFolderFileBase();
+	var win = containerWindow.window;
+	if (!base || !win || !win.Element || !win.Element.prototype || win.__tdAttachmentRebaseInstalled) {
+		return;
+	}
+	win.__tdAttachmentRebaseInstalled = true;
+	// Media elements whose src TiddlyWiki fills from a _canonical_uri; <iframe> is excluded (media
+	// embeds are handled elsewhere and use absolute http URLs).
+	var SRC_TAGS = { IMG: 1, EMBED: 1, AUDIO: 1, VIDEO: 1, SOURCE: 1, TRACK: 1 };
+	// Wiki-relative = no scheme, not protocol-relative, not a bare fragment/query. "./x", "../x",
+	// "attachments/x", "x.png" qualify; "http(s):", "data:", "file:", "blob:", "#t", "?q" do not.
+	function isRelative(v) {
+		return typeof v === "string" && !!v && !/^(?:[a-z][a-z0-9+.\-]*:|\/\/|#|\?)/i.test(v);
+	}
+	var proto = win.Element.prototype;
+	var nativeSetAttribute = proto.setAttribute;
+	proto.setAttribute = function (name, value) {
+		// Fast path: only src/href are candidates, so most setAttribute calls skip straight through.
+		if (name === "src" || name === "href") {
+			if (
+				this && this.tagName && isRelative(value) &&
+				(name === "src" ? SRC_TAGS[this.tagName] : this.tagName === "A")
+			) {
+				try {
+					value = new win.URL(value, base).href;
+				} catch (e) {}
+			}
+		}
+		return nativeSetAttribute.call(this, name, value);
+	};
+})();
+
 console.log("Running tiddlywiki " + $tw.boot.argv.join(" "));
 
 // Main part of boot process — timed so a slow folder-wiki load can be localised in the
@@ -236,47 +299,93 @@ try {
 	schedule();
 })();
 
-// External attachments for folder wikis. The stock external-attachments plugin only
-// activates when the wiki document is itself a file:// URL (single-file wikis) and
-// computes the path relative to document.location — neither holds for a folder wiki,
-// which renders from a fixed app page (html/wiki-folder-window.html), not the wiki file.
-// Here we have Node and the app's --allow-file-access flags, so we can reference the
-// dropped file in place via an ABSOLUTE file:// URI that the renderer loads directly —
-// no HTTP server needed. Honours the same Enable switch. We register this hook FIRST so
-// it authoritatively handles binary imports before the stock plugin (whose relative-path
-// logic would otherwise produce a broken _canonical_uri here).
+// External attachments for folder wikis (part 2 of 2 — resolution is set up before boot, above).
+//
+// (1) IMPORT. On desktop we do NOT copy the dropped file into the wiki; we reference it IN PLACE,
+// exactly like the stock external-attachments plugin — the file stays where the user has it. The
+// stock plugin can't do this for a folder wiki, though: it only fires on a file:// wiki document
+// and computes the path relative to document.location, which here is the html/ app page, not the
+// wiki. We have Node, so we compute the _canonical_uri ourselves against the WIKI FOLDER, honouring
+// the same relative/absolute settings the plugin exposes (descendents default to relative, non-
+// descendents to absolute — a relative path that climbs out of the wiki tree is fragile). Relative
+// results resolve at render time via the setAttribute rebasing installed before boot; absolute
+// file:// results are used as-is.
+//
+// $tw.hooks.invokeHook pipes each hook's RETURN VALUE into the next hook and returns the LAST
+// hook's value; wiki.readFile then runs a normal (inline) import unless that final value is exactly
+// true. So a single "handle it and return true" hook is not enough: the stock hook, registered
+// after ours, would be handed our boolean, return false, and the importer would ALSO import the
+// file inline — and being async that inline import wins, embedding the bytes. We therefore split
+// into two hooks around a shared flag: `claim` runs FIRST (so it receives the real info object) and
+// does the work; `settle` runs LAST and forces the final return value to true whenever we claimed,
+// so no inline import follows. When we don't claim, `settle` passes the piped value through
+// untouched, leaving other importers unaffected.
 (function () {
 	if (!$tw.hooks || !$tw.hooks.addHook) {
 		return;
 	}
-	function folderExternalAttachmentHook(info) {
+	// Forward-slash relative path FROM the wiki folder TO an absolute file path (both forward-slash).
+	function relativeToWikiFolder(baseDir, absPath) {
+		var a = baseDir.split("/"),
+			b = absPath.split("/"),
+			i = 0;
+		while (i < a.length && i < b.length && a[i] === b[i]) {
+			i++;
+		}
+		var up = [];
+		for (var j = i; j < a.length; j++) {
+			up.push("..");
+		}
+		return up.concat(b.slice(i)).join("/") || ".";
+	}
+	// The _canonical_uri for a dropped file, referenced in place and resolved against the wiki
+	// folder. Mirrors the stock plugin's makePathRelative, but rooted at the wiki folder (not the
+	// app page) and reading the plugin's own UseAbsolute settings.
+	function canonicalUriForDroppedFile(filePath) {
+		var abs = String(filePath).replace(/\\/g, "/");
+		if (abs.charAt(0) !== "/") {
+			abs = "/" + abs;
+		} // C:/… -> /C:/…
+		var baseDir = String(wikiFolderPath).replace(/\\/g, "/").replace(/\/+$/, "");
+		if (baseDir.charAt(0) !== "/") {
+			baseDir = "/" + baseDir;
+		}
+		var isDescendent = abs === baseDir || abs.indexOf(baseDir + "/") === 0;
+		var useAbsolute =
+			$tw.wiki.getTiddlerText(
+				isDescendent
+					? "$:/config/ExternalAttachments/UseAbsoluteForDescendents"
+					: "$:/config/ExternalAttachments/UseAbsoluteForNonDescendents",
+				isDescendent ? "no" : "yes",
+			) === "yes";
+		// encodeURI matches how TiddlyWiki's external-attachments records URIs (spaces -> %20 etc.).
+		return useAbsolute
+			? "file://" + encodeURI(abs)
+			: encodeURI(relativeToWikiFolder(baseDir, abs));
+	}
+	var claimed = false;
+	function claim(info) {
+		claimed = false;
 		try {
 			if (
 				info &&
 				info.isBinary &&
 				info.file &&
 				info.file.path &&
+				wikiFolderPath &&
 				$tw.wiki.getTiddlerText(
 					"$:/config/ExternalAttachments/Enable",
 					"",
 				) === "yes"
 			) {
-				var p = String(info.file.path).replace(
-					/\\/g,
-					"/",
-				);
-				if (p.charAt(0) !== "/") {
-					p = "/" + p;
-				} // -> file:///C:/... on Windows
 				info.callback([
 					{
 						title: info.file.name,
 						type: info.type,
-						_canonical_uri:
-							"file://" +
-							encodeURI(p),
+						_canonical_uri: canonicalUriForDroppedFile(info.file.path),
 					},
 				]);
+				claimed = true;
 				return true;
 			}
 		} catch (e) {
@@ -287,15 +396,20 @@ try {
 		}
 		return false;
 	}
+	function settle(value) {
+		if (claimed) {
+			claimed = false;
+			return true;
+		}
+		return value;
+	}
 	var arr = $tw.hooks.names && $tw.hooks.names["th-importing-file"];
 	if (arr && typeof arr.unshift === "function") {
-		arr.unshift(folderExternalAttachmentHook); // run before the stock plugin's hook
+		arr.unshift(claim); // runs first: receives the real info object
 	} else {
-		$tw.hooks.addHook(
-			"th-importing-file",
-			folderExternalAttachmentHook,
-		);
+		$tw.hooks.addHook("th-importing-file", claim);
 	}
+	$tw.hooks.addHook("th-importing-file", settle); // runs last: controls the final return value
 })();
 
 // Fullscreen: F11 and the fullscreen page-control button toggle the native window.

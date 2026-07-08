@@ -53,6 +53,9 @@ class TDHost(
         fun backupFolderPath(): String
         /** Open the global backup folder in the system file manager. */
         fun openBackupFolder()
+        /** Persist the backup-path template ($:/TiddlyDesktop/BackupPath) reported by the WikiList,
+         *  so the (separate-process) saver lays backups out per the user's setting. */
+        fun setBackupPathTemplate(template: String)
         /** Whether a shared payload is waiting to be imported into a wiki. */
         fun hasPendingShare(): Boolean
         /** Enriched metadata for the pending share (kind/title/description/image/embed/…) as JSON. */
@@ -133,6 +136,9 @@ class TDHost(
 
     @JavascriptInterface
     fun openBackupFolder() = callbacks.openBackupFolder()
+
+    @JavascriptInterface
+    fun setBackupPathTemplate(template: String) = callbacks.setBackupPathTemplate(template)
 
     @JavascriptInterface
     fun hasPendingShare(): Boolean = callbacks.hasPendingShare()

@@ -20,11 +20,29 @@ object Backups {
 
     private const val TAG = "Backups"
 
+    // Default backup-path template — MUST match the desktop app's $:/TiddlyDesktop/BackupPath
+    // default (plugins/tiddlydesktop/config/BackupPath.tid) so both platforms lay backups out the
+    // same way. $filename$ expands to the wiki's full filename WITH extension, so this yields
+    // "<wiki>.html_backup/" — e.g. "mywiki.html_backup/", not "mywiki_backup/".
+    private const val DEFAULT_TEMPLATE = "./\$filename\$_backup/"
+
     /** App-private file holding the user's chosen global backup folder (a SAF tree URI). */
     fun backupFolderUriFile(context: Context): File = File(context.filesDir, "backup-folder.uri")
 
+    /**
+     * App-private file holding the backup-path template ($:/TiddlyDesktop/BackupPath), reported by
+     * the WikiList JS via TDHost.setBackupPathTemplate (see MainActivity). Absent => the desktop
+     * default above. Persisting it app-wide (like backup-folder.uri) means the :wiki process's
+     * saver reads the current value without threading it through every open-wiki intent.
+     */
+    fun backupPathTemplateFile(context: Context): File = File(context.filesDir, "backup-path-template.txt")
+
     private fun globalBackupDir(context: Context): String? =
         backupFolderUriFile(context).takeIf { it.exists() }?.readText()?.trim()?.ifBlank { null }
+
+    private fun template(context: Context): String =
+        backupPathTemplateFile(context).takeIf { it.exists() }?.readText()?.trim()?.ifBlank { null }
+            ?: DEFAULT_TEMPLATE
 
     /**
      * [backupDirUri] is the wiki's own containing folder (backups land next to it). If the user
@@ -44,7 +62,8 @@ object Backups {
     private fun writeFileTree(context: Context, wikiPath: String, oldBytes: ByteArray, folder: String, count: Int): Boolean =
         runCatching {
             val fileName = fileName(wikiPath); val base = baseName(fileName)
-            val dir = File(folder, backupDirName(fileName)).apply { mkdirs() }
+            val subPath = backupSubPath(context, fileName, wikiPath)
+            val dir = File(folder, subPath).apply { mkdirs() }
             File(dir, "$base-${ts()}.html").writeBytes(oldBytes)
             if (count > 0) {
                 dir.listFiles { f -> f.name.startsWith("$base-") }
@@ -58,21 +77,22 @@ object Backups {
         runCatching {
             val fileName = fileName(wikiPath); val base = baseName(fileName)
             val root = DocumentFile.fromTreeUri(context, Uri.parse(treeUri)) ?: return false
-            val dirName = backupDirName(fileName)
-            val dir = root.findFile(dirName) ?: root.createDirectory(dirName) ?: return false
+            val subPath = backupSubPath(context, fileName, wikiPath)
+            val dir = ensureSafDir(root, subPath) ?: return false
             val f = dir.createFile("text/html", "$base-${ts()}.html") ?: return false
             context.contentResolver.openOutputStream(f.uri, "wt")?.use { it.write(oldBytes) }
             if (count > 0) {
                 dir.listFiles().filter { it.name?.startsWith("$base-") == true }
                     .sortedByDescending { it.lastModified() }.drop(count).forEach { it.delete() }
             }
-            Log.i(TAG, "Backed up ${oldBytes.size} bytes to SAF $dirName/")
+            Log.i(TAG, "Backed up ${oldBytes.size} bytes to SAF $subPath/")
             true
         }.getOrElse { Log.w(TAG, "SAF backup failed: ${it.message}"); false }
 
     private fun writeAppPrivate(context: Context, wikiPath: String, oldBytes: ByteArray, count: Int) {
         val fileName = fileName(wikiPath); val base = baseName(fileName)
-        val dir = File(File(context.filesDir, "backups"), md5(wikiPath)).apply { mkdirs() }
+        val subPath = backupSubPath(context, fileName, wikiPath)
+        val dir = File(File(File(context.filesDir, "backups"), md5(wikiPath)), subPath).apply { mkdirs() }
         File(dir, "$base-${ts()}.html").writeBytes(oldBytes)
         if (count > 0) {
             dir.listFiles { f -> f.name.startsWith("$base-") }
@@ -87,8 +107,36 @@ object Backups {
 
     private fun baseName(fileName: String): String = fileName.substringBeforeLast('.').ifBlank { "wiki" }
 
-    /** Backup folder name for a wiki file, e.g. "mywiki.html" -> "mywiki_backup". */
-    fun backupDirName(fileName: String): String = "${baseName(fileName)}_backup"
+    /**
+     * The backup directory for a wiki, RELATIVE to the target base folder, derived from the
+     * template ($:/TiddlyDesktop/BackupPath). Mirrors the desktop app (utils/saving.js
+     * backupPathByPath): $filename$ -> the wiki's full filename WITH extension (e.g. "wiki.html"),
+     * $filepath$ -> its full path. Supports arbitrary/nested templates like
+     * "./test/$filename$123_backup/". Returns a forward-slash sub-path with no leading "./" or "/"
+     * and no trailing "/". Public so "reveal backups" (MainActivity) resolves the identical folder.
+     */
+    fun backupSubPath(context: Context, fileName: String, wikiPath: String): String {
+        var s = template(context)
+            .replace("\$filename\$", fileName, ignoreCase = true)
+            .replace("\$filepath\$", wikiPath, ignoreCase = true)
+            .replace('\\', '/')
+            .trim()
+        // The template is resolved relative to the target base folder, so drop a leading "./" or
+        // "/" and any trailing slash. Blank (a template of just "./") falls back to the default.
+        if (s.startsWith("./")) s = s.substring(2)
+        s = s.trimStart('/').trimEnd('/')
+        return s.ifBlank { "${fileName}_backup" }
+    }
+
+    /** Create (or find) a possibly-nested sub-directory under a SAF tree, segment by segment. */
+    private fun ensureSafDir(root: DocumentFile, subPath: String): DocumentFile? {
+        var dir = root
+        for (seg in subPath.split('/')) {
+            if (seg.isBlank()) continue
+            dir = dir.findFile(seg)?.takeIf { it.isDirectory } ?: dir.createDirectory(seg) ?: return null
+        }
+        return dir
+    }
 
     private fun ts(): String = SimpleDateFormat("yyyyMMdd-HHmmss", Locale.US).format(Date())
 
