@@ -272,6 +272,23 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         }.apply { isDaemon = true; start() }
     }
 
+    /**
+     * Reboot the WikiList server and reload the page — used after installing/removing a plugin into
+     * the WikiList itself (the backstage "Install plugins" flow), so the change actually boots.
+     * Same teardown pattern as [setLanguage] (blank the page first so its syncer stops polling the
+     * server we're about to kill).
+     */
+    override fun reloadWikiList() {
+        runOnUiThread { runCatching { webView.loadUrl("about:blank") } }
+        Thread {
+            runCatching {
+                wikiListServer?.stop()
+                pluginBridge.invalidateCache()
+                startWikiListServer()
+            }.onFailure { Log.e(TAG, "wiki-list reload failed: ${it.message}", it) }
+        }.apply { isDaemon = true; start() }
+    }
+
     /** Whether we still hold a persisted SAF grant for [uriStr] (non-content:// paths need none). */
     private fun hasAccess(uriStr: String, needWrite: Boolean): Boolean {
         if (!uriStr.startsWith("content://")) return true

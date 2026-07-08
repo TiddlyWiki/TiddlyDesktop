@@ -156,8 +156,11 @@ exports.startup = function() {
 		var wikiUrl = event.param;
 		if(!wikiUrl) return false;
 
-		var isOpen = _isWikiOpen(wikiUrl);
-		var isFile = wikiUrl.startsWith("wikifile://");
+		// "backstage://self" targets the running wiki-list (backstage) folder wiki itself; applying
+		// edits its tiddlywiki.info and reloads the window. It's never "open" in the window list.
+		var isSelf = (wikiUrl === "backstage://self");
+		var isOpen = isSelf ? false : _isWikiOpen(wikiUrl);
+		var isFile = !isSelf && wikiUrl.startsWith("wikifile://");
 
 		// Re-scan the library from disk so the chooser and its update buttons reflect the CURRENT
 		// on-disk plugin versions, not a stale startup snapshot.
@@ -167,7 +170,7 @@ exports.startup = function() {
 			title: "$:/temp/TiddlyDesktop/PluginChooser/target",
 			text: wikiUrl,
 			"wiki-open": isOpen ? "yes" : "no",
-			"wiki-type": isFile ? "file" : "folder"
+			"wiki-type": isSelf ? "self" : (isFile ? "file" : "folder")
 		}));
 		$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/TiddlyDesktop/PluginChooser/search", text: ""}));
 		$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/TiddlyDesktop/PluginChooser/status", text: ""}));
@@ -259,13 +262,21 @@ exports.startup = function() {
 		}
 
 		try {
-			if(wikiUrl.startsWith("wikifile://")) {
-				_applyFileChanges(wikiUrl, toInstall, toRemove, fs, path);
-			} else {
+			if(wikiUrl === "backstage://self") {
+				// Edit the running backstage folder wiki's tiddlywiki.info, then reload the window so
+				// the installed plugin actually boots (TiddlyWiki only loads plugins at startup).
 				_applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path);
+				_closeChooser();
+				_reloadBackstage();
+			} else {
+				if(wikiUrl.startsWith("wikifile://")) {
+					_applyFileChanges(wikiUrl, toInstall, toRemove, fs, path);
+				} else {
+					_applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path);
+				}
+				_scanUpdatesForWiki(wikiUrl, availableByTitle, fs, path);
+				_closeChooser();
 			}
-			_scanUpdatesForWiki(wikiUrl, availableByTitle, fs, path);
-			_closeChooser();
 		} catch(e) {
 			_setStatus("✗ Error: " + e.message);
 		}
@@ -387,6 +398,13 @@ function _clearChooserTiddlers(prefixes) {
 	});
 }
 
+// Reload the current backstage window so a freshly-installed backstage plugin boots — main.html
+// re-runs the TiddlyWiki boot against the (now-edited) backstage folder wiki. Other open backstage
+// windows pick up the change the next time they (re)open.
+function _reloadBackstage() {
+	try { require("nw.gui").Window.get().reload(); } catch(e) {}
+}
+
 function _closeChooser() {
 	$tw.wiki.deleteTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
 	$tw.wiki.deleteTiddler("$:/temp/TiddlyDesktop/PluginChooser/search");
@@ -483,7 +501,9 @@ function _isDir(p, fs) {
 // ── installed-plugins query ───────────────────────────────────────────────────
 
 function _getInstalledPlugins(wikiUrl, fs, path) {
-	if(wikiUrl.startsWith("wikifile://")) {
+	if(wikiUrl === "backstage://self") {
+		return _getInstalledFromFolder($tw.boot.wikiPath, fs, path);
+	} else if(wikiUrl.startsWith("wikifile://")) {
 		return _getInstalledFromFile(wikiUrl.slice("wikifile://".length), fs);
 	} else {
 		return _getInstalledFromFolder(wikiUrl.slice("wikifolder://".length), fs, path);
@@ -663,7 +683,8 @@ function _applyFileChanges(wikiUrl, toInstall, toRemove, fs, path) {
 }
 
 function _applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path) {
-	var folderPath = wikiUrl.slice("wikifolder://".length);
+	// "backstage://self" edits the running wiki-list (backstage) folder wiki in place.
+	var folderPath = (wikiUrl === "backstage://self") ? $tw.boot.wikiPath : wikiUrl.slice("wikifolder://".length);
 	var infoPath   = path.join(folderPath, "tiddlywiki.info");
 	var info = {};
 	try { info = JSON.parse(fs.readFileSync(infoPath, "utf8")); } catch(_e) {}

@@ -47,6 +47,8 @@ PluginChooser/Tab/theme: Themes
 PluginChooser/Heading: Manage Plugins
 PluginChooser/Close: Close
 PluginChooser/OpenWarning: This wiki is currently open. Close its window first, then click Apply.
+PluginChooser/BackstageTarget: This wiki list
+PluginChooser/BackstageNote: applying reloads the wiki list
 PluginChooser/FilterPlaceholder: Filter plugins…
 PluginChooser/Clear: Clear
 PluginChooser/NoMatch: No plugins match your filter.

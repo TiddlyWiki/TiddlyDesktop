@@ -148,6 +148,36 @@ class PluginBridge(private val context: Context) {
         }.getOrElse { Log.e(TAG, "apply failed: ${it.message}", it); it.message ?: "error" }
     }
 
+    // ── backstage: install into the running WikiList folder wiki itself ────────────
+
+    /** What the running WikiList (backstage) folder wiki already has installed. */
+    @JavascriptInterface
+    fun wikiListInstalled(): String = installedFromFolder(NodeEnvironment.wikiListDir(context).absolutePath)
+
+    /**
+     * Install/remove into the running WikiList folder wiki's tiddlywiki.info — the "install
+     * plugins into the wiki list itself" backstage flow. The caller reboots the WikiList server
+     * afterwards (TDHost.reloadWikiList) so the plugin actually boots. Same on-disk edit as a
+     * normal folder wiki, so items resolve at boot from the bundled library + custom plugin dir.
+     * [installJson] = [{name,plugin-type,title}], [removeJson] = [title]. Returns "ok" or an error.
+     */
+    @JavascriptInterface
+    fun applyToWikiList(installJson: String, removeJson: String): String = runCatching {
+        val install = JSONArray(installJson)
+        applyFolder(NodeEnvironment.wikiListDir(context).absolutePath, install, JSONArray(removeJson))
+        // The WikiList keeps only its ACTIVE language on disk (applyWikiListLanguage trims the rest
+        // on reboot), so a language merely added to tiddlywiki.info would be trimmed away again.
+        // Installing a language into the wiki list therefore means "switch the wiki list to it" —
+        // make it active so the reboot keeps it (and $:/language activates it).
+        for (i in 0 until install.length()) {
+            val obj = install.getJSONObject(i)
+            if (obj.optString("plugin-type") == "language") {
+                NodeEnvironment.setActiveWikiListLanguage(context, obj.optString("name").substringAfterLast("/"))
+            }
+        }
+        "ok"
+    }.getOrElse { Log.e(TAG, "applyToWikiList failed: ${it.message}", it); it.message ?: "error" }
+
     /** Folder wiki: edit tiddlywiki.info's plugins/themes/languages arrays in the SAF tree. */
     private fun applyFolder(path: String, install: JSONArray, remove: JSONArray) {
         val info = JSONObject(readInfo(path) ?: error("no tiddlywiki.info"))

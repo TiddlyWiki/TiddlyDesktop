@@ -66,10 +66,15 @@ class TDHost(
         fun cancelShare()
         /** Switch the WikiList language ([languageTitle] like "$:/languages/de-DE"); reboots + reloads. */
         fun setLanguage(languageTitle: String)
+        /** Reboot the WikiList server + reload the page, e.g. after installing a backstage plugin. */
+        fun reloadWikiList()
     }
 
     @JavascriptInterface
     fun setLanguage(languageTitle: String) = callbacks.setLanguage(languageTitle)
+
+    @JavascriptInterface
+    fun reloadWikiList() = callbacks.reloadWikiList()
 
     @JavascriptInterface
     fun openWiki(url: String, title: String, isFolder: Boolean, backupsEnabled: Boolean, backupCount: Int, backupDir: String) =

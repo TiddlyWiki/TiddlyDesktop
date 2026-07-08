@@ -42,7 +42,10 @@ exports.startup = function () {
 	}
 	function setStatus(t) { $tw.wiki.addTiddler(new $tw.Tiddler({ title: CH + "status", text: t })); }
 	function getInstalled(url) {
-		try { return JSON.parse(host.getInstalled(url)); } catch (e) { return { titles: [], versions: {} }; }
+		try {
+			if (url === "backstage://self") { return JSON.parse(host.wikiListInstalled()); }
+			return JSON.parse(host.getInstalled(url));
+		} catch (e) { return { titles: [], versions: {} }; }
 	}
 	// Back up to the wiki's folder (if granted) using its configured backup count.
 	function backupFolder(url) { return $tw.wiki.getTiddlerText("$:/TiddlyDesktop/Config/folder/" + url, ""); }
@@ -115,15 +118,19 @@ exports.startup = function () {
 		var url = event.param;
 		if (!url || !host) { return false; }
 		refreshAvailable();
+		// "backstage://self" targets the running WikiList folder wiki itself; applying edits its
+		// tiddlywiki.info and reboots the WikiList server. It's never "open" in the window list.
+		var isSelf = (url === "backstage://self");
 		var isOpen = false;
-		try { isOpen = !!host.isWikiOpen(url); } catch (e) {}
+		if (!isSelf) { try { isOpen = !!host.isWikiOpen(url); } catch (e) {} }
 		// text = the url (used internally); display-path = the friendly path shown in the header,
 		// so the chooser doesn't show the raw base64 wikifile:// URL on Android.
-		var displayPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/Config/path/" + url, "") ||
-			$tw.wiki.getTiddlerText("$:/TiddlyDesktop/Config/title/" + url, "") || url;
+		var displayPath = isSelf ? "" :
+			($tw.wiki.getTiddlerText("$:/TiddlyDesktop/Config/path/" + url, "") ||
+			$tw.wiki.getTiddlerText("$:/TiddlyDesktop/Config/title/" + url, "") || url);
 		$tw.wiki.addTiddler(new $tw.Tiddler({
 			title: CH + "target", text: url, "display-path": displayPath, "wiki-open": isOpen ? "yes" : "no",
-			"wiki-type": url.indexOf("wikifile://") === 0 ? "file" : "folder"
+			"wiki-type": isSelf ? "self" : (url.indexOf("wikifile://") === 0 ? "file" : "folder")
 		}));
 		$tw.wiki.addTiddler(new $tw.Tiddler({ title: CH + "search", text: "" }));
 		$tw.wiki.addTiddler(new $tw.Tiddler({ title: CH + "status", text: "" }));
@@ -137,8 +144,9 @@ exports.startup = function () {
 		var target = $tw.wiki.getTiddler(CH + "target");
 		if (!target || !host) { return false; }
 		var url = target.fields.text;
+		var isSelf = (url === "backstage://self");
 		// Don't modify a wiki's file while it's open — it would race the wiki's own saves.
-		try { if (host.isWikiOpen(url)) { setStatus("⚠ Please close the wiki window before applying changes."); return false; } } catch (e) {}
+		if (!isSelf) { try { if (host.isWikiOpen(url)) { setStatus("⚠ Please close the wiki window before applying changes."); return false; } } catch (e) {} }
 		var isFile = target.fields["wiki-type"] === "file";
 		var inst = getInstalled(url);
 		var fieldsByPath = Object.create(null), titles = [];
@@ -162,8 +170,19 @@ exports.startup = function () {
 		if (toInstall.length === 0 && toRemove.length === 0) { closeChooser(); return false; }
 		setStatus("Applying…");
 		var res;
-		try { res = host.apply(url, JSON.stringify(toInstall), JSON.stringify(toRemove), backupFolder(url), backupCountFor(url)); } catch (e) { res = e.message; }
-		if (res === "ok") { closeChooser(); } else { setStatus("✗ " + res); }
+		try {
+			if (isSelf) {
+				// Edit the running WikiList folder's tiddlywiki.info, then reboot the server so the
+				// plugin actually boots (TiddlyWiki only loads plugins at startup).
+				res = host.applyToWikiList(JSON.stringify(toInstall), JSON.stringify(toRemove));
+			} else {
+				res = host.apply(url, JSON.stringify(toInstall), JSON.stringify(toRemove), backupFolder(url), backupCountFor(url));
+			}
+		} catch (e) { res = e.message; }
+		if (res === "ok") {
+			closeChooser();
+			if (isSelf) { try { window.TDHost.reloadWikiList(); } catch (e) {} }
+		} else { setStatus("✗ " + res); }
 		return false;
 	});
 

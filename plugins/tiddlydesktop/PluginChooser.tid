@@ -17,9 +17,14 @@ title: $:/TiddlyDesktop/PluginChooser
 <$button message="tiddlydesktop-close-plugin-chooser" class="tc-btn-invisible td-plugin-close-btn" tooltip={{$:/language/TiddlyDesktop/PluginChooser/Close}}>{{$:/core/images/close-button}}</$button>
 </div>
 <div class="td-plugin-wiki-url">
+<$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[self]]" variable="_">
+{{$:/core/images/list-image}} {{$:/language/TiddlyDesktop/PluginChooser/BackstageTarget}} <span class="td-plugin-desc">— {{$:/language/TiddlyDesktop/PluginChooser/BackstageNote}}</span>
+</$list>
+<$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]!field:wiki-type[self]]" variable="_">
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[file]]" variable="_">{{$:/core/images/file}}</$list>
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-type[folder]]" variable="_">{{$:/core/images/folder}}</$list>
 <code><$text text={{{ [[$:/temp/TiddlyDesktop/PluginChooser/target]get[display-path]!is[blank]] ~[[$:/temp/TiddlyDesktop/PluginChooser/target]get[text]] }}}/></code>
+</$list>
 </div>
 <$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]field:wiki-open[yes]]" variable="_">
 <div class="td-plugin-open-warning">⚠&#32;{{$:/language/TiddlyDesktop/PluginChooser/OpenWarning}}</div>
