@@ -1,0 +1,10 @@
+title: $:/TiddlyDesktop/Settings/Support
+caption: Support
+tags: $:/TiddlyDesktop/Settings
+
+{{$:/language/TiddlyDesktop/Support/Blurb}}
+
+<a href={{$:/config/TiddlyDesktop/SupportURL}} class="td-button">
+{{$:/TiddlyDesktop/images/heart}}
+{{$:/language/TiddlyDesktop/Support/Button}}
+</a>
