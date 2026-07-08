@@ -162,6 +162,15 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         applySystemBarInsets(root)
         webView.addJavascriptInterface(SystemBarsBridge(this, root), SystemBarsBridge.INTERFACE_NAME)
         webView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView, request: android.webkit.WebResourceRequest): Boolean {
+                val u = request.url.toString()
+                // Keep the loopback-served WikiList in-app; open any external link (e.g. the
+                // Support / Open Collective link) in the system browser rather than letting it
+                // navigate — and replace — the WikiList webview.
+                if (u.startsWith("http://127.0.0.1") || u.startsWith("http://localhost")) return false
+                openExternal(u)
+                return true
+            }
             override fun onPageFinished(view: WebView, url: String) {
                 injectAsset(view, SystemBarsBridge.SCRIPT_ASSET)
             }

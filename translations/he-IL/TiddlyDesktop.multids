@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: אין ויקי זמין לשכפול
 Toolbar/Help: עזרה
 Toolbar/Settings: הגדרות
 Toolbar/Language: שפה
+Toolbar/Support: תמיכה
+Support/Blurb: TiddlyWiki ו-TiddlyDesktop הם תוכנה חופשית ובקוד פתוח. אם הם מועילים לך, שקול לתמוך בפיתוחם המתמשך ב-Open Collective.
+Support/Button: תמכו ב-Open Collective
 List/SearchPlaceholder: חיפוש
 List/ClearSearch: נקה חיפוש
 Row/Untitled: ללא כותרת

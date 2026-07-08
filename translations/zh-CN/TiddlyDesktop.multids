@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: 没有可克隆的 wiki
 Toolbar/Help: 帮助
 Toolbar/Settings: 设置
 Toolbar/Language: 语言
+Toolbar/Support: 支持
+Support/Blurb: TiddlyWiki 和 TiddlyDesktop 是免费的开源软件。如果它们对你有用，请考虑在 Open Collective 上支持它们的持续开发。
+Support/Button: 在 Open Collective 上支持
 List/SearchPlaceholder: 搜索
 List/ClearSearch: 清除搜索
 Row/Untitled: 无标题

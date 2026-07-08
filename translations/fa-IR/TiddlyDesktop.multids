@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: هیچ ویکی‌ای برای همسان‌سازی د
 Toolbar/Help: راهنما
 Toolbar/Settings: تنظیمات
 Toolbar/Language: زبان
+Toolbar/Support: حمایت
+Support/Blurb: TiddlyWiki و TiddlyDesktop نرم‌افزارهای آزاد و متن‌باز هستند. اگر برایتان مفید هستند، لطفاً از توسعهٔ مستمر آن‌ها در Open Collective حمایت کنید.
+Support/Button: حمایت در Open Collective
 List/SearchPlaceholder: جستجو
 List/ClearSearch: پاک کردن جستجو
 Row/Untitled: بدون عنوان

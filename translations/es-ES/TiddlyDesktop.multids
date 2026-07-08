@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: No hay wikis disponibles para clonar
 Toolbar/Help: Ayuda
 Toolbar/Settings: Ajustes
 Toolbar/Language: Idioma
+Toolbar/Support: Colabora
+Support/Blurb: TiddlyWiki y TiddlyDesktop son software libre y de código abierto. Si te resultan útiles, considera apoyar su desarrollo continuo en Open Collective.
+Support/Button: Colabora en Open Collective
 List/SearchPlaceholder: buscar
 List/ClearSearch: Borrar búsqueda
 Row/Untitled: Sin título

@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: क्लोन करने के लिए कोई 
 Toolbar/Help: सहायता
 Toolbar/Settings: सेटिंग्स
 Toolbar/Language: भाषा
+Toolbar/Support: सहयोग
+Support/Blurb: TiddlyWiki और TiddlyDesktop मुफ़्त और ओपन सोर्स हैं। यदि ये आपके लिए उपयोगी हैं, तो कृपया Open Collective पर इनके निरंतर विकास में सहयोग देने पर विचार करें।
+Support/Button: Open Collective पर सहयोग करें
 List/SearchPlaceholder: खोजें
 List/ClearSearch: खोज साफ़ करें
 Row/Untitled: बिना शीर्षक

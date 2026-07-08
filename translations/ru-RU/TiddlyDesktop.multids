@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: Нет вики для клонирования
 Toolbar/Help: Справка
 Toolbar/Settings: Настройки
 Toolbar/Language: Язык
+Toolbar/Support: Поддержать
+Support/Blurb: TiddlyWiki и TiddlyDesktop — свободное программное обеспечение с открытым исходным кодом. Если они вам полезны, пожалуйста, поддержите их дальнейшую разработку на Open Collective.
+Support/Button: Поддержать на Open Collective
 List/SearchPlaceholder: поиск
 List/ClearSearch: Очистить поиск
 Row/Untitled: Без названия

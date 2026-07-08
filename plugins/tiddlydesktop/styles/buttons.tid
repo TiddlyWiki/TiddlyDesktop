@@ -12,3 +12,26 @@ button.td-button {
 	color: <<colour wikilist-button-foreground>>;
 	fill: <<colour wikilist-button-foreground>>;
 }
+
+/* An <a> styled to match td-button (the Support link): anchors don't vertical-center their
+   content or drop the underline/link-colour the way a <button> does, so set those explicitly. */
+a.td-button {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	box-sizing: border-box;
+	background: <<colour wikilist-button-background>>;
+	border-radius: 3px;
+	border: none;
+	padding: 3px 7px;
+	height: 2em;
+	color: <<colour wikilist-button-foreground>>;
+	fill: <<colour wikilist-button-foreground>>;
+	text-decoration: none;
+	cursor: pointer;
+	line-height: 1;
+}
+
+a.td-button:hover {
+	text-decoration: none;
+}

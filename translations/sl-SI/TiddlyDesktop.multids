@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: Na voljo ni nobenega wikija za kloniranje
 Toolbar/Help: Pomoč
 Toolbar/Settings: Nastavitve
 Toolbar/Language: Jezik
+Toolbar/Support: Podpri
+Support/Blurb: TiddlyWiki in TiddlyDesktop sta prosta in odprtokodna programska oprema. Če se vam zdita uporabna, razmislite o podpori njunega nadaljnjega razvoja na Open Collective.
+Support/Button: Podprite na Open Collective
 List/SearchPlaceholder: iskanje
 List/ClearSearch: Počisti iskanje
 Row/Untitled: Brez naslova

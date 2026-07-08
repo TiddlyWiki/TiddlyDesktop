@@ -1,0 +1,7 @@
+title: WikiListToolbar/Support
+tags: toolbar
+
+<a href={{$:/config/TiddlyDesktop/SupportURL}} class="td-button" title={{$:/language/TiddlyDesktop/Toolbar/Support}}>
+{{$:/TiddlyDesktop/images/heart}}
+{{$:/language/TiddlyDesktop/Toolbar/Support}}
+</a>
