@@ -5,7 +5,10 @@ page-title: TiddlyDesktop -- Main
 
 <$transclude tiddler="$:/core/ui/PageTemplate/alerts" mode="inline"/>
 
-<$transclude tiddler="$:/TiddlyDesktop/PluginChooser" mode="inline"/>
+<!-- The chooser overlay for per-wiki installs. The backstage self-install target renders from the
+Settings > Plugins tab instead, so exclude it here — otherwise (on desktop, where the Settings and
+WikiList windows share the same $:/temp state) the overlay would show in BOTH windows. -->
+<$list filter="[[$:/temp/TiddlyDesktop/PluginChooser/target]!field:wiki-type[self]]" variable="_"><$transclude tiddler="$:/TiddlyDesktop/PluginChooser" mode="inline"/></$list>
 
 <$droplink>
 
