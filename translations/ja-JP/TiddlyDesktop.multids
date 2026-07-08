@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: 複製できるWikiがありません
 Toolbar/Help: ヘルプ
 Toolbar/Settings: 設定
 Toolbar/Language: 言語
+Toolbar/Support: 支援
+Support/Blurb: TiddlyWiki と TiddlyDesktop は無料のオープンソースソフトウェアです。お役に立てましたら、Open Collective での継続的な開発の支援をご検討ください。
+Support/Button: Open Collective で支援する
 List/SearchPlaceholder: 検索
 List/ClearSearch: 検索をクリア
 Row/Untitled: 無題

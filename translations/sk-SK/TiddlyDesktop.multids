@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: Žiadne wiki na klonovanie
 Toolbar/Help: Pomocník
 Toolbar/Settings: Nastavenia
 Toolbar/Language: Jazyk
+Toolbar/Support: Podporiť
+Support/Blurb: TiddlyWiki a TiddlyDesktop sú slobodný softvér s otvoreným zdrojovým kódom. Ak ich považujete za užitočné, zvážte prosím podporu ich ďalšieho vývoja na Open Collective.
+Support/Button: Podporte na Open Collective
 List/SearchPlaceholder: hľadať
 List/ClearSearch: Vymazať hľadanie
 Row/Untitled: Bez názvu

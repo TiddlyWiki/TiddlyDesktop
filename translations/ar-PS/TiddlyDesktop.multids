@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: لا توجد ويكي متاحة للاستنساخ
 Toolbar/Help: مساعدة
 Toolbar/Settings: الإعدادات
 Toolbar/Language: اللغة
+Toolbar/Support: دعم
+Support/Blurb: TiddlyWiki و TiddlyDesktop مجانيان ومفتوحا المصدر. إذا وجدتهما مفيدين، فيرجى التفكير في دعم تطويرهما المستمر على Open Collective.
+Support/Button: ادعم على Open Collective
 List/SearchPlaceholder: بحث
 List/ClearSearch: مسح البحث
 Row/Untitled: بدون عنوان

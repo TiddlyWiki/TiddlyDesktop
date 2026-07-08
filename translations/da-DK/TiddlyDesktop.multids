@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: Ingen wikier tilgængelige at klone
 Toolbar/Help: Hjælp
 Toolbar/Settings: Indstillinger
 Toolbar/Language: Sprog
+Toolbar/Support: Støt
+Support/Blurb: TiddlyWiki og TiddlyDesktop er gratis og open source. Hvis du finder dem nyttige, så overvej at støtte deres fortsatte udvikling på Open Collective.
+Support/Button: Støt på Open Collective
 List/SearchPlaceholder: søg
 List/ClearSearch: Ryd søgning
 Row/Untitled: Uden titel

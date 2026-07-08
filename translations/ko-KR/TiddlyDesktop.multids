@@ -13,6 +13,9 @@ Toolbar/NoWikisToClone: 복제할 수 있는 위키가 없습니다
 Toolbar/Help: 도움말
 Toolbar/Settings: 설정
 Toolbar/Language: 언어
+Toolbar/Support: 후원
+Support/Blurb: TiddlyWiki와 TiddlyDesktop은 무료이며 오픈 소스입니다. 유용하게 사용하고 계신다면 Open Collective에서 지속적인 개발을 후원해 주세요.
+Support/Button: Open Collective에서 후원하기
 List/SearchPlaceholder: 검색
 List/ClearSearch: 검색 지우기
 Row/Untitled: 제목 없음
