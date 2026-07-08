@@ -206,6 +206,17 @@ jobs:
         with:
           # merge-multiple: true → all built files land in the workspace directory.
           merge-multiple: true
+      - name: "🏷️ Stamping preview filenames..."
+        # Insert "-preview-<short-sha>" before the extension so a preview download can never be
+        # confused with (or overwrite) a stable release of the same version. Only the artifacts we
+        # actually attach are renamed (zip / AppImage / apk); the Play-only .aab is left alone.
+        run: |
+          shopt -s nullglob
+          sha="${GITHUB_SHA::8}"
+          for f in tiddlydesktop-*-v*.zip tiddlydesktop-*-v*.AppImage tiddlydesktop-android-v*.apk; do
+            mv "$f" "${f%.*}-preview-${sha}.${f##*.}"
+          done
+          echo "Preview artifacts:"; ls -1 tiddlydesktop-*-preview-* 2>/dev/null || echo "(none)"
       - name: "🚀 Publishing preview pre-release..."
         uses: softprops/action-gh-release@v1
         with:
@@ -216,6 +227,6 @@ jobs:
           prerelease: true
           make_latest: false
           files: |
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.zip
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.AppImage
-            tiddlydesktop-android-v*.apk
+            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-preview-*.zip
+            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-preview-*.AppImage
+            tiddlydesktop-android-v*-preview-*.apk
