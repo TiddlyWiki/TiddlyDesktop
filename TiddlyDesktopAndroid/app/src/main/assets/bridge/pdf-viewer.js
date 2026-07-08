@@ -1,14 +1,38 @@
 /*
- * Runs inside each wiki window. Android's WebView has NO built-in PDF plugin, so TiddlyWiki's
- * <embed type="application/pdf"> (from $:/core pdfparser) renders blank. This replaces each such
- * embed with its pages rendered by the bundled pdf.js — served same-origin from /__td/pdfjs/ by
- * WikiActivity's request interceptor, so there's no CORS issue with the loopback-served page.
- * Handles both external attachments (_canonical_uri → same-origin URL, Range-served) and embedded
- * base64 PDFs (data: URI). New PDFs in later-opened tiddlers are caught via a MutationObserver.
+ * Runs inside each wiki window. Android's WebView has NO built-in PDF plugin, so TiddlyWiki's PDF
+ * viewer (from $:/core pdfparser) can't render inline: older cores emit <embed type="application/pdf">
+ * (renders blank), and TiddlyWiki 5.4.0 emits an <iframe src="data:application/pdf…"> — which the
+ * WebView, having no PDF plugin, treats as a download and pops the "Save file" dialog instead of
+ * showing the PDF. This replaces each such embed/iframe with its pages rendered by the bundled
+ * pdf.js — served same-origin from /__td/pdfjs/ by WikiActivity's request interceptor, so there's no
+ * CORS issue with the loopback-served page. Handles both external attachments (_canonical_uri →
+ * same-origin URL, Range-served) and embedded base64 PDFs (data: URI).
+ *
+ * The replacement runs on a MICROtask (not a timer): a freshly-inserted iframe's resource load is
+ * scheduled as a later task, so pulling it out of the DOM in the mutation microtask cancels that
+ * load before the WebView can turn it into a download. A 200ms debounce would lose that race.
  */
 (function () {
 	if (window.__tdPdfViewer) { return; }
 	window.__tdPdfViewer = true;
+
+	// A DELIBERATE PDF download (the user clicks a PDF or download link) must still work, even though
+	// native onDownload swallows the pdfparser's AUTOMATIC inline-viewer load. So on such a click we
+	// "arm" the next download natively (TDWikiUX.armDownload); the auto-load, having no click, stays
+	// suppressed. Capture phase, so we run before the click starts the navigation/download.
+	try {
+		document.addEventListener("click", function (e) {
+			if (!window.TDWikiUX || !TDWikiUX.armDownload) { return; }
+			var a = e.target && e.target.closest ? e.target.closest("a[href]") : null;
+			if (!a) { return; }
+			var href = a.getAttribute("href") || "";
+			var path = href.split(/[?#]/)[0];
+			if (a.hasAttribute("download") || href.indexOf("blob:") === 0 ||
+				/^data:application\/pdf/i.test(href) || /\.pdf$/i.test(path)) {
+				try { TDWikiUX.armDownload(); } catch (e2) {}
+			}
+		}, true);
+	} catch (e) {}
 
 	var BASE = "/__td/pdfjs/";
 	var MAX_PAGES = 50; // guard against a huge PDF janking the page
@@ -28,6 +52,18 @@
 		document.head.appendChild(s);
 	}
 
+	// Is this element a PDF viewer we should take over? Old cores: <embed type="application/pdf">.
+	// TiddlyWiki 5.4.0: a bare <iframe> whose src is a data:application/pdf URI (embedded) or a
+	// _canonical_uri ending in .pdf (external attachment). Real media embeds (YouTube, …) are http(s)
+	// iframes that don't end in .pdf, so they're left to embeds.js.
+	function isPdf(el) {
+		if (el.tagName === "EMBED") { return (el.getAttribute("type") || "") === "application/pdf"; }
+		if (el.tagName !== "IFRAME") { return false; }
+		var src = el.getAttribute("src") || "";
+		if (/^data:application\/pdf/i.test(src)) { return true; }
+		return /\.pdf$/i.test(src.split(/[?#]/)[0]);
+	}
+
 	// pdf.js takes a URL for real fetches (attachments), or {data: Uint8Array} for data: URIs.
 	function toSource(src) {
 		if (src.indexOf("data:") !== 0) { return src; }
@@ -39,15 +75,17 @@
 		} catch (e) { return src; }
 	}
 
-	function render(embed) {
-		if (embed.__tdPdf) { return; }
-		embed.__tdPdf = true;
-		var src = embed.getAttribute("src");
-		if (!src) { return; }
+	function render(el) {
+		if (el.__tdPdf) { return; }
+		el.__tdPdf = true;
+		var src = el.getAttribute("src");
 		var box = document.createElement("div");
 		box.className = "td-pdf-view";
 		box.style.cssText = "display:block;width:100%;";
-		if (embed.parentNode) { embed.parentNode.replaceChild(box, embed); }
+		// Replace synchronously — this removes the iframe from the DOM, cancelling its pending
+		// (would-be-download) load — before we do any async pdf.js work.
+		if (el.parentNode) { el.parentNode.replaceChild(box, el); }
+		if (!src) { return; }
 		libReady(function () {
 			if (!window.pdfjsLib) { fallbackLink(box, src); return; }
 			pdfjsLib.getDocument(toSource(src)).promise.then(function (pdf) {
@@ -78,17 +116,23 @@
 	}
 
 	function scan() {
-		var list = document.querySelectorAll('embed[type="application/pdf"]');
-		for (var i = 0; i < list.length; i++) { render(list[i]); }
+		var list = document.querySelectorAll('embed[type="application/pdf"], iframe');
+		for (var i = 0; i < list.length; i++) {
+			if (isPdf(list[i])) { render(list[i]); }
+		}
 	}
 
 	scan();
-	var pending = false;
+	var scheduled = false;
+	function schedule() {
+		if (scheduled) { return; }
+		scheduled = true;
+		var run = function () { scheduled = false; scan(); };
+		// A microtask runs before the browser services a newly-inserted iframe's resource load, so we
+		// yank the PDF iframe out of the DOM before it can become a download.
+		if (window.queueMicrotask) { queueMicrotask(run); } else { Promise.resolve().then(run); }
+	}
 	try {
-		new MutationObserver(function () {
-			if (pending) { return; }
-			pending = true;
-			setTimeout(function () { pending = false; scan(); }, 200);
-		}).observe(document.body, { childList: true, subtree: true });
+		new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true });
 	} catch (e) {}
 })();
