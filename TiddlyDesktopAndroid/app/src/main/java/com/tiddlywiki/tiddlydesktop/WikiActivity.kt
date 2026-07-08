@@ -53,6 +53,10 @@ class WikiActivity : ComponentActivity() {
     // Import (WebView file input) + export (download → SAF) plumbing.
     private var fileChooserCallback: android.webkit.ValueCallback<Array<android.net.Uri>>? = null
     private var pendingSaveBytes: ByteArray? = null
+    // When the user clicks a PDF/download link, bridge/pdf-viewer.js "arms" a download so onDownload
+    // lets that PDF through; an un-armed PDF download is the pdfparser's inline viewer auto-loading,
+    // which we swallow (it's rendered inline). See onDownload / WikiUxBridge.armDownload.
+    @Volatile private var downloadArmedAt = 0L
 
     // Fullscreen (embedded players / HTML5 video) via WebChromeClient.onShowCustomView.
     private var customView: android.view.View? = null
@@ -354,6 +358,11 @@ class WikiActivity : ComponentActivity() {
         @android.webkit.JavascriptInterface
         fun setFullscreen(on: Boolean) = runOnUiThread { applyImmersive(on) }
 
+        /** JS calls this when the user clicks a PDF/download link, so onDownload lets that PDF
+         * through instead of treating it as the pdfparser's inline-viewer auto-load. */
+        @android.webkit.JavascriptInterface
+        fun armDownload() { downloadArmedAt = System.currentTimeMillis() }
+
         /** Called back from JS after reading a blob: download as a data URL. */
         @android.webkit.JavascriptInterface
         fun saveBlob(dataUrl: String, name: String) {
@@ -453,6 +462,17 @@ class WikiActivity : ComponentActivity() {
     }
 
     private fun onDownload(url: String, contentDisposition: String?, mimetype: String?) {
+        // The WebView has no PDF plugin, so when TiddlyWiki's pdfparser inserts its viewer (a
+        // <iframe>/<embed> pointing at the PDF — data: for embedded, ./attachments/… for external)
+        // the WebView tries to *download* it and pops the "Save file" dialog — even though
+        // bridge/pdf-viewer.js is already rendering that same PDF inline with pdf.js (which fetches
+        // it itself, so it's unaffected). Swallow that AUTOMATIC PDF load. A DELIBERATE download —
+        // the user clicking a PDF/download link — is armed from JS first (armDownload), so it still
+        // works. Non-PDF attachments (zip, docx, …) and TW exports (json/html/blob) always fall
+        // through and download normally.
+        if (isPdfContent(url, mimetype) && !consumeDownloadArm()) {
+            Log.d(TAG, "Suppressing PDF inline-viewer download (not user-initiated): $url"); return
+        }
         val name = guessFilename(url, contentDisposition, mimetype)
         when {
             url.startsWith("data:") -> decodeDataUrl(url)?.let { saveBytes(name, it) }
@@ -467,6 +487,21 @@ class WikiActivity : ComponentActivity() {
                 runOnUiThread { webView.evaluateJavascript(js, null) }
             }
         }
+    }
+
+    /** True when a download is a PDF — the pdfparser's inline viewer, unless the user armed it. */
+    private fun isPdfContent(url: String, mimetype: String?): Boolean {
+        if (mimetype?.startsWith("application/pdf", ignoreCase = true) == true) return true
+        val path = url.substringBefore('?').substringBefore('#')
+        return path.startsWith("data:application/pdf", ignoreCase = true) ||
+            path.endsWith(".pdf", ignoreCase = true)
+    }
+
+    /** A one-shot "the user deliberately started this download" flag, set by JS on a link click. */
+    private fun consumeDownloadArm(): Boolean {
+        val armed = downloadArmedAt != 0L && System.currentTimeMillis() - downloadArmedAt < 3000
+        downloadArmedAt = 0L // one-shot: never let a stale arm wave through a later auto-load
+        return armed
     }
 
     private fun decodeDataUrl(url: String): ByteArray? {
