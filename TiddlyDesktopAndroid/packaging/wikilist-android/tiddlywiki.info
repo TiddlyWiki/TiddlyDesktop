@@ -7,14 +7,7 @@
     ],
     "themes": [
         "tiddlywiki/vanilla",
-        "tiddlywiki/snowwhite",
-        "tiddlywiki/elegant",
-        "tiddlywiki/lucid",
-        "tiddlywiki/modern",
-        "tiddlywiki/noir",
-        "tiddlywiki/opaline",
-        "tiddlywiki/quietude",
-        "tiddlywiki/workbench"
+        "tiddlywiki/snowwhite"
     ],
     "languages": [
         "ar-PS", "ca-ES", "cs-CZ", "da-DK", "de-AT", "de-CH", "de-DE", "el-GR",

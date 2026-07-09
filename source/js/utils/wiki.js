@@ -194,13 +194,6 @@ exports.getBackstageWikiFolder = function (appDataPath) {
 			themes: [
 				"tiddlywiki/vanilla",
 				"tiddlywiki/snowwhite",
-				"tiddlywiki/elegant",
-				"tiddlywiki/noir",
-				"tiddlywiki/workbench",
-				"tiddlywiki/lucid",
-				"tiddlywiki/quietude",
-				"tiddlywiki/opaline",
-				"tiddlywiki/modern",
 			],
 		};
 	}
@@ -218,13 +211,6 @@ exports.getBackstageWikiFolder = function (appDataPath) {
 	var defaultThemes = [
 		"tiddlywiki/vanilla",
 		"tiddlywiki/snowwhite",
-		"tiddlywiki/elegant",
-		"tiddlywiki/noir",
-		"tiddlywiki/workbench",
-		"tiddlywiki/lucid",
-		"tiddlywiki/quietude",
-		"tiddlywiki/opaline",
-		"tiddlywiki/modern",
 	];
 	var currentThemes = packageJson.themes || [];
 	var allThemes = defaultThemes.slice();
