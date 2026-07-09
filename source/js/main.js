@@ -286,12 +286,26 @@ setTimeout(function() {
 		// open single-file wiki whenever the setting changes — no app restart. (Folder wikis run in
 		// their own process and pick up the change on their next open/reload.)
 		spellcheck.applyToDocument(document, spellcheck.isEnabled($tw));
+		// Google remote-spellcheck opt-in: mirror the config tiddler into the on-disk marker node-main
+		// reads before Chromium boots. It only takes effect on the NEXT launch (the preference is read
+		// at profile load), so there is nothing to apply to live windows here.
+		function syncGoogleSpellcheckMarker() {
+			try {
+				spellcheck.setGoogleServiceAllowed(gui.App.dataPath,
+					$tw.wiki.getTiddlerText(spellcheck.GOOGLE_CONFIG_TITLE,"no") === "yes");
+			} catch(e) {}
+		}
+		syncGoogleSpellcheckMarker();
 		$tw.wiki.addEventListener("change", function(changes) {
-			if(!changes[spellcheck.CONFIG_TITLE]) { return; }
-			spellcheck.applyToDocument(document, spellcheck.isEnabled($tw));
-			$tw.desktop.windowList.windows.forEach(function(w) {
-				try { if(typeof w.applySpellcheck === "function") { w.applySpellcheck(); } } catch(e) {}
-			});
+			if(changes[spellcheck.CONFIG_TITLE]) {
+				spellcheck.applyToDocument(document, spellcheck.isEnabled($tw));
+				$tw.desktop.windowList.windows.forEach(function(w) {
+					try { if(typeof w.applySpellcheck === "function") { w.applySpellcheck(); } } catch(e) {}
+				});
+			}
+			if(changes[spellcheck.GOOGLE_CONFIG_TITLE]) {
+				syncGoogleSpellcheckMarker();
+			}
 		});
 		// If launched cold by a tiddlydesktop:// deep link, act on it now that there's a window.
 		if(_coldStartDeepLink) { try { deeplink.handleUrl(_coldStartDeepLink); } catch(e) {} }

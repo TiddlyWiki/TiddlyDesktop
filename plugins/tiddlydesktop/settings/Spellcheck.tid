@@ -8,6 +8,10 @@ tags: $:/TiddlyDesktop/Settings
 
 Takes effect on a wiki's next (re)load — no need to restart ~TiddlyDesktop.
 
-! Privacy
+! Privacy: Google spellcheck service
 
-Chromium also offers an ''enhanced'' spellcheck that sends everything you type to Google's servers for suggestions. Because the underlying engine (NW.js) enables that remote service by default, ~TiddlyDesktop ''always'' turns it off at startup, regardless of the setting above — only the local dictionary is ever used.
+Chromium also offers an ''enhanced'' spellcheck that sends everything you type in an editor to Google's servers for suggestions. Because the underlying engine (NW.js) would enable this by default, ~TiddlyDesktop keeps it ''off'' unless you opt in here.
+
+<$checkbox tiddler="$:/config/TiddlyDesktop/EnableGoogleSpellcheck" field="text" checked="yes" unchecked="no" default="no"> Use Google's remote spellcheck service (sends your text to Google) </$checkbox>
+
+<div class="tc-message-box">This takes effect only after you ''restart ~TiddlyDesktop'', and only while local spellcheck (above) is enabled.</div>
