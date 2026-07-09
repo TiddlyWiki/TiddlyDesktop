@@ -48,6 +48,12 @@ var queryObject = $tw.desktop.utils.dom.decodeQueryString(
 	containerWindow.window.document.location,
 );
 
+// Apply the local-spellcheck toggle passed from the backstage. The Google spelling service is already
+// forced off profile-wide in node-main; this only gates the visible red squiggles for this folder wiki.
+try {
+	require("../js/utils/spellcheck.js").applyToDocument(document, queryObject.spellcheck !== "no");
+} catch (e) {}
+
 // First part of boot process
 require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
 
