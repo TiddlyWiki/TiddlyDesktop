@@ -54,3 +54,12 @@ try {
 } catch(e) {
 	try { console.error("[TiddlyDesktop] node-main guard failed:", e); } catch(_e) {}
 }
+
+// Force Chromium's remote (Google) spelling service off before the profile is opened. --enable-spell-checking
+// (source/package.json) otherwise makes NW.js send typed text to Google by default; we keep only the local
+// Hunspell spellcheck. Isolated from the guard above so a failure here can't affect startup recovery.
+try {
+	require("./utils/spellcheck.js").disableSpellingService(resolveProfileDir());
+} catch(e) {
+	try { console.error("[TiddlyDesktop] disable-spelling-service failed:", e); } catch(_e) {}
+}

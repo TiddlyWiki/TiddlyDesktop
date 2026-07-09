@@ -6,6 +6,7 @@ Class for wiki file windows
 
 var windowBase = require("../js/window-base.js"),
 	hash = require("../js/utils/hash.js"),
+	spellcheck = require("../js/utils/spellcheck.js"),
 	fs = require("fs");
 
 // Constructor
@@ -223,6 +224,13 @@ WikiFileWindow.prototype.installEmbedsOnTiddlerWindows = function () {
 	setTimeout(tick, 0);
 };
 
+// Apply the current local-spellcheck setting to the wiki's iframe document. Safe to call any time.
+WikiFileWindow.prototype.applySpellcheck = function () {
+	try {
+		spellcheck.applyToDocument(this.iframe && this.iframe.contentDocument, spellcheck.isEnabled($tw));
+	} catch (e) {}
+};
+
 // Load handler for iframe
 WikiFileWindow.prototype.onloadiframe = function () {
 	var self = this;
@@ -244,6 +252,9 @@ WikiFileWindow.prototype.onloadiframe = function () {
 		});
 	}
 	self._iframeTeardowns = [];
+	// Apply the local-spellcheck toggle to this (re)loaded document. Runs on every load and can be
+	// re-run live via applySpellcheck() when the setting changes.
+	self.applySpellcheck();
 	if (!self._iframeCloseBound) {
 		self._iframeCloseBound = true;
 		self.window_nwjs.once("close", function () {

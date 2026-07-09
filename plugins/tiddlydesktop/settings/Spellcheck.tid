@@ -1,0 +1,13 @@
+title: $:/TiddlyDesktop/Settings/Spellcheck
+caption: Spellcheck
+tags: $:/TiddlyDesktop/Settings
+
+~TiddlyDesktop can check the spelling of text you type in editors, underlining likely misspellings. This uses Chromium's built-in ''local'' dictionary — nothing you type is sent anywhere.
+
+<$checkbox tiddler="$:/config/TiddlyDesktop/EnableSpellcheck" field="text" checked="yes" unchecked="no" default="yes"> Enable local spellcheck </$checkbox>
+
+Takes effect on a wiki's next (re)load — no need to restart ~TiddlyDesktop.
+
+! Privacy
+
+Chromium also offers an ''enhanced'' spellcheck that sends everything you type to Google's servers for suggestions. Because the underlying engine (NW.js) enables that remote service by default, ~TiddlyDesktop ''always'' turns it off at startup, regardless of the setting above — only the local dictionary is ever used.

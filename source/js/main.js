@@ -12,6 +12,7 @@ var WindowList = require("../js/window-list.js").WindowList;
 var protocol = require("../js/utils/protocol.js");
 var deeplink = require("../js/utils/deeplink.js");
 var startupGuard = require("../js/utils/startup-guard.js");
+var spellcheck = require("../js/utils/spellcheck.js");
 
 // On a Chromium (NW.js) upgrade, clear Chromium's disposable GPU/shader caches and any stale
 // Singleton lock BEFORE booting — a stale cache from the old Chromium is a classic blank/no-window
@@ -280,6 +281,17 @@ setTimeout(function() {
 			if(typeof w.tryRender === "function") {
 				w.tryRender();
 			}
+		});
+		// Local-spellcheck toggle: apply to the backstage window now, and re-apply to it plus every
+		// open single-file wiki whenever the setting changes — no app restart. (Folder wikis run in
+		// their own process and pick up the change on their next open/reload.)
+		spellcheck.applyToDocument(document, spellcheck.isEnabled($tw));
+		$tw.wiki.addEventListener("change", function(changes) {
+			if(!changes[spellcheck.CONFIG_TITLE]) { return; }
+			spellcheck.applyToDocument(document, spellcheck.isEnabled($tw));
+			$tw.desktop.windowList.windows.forEach(function(w) {
+				try { if(typeof w.applySpellcheck === "function") { w.applySpellcheck(); } } catch(e) {}
+			});
 		});
 		// If launched cold by a tiddlydesktop:// deep link, act on it now that there's a window.
 		if(_coldStartDeepLink) { try { deeplink.handleUrl(_coldStartDeepLink); } catch(e) {} }
