@@ -503,8 +503,10 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         if (treeUri.isBlank()) { toast(R.string.toast_no_folder_access_reveal); return@runOnUiThread }
         val wikiPath = WikiUrl.decode(url)?.path
         val fileName = wikiPath?.let { File(it).name } ?: "wiki.html"
-        val subPath = com.tiddlywiki.tiddlydesktop.node.Backups.backupSubPath(this, fileName, wikiPath ?: "")
-        val backupDir = File(treeUri, subPath)
+        // An absolute template points at that path directly; otherwise it nests under the tree.
+        val absDir = com.tiddlywiki.tiddlydesktop.node.Backups.absoluteBackupDir(this, fileName, wikiPath ?: "")
+        val backupDir = if (absDir != null) File(absDir)
+            else File(treeUri, com.tiddlywiki.tiddlydesktop.node.Backups.backupSubPath(this, fileName, wikiPath ?: ""))
         if (backupDir.isDirectory) openPath(backupDir.absolutePath) else openPath(treeUri)
     }
 

@@ -49,21 +49,30 @@ object Backups {
      * set a global backup folder, it takes precedence. [backupCount] <= 0 keeps them all.
      */
     fun write(context: Context, wikiPath: String, oldBytes: ByteArray, backupDirUri: String?, backupCount: Int) {
-        val target = globalBackupDir(context) ?: backupDirUri
-        if (!target.isNullOrBlank()) {
-            // Direct filesystem path (the norm) writes next to the wiki; content:// is legacy SAF.
-            val ok = if (target.startsWith("content://")) writeSaf(context, wikiPath, oldBytes, target, backupCount)
-            else writeFileTree(context, wikiPath, oldBytes, target, backupCount)
-            if (ok) return
+        val fileName = fileName(wikiPath); val base = baseName(fileName)
+        // An absolute template (e.g. "/storage/emulated/0/mybackups") is honoured as a direct
+        // filesystem path, bypassing the wiki's containing folder / SAF tree / app-private base
+        // (mirrors desktop, where path.resolve() returns an absolute template unchanged). If the
+        // path isn't writable we fall through to app-private storage.
+        val absDir = absoluteBackupDir(context, fileName, wikiPath)
+        if (absDir != null) {
+            if (writeIntoDir(File(absDir), base, oldBytes, backupCount)) return
+        } else {
+            val target = globalBackupDir(context) ?: backupDirUri
+            if (!target.isNullOrBlank()) {
+                // Direct filesystem path (the norm) writes next to the wiki; content:// is legacy SAF.
+                val ok = if (target.startsWith("content://")) writeSaf(context, wikiPath, oldBytes, target, backupCount)
+                else writeFileTree(context, wikiPath, oldBytes, target, backupCount)
+                if (ok) return
+            }
         }
         writeAppPrivate(context, wikiPath, oldBytes, backupCount)
     }
 
-    private fun writeFileTree(context: Context, wikiPath: String, oldBytes: ByteArray, folder: String, count: Int): Boolean =
+    /** Write one timestamped backup into [dir], creating it and pruning to [count] (<=0 keeps all). */
+    private fun writeIntoDir(dir: File, base: String, oldBytes: ByteArray, count: Int): Boolean =
         runCatching {
-            val fileName = fileName(wikiPath); val base = baseName(fileName)
-            val subPath = backupSubPath(context, fileName, wikiPath)
-            val dir = File(folder, subPath).apply { mkdirs() }
+            dir.mkdirs()
             File(dir, "$base-${ts()}.html").writeBytes(oldBytes)
             if (count > 0) {
                 dir.listFiles { f -> f.name.startsWith("$base-") }
@@ -72,6 +81,11 @@ object Backups {
             Log.i(TAG, "Backed up ${oldBytes.size} bytes to $dir")
             true
         }.getOrElse { Log.w(TAG, "file backup failed: ${it.message}"); false }
+
+    private fun writeFileTree(context: Context, wikiPath: String, oldBytes: ByteArray, folder: String, count: Int): Boolean {
+        val fileName = fileName(wikiPath); val base = baseName(fileName)
+        return writeIntoDir(File(folder, backupSubPath(context, fileName, wikiPath)), base, oldBytes, count)
+    }
 
     private fun writeSaf(context: Context, wikiPath: String, oldBytes: ByteArray, treeUri: String, count: Int): Boolean =
         runCatching {
@@ -92,13 +106,7 @@ object Backups {
     private fun writeAppPrivate(context: Context, wikiPath: String, oldBytes: ByteArray, count: Int) {
         val fileName = fileName(wikiPath); val base = baseName(fileName)
         val subPath = backupSubPath(context, fileName, wikiPath)
-        val dir = File(File(File(context.filesDir, "backups"), md5(wikiPath)), subPath).apply { mkdirs() }
-        File(dir, "$base-${ts()}.html").writeBytes(oldBytes)
-        if (count > 0) {
-            dir.listFiles { f -> f.name.startsWith("$base-") }
-                ?.sortedByDescending { it.lastModified() }?.drop(count)?.forEach { it.delete() }
-        }
-        Log.i(TAG, "Backed up ${oldBytes.size} bytes to app storage")
+        writeIntoDir(File(File(File(context.filesDir, "backups"), md5(wikiPath)), subPath), base, oldBytes, count)
     }
 
     private fun fileName(path: String): String =
@@ -116,16 +124,30 @@ object Backups {
      * and no trailing "/". Public so "reveal backups" (MainActivity) resolves the identical folder.
      */
     fun backupSubPath(context: Context, fileName: String, wikiPath: String): String {
-        var s = template(context)
-            .replace("\$filename\$", fileName, ignoreCase = true)
-            .replace("\$filepath\$", wikiPath, ignoreCase = true)
-            .replace('\\', '/')
-            .trim()
+        var s = substitutedTemplate(context, fileName, wikiPath)
         // The template is resolved relative to the target base folder, so drop a leading "./" or
         // "/" and any trailing slash. Blank (a template of just "./") falls back to the default.
         if (s.startsWith("./")) s = s.substring(2)
         s = s.trimStart('/').trimEnd('/')
         return s.ifBlank { "${fileName}_backup" }
+    }
+
+    /** The backup-path template with $filename$/$filepath$ substituted, slashes normalised. */
+    private fun substitutedTemplate(context: Context, fileName: String, wikiPath: String): String =
+        template(context)
+            .replace("\$filename\$", fileName, ignoreCase = true)
+            .replace("\$filepath\$", wikiPath, ignoreCase = true)
+            .replace('\\', '/')
+            .trim()
+
+    /**
+     * If the substituted template is an ABSOLUTE filesystem path (starts with "/"), return it with
+     * any trailing slash trimmed; otherwise null (a relative template nests under a base folder as
+     * a [backupSubPath]). Public so "reveal backups" (MainActivity) resolves the identical folder.
+     */
+    fun absoluteBackupDir(context: Context, fileName: String, wikiPath: String): String? {
+        val s = substitutedTemplate(context, fileName, wikiPath)
+        return if (s.startsWith("/")) s.trimEnd('/').ifBlank { null } else null
     }
 
     /** Create (or find) a possibly-nested sub-directory under a SAF tree, segment by segment. */
