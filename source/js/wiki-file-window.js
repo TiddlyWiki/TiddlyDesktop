@@ -224,10 +224,11 @@ WikiFileWindow.prototype.installEmbedsOnTiddlerWindows = function () {
 	setTimeout(tick, 0);
 };
 
-// Apply the current local-spellcheck setting to the wiki's iframe document. Safe to call any time.
+// Apply the current local-spellcheck setting and language to the wiki's iframe document. Safe to call any time.
 WikiFileWindow.prototype.applySpellcheck = function () {
 	try {
-		spellcheck.applyToDocument(this.iframe && this.iframe.contentDocument, spellcheck.isEnabled($tw));
+		spellcheck.applyToDocument(this.iframe && this.iframe.contentDocument,
+			spellcheck.isEnabled($tw), spellcheck.getLanguage($tw));
 	} catch (e) {}
 };
 

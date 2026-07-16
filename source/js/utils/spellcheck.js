@@ -1,7 +1,7 @@
 /*
 Spellcheck helpers for TiddlyDesktop.
 
-Two deliberately separate concerns:
+Three deliberately separate concerns:
 
 1. The Chromium remote (Google) spelling service. NW.js turns Google's REMOTE "spelling service" (the
    kSpellCheckUseSpellingService preference) on by default whenever --enable-spell-checking is set (see
@@ -14,12 +14,18 @@ Two deliberately separate concerns:
    (isGoogleServiceAllowed). Changing the opt-in therefore takes effect on the NEXT launch. Fail-safe
    and idempotent. This covers every window (all share the one Chromium profile), including folder wikis.
 
-2. isEnabled($tw) / applyToDocument(doc, enabled) — the user-facing on/off toggle for LOCAL spellcheck
-   ($:/config/TiddlyDesktop/EnableSpellcheck, default "yes"). Chromium keeps --enable-spell-checking on
-   so the engine is always available; we gate the visible red squiggles per document via the inherited
-   `spellcheck` attribute on <html>. Editors that don't set their own attribute inherit it, so the
-   toggle takes effect on the next wiki (re)load with no app restart. (With local spellcheck off no text
-   is checked at all, so the Google service — even if opted in — never runs.)
+2. isEnabled($tw) / applyToDocument(doc, enabled, lang) — the user-facing on/off toggle for LOCAL
+   spellcheck ($:/config/TiddlyDesktop/EnableSpellcheck, default "yes"). Chromium keeps
+   --enable-spell-checking on so the engine is always available; we gate the visible red squiggles per
+   document via the inherited `spellcheck` attribute on <html>. Editors that don't set their own
+   attribute inherit it, so the toggle takes effect on the next wiki (re)load with no app restart. (With
+   local spellcheck off no text is checked at all, so the Google service — even if opted in — never
+   runs.)
+
+3. getLanguage($tw) — the spellcheck language setting ($:/config/TiddlyDesktop/SpellcheckLanguage,
+   default "en"). Sets the `lang` attribute on <html> so Chromium's spellchecker (both local Hunspell
+   and the Google service) uses the correct dictionary. Also written into the Chromium Preferences file
+   as `spellcheck.dictionaries` so the profile-level spellcheck engine loads the right dictionary.
 */
 
 "use strict";
@@ -29,6 +35,37 @@ exports.CONFIG_TITLE = CONFIG_TITLE;
 
 var GOOGLE_CONFIG_TITLE = "$:/config/TiddlyDesktop/EnableGoogleSpellcheck";
 exports.GOOGLE_CONFIG_TITLE = GOOGLE_CONFIG_TITLE;
+
+var LANG_CONFIG_TITLE = "$:/config/TiddlyDesktop/SpellcheckLanguage";
+exports.LANG_CONFIG_TITLE = LANG_CONFIG_TITLE;
+
+// Path of the spellcheck language marker file. Stores the BCP47 language code (e.g. "en-GB") so
+// node-main can read it before TiddlyWiki boots. Lives in the same profile dir as the Google marker.
+function langMarkerPath(profileDir) {
+	return require("path").join(profileDir, "td-spellcheck-language");
+}
+
+// Read the spellcheck language from the on-disk marker file. Falls back to "en-GB" when unset.
+// Called by node-main before TiddlyWiki boots (cannot read the config tiddler at that point).
+exports.readLanguageMarker = function(profileDir) {
+	try {
+		if(!profileDir) { return "en-GB"; }
+		return require("fs").readFileSync(langMarkerPath(profileDir), "utf8").trim() || "en-GB";
+	} catch(e) { return "en-GB"; }
+};
+
+// Write the spellcheck language marker file. Called from main.js when the setting changes.
+// Takes effect on the NEXT launch (node-main reads it to pre-seed Preferences) AND immediately
+// for the current session via applyToDocument.
+exports.setLanguageMarker = function(profileDir, lang) {
+	var fs = require("fs");
+	try {
+		if(!profileDir) { return; }
+		lang = lang || "en-GB";
+		try { fs.mkdirSync(profileDir, {recursive: true}); } catch(e) {}
+		fs.writeFileSync(langMarkerPath(profileDir), lang);
+	} catch(e) {}
+};
 
 // Path of the opt-in marker file. Its presence means the user has opted into Google's remote spelling
 // service; absence (the default) means keep it off. Lives in the profile dir so node-main can find it
@@ -58,11 +95,11 @@ exports.setGoogleServiceAllowed = function(profileDir, allowed) {
 	} catch(e) {}
 };
 
-// Set Chromium's remote (Google) spelling-service preference in the profile's Preferences file to match
-// the opt-in marker: OFF by default (nothing typed leaves the machine), ON only if the user opted in.
-// profileDir is the active profile dir (e.g. .../TiddlyDesktop/Default). Only safe to call while Chromium
-// is NOT running against that profile — i.e. from node-main, before the first window opens.
-exports.syncSpellingServicePref = function(profileDir) {
+// Set Chromium's remote (Google) spelling-service preference and the spellcheck dictionary language in
+// the profile's Preferences file. Preserves all existing preferences — only merges the spellcheck key.
+// profileDir is the active profile dir (e.g. .../TiddlyDesktop/Default). Only safe to call while
+// Chromium is NOT running against that profile — i.e. from node-main, before the first window opens.
+exports.syncSpellingServicePref = function(profileDir, lang) {
 	var fs = require("fs"), path = require("path");
 	try {
 		if(!profileDir) { return; }
@@ -75,10 +112,16 @@ exports.syncSpellingServicePref = function(profileDir) {
 			existed = true;
 		} catch(e) { prefs = {}; }
 		prefs.spellcheck = prefs.spellcheck || {};
+		lang = lang || "en-GB";
 		// Already correct in an existing file → nothing to do. (A fresh profile has no file yet, so we
 		// still pre-seed it below so the very first launch honours the default/opt-in.)
-		if(existed && prefs.spellcheck.use_spelling_service === allowed) { return; }
+		if(existed
+			&& prefs.spellcheck.use_spelling_service === allowed
+			&& JSON.stringify(prefs.spellcheck.dictionaries) === JSON.stringify([lang])) {
+			return;
+		}
 		prefs.spellcheck.use_spelling_service = allowed;
+		prefs.spellcheck.dictionaries = [lang];
 		try { fs.mkdirSync(profileDir, {recursive: true}); } catch(e) {}
 		fs.writeFileSync(prefsPath, JSON.stringify(prefs));
 	} catch(e) {
@@ -93,11 +136,20 @@ exports.isEnabled = function($tw) {
 	} catch(e) { return true; }
 };
 
-// Apply the toggle to a document by setting the inherited `spellcheck` attribute on <html>. Descendant
-// editors that don't set their own attribute inherit this, so squiggles switch on/off without a restart.
-exports.applyToDocument = function(doc, enabled) {
+// Read the spellcheck language from the backstage wiki. Defaults to "en" when unset or unreadable.
+exports.getLanguage = function($tw) {
+	try {
+		return $tw.wiki.getTiddlerText(LANG_CONFIG_TITLE, "en-GB") || "en-GB";
+	} catch(e) { return "en-GB"; }
+};
+
+// Apply the toggle and language to a document by setting the inherited `spellcheck` and `lang`
+// attributes on <html>. Descendant editors that don't set their own attributes inherit these, so
+// squiggles switch on/off and the language takes effect on the next wiki (re)load with no app restart.
+exports.applyToDocument = function(doc, enabled, lang) {
 	try {
 		if(!doc || !doc.documentElement) { return; }
 		doc.documentElement.setAttribute("spellcheck", enabled ? "true" : "false");
+		if(lang) { doc.documentElement.setAttribute("lang", lang); }
 	} catch(e) {}
 };
