@@ -280,7 +280,9 @@ class SingleFileWikiServer(
      * positioning (InputStream.skip is O(n) for SAF streams).
      */
     private fun serveAttachment(output: OutputStream, name: String, headers: Map<String, String>, headOnly: Boolean) {
-        if (name.isBlank() || name.contains('/') || name.contains("..")) { sendError(output, 404, "Not Found"); return }
+        // Subfolders under attachments/ are allowed ("sub/dir/file.png"); reject anything that could
+        // escape the folder — an absolute/empty/"."/".." segment (covers leading, trailing and double slashes).
+        if (name.isBlank() || name.split('/').any { it.isEmpty() || it == "." || it == ".." }) { sendError(output, 404, "Not Found"); return }
         val target = resolveAttachment(name)
         if (target == null) { sendError(output, 404, "Not Found"); return }
         val (fileUri, total) = target
@@ -326,16 +328,26 @@ class SingleFileWikiServer(
         }
     }
 
-    /** Locate an attachment in `<containing folder>/attachments/<name>`; returns (uri, length). */
+    /**
+     * Locate an attachment in `<containing folder>/attachments/<name>`, where `name` may include
+     * subfolder segments ("sub/dir/file.png"); returns (uri, length). Caller has already rejected
+     * traversal segments.
+     */
     private fun resolveAttachment(name: String): Pair<Uri, Long>? = runCatching {
         val folder = backupDirUri?.ifBlank { null } ?: return null
         if (folder.startsWith("content://")) {
             val root = DocumentFile.fromTreeUri(context, Uri.parse(folder)) ?: return null
-            val f = root.findFile("attachments")?.findFile(name) ?: return null
+            // Walk each path segment so subfolders resolve (SAF has no path-based lookup).
+            var f = root.findFile("attachments") ?: return null
+            for (seg in name.split('/')) { f = f.findFile(seg) ?: return null }
+            if (!f.isFile) return null
             f.uri to f.length()
         } else {
-            val f = File(File(folder, "attachments"), name)
-            if (!f.exists()) return null
+            val base = File(folder, "attachments")
+            val f = File(base, name)
+            // Belt-and-braces: ensure the resolved path stays inside the attachments folder.
+            if (!f.canonicalPath.startsWith(base.canonicalPath + File.separator)) return null
+            if (!f.isFile) return null
             Uri.fromFile(f) to f.length()
         }
     }.getOrNull()

@@ -102,7 +102,19 @@ class WikiActivity : ComponentActivity() {
     }
 
     /** Write a collab asset into this wiki's attachments/ folder; returns "./attachments/<name>". */
-    fun writeCollabAsset(base64: String, name: String): String = writeAttachment(base64, name)
+    /**
+     * Store a collab-received asset at the EXACT relative path the peer referenced (subfolders
+     * preserved), overwriting — the peer's _canonical_uri is fixed, so unlike a user import we must
+     * not bump the name or the [readAttachmentBytes] round-trip would miss.
+     */
+    fun writeCollabAsset(base64: String, name: String): String {
+        val bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
+        val rel = sanitizeAttachmentRel(name).ifBlank { "attachment" }
+        val target = File(attachmentsDir() ?: error("no folder for attachments"), rel)
+        target.parentFile?.mkdirs()
+        target.writeBytes(bytes)
+        return "./attachments/$rel"
+    }
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -183,6 +195,7 @@ class WikiActivity : ComponentActivity() {
                     injectAsset(view, "bridge/no-save-notify.js")
                     injectAsset(view, "bridge/wiki-ux.js") // print / fullscreen hooks
                     injectAsset(view, "bridge/pinch-zoom.js") // allow pinch-zoom on single-file wikis
+                    injectAsset(view, "bridge/attach-subfolder.js") // shared subfolder chooser (window.__tdChooseSubfolder)
                     injectAsset(view, "bridge/attachments.js") // external-attachments import hook
                     injectAsset(view, "bridge/embeds.js") // harden allowlisted media embeds (YouTube, …)
                     injectAsset(view, "bridge/pdf-viewer.js") // inline PDF via pdf.js (WebView has no PDF plugin)
@@ -535,11 +548,31 @@ class WikiActivity : ComponentActivity() {
 
     /** JS-facing bridge: the external-attachments import hook copies files here. */
     inner class WikiAttachBridge {
-        /** Returns "./attachments/<name>" for the _canonical_uri, or "" on failure. */
+        /** Returns "./attachments/[<subfolder>/]<name>" for the _canonical_uri, or "" on failure. */
         @android.webkit.JavascriptInterface
-        fun saveAttachment(base64: String, filename: String, mime: String): String =
-            runCatching { writeAttachment(base64, filename) }
+        fun saveAttachment(base64: String, filename: String, mime: String, subfolder: String): String =
+            runCatching { writeAttachment(base64, filename, subfolder) }
                 .getOrElse { Log.w(TAG, "saveAttachment failed: ${it.message}"); "" }
+
+        /**
+         * Show the native "which subfolder of attachments/?" chooser for an import, pre-filled with
+         * [defaultSub] and offering the wiki's existing subfolders as quick-picks. Asynchronous: the
+         * result is delivered back to JS via window.__tdAttachResolve([callbackId], json), where json
+         * is {"status":"saved","subfolder":"..."} (blank = attachments root) or {"status":"cancelled"}.
+         */
+        @android.webkit.JavascriptInterface
+        fun chooseSubfolder(defaultSub: String, callbackId: String) = runOnUiThread {
+            promptSubfolder(defaultSub) { chosen ->
+                val json = if (chosen == null) {
+                    org.json.JSONObject(mapOf("status" to "cancelled")).toString()
+                } else {
+                    org.json.JSONObject(mapOf("status" to "saved", "subfolder" to chosen)).toString()
+                }
+                webView.evaluateJavascript(
+                    "window.__tdAttachResolve && window.__tdAttachResolve(${jsQuote(callbackId)},${jsQuote(json)});", null
+                )
+            }
+        }
 
         /**
          * Attach a shared file staged by MainActivity (share-import.js, External Attachments ON):
@@ -547,17 +580,19 @@ class WikiActivity : ComponentActivity() {
          * (video) works. Deletes the temp on success. Returns "./attachments/<name>" or "".
          */
         @android.webkit.JavascriptInterface
-        fun importSharedFile(tempPath: String, filename: String, mime: String): String =
+        fun importSharedFile(tempPath: String, filename: String, mime: String, subfolder: String): String =
             runCatching {
                 val src = File(tempPath)
                 if (!src.exists()) return ""
-                val dir = attachmentsDir()?.apply { mkdirs() } ?: error("no folder for attachments")
+                val sub = sanitizeAttachmentRel(subfolder)
+                val dir = (attachmentsDir()?.let { if (sub.isEmpty()) it else File(it, sub) })
+                    ?.apply { mkdirs() } ?: error("no folder for attachments")
                 val safe = sanitizeAttachmentName(filename)
                 var name = safe; var n = 1
                 while (File(dir, name).exists()) { name = bump(safe, n++) }
                 src.inputStream().use { i -> File(dir, name).outputStream().use { o -> i.copyTo(o) } }
                 runCatching { src.delete() }
-                "./attachments/$name"
+                if (sub.isEmpty()) "./attachments/$name" else "./attachments/$sub/$name"
             }.getOrElse { Log.w(TAG, "importSharedFile failed: ${it.message}"); "" }
 
         /** Base64 of a staged shared file (embed/import when External Attachments is OFF). "" on failure. */
@@ -601,21 +636,27 @@ class WikiActivity : ComponentActivity() {
         return File(base, "attachments")
     }
 
-    private fun writeAttachment(base64: String, filename: String): String {
+    private fun writeAttachment(base64: String, filename: String, subfolder: String): String {
         val bytes = android.util.Base64.decode(base64, android.util.Base64.DEFAULT)
-        val safe = sanitizeAttachmentName(filename)
-        val dir = attachmentsDir()?.apply { mkdirs() } ?: error("no folder for attachments")
-        var name = safe; var n = 1
-        while (File(dir, name).exists()) { name = bump(safe, n++) }
+        val leaf = sanitizeAttachmentName(filename)
+        val sub = sanitizeAttachmentRel(subfolder)   // "" = attachments root
+        val dir = (attachmentsDir()?.let { if (sub.isEmpty()) it else File(it, sub) })
+            ?.apply { mkdirs() } ?: error("no folder for attachments")
+        var name = leaf; var n = 1
+        while (File(dir, name).exists()) { name = bump(leaf, n++) }
         File(dir, name).writeBytes(bytes)
-        return "./attachments/$name"
+        return if (sub.isEmpty()) "./attachments/$name" else "./attachments/$sub/$name"
     }
 
     /** Read a stored attachment's raw bytes from the wiki's attachments/ folder (null if absent). */
     fun readAttachmentBytes(name: String): ByteArray? = runCatching {
-        val dir = attachmentsDir() ?: return@runCatching null
-        val f = File(dir, sanitizeAttachmentName(name))
-        if (f.exists()) f.readBytes() else null
+        val root = attachmentsDir() ?: return@runCatching null
+        val rel = sanitizeAttachmentRel(name)
+        if (rel.isEmpty()) return@runCatching null
+        val f = File(root, rel)
+        // Keep the read inside attachments/ (rel is already segment-sanitized, but be explicit).
+        if (!f.canonicalPath.startsWith(root.canonicalPath + File.separator)) return@runCatching null
+        if (f.isFile) f.readBytes() else null
     }.getOrNull()
 
 
@@ -623,9 +664,82 @@ class WikiActivity : ComponentActivity() {
         name.substringAfterLast('/').substringAfterLast('\\').replace(Regex("[^A-Za-z0-9._-]"), "_")
             .ifBlank { "attachment" }
 
+    /**
+     * Sanitize a relative attachments path per segment, KEEPING subfolder structure; drops empty,
+     * "." and ".." segments so it can never escape attachments/. "" means the attachments root.
+     */
+    private fun sanitizeAttachmentRel(rel: String): String =
+        rel.replace('\\', '/').split('/')
+            .map { it.replace(Regex("[^A-Za-z0-9._-]"), "_") }
+            .filter { it.isNotBlank() && it != "." && it != ".." }
+            .joinToString("/")
+
+    /** Existing subfolders under attachments/ (relative, forward-slash), for the chooser's quick-picks. */
+    private fun existingAttachmentSubfolders(): List<String> {
+        val root = attachmentsDir() ?: return emptyList()
+        if (!root.isDirectory) return emptyList()
+        return root.walkTopDown()
+            .filter { it.isDirectory && it != root }
+            .map { it.relativeTo(root).path.replace('\\', '/') }
+            .sorted().take(50).toList()
+    }
+
     private fun bump(name: String, n: Int): String {
         val dot = name.lastIndexOf('.')
         return if (dot > 0) "${name.substring(0, dot)}-$n${name.substring(dot)}" else "$name-$n"
+    }
+
+    /**
+     * Native subfolder chooser for an attachment import. Pre-fills [defaultSub], offers existing
+     * subfolders as tap-to-fill quick-picks, and calls [onResult] with the sanitized subfolder
+     * ("" = attachments root) or null when the user cancels.
+     */
+    private fun promptSubfolder(defaultSub: String, onResult: (String?) -> Unit) {
+        val density = resources.displayMetrics.density
+        fun dp(v: Int) = (v * density).toInt()
+
+        val input = android.widget.EditText(this).apply {
+            setText(defaultSub)
+            setSelection(text.length)
+            hint = getString(R.string.attach_folder_hint)
+            isSingleLine = true
+            inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+        }
+        val message = android.widget.TextView(this).apply {
+            text = getString(R.string.attach_folder_message)
+            setPadding(0, 0, 0, dp(8))
+        }
+        val container = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(dp(20), dp(12), dp(20), 0)
+            addView(message)
+            addView(input)
+        }
+        existingAttachmentSubfolders().takeIf { it.isNotEmpty() }?.let { subs ->
+            val row = android.widget.LinearLayout(this).apply { orientation = android.widget.LinearLayout.HORIZONTAL }
+            subs.forEach { sub ->
+                row.addView(android.widget.Button(this).apply {
+                    text = sub
+                    isAllCaps = false
+                    setOnClickListener { input.setText(sub); input.setSelection(sub.length) }
+                })
+            }
+            container.addView(android.widget.HorizontalScrollView(this).apply {
+                setPadding(0, dp(8), 0, 0); addView(row)
+            })
+        }
+
+        var settled = false
+        fun finish(result: String?) { if (!settled) { settled = true; onResult(result) } }
+
+        android.app.AlertDialog.Builder(this)
+            .setTitle(R.string.attach_folder_title)
+            .setView(container)
+            .setCancelable(true)
+            .setPositiveButton(R.string.attach_folder_save) { _, _ -> finish(sanitizeAttachmentRel(input.text.toString())) }
+            .setNegativeButton(android.R.string.cancel) { _, _ -> finish(null) }
+            .setOnCancelListener { finish(null) }
+            .show()
     }
 
 

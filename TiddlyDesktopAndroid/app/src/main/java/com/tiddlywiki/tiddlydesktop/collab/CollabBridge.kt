@@ -297,7 +297,8 @@ class CollabBridge(
     /** If [path] is a wiki-relative attachments reference, its decoded file name; else null. */
     private fun attachmentName(path: String): String? {
         val p = path.removePrefix("./")
-        return if (p.startsWith("attachments/")) Uri.decode(p.substringAfterLast('/')) else null
+        // Keep the full sub-path under attachments/ (subfolders preserved), not just the basename.
+        return if (p.startsWith("attachments/")) Uri.decode(p.removePrefix("attachments/")).ifBlank { null } else null
     }
 
     private fun openOut(path: String): java.io.OutputStream =

@@ -76,5 +76,10 @@
 
     <!-- External Attachments: note that absolute-path options don't apply on Android. -->
     <string name="ea_note_caption">External Attachments (Android)</string>
-    <string name="ea_note_body">On Android, imported attachments are always copied into this wiki\'s attachments/ folder and linked by a relative path. The absolute-path options have no effect here — folders shared via Android (content://) have no filesystem path.</string>
+    <string name="ea_note_body">On Android, imported attachments are copied into this wiki\'s attachments/ folder (you can choose a subfolder on import) and linked by a relative path. The absolute-path options have no effect here — folders shared via Android (content://) have no filesystem path.</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Save attachment to</string>
+    <string name="attach_folder_message">Choose a subfolder inside attachments/ (leave blank to use the attachments root).</string>
+    <string name="attach_folder_hint">Subfolder</string>
+    <string name="attach_folder_save">Save</string>
 </resources>
