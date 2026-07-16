@@ -100,11 +100,39 @@ exports.startup = function () {
 					source: plugin.source
 				}));
 			});
-			$tw.wiki.addTiddler(new $tw.Tiddler({
-				title: CH + "selected/" + title,
-				text: (isInstalled && defaultItem) ? defaultItem.path : ""
-			}));
-		});
+		$tw.wiki.addTiddler(new $tw.Tiddler({
+			title: CH + "selected/" + title,
+			text: (isInstalled && defaultItem) ? defaultItem.path : ""
+		}));
+	});
+
+	// Include plugins that are installed (in tiddlywiki.info) but not found in the
+	// available library scan — e.g. from the custom plugins dir or plugins with an
+	// unexpected directory structure. Show them as installed so the user can see and
+	// manage them.
+	inst.titles.forEach(function (title) {
+		if (byTitle[title]) return;
+		$tw.wiki.addTiddler(new $tw.Tiddler({
+			title: CH + "available/" + (idx++),
+			tags: [CH + "available"],
+			"plugin-title": title,
+			"plugin-name": title.replace(/^\$:\/(plugins|themes|languages)\//, ""),
+			"plugin-path": "",
+			"plugin-type": title.indexOf("$:/themes/") === 0 ? "theme" : (title.indexOf("$:/languages/") === 0 ? "language" : "plugin"),
+			description: "",
+			version: "",
+			"version-order": "0",
+			"version-count": "1",
+			"installed-version": "",
+			installed: "yes",
+			"update-available": "",
+			source: ""
+		}));
+		$tw.wiki.addTiddler(new $tw.Tiddler({
+			title: CH + "selected/" + title,
+			text: ""
+		}));
+	});
 	}
 
 	function closeChooser() {
