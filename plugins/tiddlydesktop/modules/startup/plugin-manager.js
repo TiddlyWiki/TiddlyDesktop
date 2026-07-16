@@ -141,13 +141,41 @@ exports.startup = function() {
 					source: plugin.source
 				}));
 			});
-			// Selection holds the chosen version's plugin-path (or "" for "not installed").
-			// Reset to the installed state on open; on a live refresh keep any existing choice.
-			var selTitle = "$:/temp/TiddlyDesktop/PluginChooser/selected/" + title;
-			if(!preserveSelection || !$tw.wiki.tiddlerExists(selTitle)) {
-				$tw.wiki.addTiddler(new $tw.Tiddler({title: selTitle, text: defaultItem ? defaultItem.path : ""}));
-			}
-		});
+		// Selection holds the chosen version's plugin-path (or "" for "not installed").
+		// Reset to the installed state on open; on a live refresh keep any existing choice.
+		var selTitle = "$:/temp/TiddlyDesktop/PluginChooser/selected/" + title;
+		if(!preserveSelection || !$tw.wiki.tiddlerExists(selTitle)) {
+			$tw.wiki.addTiddler(new $tw.Tiddler({title: selTitle, text: defaultItem ? defaultItem.path : ""}));
+		}
+	});
+
+	// Include plugins that are installed (in tiddlywiki.info) but not found in the
+	// available library scan — e.g. from TIDDLYWIKI_PLUGIN_PATH or plugins with an
+	// unexpected directory structure. Show them as installed so the user can see and
+	// manage them.
+	installed.forEach(function(title) {
+		if(byTitle[title]) return;
+		var selTitle = "$:/temp/TiddlyDesktop/PluginChooser/selected/" + title;
+		$tw.wiki.addTiddler(new $tw.Tiddler({
+			title: "$:/temp/TiddlyDesktop/PluginChooser/available/" + (idx++),
+			tags: ["$:/temp/TiddlyDesktop/PluginChooser/available"],
+			"plugin-title": title,
+			"plugin-name": title.replace(/^\$:\/(plugins|themes|languages)\//, ""),
+			"plugin-path": "",
+			"plugin-type": title.indexOf("$:/themes/") === 0 ? "theme" : (title.indexOf("$:/languages/") === 0 ? "language" : "plugin"),
+			description: "",
+			version: "",
+			"version-order": "0",
+			"version-count": "1",
+			"installed-version": "",
+			installed: "yes",
+			"update-available": "",
+			source: ""
+		}));
+		if(!preserveSelection || !$tw.wiki.tiddlerExists(selTitle)) {
+			$tw.wiki.addTiddler(new $tw.Tiddler({title: selTitle, text: ""}));
+		}
+	});
 	}
 
 	// ── open chooser ──────────────────────────────────────────────────────────
