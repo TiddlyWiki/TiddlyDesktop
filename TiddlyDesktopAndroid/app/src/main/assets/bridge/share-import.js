@@ -47,7 +47,7 @@
 
 	window.__tdImportShare = function (payloadJson) {
 		if (!payloadJson) { return; }
-		function go() {
+		(async function go() {
 			if (!(window.$tw && $tw.wiki && $tw.rootWidget)) { setTimeout(go, 200); return; }
 			try {
 				var fieldsList = JSON.parse(payloadJson);
@@ -56,37 +56,53 @@
 				var directAdded = false;   // media / text / link tiddlers added straight in
 				var importTiddlers = [];   // tiddler-container contents → native $:/Import flow
 
-				function importOne(fields) {
+				// Async: awaits the native subfolder chooser for the attachment branches.
+				async function importOne(fields) {
 					fields = JSON.parse(JSON.stringify(fields)); // clone
 					fields.title = uniqueTitle(fields.title || "shared");
 					var type = fields.type || "";
 					// A file staged natively (streamed to a temp file, not base64'd into the payload).
 					var staged = fields.__sharedFile;
 					if (staged != null) { delete fields.__sharedFile; }
+					function finishAdd() {
+						$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(), fields, $tw.wiki.getModificationFields()));
+						directAdded = true;
+						if (!firstTitle) { firstTitle = fields.title; }
+					}
 					if (staged && typeof TDAttach !== "undefined") {
 						if (type.indexOf("text/") === 0) {
 							// Shared text file → import its text.
 							fields.text = TDAttach.sharedFileText(staged);
-						} else if (extAttach) {
-							// Binary + External Attachments ON → attach (streamed into attachments/, kept external).
-							var rel = TDAttach.importSharedFile(staged, fields.title, type);
-							if (rel) { fields._canonical_uri = rel; }
-							else { fields.text = TDAttach.sharedFileBase64(staged); } // fallback: embed
-						} else {
-							// External Attachments OFF → import (embed) the file as base64.
-							fields.text = TDAttach.sharedFileBase64(staged);
+							finishAdd(); return;
 						}
-					} else {
-						// Legacy: base64 already in the payload (small files) — attach it if EA is on.
-						var isBinary = type && type.indexOf("text/") !== 0 && fields.text && !fields._canonical_uri;
-						if (isBinary && extAttach && typeof TDAttach !== "undefined") {
-							var rel2 = TDAttach.saveAttachment(fields.text, fields.title, type);
+						if (extAttach) {
+							// Binary + External Attachments ON → choose a subfolder, then stream it in (kept external).
+							var sub = await window.__tdChooseSubfolder();
+							if (sub === null) {
+								fields.text = TDAttach.sharedFileBase64(staged); // cancelled → embed (keep the shared file)
+							} else {
+								var rel = TDAttach.importSharedFile(staged, fields.title, type, sub);
+								if (rel) { fields._canonical_uri = rel; }
+								else { fields.text = TDAttach.sharedFileBase64(staged); } // fallback: embed
+							}
+							finishAdd(); return;
+						}
+						// External Attachments OFF → import (embed) the file as base64.
+						fields.text = TDAttach.sharedFileBase64(staged);
+						finishAdd(); return;
+					}
+					// Legacy: base64 already in the payload (small files) — attach it if EA is on.
+					var isBinary = type && type.indexOf("text/") !== 0 && fields.text && !fields._canonical_uri;
+					if (isBinary && extAttach && typeof TDAttach !== "undefined") {
+						var b64 = fields.text;
+						var sub2 = await window.__tdChooseSubfolder();
+						if (sub2 !== null) {
+							var rel2 = TDAttach.saveAttachment(b64, fields.title, type, sub2);
 							if (rel2) { delete fields.text; fields._canonical_uri = rel2; }
 						}
+						finishAdd(); return;
 					}
-					$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(), fields, $tw.wiki.getModificationFields()));
-					directAdded = true;
-					if (!firstTitle) { firstTitle = fields.title; }
+					finishAdd();
 				}
 
 				// A tiddler-container file (its text): deserialize into tiddlers via the type inferred
@@ -114,16 +130,17 @@
 					}
 				}
 
-				fieldsList.forEach(function (entry) {
+				for (var i = 0; i < fieldsList.length; i++) {
+					var entry = fieldsList[i];
 					if (entry && entry.__importText != null) {
 						importContainer(String(entry.__importText), entry.__importName || "");
 					} else if (entry && entry.__tid != null) {
 						// Legacy payload shape (older shares): a bare .tid.
 						importContainer(String(entry.__tid), "shared.tid");
 					} else {
-						importOne(entry);
+						await importOne(entry);
 					}
-				});
+				}
 				// Tiddler-container files → TiddlyWiki's native import: stage into $:/Import and show
 				// its review listing (name clashes, import filters, upgrades, confirm/cancel). On
 				// confirm the wiki saves itself, so we don't force a save here for these.
@@ -145,7 +162,6 @@
 			} catch (e) {
 				console.error("[TiddlyDesktop] share import failed:", e);
 			}
-		}
-		go();
+		})();
 	};
 })();

@@ -54,18 +54,21 @@
 				var type = info.type || file.type || "application/octet-stream";
 				var reader = new FileReader();
 				reader.onload = function () {
-					var rel = "";
 					try {
 						var res = String(reader.result || "");
 						var comma = res.indexOf(",");
 						var b64 = comma >= 0 ? res.slice(comma + 1) : "";
-						rel = TDAttach.saveAttachment(b64, name, type);
-						if (rel) {
-							info.callback([{ title: name, type: type, "_canonical_uri": rel }]);
-						} else {
-							// Fall back to embedding the binary if the copy failed.
-							info.callback([{ title: name, type: type, text: b64 }]);
-						}
+						// Let the user choose which subfolder of attachments/ to save into first.
+						window.__tdChooseSubfolder().then(function (sub) {
+							if (sub === null) { info.callback([]); return; } // cancelled → import nothing
+							var rel = TDAttach.saveAttachment(b64, name, type, sub);
+							if (rel) {
+								info.callback([{ title: name, type: type, "_canonical_uri": rel }]);
+							} else {
+								// Fall back to embedding the binary if the copy failed.
+								info.callback([{ title: name, type: type, text: b64 }]);
+							}
+						});
 					} catch (e) {
 						info.callback([{ title: name, type: type }]);
 					}
