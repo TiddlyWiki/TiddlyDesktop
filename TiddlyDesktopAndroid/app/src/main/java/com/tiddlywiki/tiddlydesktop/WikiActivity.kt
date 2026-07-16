@@ -162,6 +162,9 @@ class WikiActivity : ComponentActivity() {
             }
             webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                    // Only intercept top-level navigations; sub-frame loads (iframes created by
+                    // text/html tiddlers, etc.) must be left alone so data: URIs load normally.
+                    if (!request.isForMainFrame) return false
                     val u = request.url.toString()
                     // Keep loopback wiki URLs in-app; send everything else to the browser.
                     if (u.startsWith("http://127.0.0.1") || u.startsWith("http://localhost")) return false
