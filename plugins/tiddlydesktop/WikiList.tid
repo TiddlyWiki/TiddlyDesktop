@@ -1,29 +1,33 @@
 title: WikiList
 
-\whitespace trim
 <p class="td-search">
-<$edit-text tiddler=<<qualify '$:/temp/WikiList/search'>> tag="input" class="tc-edit-texteditor td-wikilist-search-input" placeholder={{$:/language/TiddlyDesktop/List/SearchPlaceholder}}/>
+<$edit-text tiddler=<<qualify '$:/temp/WikiList/search'>> tag="input" class="tc-edit-texteditor" placeholder="search"/>
+
 <$list filter="[<qualify '$:/temp/WikiList/search'>get[text]minlength[1]]">
-<$button class="tc-btn-invisible" tooltip={{$:/language/TiddlyDesktop/List/ClearSearch}} set=<<qualify '$:/temp/WikiList/search'>> setTo="">{{$:/core/images/close-button}}</$button>
+<$button class="tc-btn-invisible" tooltip="Clear search" set=<<qualify '$:/temp/WikiList/search'>> setTo="">{{$:/core/images/close-button}}</$button>
 </$list>
 </p>
+    
 <p class="td-tags">
-<$list filter="[prefix[$:/TiddlyDesktop/Config/wiki-tags/]tags[]sort[]] :and[unique[]]" variable="tag" storyview="pop">
-<$let currentTiddler=<<tag>> palette={{$:/palette}} tagColour={{{ [<currentTiddler>] :cascade[all[shadows+tiddlers]tag[$:/tags/TiddlerColourFilter]!is[draft]get[text]] :else[<palette>getindex[tag-background]] }}}>
-<$wikify name="tagFg" text="<$macrocall $name='contrastcolour' target=<<tagColour>> fallbackTarget={{{ [<palette>getindex[tag-background]] }}} colourA={{{ [<palette>getindex[foreground]] }}} colourB={{{ [<palette>getindex[background]] }}}/>">
-<$button set=<<qualify '$:/temp/WikiList/search'>> setTo={{{ "[tag["[<currentTiddler>]"]]"+[join[]] }}} class="tc-tag-label tc-btn-invisible" style=`background-color:$(tagColour)$;color:$(tagFg)$;fill:$(tagFg)$;`><<currentTiddler>></$button>
-</$wikify>
-</$let>
+<$list filter="[prefix[$:/TiddlyDesktop/Config/wiki-tags/]tags[]]" variable="tag">
+<$button set=<<qualify '$:/temp/WikiList/search'>> setTo={{{ "[tag["[<tag>]"]]"+[join[]] }}} class="tc-tag-label tc-btn-invisible" style="background-color:;
+fill:#333333;
+color:#333333;"><<tag>></$button>
 </$list>
+
 {{WikiList/ui/Buttons/DeleteUnusedTags}}
 </p>
+
 <$let
 input={{{ [<qualify '$:/temp/WikiList/search'>get[text]] }}}
 textsearch="[prefix[$:/TiddlyDesktop/Config/title/]search<input>removeprefix[$:/TiddlyDesktop/Config/title/]]"
 filtersearch="[all[tiddlers]subfilter<input>removeprefix[$:/TiddlyDesktop/Config/wiki-tags/]tag[wikilist]] ~[all[tiddlers]subfilter<input>tag[wikilist]]"
 beginfilter="["
-filter={{{ [<input>minlength[3]] :map[search<beginfilter>then<filtersearch>else<textsearch>] ~"[all[tiddlers]tag[wikilist]]" }}}
+filter={{{ [<input>minlength[3]]:map[search<beginfilter>then<filtersearch>else<textsearch>]~"[all[tiddlers]tag[wikilist]]" }}}
 >
+
 <div class="td-wikilist">
-<$macrocall $name="list-tagged-draggable" tag="wikilist" subFilter="all[tiddlers]subfilter<filter>unique[]" itemTemplate="WikiListRow" emptyMessage={{$:/language/TiddlyDesktop/List/EmptyMessage}}/>
+<$macrocall $name="list-tagged-draggable" tag="wikilist" subFilter="all[tiddlers]subfilter<filter>unique[]" itemTemplate="WikiListRow" emptyMessage="Add a ~TiddlyWiki file or folder to get started.
+
+Click the buttons above to browse, or drag and drop from your file Explorer/Finder"/>
 </div>

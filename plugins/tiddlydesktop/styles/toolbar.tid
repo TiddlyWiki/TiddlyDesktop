@@ -5,9 +5,6 @@ tags: $:/tags/Stylesheet
 
 .td-toolbar {
 	position: relative;
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
     -moz-user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
@@ -22,14 +19,6 @@ tags: $:/tags/Stylesheet
 .td-toolbar-item {
     display: inline-block;
     margin-right: 1em;
-}
-
-/* Every interactive toolbar control shows the hand pointer on hover. */
-.td-toolbar button,
-.td-toolbar select,
-.td-toolbar label,
-.td-toolbar input[type="file"] {
-    cursor: pointer;
 }
 
 .td-logo {

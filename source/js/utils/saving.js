@@ -5,7 +5,7 @@ Saving support for TiddlyWiki5 and TiddlyWiki Classic
 "use strict";
 
 // Helper to enable TiddlyFox-style saving for a window
-exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn,backupCountFn) {
+exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn) {
 	// Create the message box
 	var messageBox = doc.createElement("div");
 	messageBox.id = "tiddlyfox-message-box";
@@ -27,7 +27,7 @@ exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn,backupCou
 		}
 		// Backup the existing file (if any)
 		if(areBackupsEnabledFn() && !isClassic) {
-			backupFile(filepath,backupCountFn ? backupCountFn() : "");
+			backupFile(filepath);
 		}
 		// Save the file
 		saveFile(filepath,content);
@@ -118,9 +118,8 @@ function saveFile(filepath,content) {
 	fs.writeFileSync(filepath,content);
 }
 
-// Helper function to backup a file by copying it to the backup folder. `keepText` is the
-// per-wiki "number of backups to keep" string (empty = keep all).
-function backupFile(filepath,keepText) {
+// Helper function to backup a file by copying it to the backup folder
+function backupFile(filepath) {
 	var fs = require("fs"),
 		path = require("path");
 	// Backup the file if it exists
@@ -144,39 +143,7 @@ function backupFile(filepath,keepText) {
 		// Copy the existing file to the backup
 		$tw.utils.createDirectory(path.dirname(backupPath));
 		fs.writeFileSync(backupPath,fs.readFileSync(filepath)); // For some reason $tw.utils.copyFile() doesn't work here
-		// Enforce the per-wiki retention limit (keep only the most recent N backups).
-		pruneBackups(filepath,backupSubPath,ext,keepText);
 	}
-}
-
-// Delete the oldest backups of `filepath` in `backupSubPath` beyond `keepText` (the per-wiki
-// "number of backups to keep"). Empty / non-numeric / <= 0 means "keep all" (no pruning).
-function pruneBackups(filepath,backupSubPath,ext,keepText) {
-	var fs = require("fs"),
-		path = require("path");
-	keepText = (keepText || "").trim();
-	var keep = parseInt(keepText,10);
-	if(!keepText || isNaN(keep) || keep <= 0) { return; }
-	// Backups are named "<basename>.<timestamp>[ n]<ext>" (see above), so match that prefix
-	// and extension. Filtering by name keeps us from touching other wikis' backups if they
-	// share a backup folder.
-	var prefix = path.basename(filepath,ext) + ".",
-		entries;
-	try { entries = fs.readdirSync(backupSubPath); } catch(e) { return; }
-	var backups = entries.filter(function(name) {
-		if(name.indexOf(prefix) !== 0) { return false; }
-		return ext ? name.slice(-ext.length) === ext : true;
-	}).map(function(name) {
-		var full = path.resolve(backupSubPath,name), mtime = 0;
-		try { mtime = fs.statSync(full).mtimeMs || 0; } catch(e) {}
-		return {full: full, mtime: mtime};
-	});
-	if(backups.length <= keep) { return; }
-	// Newest first; remove everything past the keep count.
-	backups.sort(function(a,b) { return b.mtime - a.mtime; });
-	backups.slice(keep).forEach(function(b) {
-		try { fs.unlinkSync(b.full); } catch(e) {}
-	});
 }
 
 // Helper to get the backup folder for a given filepath

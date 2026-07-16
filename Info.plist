@@ -7,7 +7,7 @@
 	<key>CFBundleDisplayName</key>
 	<string>TiddlyDesktop</string>
 	<key>CFBundleExecutable</key>
-	<string>TiddlyDesktop</string>
+	<string>nwjs</string>
 	<key>CFBundleIconFile</key>
 	<string>nw.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -32,16 +32,5 @@
     <string>public.app-category.utilities</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>
 	<true/>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLName</key>
-			<string>com.tiddlywiki.tiddlydesktop.url</string>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>tiddlydesktop</string>
-			</array>
-		</dict>
-	</array>
 </dict>
 </plist>

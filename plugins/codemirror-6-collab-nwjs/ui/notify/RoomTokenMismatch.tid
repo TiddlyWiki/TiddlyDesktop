@@ -1,4 +1,0 @@
-title: $:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/notify/RoomTokenMismatch
-tags: $:/tags/Notification
-
-Collab: couldn't decrypt a message from the room. A participant is using a different room token — every device must use the same one to join.

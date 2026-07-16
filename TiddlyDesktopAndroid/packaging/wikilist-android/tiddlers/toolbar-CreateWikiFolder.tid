@@ -1,8 +1,0 @@
-title: WikiListToolbar/CreateWikiFolder
-tags: toolbar
-
-<$button class="td-button">
-<$action-sendmessage $message="tiddlydesktop-android-add-folder"/>
-{{$:/core/images/folder}}
-{{$:/language/TiddlyDesktop/Toolbar/CreateWikiFolder}}
-</$button>

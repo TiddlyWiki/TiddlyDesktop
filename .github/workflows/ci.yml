@@ -4,9 +4,6 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
-  # Manual "preview build": run from the Actions tab on any branch to build the desktop packages
-  # + Android APK and publish them as a rolling `preview` pre-release (no version tag needed).
-  workflow_dispatch:
 
 jobs:
   build-and-package:
@@ -19,10 +16,10 @@ jobs:
             platform-for-pkg: linux64
             runs-on: ubuntu-latest
           - platform: linux
-            arch: arm64
+            arch: ia32
             ext: tar.gz
-            platform-for-pkg: linuxarm64
-            runs-on: ubuntu-24.04-arm
+            platform-for-pkg: linux32
+            runs-on: ubuntu-latest
           - platform: win
             arch: x64
             ext: zip
@@ -48,15 +45,6 @@ jobs:
     steps:
       - name: "💾 Checking out repository code..."
         uses: actions/checkout@v4
-        with:
-          # Full history so bld.sh can derive the collab plugin version from its git commit
-          # count (bin/stamp-collab-version.js). A shallow clone would undercount and ship a
-          # regressed version.
-          fetch-depth: 0
-      - name: "⬢ Setting up Node.js 24..."
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
       - name: "🔭 Looking up TiddlyDesktop version..."
         id: td-version
         run: |
@@ -108,71 +96,11 @@ jobs:
     outputs:
       td-version: ${{ steps.td-version.outputs.version }}
 
-  build-android:
-    runs-on: ubuntu-latest
-    name: "Build Android (arm64)"
-    steps:
-      - name: "💾 Checking out repository code..."
-        uses: actions/checkout@v4
-        with:
-          # Full history so bld.sh can derive the collab plugin version (bin/stamp-collab-version.js).
-          fetch-depth: 0
-      - name: "⬢ Setting up Node.js 24..."
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-      - name: "☕ Setting up JDK 17..."
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-      - name: "🤖 Setting up Android SDK..."
-        uses: android-actions/setup-android@v3
-      - name: "🔖 Reading Android version..."
-        id: android-version
-        run: |
-          V=$(grep -oE 'versionName = "[0-9]+\.[0-9]+\.[0-9]+"' TiddlyDesktopAndroid/app/build.gradle.kts | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
-          echo "Android version: $V"
-          echo "version=$V" >> "$GITHUB_OUTPUT"
-      - name: "⬇️ Fetching Node.js runtime (Termux arm64)..."
-        run: ./TiddlyDesktopAndroid/packaging/fetch-node-libs.sh
-      - name: "🛠️ Building TiddlyWiki engine + WikiList..."
-        # bld.sh (no PLATFORM/ARCH) just preps source/tiddlywiki (engine + plugins + translations);
-        # build-wikilist.sh assembles the WikiList folder wiki the Gradle task zips into assets.
-        run: |
-          ./bld.sh
-          sh TiddlyDesktopAndroid/packaging/build-wikilist.sh
-      - name: "🔐 Decoding release keystore..."
-        run: echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
-      - name: "📱 Building signed AAB + APK..."
-        working-directory: TiddlyDesktopAndroid
-        env:
-          ANDROID_KEYSTORE_FILE: ${{ runner.temp }}/release.keystore
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew :app:bundleRelease :app:assembleRelease
-      - name: "🏷️ Naming Android artifacts..."
-        run: |
-          V=${{ steps.android-version.outputs.version }}
-          cp TiddlyDesktopAndroid/app/build/outputs/bundle/release/app-release.aab "tiddlydesktop-android-v$V.aab"
-          cp TiddlyDesktopAndroid/app/build/outputs/apk/release/app-release.apk   "tiddlydesktop-android-v$V.apk"
-      - name: "📤 Uploading Android AAB (Play upload)..."
-        uses: actions/upload-artifact@v4
-        with:
-          name: tiddlydesktop-android-v${{ steps.android-version.outputs.version }}.aab
-          path: tiddlydesktop-android-v${{ steps.android-version.outputs.version }}.aab
-      - name: "📤 Uploading Android APK (sideload)..."
-        uses: actions/upload-artifact@v4
-        with:
-          name: tiddlydesktop-android-v${{ steps.android-version.outputs.version }}.apk
-          path: tiddlydesktop-android-v${{ steps.android-version.outputs.version }}.apk
-
   release:
     # Run only if a tag was pushed (tag filter in workflow guarantees the only tags we'll see are ones that look like v1.2.3)
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
-    # Run only after the desktop + Android build jobs complete
-    needs: [build-and-package, build-android]
+    # Run only after build-and-package job completes
+    needs: build-and-package
     # This job does *not* have a matrix so it runs only a single copy
     runs-on: ubuntu-latest
     steps:
@@ -189,52 +117,3 @@ jobs:
           files: |
             tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.zip
             tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.AppImage
-            tiddlydesktop-android-v*.apk
-
-  preview-release:
-    # Manual runs only (workflow_dispatch). Publishes/updates a single rolling `preview`
-    # pre-release with the built desktop packages + Android APK — for testers, without cutting a
-    # version tag. Tag pushes go to the `release` job above instead.
-    if: ${{ github.event_name == 'workflow_dispatch' }}
-    needs: [build-and-package, build-android]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: "📥 Downloading packages..."
-        uses: actions/download-artifact@v4
-        with:
-          # merge-multiple: true → all built files land in the workspace directory.
-          merge-multiple: true
-      - name: "🏷️ Stamping preview filenames..."
-        # Insert "-preview-<short-sha>" before the extension so a preview download can never be
-        # confused with (or overwrite) a stable release of the same version. Only the artifacts we
-        # actually attach are renamed (zip / AppImage / apk); the Play-only .aab is left alone.
-        run: |
-          shopt -s nullglob
-          sha="${GITHUB_SHA::8}"
-          for f in tiddlydesktop-*-v*.zip tiddlydesktop-*-v*.AppImage tiddlydesktop-android-v*.apk; do
-            mv "$f" "${f%.*}-preview-${sha}.${f##*.}"
-          done
-          echo "Preview artifacts:"; ls -1 tiddlydesktop-*-preview-* 2>/dev/null || echo "(none)"
-      - name: "🧹 Clearing the previous preview release..."
-        # The preview filenames carry the commit's short-SHA, so a re-run's assets never overwrite the
-        # previous run's (different names) — action-gh-release would just pile the new ones on top of
-        # the old. And once the `preview` tag exists it won't move to the new commit. So delete the
-        # whole rolling release + its tag first; the publish step below recreates both at this commit.
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release delete preview --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
-      - name: "🚀 Publishing preview pre-release..."
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: preview
-          target_commitish: ${{ github.sha }}
-          name: "Preview build (v${{ needs.build-and-package.outputs.td-version }})"
-          body: "Rolling preview build from `${{ github.ref_name }}` @ `${{ github.sha }}` (run #${{ github.run_number }}). **Not a stable release.**"
-          prerelease: true
-          make_latest: false
-          files: |
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-preview-*.zip
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-preview-*.AppImage
-            tiddlydesktop-android-v*-preview-*.apk

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Categories=Utility;TextEditor
-Exec=TiddlyDesktop
+Exec=nw
 Icon=tiddlydesktop
 Name=Tiddly Desktop
 Type=Application

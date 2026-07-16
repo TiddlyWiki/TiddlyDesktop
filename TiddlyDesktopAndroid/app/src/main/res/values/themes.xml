@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="Theme.TiddlyDesktop" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowLightStatusBar">true</item>
-    </style>
-
-    <!-- Dialog-style theme for the Quick Note input activity (launched by the home-screen widget). -->
-    <style name="Theme.TiddlyDesktop.QuickNote" parent="Theme.Material3.DayNight.Dialog" />
-</resources>

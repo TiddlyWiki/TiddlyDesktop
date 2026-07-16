@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!-- Quick Note widget tile — dark theme. -->
-    <color name="quicknote_widget_bg">#F22B2930</color>
-    <color name="quicknote_widget_fg">#FFECE6F0</color>
-</resources>

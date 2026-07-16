@@ -1,6 +1,0 @@
-title: $:/TiddlyDesktop/android/BackToWikiList
-tags: $:/tags/TopRightBar
-list-before: $:/core/ui/TopBar/menu
-
-\whitespace trim
-<$button set="$:/temp/td-view" setTo="" class="tc-btn-invisible" tooltip="Wiki List">{{$:/core/images/chevron-left}} Wiki List</$button>

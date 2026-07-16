@@ -1,16 +1,15 @@
 {
     "name": "TiddlyDesktop",
     "main": "./html/main.html",
-    "node-main": "./js/node-main.js",
     "window": {
         "id": "tiddlydesktop://",
         "show": false,
-        "icon": "images/app-icon256.png",
+        "icon": "images/app_icon.png",
         "width": 980,
         "height": 700,
         "min_width": 700,
         "min_height": 500
     },
-    "version": "0.0.23",
-    "chromium-args": "--mixed-context --enable-spell-checking --allow-file-access-from-files --allow-file-access --allow-file-cookies --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-renderer-backgrounding --disable-features='SuppressDifferentOriginSubframeJSDialogs'"
+    "version": "0.0.22",
+    "chromium-args": "--mixed-context --enable-spell-checking --allow-file-access-from-files --allow-file-access --allow-file-cookies --disable-features='SuppressDifferentOriginSubframeJSDialogs'"
 }

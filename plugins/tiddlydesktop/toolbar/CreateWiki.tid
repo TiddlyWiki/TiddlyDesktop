@@ -3,7 +3,7 @@ tags: toolbar
 
 \whitespace trim
 \define browse-button-file()
-<$browse message="tiddlydesktop-clone-wiki" accept=".html,.htm" nwsaveas="index.html" param=<<__param__>>/>
+<$browse message="tiddlydesktop-clone-wiki" accept=".html" nwsaveas="index" param=<<__param__>>/>
 \end
 
 \define browse-button-folder()
@@ -18,35 +18,35 @@ tags: toolbar
 
 <$button popup="$:/state/popup/create-wiki-dropdown" class="td-button">
 	{{$:/core/images/new-button}}
-	{{$:/language/TiddlyDesktop/Toolbar/CreateWiki}}
+	Create new wiki
 </$button>
 <$reveal tag="div" state="$:/state/popup/create-wiki-dropdown" type="popup">
 	<div class="tc-drop-down td-create-wiki-dropdown">
 		<h2 class="tc-dropdown-item">
-			{{$:/language/TiddlyDesktop/Toolbar/CreateFromTemplate}}
+			Create from a template
 		</h2>
-		<$list filter="[all[tiddlers+shadows]tag[template]]" emptyMessage="""<div class="tc-dropdown-item">{{$:/language/TiddlyDesktop/Toolbar/NoTemplates}}</div>""">
+		<$list filter="[all[tiddlers+shadows]tag[template]]" emptyMessage="""<div class="tc-dropdown-item">No templates are defined -- see Settings</div>""">
 			<div class="td-file-input-wrapper">
 				<$button class="tc-btn-invisible">
 					<$action-popup $state="$:/state/popup/create-wiki-dropdown"/>
 					<$transclude field="caption"><$view field="title"/></$transclude>
 					<div class="tc-muted">
-						({{$:/language/TiddlyDesktop/Toolbar/From}}&#32;<$view field="source"/>)
+						(<$text text="from "/><$view field="source"/>)
 					</div>
 				</$button>
 				<$macrocall $name="browse-button" param={{!!source}}/>
 			</div>
 		</$list>
 		<h2 class="tc-dropdown-item">
-			{{$:/language/TiddlyDesktop/Toolbar/CloneExisting}}
+			Clone an existing wiki
 		</h2>
-		<$list filter="[all[tiddlers+shadows]tag[wikilist]]" emptyMessage="""<div class="tc-dropdown-item">{{$:/language/TiddlyDesktop/Toolbar/NoWikisToClone}}</div>""">
+		<$list filter="[all[tiddlers+shadows]tag[wikilist]]" emptyMessage="""<div class="tc-dropdown-item">No wikis available to clone</div>""">
 			<div class="td-file-input-wrapper">
 				<$button class="tc-btn-invisible">
 					<$action-popup $state="$:/state/popup/create-wiki-dropdown"/>
 					<$view tiddler={{{ [<currentTiddler>addprefix[$:/TiddlyDesktop/Config/title/]] }}} field="text"><$view field="title"/></$view>
 					<div class="tc-muted">
-						({{$:/language/TiddlyDesktop/Toolbar/From}}&#32;<$view field="title"/>)
+						(<$text text="from "/><$view field="title"/>)
 					</div>
 				</$button>
 				<$macrocall $name="browse-button" param={{!!title}}/>
