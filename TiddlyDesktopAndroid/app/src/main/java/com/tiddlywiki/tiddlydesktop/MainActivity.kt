@@ -163,6 +163,8 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         webView.addJavascriptInterface(SystemBarsBridge(this, root), SystemBarsBridge.INTERFACE_NAME)
         webView.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: android.webkit.WebResourceRequest): Boolean {
+                // Only intercept top-level navigations; sub-frame loads must pass through.
+                if (!request.isForMainFrame) return false
                 val u = request.url.toString()
                 // Keep the loopback-served WikiList in-app; open any external link (e.g. the
                 // Support / Open Collective link) in the system browser rather than letting it
