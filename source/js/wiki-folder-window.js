@@ -54,6 +54,7 @@ function WikiFolderWindow(options) {
 			+ "&credentials=" + encodeURIComponent(credentials) + "&readers=" + encodeURIComponent(readers) + "&writers=" + encodeURIComponent(writers)
 			+ "&pathprefix=" + encodeURIComponent(pathPrefix) + "&roottiddler=" + encodeURIComponent(rootTiddler) + "&anonusername=" + encodeURIComponent(anonUsername) + "&gzip=" + encodeURIComponent(gzip)
 			+ "&spellcheck=" + encodeURIComponent(spellcheck.isEnabled($tw) ? "yes" : "no")
+			+ "&spellcheck-lang=" + encodeURIComponent(spellcheck.getLanguage($tw))
 			+ "&stateFile=" + encodeURIComponent(this.stateFile),this.applyGeometryToOpenOptions({
 		id: hash.simpleHash(this.getIdentifier()),
 		show: true,

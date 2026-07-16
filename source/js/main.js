@@ -282,26 +282,39 @@ setTimeout(function() {
 				w.tryRender();
 			}
 		});
-		// Local-spellcheck toggle: apply to the backstage window now, and re-apply to it plus every
-		// open single-file wiki whenever the setting changes — no app restart. (Folder wikis run in
-		// their own process and pick up the change on their next open/reload.)
-		spellcheck.applyToDocument(document, spellcheck.isEnabled($tw));
-		// Google remote-spellcheck opt-in: mirror the config tiddler into the on-disk marker node-main
-		// reads before Chromium boots. It only takes effect on the NEXT launch (the preference is read
-		// at profile load), so there is nothing to apply to live windows here.
+		// Local-spellcheck toggle + language: apply to the backstage window now, and re-apply to it
+		// plus every open single-file wiki whenever either setting changes — no app restart. (Folder
+		// wikis run in their own process and pick up the change on their next open/reload.)
+		function applySpellcheckToAll() {
+			var lang = spellcheck.getLanguage($tw);
+			var enabled = spellcheck.isEnabled($tw);
+			spellcheck.applyToDocument(document, enabled, lang);
+			$tw.desktop.windowList.windows.forEach(function(w) {
+				try { if(typeof w.applySpellcheck === "function") { w.applySpellcheck(); } } catch(e) {}
+			});
+		}
+		applySpellcheckToAll();
+		// Google remote-spellcheck opt-in + language: mirror the config tiddlers into on-disk marker
+		// files that node-main reads before Chromium boots. The Google opt-in takes effect on the NEXT
+		// launch (the preference is read at profile load); the language marker is also written to
+		// Preferences immediately so the current session picks it up too.
 		function syncGoogleSpellcheckMarker() {
 			try {
 				spellcheck.setGoogleServiceAllowed(gui.App.dataPath,
 					$tw.wiki.getTiddlerText(spellcheck.GOOGLE_CONFIG_TITLE,"no") === "yes");
 			} catch(e) {}
 		}
+		function syncLanguageMarker() {
+			try {
+				spellcheck.setLanguageMarker(gui.App.dataPath, spellcheck.getLanguage($tw));
+			} catch(e) {}
+		}
 		syncGoogleSpellcheckMarker();
+		syncLanguageMarker();
 		$tw.wiki.addEventListener("change", function(changes) {
-			if(changes[spellcheck.CONFIG_TITLE]) {
-				spellcheck.applyToDocument(document, spellcheck.isEnabled($tw));
-				$tw.desktop.windowList.windows.forEach(function(w) {
-					try { if(typeof w.applySpellcheck === "function") { w.applySpellcheck(); } } catch(e) {}
-				});
+			if(changes[spellcheck.CONFIG_TITLE] || changes[spellcheck.LANG_CONFIG_TITLE]) {
+				applySpellcheckToAll();
+				syncLanguageMarker();
 			}
 			if(changes[spellcheck.GOOGLE_CONFIG_TITLE]) {
 				syncGoogleSpellcheckMarker();

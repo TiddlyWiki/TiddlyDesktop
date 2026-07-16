@@ -8,6 +8,50 @@ tags: $:/TiddlyDesktop/Settings
 
 Takes effect on a wiki's next (re)load — no need to restart ~TiddlyDesktop.
 
+! Spellcheck language
+
+Choose the language used for spellchecking. This sets the document language so Chromium uses the correct dictionary.
+
+<$select tiddler="$:/config/TiddlyDesktop/SpellcheckLanguage" default="en-GB">
+<option value="en-GB">English (British)</option>
+<option value="en-US">English (US)</option>
+<option value="ar-PS">العربية (فلسطين)</option>
+<option value="ca-ES">Català (Espanya)</option>
+<option value="cs-CZ">Čeština (Česká republika)</option>
+<option value="da-DK">Dansk (Danmark)</option>
+<option value="de-AT">Deutsch (Österreich)</option>
+<option value="de-CH">Deutsch (Schweiz)</option>
+<option value="de-DE">Deutsch (Deutschland)</option>
+<option value="el-GR">Ελληνικά (Ελλάδα)</option>
+<option value="en-PH">English (Philippines)</option>
+<option value="es-ES">Castellano (España)</option>
+<option value="fa-IR">فارسی (ایران)</option>
+<option value="fr-FR">Français (France)</option>
+<option value="he-IL">עברית (ישראל)</option>
+<option value="hi-IN">हिन्दी (भारत)</option>
+<option value="ia-IA">Interlingua</option>
+<option value="it-IT">Italiano (Italia)</option>
+<option value="ja-JP">日本語 (日本)</option>
+<option value="ko-KR">한국어 (대한민국)</option>
+<option value="mk-MK">Македонски (Македонија)</option>
+<option value="nl-NL">Nederlands (Nederland)</option>
+<option value="pa-IN">ਪੰਜਾਬੀ (ਭਾਰਤ)</option>
+<option value="pl-PL">Polski (Polska)</option>
+<option value="pt-BR">Português (Brasil)</option>
+<option value="pt-PT">Português (Portugal)</option>
+<option value="ru-RU">Русский (Россия)</option>
+<option value="sk-SK">Slovenčina (Slovensko)</option>
+<option value="sl-SI">Slovenščina (Slovenija)</option>
+<option value="sv-SE">Svenska (Sverige)</option>
+<option value="zh-CN">简体中文 (中国)</option>
+<option value="zh-Hans">简体中文</option>
+<option value="zh-Hant">繁體中文</option>
+<option value="zh-HK">繁體中文 (香港)</option>
+<option value="zh-TW">繁體中文 (台灣)</option>
+</$select>
+
+Takes effect on a wiki's next (re)load.
+
 ! Privacy: Google spellcheck service
 
 Chromium also offers an ''enhanced'' spellcheck that sends everything you type in an editor to Google's servers for suggestions. Because the underlying engine (NW.js) would enable this by default, ~TiddlyDesktop keeps it ''off'' unless you opt in here.

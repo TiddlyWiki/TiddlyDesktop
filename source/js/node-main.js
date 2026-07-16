@@ -55,13 +55,16 @@ try {
 	try { console.error("[TiddlyDesktop] node-main guard failed:", e); } catch(_e) {}
 }
 
-// Sync Chromium's remote (Google) spelling-service preference before the profile is opened.
-// --enable-spell-checking (source/package.json) otherwise makes NW.js send typed text to Google by
-// default; we keep it OFF unless the user opted in (an on-disk marker written by the settings UI, since
-// this runs before TiddlyWiki boots). Isolated from the guard above so a failure here can't affect
-// startup recovery.
+// Sync Chromium's remote (Google) spelling-service preference and the spellcheck dictionary language
+// before the profile is opened. --enable-spell-checking (source/package.json) otherwise makes NW.js
+// send typed text to Google by default; we keep it OFF unless the user opted in (an on-disk marker
+// written by the settings UI, since this runs before TiddlyWiki boots). The spellcheck language is
+// also read from a marker file and written into Preferences so Chromium loads the right dictionary.
+// Changing either setting takes effect on the NEXT launch. Fail-safe and idempotent.
 try {
-	require("./utils/spellcheck.js").syncSpellingServicePref(resolveProfileDir());
+	var _spellcheck = require("./utils/spellcheck.js");
+	var _profileDir = resolveProfileDir();
+	_spellcheck.syncSpellingServicePref(_profileDir, _spellcheck.readLanguageMarker(_profileDir));
 } catch(e) {
 	try { console.error("[TiddlyDesktop] sync-spelling-service failed:", e); } catch(_e) {}
 }
