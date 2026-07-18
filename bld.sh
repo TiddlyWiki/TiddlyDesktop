@@ -132,6 +132,7 @@ build_macos() {
 build_win() {
 	local nwjs_src="$1" out_dir="$2" ver="$3" label="$4"
 	local win_dir="$out_dir/TiddlyDesktop-${label}-v${ver}"
+	mkdir -p "$win_dir"
 	cp -RH "$nwjs_src"/* "$win_dir"
 	cp -RH source/* "$win_dir"
 	# Rename the executable and embed the TiddlyDesktop icon + version metadata so
@@ -145,6 +146,7 @@ build_win() {
 build_linux() {
 	local nwjs_src="$1" out_dir="$2" ver="$3" label="$4"
 	local linux_dir="$out_dir/TiddlyDesktop-${label}-v${ver}"
+	mkdir -p "$linux_dir"
 	cp -RH "$nwjs_src"/* "$linux_dir"
 	cp -RH source/* "$linux_dir"
 	# Rename the launcher binary to TiddlyDesktop (NW.js finds its resources by location, not name).
