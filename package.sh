@@ -6,46 +6,47 @@
 
 VERSION=$(./bin/get-version-number)
 
-# Zip them up
-package_win32() {
-pushd ./output/win32
-zip -r "../tiddlydesktop-win32-v$VERSION.zip" *
-popd
+# Generic packaging functions
+
+# macOS: xattr + codesign + zip
+#   $1 = output dir  $2 = zip name
+package_macos() {
+	local out_dir="$1" zip_name="$2"
+	pushd "./$out_dir"
+	local app_dir
+	for app_dir in TiddlyDesktop-*-v${VERSION}*/TiddlyDesktop.app; do
+		[ -d "$app_dir" ] || continue
+		sudo xattr -rc "$app_dir"
+		sudo codesign --force --deep --sign - "$app_dir"
+	done
+	zip --symlinks -r "../${zip_name}" *
+	popd
 }
 
-package_win64() {
-pushd ./output/win64
-zip -r "../tiddlydesktop-win64-v$VERSION.zip" *
-popd
+# Windows / Linux: just zip
+#   $1 = output dir  $2 = zip name
+package_flat() {
+	local out_dir="$1" zip_name="$2"
+	pushd "./$out_dir"
+	zip -r "../${zip_name}" *
+	popd
 }
 
-package_mac64() {
-pushd ./output/mac64
-sudo xattr -rc "./TiddlyDesktop-mac64-v$VERSION/TiddlyDesktop.app"
-sudo codesign --force --deep --sign - "./TiddlyDesktop-mac64-v$VERSION/TiddlyDesktop.app"
-zip --symlinks -r "../tiddlydesktop-mac64-v$VERSION.zip" *
-popd
-}
+# Non-SDK (production) packages — no -dev suffix
+package_win32()      { package_flat  "output/win32"          "tiddlydesktop-win32-v${VERSION}.zip"; }
+package_win64()      { package_flat  "output/win64"          "tiddlydesktop-win64-v${VERSION}.zip"; }
+package_mac64()      { package_macos "output/mac64"          "tiddlydesktop-mac64-v${VERSION}.zip"; }
+package_macapplesilicon() { package_macos "output/macapplesilicon" "tiddlydesktop-macapplesilicon-v${VERSION}.zip"; }
+package_linuxarm64() { package_flat  "output/linuxarm64"     "tiddlydesktop-linuxarm64-v${VERSION}.zip"; }
+package_linux64()    { package_flat  "output/linux64"        "tiddlydesktop-linux64-v${VERSION}.zip"; }
 
-package_macapplesilicon() {
-pushd ./output/macapplesilicon
-sudo xattr -rc "./TiddlyDesktop-macapplesilicon-v$VERSION/TiddlyDesktop.app"
-sudo codesign --force --deep --sign - "./TiddlyDesktop-macapplesilicon-v$VERSION/TiddlyDesktop.app"
-zip --symlinks -r "../tiddlydesktop-macapplesilicon-v$VERSION.zip" *
-popd
-}
-
-package_linuxarm64() {
-pushd ./output/linuxarm64
-zip -r "../tiddlydesktop-linuxarm64-v$VERSION.zip" *
-popd
-}
-
-package_linux64() {
-pushd ./output/linux64
-zip -r "../tiddlydesktop-linux64-v$VERSION.zip" *
-popd
-}
+# SDK (dev) packages — -dev suffix
+package_win32_dev()      { package_flat  "output/win32-dev"          "tiddlydesktop-win32-v${VERSION}-dev.zip"; }
+package_win64_dev()      { package_flat  "output/win64-dev"          "tiddlydesktop-win64-v${VERSION}-dev.zip"; }
+package_mac64_dev()      { package_macos "output/mac64-dev"          "tiddlydesktop-mac64-v${VERSION}-dev.zip"; }
+package_macapplesilicon_dev() { package_macos "output/macapplesilicon-dev" "tiddlydesktop-macapplesilicon-v${VERSION}-dev.zip"; }
+package_linuxarm64_dev() { package_flat  "output/linuxarm64-dev"     "tiddlydesktop-linuxarm64-v${VERSION}-dev.zip"; }
+package_linux64_dev()    { package_flat  "output/linux64-dev"        "tiddlydesktop-linux64-v${VERSION}-dev.zip"; }
 
 
 if [ "$CI" = "true" ]; then
@@ -53,29 +54,41 @@ if [ "$CI" = "true" ]; then
 	case "$PLATFORM-$ARCH" in
 		osx-x64)
 			package_mac64
+			package_mac64_dev
 			;;
 		osx-arm64)
 			package_macapplesilicon
+			package_macapplesilicon_dev
 			;;
 		win-ia32)
 			package_win32
+			package_win32_dev
 			;;
 		win-x64)
 			package_win64
+			package_win64_dev
 			;;
 		linux-arm64)
 			package_linuxarm64
+			package_linuxarm64_dev
 			;;
 		linux-x64)
 			package_linux64
+			package_linux64_dev
 			;;
 	esac
 else
     # Running at the command line, where each platfom builds one at a time in sequence
 	package_mac64
+	package_mac64_dev
 	package_macapplesilicon
+	package_macapplesilicon_dev
 	package_win32
+	package_win32_dev
 	package_win64
+	package_win64_dev
 	package_linuxarm64
+	package_linuxarm64_dev
 	package_linux64
+	package_linux64_dev
 fi

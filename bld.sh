@@ -78,170 +78,171 @@ node propagate-version.js
 # version number are all captured in the pack.
 node bin/pack-bundled-plugins.js source/tiddlywiki
 
-# Create the output directories
-mkdir -p output
-mkdir -p output/mac64
-mkdir -p output/mac64/TiddlyDesktop-mac64-v$(./bin/get-version-number)
-mkdir -p output/macapplesilicon
-mkdir -p output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)
-mkdir -p output/win32
-mkdir -p output/win32/TiddlyDesktop-win32-v$(./bin/get-version-number)
-mkdir -p output/win64
-mkdir -p output/win64/TiddlyDesktop-win64-v$(./bin/get-version-number)
-mkdir -p output/linuxarm64
-mkdir -p output/linuxarm64/TiddlyDesktop-linuxarm64-v$(./bin/get-version-number)
-mkdir -p output/linux64
-mkdir -p output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)
-
-# For each platform, copy the stock nw.js binaries overlaying the "source" directory (and icons and plist for the Mac)
-
 # Calculate nw.js version
 
 if [ $# -gt 0 ]; then
     NWJS_VERSION=$1
 elif [ -z "$NWJS_VERSION" ]; then
-    NWJS_VERSION=0.112.0
+    NWJS_VERSION=0.113.0
 fi
 
-# Build function definitions (which will be called at the end of the script)
+TD_VERSION=$(./bin/get-version-number)
 
-# OS X 64-bit App
-build_mac64() {
+# Create the output directories
 
-cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-x64/nwjs.app output/mac64/TiddlyDesktop-mac64-v$(./bin/get-version-number)/TiddlyDesktop.app
-cp -RH source output/mac64/TiddlyDesktop-mac64-v$(./bin/get-version-number)/TiddlyDesktop.app/Contents/Resources/app.nw
-cp icons/app.icns output/mac64/TiddlyDesktop-mac64-v$(./bin/get-version-number)/TiddlyDesktop.app/Contents/Resources/nw.icns
-cp Info.plist output/mac64/TiddlyDesktop-mac64-v$(./bin/get-version-number)/TiddlyDesktop.app/Contents/Info.plist
-# Rename the bundle executable to TiddlyDesktop (matches CFBundleExecutable) so the dock /
-# process / menu-bar name is TiddlyDesktop instead of nwjs. Skipped if the nwjs SDK for this
-# platform wasn't downloaded (the copy above is then a no-op).
-MAC64_BIN="output/mac64/TiddlyDesktop-mac64-v$(./bin/get-version-number)/TiddlyDesktop.app/Contents/MacOS"
-[ -e "$MAC64_BIN/nwjs" ] && mv "$MAC64_BIN/nwjs" "$MAC64_BIN/TiddlyDesktop"
+mkdir -p output
+mkdir -p output/mac64
+mkdir -p output/mac64-dev
+mkdir -p output/macapplesilicon
+mkdir -p output/macapplesilicon-dev
+mkdir -p output/win32
+mkdir -p output/win32-dev
+mkdir -p output/win64
+mkdir -p output/win64-dev
+mkdir -p output/linuxarm64
+mkdir -p output/linuxarm64-dev
+mkdir -p output/linux64
+mkdir -p output/linux64-dev
 
-for f in output/mac64/TiddlyDesktop-mac64-v$(./bin/get-version-number)/TiddlyDesktop.app/Contents/Resources/*.lproj
-do
-	cp "./strings/InfoPlist.strings" "$f/InfoPlist.strings"
-done
+# Generic build functions (called twice per platform: once for non-SDK → plain output, once for SDK → -dev output)
 
-# Ad-hoc code-sign the bundle (free). Re-bundling (renaming the executable, injecting app.nw)
-# invalidated NW.js's signature, and a broken/unsigned app won't launch on Apple Silicon.
-# Ad-hoc signing makes it run; it does NOT satisfy Gatekeeper/notarization (those need the paid
-# Apple Developer ID), so users still bypass once — see the readme. `--deep` signs the nested
-# NW.js frameworks/helpers. Skipped where codesign is unavailable (non-macOS build hosts).
-MAC64_APP="output/mac64/TiddlyDesktop-mac64-v$(./bin/get-version-number)/TiddlyDesktop.app"
-command -v codesign >/dev/null 2>&1 && [ -e "$MAC64_APP/Contents/MacOS/TiddlyDesktop" ] && codesign --force --deep --sign - "$MAC64_APP" || true
-
+# macOS (x64 or arm64)
+#   $1 = nwjs source dir  $2 = output dir  $3 = version string  $4 = platform label (e.g. mac64)
+build_macos() {
+	local nwjs_src="$1" out_dir="$2" ver="$3" label="$4"
+	local app_dir="$out_dir/TiddlyDesktop-${label}-v${ver}/TiddlyDesktop.app"
+	cp -RH "$nwjs_src/nwjs.app" "$app_dir"
+	cp -RH source "$app_dir/Contents/Resources/app.nw"
+	cp icons/app.icns "$app_dir/Contents/Resources/nw.icns"
+	cp Info.plist "$app_dir/Contents/Info.plist"
+	# Rename the bundle executable to TiddlyDesktop (matches CFBundleExecutable) so the dock /
+	# process / menu-bar name is TiddlyDesktop instead of nwjs.
+	local mac_bin="$app_dir/Contents/MacOS"
+	[ -e "$mac_bin/nwjs" ] && mv "$mac_bin/nwjs" "$mac_bin/TiddlyDesktop"
+	for f in "$app_dir"/Contents/Resources/*.lproj; do
+		cp "./strings/InfoPlist.strings" "$f/InfoPlist.strings" 2>/dev/null || true
+	done
+	# Ad-hoc code-sign the bundle (free). Re-bundling invalidated NW.js's signature, and a
+	# broken/unsigned app won't launch on Apple Silicon.
+	command -v codesign >/dev/null 2>&1 && [ -e "$mac_bin/TiddlyDesktop" ] && codesign --force --deep --sign - "$app_dir" || true
 }
 
-# OS X Apple Silicon App
-build_macapplesilicon() {
-
-cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-arm64/nwjs.app output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)/TiddlyDesktop.app
-cp -RH source output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)/TiddlyDesktop.app/Contents/Resources/app.nw
-cp icons/app.icns output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)/TiddlyDesktop.app/Contents/Resources/nw.icns
-cp Info.plist output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)/TiddlyDesktop.app/Contents/Info.plist
-# Rename the bundle executable to TiddlyDesktop (matches CFBundleExecutable). Skipped if the
-# nwjs SDK for this platform wasn't downloaded.
-MACARM_BIN="output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)/TiddlyDesktop.app/Contents/MacOS"
-[ -e "$MACARM_BIN/nwjs" ] && mv "$MACARM_BIN/nwjs" "$MACARM_BIN/TiddlyDesktop"
-
-for f in output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)/TiddlyDesktop.app/Contents/Resources/*.lproj
-do
-	cp "./strings/InfoPlist.strings" "$f/InfoPlist.strings"
-done
-
-xattr -c output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)/TiddlyDesktop.app
-
-# Ad-hoc code-sign AFTER xattr -c (which would otherwise strip the signature). Mandatory for
-# Apple Silicon to launch at all; free, but not Gatekeeper/notarization (paid) — see the readme.
-MACARM_APP="output/macapplesilicon/TiddlyDesktop-macapplesilicon-v$(./bin/get-version-number)/TiddlyDesktop.app"
-command -v codesign >/dev/null 2>&1 && [ -e "$MACARM_APP/Contents/MacOS/TiddlyDesktop" ] && codesign --force --deep --sign - "$MACARM_APP" || true
-
+# Windows (x64 or ia32)
+#   $1 = nwjs source dir  $2 = output dir  $3 = version string  $4 = platform label (e.g. win64)
+build_win() {
+	local nwjs_src="$1" out_dir="$2" ver="$3" label="$4"
+	local win_dir="$out_dir/TiddlyDesktop-${label}-v${ver}"
+	cp -RH "$nwjs_src"/* "$win_dir"
+	cp -RH source/* "$win_dir"
+	# Rename the executable and embed the TiddlyDesktop icon + version metadata so
+	# Windows shows our icon in the taskbar, Start menu, Explorer and pinned shortcuts
+	mv "$win_dir/nw.exe" "$win_dir/TiddlyDesktop.exe"
+	node bin/set-win-icon.js "$win_dir/TiddlyDesktop.exe" icons/app.ico "$ver"
 }
 
-# Windows 64-bit App
-build_win64() {
-WIN64_DIR="output/win64/TiddlyDesktop-win64-v$(./bin/get-version-number)"
-cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-win-x64/* "$WIN64_DIR"
-cp -RH source/* "$WIN64_DIR"
-# Rename the executable and embed the TiddlyDesktop icon + version metadata so
-# Windows shows our icon in the taskbar, Start menu, Explorer and pinned shortcuts
-mv "$WIN64_DIR/nw.exe" "$WIN64_DIR/TiddlyDesktop.exe"
-node bin/set-win-icon.js "$WIN64_DIR/TiddlyDesktop.exe" icons/app.ico $(./bin/get-version-number)
+# Linux (x64 or arm64)
+#   $1 = nwjs source dir  $2 = output dir  $3 = version string  $4 = platform label (e.g. linux64)
+build_linux() {
+	local nwjs_src="$1" out_dir="$2" ver="$3" label="$4"
+	local linux_dir="$out_dir/TiddlyDesktop-${label}-v${ver}"
+	cp -RH "$nwjs_src"/* "$linux_dir"
+	cp -RH source/* "$linux_dir"
+	# Rename the launcher binary to TiddlyDesktop (NW.js finds its resources by location, not name).
+	[ -e "$linux_dir/nw" ] && mv "$linux_dir/nw" "$linux_dir/TiddlyDesktop"
 }
 
-# # Windows 32-bit App
-build_win32() {
-WIN32_DIR="output/win32/TiddlyDesktop-win32-v$(./bin/get-version-number)"
-cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-win-ia32/* "$WIN32_DIR"
-cp -RH source/* "$WIN32_DIR"
-# Rename the executable and embed the TiddlyDesktop icon + version metadata so
-# Windows shows our icon in the taskbar, Start menu, Explorer and pinned shortcuts
-mv "$WIN32_DIR/nw.exe" "$WIN32_DIR/TiddlyDesktop.exe"
-node bin/set-win-icon.js "$WIN32_DIR/TiddlyDesktop.exe" icons/app.ico $(./bin/get-version-number)
-}
-
-# # Linux 64-bit App
-build_linux64() {
-cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-x64/* output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)
-cp -RH source/* output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)
-# Rename the launcher binary to TiddlyDesktop (NW.js finds its resources by location, not
-# name). Skipped if the nwjs SDK for this platform wasn't downloaded.
-LINUX64_DIR="output/linux64/TiddlyDesktop-linux64-v$(./bin/get-version-number)"
-[ -e "$LINUX64_DIR/nw" ] && mv "$LINUX64_DIR/nw" "$LINUX64_DIR/TiddlyDesktop"
-}
-
-# # Linux ARM64 App
-build_linuxarm64() {
-cp -RH nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-arm64/* output/linuxarm64/TiddlyDesktop-linuxarm64-v$(./bin/get-version-number)
-cp -RH source/* output/linuxarm64/TiddlyDesktop-linuxarm64-v$(./bin/get-version-number)
-# Rename the launcher binary to TiddlyDesktop (NW.js finds its resources by location, not
-# name). Skipped if the nwjs SDK for this platform wasn't downloaded.
-LINUXARM64_DIR="output/linuxarm64/TiddlyDesktop-linuxarm64-v$(./bin/get-version-number)"
-[ -e "$LINUXARM64_DIR/nw" ] && mv "$LINUXARM64_DIR/nw" "$LINUXARM64_DIR/TiddlyDesktop"
-}
-
-# # Linux AppImage
-# # For Github CI, only
+# AppImage (Linux only, uses the non-SDK / production build)
+#   $1 = output dir  $2 = version string  $3 = platform label (e.g. linux64)
 build_linux_appimage() {
-appdir="output/AppDir.$ARCH"
-build_dependencies="curl findutils desktop-file-utils"
-font_packages="fonts-dejavu-core fonts-dejavu-extra"
-runtime_dependencies="$font_packages libnss3 libnspr4 libasound2-dev libatomic1 libatk1.0-0 libcups2-dev libxkbcommon-dev libatspi2.0-dev libxcomposite-dev libxdamage-dev libxfixes-dev libxrandr-dev libpango1.0-dev libgbm-dev libcairo2-dev libxi-dev libxrender-dev libwayland-dev libfribidi-dev libthai-dev libharfbuzz-dev libpng-dev libfontconfig-dev libfreetype-dev libpixman-1-dev libdatrie-dev libgraphite2-dev libbz2-dev fonts-dejavu"
-package_arch=""
-appimagetool_arch=""
-sudo apt-get install -y $runtime_dependencies $build_dependencies
+	local out_dir="$1" ver="$2" label="$3"
+	local pkg_arch
+	local appimagetool_arch
+	local appdir="output/AppDir.${label}"
 
-case "$ARCH" in
-    arm64)
-        package_arch="linuxarm64"
-        appimagetool_arch="aarch64"
-        curl -L https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage -o output/appimagetool-$ARCH.AppImage
-    ;;
-    x64)
-        package_arch="linux64"
-        appimagetool_arch="x86_64"
-        curl -L https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -o output/appimagetool-$ARCH.AppImage
-    ;;
-esac
+	sudo apt-get install -y fonts-dejavu-core fonts-dejavu-extra libnss3 libnspr4 libasound2-dev libatomic1 libatk1.0-0 libcups2-dev libxkbcommon-dev libatspi2.0-dev libxcomposite-dev libxdamage-dev libxfixes-dev libxrandr-dev libpango1.0-dev libgbm-dev libcairo2-dev libxi-dev libxrender-dev libwayland-dev libfribidi-dev libthai-dev libharfbuzz-dev libpng-dev libfontconfig-dev libfreetype-dev libpixman-1-dev libdatrie-dev libgraphite2-dev libbz2-dev fonts-dejavu curl findutils desktop-file-utils
 
-chmod u+x output/appimagetool-$ARCH.AppImage
-mkdir -p $appdir
-mkdir -p $appdir/usr/{bin,lib,share}
-mkdir -p $appdir/usr/share/fonts/truetype/dejavu
-cp icons/app-icon1024.png $appdir/tiddlydesktop.png
-cp linux/AppRun $appdir/
-cp linux/tiddlydesktop.desktop $appdir/
-cp -r output/$package_arch/TiddlyDesktop-$package_arch-v$(./bin/get-version-number)/* $appdir/usr/bin/
+	case "$label" in
+		linuxarm64)
+			pkg_arch="linuxarm64"
+			appimagetool_arch="aarch64"
+			curl -L https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-aarch64.AppImage -o output/appimagetool-${label}.AppImage
+			;;
+		linux64)
+			pkg_arch="linux64"
+			appimagetool_arch="x86_64"
+			curl -L https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage -o output/appimagetool-${label}.AppImage
+			;;
+	esac
 
-libraries=$(dpkg -L $runtime_dependencies | grep "\.so" 2>/dev/null)
-for f in $libraries; do
-    cp $f* $appdir/usr/lib/
-done
+	chmod u+x "output/appimagetool-${label}.AppImage"
+	mkdir -p "$appdir"
+	mkdir -p "$appdir/usr/bin"
+	mkdir -p "$appdir/usr/lib"
+	mkdir -p "$appdir/usr/share/fonts/truetype/dejavu"
+	cp icons/app-icon1024.png "$appdir/tiddlydesktop.png"
+	cp linux/AppRun "$appdir/"
+	cp linux/tiddlydesktop.desktop "$appdir/"
+	cp -r "$out_dir/TiddlyDesktop-${pkg_arch}-v${ver}"/* "$appdir/usr/bin/"
 
-dpkg -L $font_packages | grep "\.ttf" 2>/dev/null | xargs -I '{}' -- cp '{}' $appdir/usr/share/fonts/truetype/dejavu/
-VERSION=$(./bin/get-version-number)
-ARCH=$appimagetool_arch ./output/appimagetool-$ARCH.AppImage --no-appstream $appdir output/tiddlydesktop-$package_arch-v$(./bin/get-version-number).AppImage
+	local libraries
+	libraries=$(dpkg -L fonts-dejavu-core fonts-dejavu-extra libnss3 libnspr4 libasound2-dev libatomic1 libatk1.0-0 libcups2-dev libxkbcommon-dev libatspi2.0-dev libxcomposite-dev libxdamage-dev libxfixes-dev libxrandr-dev libpango1.0-dev libgbm-dev libcairo2-dev libxi-dev libxrender-dev libwayland-dev libfribidi-dev libthai-dev libharfbuzz-dev libpng-dev libfontconfig-dev libfreetype-dev libpixman-1-dev libdatrie-dev libgraphite2-dev libbz2-dev fonts-dejavu 2>/dev/null | grep "\.so" || true)
+	for f in $libraries; do
+		cp "$f"* "$appdir/usr/lib/"
+	done
+
+	dpkg -L fonts-dejavu-core fonts-dejavu-extra 2>/dev/null | grep "\.ttf" | xargs -I '{}' -- cp '{}' "$appdir/usr/share/fonts/truetype/dejavu/"
+	local appimage_ver="$ver"
+	ARCH="$appimagetool_arch" ./output/appimagetool-${label}.AppImage --no-appstream "$appdir" "output/tiddlydesktop-${pkg_arch}-v${appimage_ver}.AppImage"
+}
+
+# Build functions: called twice per platform — non-SDK (plain output) and SDK (-dev output)
+
+# OS X 64-bit
+build_mac64() {
+	build_macos "nwjs/nwjs-v${NWJS_VERSION}-osx-x64" "output/mac64" "$TD_VERSION" "mac64"
+}
+build_mac64_dev() {
+	build_macos "nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-x64" "output/mac64-dev" "$TD_VERSION" "mac64-dev"
+}
+
+# OS X Apple Silicon
+build_macapplesilicon() {
+	build_macos "nwjs/nwjs-v${NWJS_VERSION}-osx-arm64" "output/macapplesilicon" "$TD_VERSION" "macapplesilicon"
+}
+build_macapplesilicon_dev() {
+	build_macos "nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-arm64" "output/macapplesilicon-dev" "$TD_VERSION" "macapplesilicon-dev"
+}
+
+# Windows 32-bit
+build_win32() {
+	build_win "nwjs/nwjs-v${NWJS_VERSION}-win-ia32" "output/win32" "$TD_VERSION" "win32"
+}
+build_win32_dev() {
+	build_win "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-ia32" "output/win32-dev" "$TD_VERSION" "win32-dev"
+}
+
+# Windows 64-bit
+build_win64() {
+	build_win "nwjs/nwjs-v${NWJS_VERSION}-win-x64" "output/win64" "$TD_VERSION" "win64"
+}
+build_win64_dev() {
+	build_win "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-x64" "output/win64-dev" "$TD_VERSION" "win64-dev"
+}
+
+# Linux ARM64
+build_linuxarm64() {
+	build_linux "nwjs/nwjs-v${NWJS_VERSION}-linux-arm64" "output/linuxarm64" "$TD_VERSION" "linuxarm64"
+}
+build_linuxarm64_dev() {
+	build_linux "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-arm64" "output/linuxarm64-dev" "$TD_VERSION" "linuxarm64-dev"
+}
+
+# Linux 64-bit
+build_linux64() {
+	build_linux "nwjs/nwjs-v${NWJS_VERSION}-linux-x64" "output/linux64" "$TD_VERSION" "linux64"
+}
+build_linux64_dev() {
+	build_linux "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-x64" "output/linux64-dev" "$TD_VERSION" "linux64-dev"
 }
 
 if [ "$CI" = "true" ]; then
@@ -249,31 +250,43 @@ if [ "$CI" = "true" ]; then
 	case "$PLATFORM-$ARCH" in
 		osx-x64)
 			build_mac64
+			build_mac64_dev
 			;;
 		osx-arm64)
 			build_macapplesilicon
+			build_macapplesilicon_dev
 			;;
 		win-ia32)
 			build_win32
+			build_win32_dev
 			;;
 		win-x64)
 			build_win64
+			build_win64_dev
 			;;
 		linux-arm64)
 			build_linuxarm64
-			build_linux_appimage
+			build_linuxarm64_dev
+			build_linux_appimage "output/linuxarm64" "$TD_VERSION" "linuxarm64"
 			;;
 		linux-x64)
 			build_linux64
-			build_linux_appimage
+			build_linux64_dev
+			build_linux_appimage "output/linux64" "$TD_VERSION" "linux64"
 			;;
 	esac
 else
     # Running at the command line, where each platfom builds one at a time in sequence
 	build_mac64
+	build_mac64_dev
 	build_macapplesilicon
+	build_macapplesilicon_dev
 	build_win32
+	build_win32_dev
 	build_win64
+	build_win64_dev
 	build_linuxarm64
+	build_linuxarm64_dev
 	build_linux64
+	build_linux64_dev
 fi

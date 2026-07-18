@@ -9,24 +9,33 @@
 if [ $# -gt 0 ]; then
     NWJS_VERSION=$1
 elif [ -z "$NWJS_VERSION" ]; then
-    NWJS_VERSION=0.112.0
+    NWJS_VERSION=0.113.0
 fi
 
-# Download nw.js
+# Download nw.js (SDK for dev builds with devtools, non-SDK for production builds)
 
 NWJS_BASE_URL="https://dl.node-webkit.org"
 
 if [ "$CI" = "true" ]; then
     # Running in GitHub Actions, where each platform builds as a separate step, in parallel, with PLATFORM and ARCH and EXT variables supplied by the GitHub Actions script
     curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-${PLATFORM}-${ARCH}.${EXT}" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-${PLATFORM}-${ARCH}.${EXT}" || exit 1
+    curl --output "nwjs/nwjs-v${NWJS_VERSION}-${PLATFORM}-${ARCH}.${EXT}" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-v${NWJS_VERSION}-${PLATFORM}-${ARCH}.${EXT}" || exit 1
 else
     # Running at the command line, where each platfom builds one at a time in sequence
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-x64.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-win-x64.zip" || exit 1
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-ia32.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-win-ia32.zip" || exit 1
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-x64.tar.gz" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-linux-x64.tar.gz" || exit 1
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-arm64.tar.gz" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-linux-arm64.tar.gz" || exit 1
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-x64.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-osx-x64.zip" || exit 1
-    curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-osx-arm64.zip" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-osx-arm64.zip" || exit 1
+    for plat in "win-x64" "win-ia32" "linux-x64" "linux-arm64" "osx-x64" "osx-arm64"; do
+        case "$plat" in
+            *.tar.gz)
+                ext="tar.gz" ;;
+            *.zip)
+                ext="zip" ;;
+            linux-*)
+                ext="tar.gz" ;;
+            *)
+                ext="zip" ;;
+        esac
+        curl --output "nwjs/nwjs-sdk-v${NWJS_VERSION}-${plat}.${ext}" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-sdk-v${NWJS_VERSION}-${plat}.${ext}" || exit 1
+        curl --output "nwjs/nwjs-v${NWJS_VERSION}-${plat}.${ext}" "${NWJS_BASE_URL}/v${NWJS_VERSION}/nwjs-v${NWJS_VERSION}-${plat}.${ext}" || exit 1
+    done
 fi
 
 pushd nwjs
