@@ -33,6 +33,12 @@ var fs = require("fs"),
 	path = require("path"),
 	cp = require("child_process");
 
+// Path to the Rust process-checker binary. On Windows it replaces the PowerShell queries for
+// WMI process enumeration; the binary is compiled and placed alongside the app by bld.sh.
+var PROCESS_CHECKER_BIN = (process.platform === "win32")
+	? path.join(path.dirname(process.execPath), "source", "bin", "td-process-checker.exe")
+	: null;
+
 // The built launcher binary is renamed to "TiddlyDesktop" on every platform (see bld.sh). When
 // running unbuilt from the NW.js SDK the binary is "nw", so the matcher below simply finds nothing
 // and the killer no-ops — which is the right behaviour in development.
@@ -94,20 +100,12 @@ function pidAlive(pid) {
 function enumerateTiddlyDesktop() {
 	try {
 		if(process.platform === "win32") {
-			// PowerShell CIM is available on all supported Windows and gives a stable, parseable
-			// table. Already filtered to our image name, so every row is a TiddlyDesktop process.
-				// CommandLine is included so the kill can read each tree's --user-data-dir (empty when
-				// the process is elevated and unreadable — treated as the default profile downstream).
-				// GetOwner supplies the owning account so other users' processes can be dropped below.
-			var psOut = cp.execFileSync("powershell.exe", [
-				"-NoProfile", "-NonInteractive", "-Command",
-				"Get-CimInstance Win32_Process -Filter \"Name='" + EXE_NAME + ".exe'\" | ForEach-Object {" +
-					" $o = $null; try { $o = Invoke-CimMethod -InputObject $_ -MethodName GetOwner -ErrorAction Stop } catch {};" +
-					" $u = if($o) { $o.User } else { '' }; $d = if($o) { $o.Domain } else { '' };" +
-					" \"$($_.ProcessId)`t$($_.ParentProcessId)`t$u`t$d`t$($_.CommandLine)\" }"
-			], {encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], windowsHide: true,
-				timeout: PROCESS_QUERY_TIMEOUT_MS, killSignal: "SIGKILL"});
-			return psOut.split(/\r?\n/).map(function(line) {
+			// Rust binary queries WMI directly (Win32_Process + GetOwner), outputting the same TSV
+			// format the JS parsers expect. No PowerShell cold-start penalty.
+			var out = cp.execFileSync(PROCESS_CHECKER_BIN, ["list"],
+				{encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], windowsHide: true,
+					timeout: PROCESS_QUERY_TIMEOUT_MS, killSignal: "SIGKILL"});
+			return out.split(/\r?\n/).map(function(line) {
 				var m = /^(\d+)\t(\d+)\t([^\t]*)\t([^\t]*)\t(.*)$/.exec(line.replace(/\r$/, ""));
 				if(!m) { return null; }
 				// Drop any process not owned by us — never target another user's instance.
@@ -261,18 +259,12 @@ exports.killStaleInstances = function(dataPath) {
 // failed (→ caller no-ops).
 function enumerateWindowsState() {
 	try {
-		var psOut = cp.execFileSync("powershell.exe", [
-			"-NoProfile", "-NonInteractive", "-Command",
-			"Get-CimInstance Win32_Process -Filter \"Name='" + EXE_NAME + ".exe'\" | ForEach-Object {" +
-				" $p = $null; try { $p = Get-Process -Id $_.ProcessId -ErrorAction Stop } catch {};" +
-				" $resp = if($p) { $p.Responding } else { $true };" +
-				" $mwh = if($p) { [int64]$p.MainWindowHandle } else { 0 };" +
-				" $o = $null; try { $o = Invoke-CimMethod -InputObject $_ -MethodName GetOwner -ErrorAction Stop } catch {};" +
-				" $u = if($o) { $o.User } else { '' }; $d = if($o) { $o.Domain } else { '' };" +
-				" \"$($_.ProcessId)`t$($_.ParentProcessId)`t$resp`t$mwh`t$u`t$d`t$($_.CommandLine)\" }"
-		], {encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], windowsHide: true,
-			timeout: PROCESS_QUERY_TIMEOUT_MS, killSignal: "SIGKILL"});
-		return psOut.split(/\r?\n/).map(function(line) {
+		// Rust binary queries WMI + Win32 API for hung detection (EnumWindows + SendMessageTimeoutW),
+		// outputting the same TSV format the JS parser expects.
+		var out = cp.execFileSync(PROCESS_CHECKER_BIN, ["hung"],
+			{encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], windowsHide: true,
+				timeout: PROCESS_QUERY_TIMEOUT_MS, killSignal: "SIGKILL"});
+		return out.split(/\r?\n/).map(function(line) {
 			var m = /^(\d+)\t(\d+)\t(True|False)\t(\d+)\t([^\t]*)\t([^\t]*)\t(.*)$/.exec(line.replace(/\r$/, ""));
 			if(!m) { return null; }
 			// Drop any process not owned by us — a hung primary is only ever cleared for our own account.
@@ -290,22 +282,6 @@ function enumerateWindowsState() {
 	}
 }
 
-// Count running processes for an image name with tasklist — a native command with no PowerShell
-// cold start (~100ms vs ~1-2s for the Win32_Process WMI query). Returns the count, or -1 if the
-// query failed (caller then must NOT treat it as "no other instance"). Used only as a cheap gate.
-function countWindowsProcessesByImage(exeName) {
-	try {
-		var out = cp.execFileSync("tasklist", ["/FI", "IMAGENAME eq " + exeName + ".exe", "/NH", "/FO", "CSV"],
-			{encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], windowsHide: true,
-				timeout: PROCESS_QUERY_TIMEOUT_MS, killSignal: "SIGKILL"});
-		// Each matching process is one CSV row, e.g. "TiddlyDesktop.exe","1234",... — a no-match prints
-		// an "INFO:" line instead, which this filter skips, giving 0.
-		return out.split(/\r?\n/).filter(function(l) { return /^"/.test(l); }).length;
-	} catch(e) {
-		return -1;
-	}
-}
-
 // On Windows there is no Singleton symlink to detect/clear (removeStaleSingletonLock no-ops), and a
 // launch against an already-claimed profile is forwarded to the primary BEFORE it reaches main.js.
 // If that primary is HUNG — alive, but its UI thread's message pump is stuck — the forwarded launch
@@ -319,15 +295,6 @@ function countWindowsProcessesByImage(exeName) {
 exports.killHungPrimary = function(dataPath) {
 	try {
 		if(process.platform !== "win32") { return; }
-
-		// Cheap pre-gate before the costly WMI query: a hung PRIMARY owns a window, so it always has a
-		// full process tree (browser + GPU + renderers). On a normal cold start only our own
-		// just-spawned browser process exists (renderers/GPU spawn after node-main), so a low count
-		// means there is no other instance — skip the ~1-2s query entirely. A just-starting second
-		// instance (also few processes) owns no window yet, so it is never a hung-primary target, and
-		// skipping it loses nothing. -1 means tasklist failed: fall through and run the real query.
-		var procCount = countWindowsProcessesByImage(EXE_NAME);
-		if(procCount >= 0 && procCount <= 2) { return; }
 
 		var rows = enumerateWindowsState();
 		if(!rows || !rows.length) { return; }

@@ -83,6 +83,13 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
           ARCH: ${{ matrix.arch }}
           EXT: ${{ matrix.ext }}
+      - name: "🦀 Setting up Rust for Windows cross-compilation..."
+        if: matrix.platform == 'win'
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          rustup target add x86_64-pc-windows-gnu i686-pc-windows-gnu
+          sudo apt-get update && sudo apt-get install -y gcc-mingw-w64
       - name: "🛠️ Building TiddlyDesktop..."
         run: ./bld.sh
         env:

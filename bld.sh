@@ -111,6 +111,7 @@ mkdir -p output/linux64-dev
 build_macos() {
 	local nwjs_src="$1" out_dir="$2" ver="$3" label="$4"
 	local app_dir="$out_dir/TiddlyDesktop-${label}-v${ver}/TiddlyDesktop.app"
+	mkdir -p "$out_dir/TiddlyDesktop-${label}-v${ver}"
 	cp -RH "$nwjs_src/nwjs.app" "$app_dir"
 	cp -RH source "$app_dir/Contents/Resources/app.nw"
 	cp icons/app.icns "$app_dir/Contents/Resources/nw.icns"
@@ -184,7 +185,7 @@ build_linux_appimage() {
 	cp icons/app-icon1024.png "$appdir/tiddlydesktop.png"
 	cp linux/AppRun "$appdir/"
 	cp linux/tiddlydesktop.desktop "$appdir/"
-	cp -r "$out_dir/TiddlyDesktop-${pkg_arch}-v${ver}"/* "$appdir/usr/bin/"
+	cp -r "$out_dir/TiddlyDesktop-${label}${suffix}-v${ver}"/* "$appdir/usr/bin/"
 
 	local libraries
 	libraries=$(dpkg -L fonts-dejavu-core fonts-dejavu-extra libnss3 libnspr4 libasound2-dev libatomic1 libatk1.0-0 libcups2-dev libxkbcommon-dev libatspi2.0-dev libxcomposite-dev libxdamage-dev libxfixes-dev libxrandr-dev libpango1.0-dev libgbm-dev libcairo2-dev libxi-dev libxrender-dev libwayland-dev libfribidi-dev libthai-dev libharfbuzz-dev libpng-dev libfontconfig-dev libfreetype-dev libpixman-1-dev libdatrie-dev libgraphite2-dev libbz2-dev fonts-dejavu 2>/dev/null | grep "\.so" || true)
@@ -218,17 +219,21 @@ build_macapplesilicon_dev() {
 # Windows 32-bit
 build_win32() {
 	build_win "nwjs/nwjs-v${NWJS_VERSION}-win-ia32" "output/win32" "$TD_VERSION" "win32"
+	build_process_checker "i686-pc-windows-gnu" "output/win32/TiddlyDesktop-win32-v$TD_VERSION"
 }
 build_win32_dev() {
 	build_win "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-ia32" "output/win32-dev" "$TD_VERSION" "win32-dev"
+	build_process_checker "i686-pc-windows-gnu" "output/win32-dev/TiddlyDesktop-win32-dev-v$TD_VERSION"
 }
 
 # Windows 64-bit
 build_win64() {
 	build_win "nwjs/nwjs-v${NWJS_VERSION}-win-x64" "output/win64" "$TD_VERSION" "win64"
+	build_process_checker "x86_64-pc-windows-gnu" "output/win64/TiddlyDesktop-win64-v$TD_VERSION"
 }
 build_win64_dev() {
 	build_win "nwjs/nwjs-sdk-v${NWJS_VERSION}-win-x64" "output/win64-dev" "$TD_VERSION" "win64-dev"
+	build_process_checker "x86_64-pc-windows-gnu" "output/win64-dev/TiddlyDesktop-win64-dev-v$TD_VERSION"
 }
 
 # Linux ARM64
@@ -245,6 +250,19 @@ build_linux64() {
 }
 build_linux64_dev() {
 	build_linux "nwjs/nwjs-sdk-v${NWJS_VERSION}-linux-x64" "output/linux64-dev" "$TD_VERSION" "linux64-dev"
+}
+
+# Build the Rust td-process-checker binary for a Windows target.
+#   $1 = Rust target triple (e.g. x86_64-pc-windows-gnu)
+#   $2 = output directory (e.g. output/win64/TiddlyDesktop-win64-v$TD_VERSION)
+build_process_checker() {
+	local target="$1" out_dir="$2"
+	echo "Building td-process-checker for $target..."
+	cd bin/td-process-checker
+	cargo build --release --target "$target"
+	mkdir -p "$out_dir/source/bin"
+	cp "target/$target/release/td-process-checker.exe" "$out_dir/source/bin/"
+	cd ../..
 }
 
 if [ "$CI" = "true" ]; then
