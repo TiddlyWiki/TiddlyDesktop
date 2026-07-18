@@ -153,13 +153,13 @@ build_linux() {
 	[ -e "$linux_dir/nw" ] && mv "$linux_dir/nw" "$linux_dir/TiddlyDesktop"
 }
 
-# AppImage (Linux only, uses the non-SDK / production build)
-#   $1 = output dir  $2 = version string  $3 = platform label (e.g. linux64)
+# AppImage (Linux only)
+#   $1 = output dir  $2 = version string  $3 = platform label (e.g. linux64)  $4 = name suffix (empty or "-dev")
 build_linux_appimage() {
-	local out_dir="$1" ver="$2" label="$3"
+	local out_dir="$1" ver="$2" label="$3" suffix="${4:-}"
 	local pkg_arch
 	local appimagetool_arch
-	local appdir="output/AppDir.${label}"
+	local appdir="output/AppDir.${label}${suffix}"
 
 	sudo apt-get install -y fonts-dejavu-core fonts-dejavu-extra libnss3 libnspr4 libasound2-dev libatomic1 libatk1.0-0 libcups2-dev libxkbcommon-dev libatspi2.0-dev libxcomposite-dev libxdamage-dev libxfixes-dev libxrandr-dev libpango1.0-dev libgbm-dev libcairo2-dev libxi-dev libxrender-dev libwayland-dev libfribidi-dev libthai-dev libharfbuzz-dev libpng-dev libfontconfig-dev libfreetype-dev libpixman-1-dev libdatrie-dev libgraphite2-dev libbz2-dev fonts-dejavu curl findutils desktop-file-utils
 
@@ -194,7 +194,7 @@ build_linux_appimage() {
 
 	dpkg -L fonts-dejavu-core fonts-dejavu-extra 2>/dev/null | grep "\.ttf" | xargs -I '{}' -- cp '{}' "$appdir/usr/share/fonts/truetype/dejavu/"
 	local appimage_ver="$ver"
-	ARCH="$appimagetool_arch" ./output/appimagetool-${label}.AppImage --no-appstream "$appdir" "output/tiddlydesktop-${pkg_arch}-v${appimage_ver}.AppImage"
+	ARCH="$appimagetool_arch" ./output/appimagetool-${label}.AppImage --no-appstream "$appdir" "output/tiddlydesktop-${pkg_arch}-v${appimage_ver}${suffix}.AppImage"
 }
 
 # Build functions: called twice per platform — non-SDK (plain output) and SDK (-dev output)
@@ -270,11 +270,13 @@ if [ "$CI" = "true" ]; then
 			build_linuxarm64
 			build_linuxarm64_dev
 			build_linux_appimage "output/linuxarm64" "$TD_VERSION" "linuxarm64"
+			build_linux_appimage "output/linuxarm64-dev" "$TD_VERSION" "linuxarm64" "-dev"
 			;;
 		linux-x64)
 			build_linux64
 			build_linux64_dev
 			build_linux_appimage "output/linux64" "$TD_VERSION" "linux64"
+			build_linux_appimage "output/linux64-dev" "$TD_VERSION" "linux64" "-dev"
 			;;
 	esac
 else
