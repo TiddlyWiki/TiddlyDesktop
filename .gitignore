@@ -3,6 +3,7 @@ tmp/
 source/bin/
 output/
 nwjs/*
+bin/td-process-checker/target/
 node_modules/
 source/tiddlywiki/
 CLAUDE.md
