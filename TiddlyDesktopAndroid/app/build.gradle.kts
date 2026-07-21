@@ -22,8 +22,10 @@ android {
         applicationId = "com.tiddlywiki.tiddlydesktop"
         minSdk = 24
         targetSdk = 36
-        versionCode = 2
-        versionName = "0.1.0"
+        // Overridable via -PversionCode=N / -PversionName=X.Y.Z so CI can derive values
+        // from the git tag without editing this file. Defaults preserved for local dev.
+        versionCode = (findProperty("versionCode") as String?)?.toIntOrNull() ?: 2
+        versionName = (findProperty("versionName") as String?) ?: "0.1.0"
 
         // We ship a prebuilt arm64 Node.js binary (libnode.so). Restrict ABIs to
         // those we actually provide native libs for. Add more only with matching binaries.

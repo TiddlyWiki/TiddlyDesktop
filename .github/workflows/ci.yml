@@ -149,9 +149,25 @@ jobs:
       - name: "🔖 Reading Android version..."
         id: android-version
         run: |
-          V=$(grep -oE 'versionName = "[0-9]+\.[0-9]+\.[0-9]+"' TiddlyDesktopAndroid/app/build.gradle.kts | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          # Tag push: derive from the tag. Manual run: read from build.gradle.kts.
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            V="${GITHUB_REF#refs/tags/v}"
+          else
+            V=$(grep -oE 'versionName = "[0-9]+\.[0-9]+\.[0-9]+"' TiddlyDesktopAndroid/app/build.gradle.kts | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+          fi
           echo "Android version: $V"
           echo "version=$V" >> "$GITHUB_OUTPUT"
+      - name: "🔢 Computing Android versionCode from tag..."
+        id: android-tag-version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG="${GITHUB_REF#refs/tags/v}"
+          MAJOR=$(echo "$TAG" | cut -d. -f1)
+          MINOR=$(echo "$TAG" | cut -d. -f2)
+          PATCH=$(echo "$TAG" | cut -d. -f3)
+          VERSION_CODE=$(( MAJOR * 10000 + MINOR * 100 + PATCH ))
+          echo "versionName=$TAG" >> "$GITHUB_OUTPUT"
+          echo "versionCode=$VERSION_CODE" >> "$GITHUB_OUTPUT"
       - name: "⬇️ Fetching Node.js runtime (Termux arm64)..."
         run: ./TiddlyDesktopAndroid/packaging/fetch-node-libs.sh
       - name: "🛠️ Building TiddlyWiki engine + WikiList..."
@@ -169,7 +185,13 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: ./gradlew :app:bundleRelease :app:assembleRelease
+        run: |
+          GRADLE_PROPS=()
+          if [ -n "${{ steps.android-tag-version.outputs.versionCode }}" ]; then
+            GRADLE_PROPS+=("-PversionCode=${{ steps.android-tag-version.outputs.versionCode }}")
+            GRADLE_PROPS+=("-PversionName=${{ steps.android-tag-version.outputs.versionName }}")
+          fi
+          ./gradlew :app:bundleRelease :app:assembleRelease "${GRADLE_PROPS[@]}"
       - name: "🏷️ Naming Android artifacts..."
         run: |
           V=${{ steps.android-version.outputs.version }}
@@ -185,6 +207,15 @@ jobs:
         with:
           name: tiddlydesktop-android-v${{ steps.android-version.outputs.version }}.apk
           path: tiddlydesktop-android-v${{ steps.android-version.outputs.version }}.apk
+      - name: "🔍 Building debug-symbols.zip..."
+        run: |
+          zip -j debug-symbols.zip \
+            TiddlyDesktopAndroid/app/build/outputs/mapping/release/mapping.txt
+      - name: "📤 Uploading debug-symbols.zip..."
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-symbols-v${{ steps.android-version.outputs.version }}.zip
+          path: debug-symbols.zip
 
   release:
     # Run only if a tag was pushed (tag filter in workflow guarantees the only tags we'll see are ones that look like v1.2.3)
@@ -210,6 +241,7 @@ jobs:
             tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.AppImage
             tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-dev.AppImage
             tiddlydesktop-android-v*.apk
+            debug-symbols-v*.zip
 
   preview-release:
     # Manual runs only (workflow_dispatch). Publishes/updates a single rolling `preview`
@@ -233,7 +265,7 @@ jobs:
         run: |
           shopt -s nullglob
           sha="${GITHUB_SHA::8}"
-          for f in tiddlydesktop-*-v*.zip tiddlydesktop-*-v*.AppImage tiddlydesktop-android-v*.apk; do
+          for f in tiddlydesktop-*-v*.zip tiddlydesktop-*-v*.AppImage tiddlydesktop-android-v*.apk debug-symbols-v*.zip; do
             mv "$f" "${f%.*}-preview-${sha}.${f##*.}"
           done
           echo "Preview artifacts:"; ls -1 tiddlydesktop-*-preview-* 2>/dev/null || echo "(none)"
@@ -260,3 +292,25 @@ jobs:
             tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-preview-*.AppImage
             tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-dev-preview-*.AppImage
             tiddlydesktop-android-v*-preview-*.apk
+            debug-symbols-v*-preview-*.zip
+
+  play-upload:
+    # Tag pushes only, and only when the Play service account secret is configured.
+    # Skipped on manual runs and in forks without the key.
+    if: ${{ startsWith(github.ref, 'refs/tags/') && secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
+    needs: [build-android]
+    runs-on: ubuntu-latest
+    steps:
+      - name: "📥 Downloading Android artifacts..."
+        uses: actions/download-artifact@v4
+        with:
+          pattern: tiddlydesktop-android-*
+          merge-multiple: true
+      - name: "🏪 Uploading AAB to Play Console (internal)..."
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.tiddlywiki.tiddlydesktop
+          releaseFiles: tiddlydesktop-android-v*.aab
+          track: internal
+          status: completed
