@@ -12,7 +12,7 @@ mode, **safe embedded media** (YouTube/Vimeo/maps), native fullscreen, page zoom
 and cross-browser drag-and-drop import.
 
 - App version: **0.0.23**
-- Bundled runtime: **NW.js 0.112.0**
+- Bundled runtime: **NW.js 0.114.0**
 - Bundled collaboration plugin: `$:/plugins/tiddlywiki/codemirror-6-collab-nwjs`
 
 ---

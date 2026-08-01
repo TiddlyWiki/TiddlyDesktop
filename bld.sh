@@ -83,7 +83,7 @@ node bin/pack-bundled-plugins.js source/tiddlywiki
 if [ $# -gt 0 ]; then
     NWJS_VERSION=$1
 elif [ -z "$NWJS_VERSION" ]; then
-    NWJS_VERSION=0.113.0
+    NWJS_VERSION=0.114.0
 fi
 
 TD_VERSION=$(./bin/get-version-number)
@@ -106,6 +106,35 @@ mkdir -p output/linux64-dev
 
 # Generic build functions (called twice per platform: once for non-SDK → plain output, once for SDK → -dev output)
 
+# Developer ID sign a .app with hardened runtime + entitlements. Gated by APPLE_SIGN_IDENTITY
+# (e.g. "Developer ID Application: Name (TEAMID)"); build_macos only calls this when it is set.
+sign_macos_app() {
+	local app_dir="$1" ent="mac/entitlements.plist" f
+	# Inside-out (-depth): nested dylibs, helper .apps, the framework and the crashpad handler are
+	# signed before the bundles that contain them, then the outer app last, so each seal covers
+	# already-signed code. The name list may need extending for a future NW.js layout.
+	while IFS= read -r -d '' f; do
+		codesign --force --timestamp --options runtime --entitlements "$ent" \
+			--sign "$APPLE_SIGN_IDENTITY" "$f" || return 1
+	done < <(find "$app_dir/Contents/Frameworks" -depth \
+		\( -name "*.dylib" -o -name "*.app" -o -name "*.framework" -o -name "chrome_crashpad_handler" \) -print0)
+	codesign --force --timestamp --options runtime --entitlements "$ent" \
+		--sign "$APPLE_SIGN_IDENTITY" "$app_dir" || return 1
+	codesign --verify --deep --strict "$app_dir"
+}
+
+# Submit the signed .app to Apple, wait, then staple the ticket so it validates offline. Gated by
+# APPLE_NOTARY_PROFILE, a `xcrun notarytool store-credentials` keychain profile name.
+notarize_macos_app() {
+	local app_dir="$1" tmp zip
+	tmp="$(mktemp -d)"
+	zip="$tmp/notarize.zip"
+	ditto -c -k --keepParent "$app_dir" "$zip" || { rm -rf "$tmp"; return 1; }
+	xcrun notarytool submit "$zip" --keychain-profile "$APPLE_NOTARY_PROFILE" --wait || { rm -rf "$tmp"; return 1; }
+	xcrun stapler staple "$app_dir"
+	rm -rf "$tmp"
+}
+
 # macOS (x64 or arm64)
 #   $1 = nwjs source dir  $2 = output dir  $3 = version string  $4 = platform label (e.g. mac64)
 build_macos() {
@@ -116,6 +145,14 @@ build_macos() {
 	cp -RH source "$app_dir/Contents/Resources/app.nw"
 	cp icons/app.icns "$app_dir/Contents/Resources/nw.icns"
 	cp Info.plist "$app_dir/Contents/Info.plist"
+	# Stamp the package.json version into the plist so the bundle version tracks the release
+	# instead of the hardcoded value going stale. sed (not PlistBuddy) because this build also
+	# runs on Linux, where mac-only tooling is absent. -i.bak keeps it portable across GNU/BSD sed.
+	sed -i.bak \
+		-e "/<key>CFBundleShortVersionString<\/key>/{n;s|<string>.*</string>|<string>${ver}</string>|;}" \
+		-e "/<key>CFBundleVersion<\/key>/{n;s|<string>.*</string>|<string>${ver}</string>|;}" \
+		"$app_dir/Contents/Info.plist"
+	rm -f "$app_dir/Contents/Info.plist.bak"
 	# Rename the bundle executable to TiddlyDesktop (matches CFBundleExecutable) so the dock /
 	# process / menu-bar name is TiddlyDesktop instead of nwjs.
 	local mac_bin="$app_dir/Contents/MacOS"
@@ -123,9 +160,18 @@ build_macos() {
 	for f in "$app_dir"/Contents/Resources/*.lproj; do
 		cp "./strings/InfoPlist.strings" "$f/InfoPlist.strings" 2>/dev/null || true
 	done
-	# Ad-hoc code-sign the bundle (free). Re-bundling invalidated NW.js's signature, and a
-	# broken/unsigned app won't launch on Apple Silicon.
-	command -v codesign >/dev/null 2>&1 && [ -e "$mac_bin/TiddlyDesktop" ] && codesign --force --deep --sign - "$app_dir" || true
+	# Sign the bundle. With a Developer ID identity (+ optional notary profile) do a real, hardened,
+	# stapled sign so the app launches past Gatekeeper without warnings; otherwise fall back to the
+	# ad-hoc sign, which is free and only satisfies Apple Silicon's "must be signed to run" rule.
+	# Re-bundling invalidated NW.js's original signature, so some sign is always required.
+	if command -v codesign >/dev/null 2>&1 && [ -e "$mac_bin/TiddlyDesktop" ]; then
+		if [ -n "$APPLE_SIGN_IDENTITY" ]; then
+			sign_macos_app "$app_dir" || exit 1
+			[ -n "$APPLE_NOTARY_PROFILE" ] && { notarize_macos_app "$app_dir" || exit 1; }
+		else
+			codesign --force --deep --sign - "$app_dir" || true
+		fi
+	fi
 }
 
 # Windows (x64 or ia32)

@@ -16,8 +16,13 @@ package_macos() {
 	local app_dir
 	for app_dir in TiddlyDesktop-*-v${VERSION}*/TiddlyDesktop.app; do
 		[ -d "$app_dir" ] || continue
-		sudo xattr -rc "$app_dir"
-		sudo codesign --force --deep --sign - "$app_dir"
+		# Ad-hoc re-sign for local/dev builds only. When bld.sh applied a real Developer ID
+		# signature (APPLE_SIGN_IDENTITY set) this is skipped: re-signing ad-hoc would strip it
+		# and invalidate the stapled notarization ticket.
+		if [ -z "$APPLE_SIGN_IDENTITY" ]; then
+			sudo xattr -rc "$app_dir"
+			sudo codesign --force --deep --sign - "$app_dir"
+		fi
 	done
 	zip --symlinks -r "../${zip_name}" *
 	popd
