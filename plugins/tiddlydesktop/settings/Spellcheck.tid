@@ -50,7 +50,7 @@ Choose the language used for spellchecking. This sets the document language so C
 <option value="zh-TW">繁體中文 (台灣)</option>
 </$select>
 
-Takes effect on a wiki's next (re)load.
+Takes effect on a wiki's next (re)load. Whether a language can be spellchecked depends on your operating system, so not every choice will work; the Diagnostics panel below shows whether a dictionary is actually active for your choice.
 
 ! Privacy: Google spellcheck service
 
@@ -59,3 +59,14 @@ Chromium also offers an ''enhanced'' spellcheck that sends everything you type i
 <$checkbox tiddler="$:/config/TiddlyDesktop/EnableGoogleSpellcheck" field="text" checked="yes" unchecked="no" default="no"> Use Google's remote spellcheck service (sends your text to Google) </$checkbox>
 
 <div class="tc-message-box">This takes effect only after you ''restart ~TiddlyDesktop'', and only while local spellcheck (above) is enabled.</div>
+
+! Diagnostics
+
+Chromium owns the spellcheck settings and only reads them at startup, so a change here reaches the engine on the next launch. This panel reads the live state from disk: if a ''config tiddler'' disagrees with the matching ''Chromium Preferences'' value, the setting has not taken effect yet.
+
+<$button>
+<$action-setfield $tiddler="$:/state/td-spellcheck-diag-token" text=<<now "[UTC]YYYY0MM0DD0hh0mm0ss0XXX">>/>
+Refresh
+</$button>
+
+<pre><$macrocall $name="td-spellcheck-diagnostics" $type="text/plain" $output="text/plain" token={{$:/state/td-spellcheck-diag-token}}/></pre>
