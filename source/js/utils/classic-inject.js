@@ -24,13 +24,18 @@ var injectedSaveFile = function(path,content) {
 
 /*
 Returns text if successful, false if failed, null if not available
+
+The `path` argument is deliberately ignored. This window owns exactly one file, and the host has
+already injected that file's contents as window.tiddlywikiSourceText, so the argument carries no
+information we do not already have — the same reasoning that made the saver stop trusting the
+path the page supplies.
+
+It used to be compared against getLocalPath(document.location), which worked only while the wiki
+was a file:// document. Wikis are now served from a loopback http origin, so that comparison can
+never match and Classic could not load its own source at all.
 */
 var injectedLoadFile = function(path) {
-	if(getLocalPath(document.location.toString()) === path) {
-		return this.tiddlywikiSourceText;
-	} else {
-		return false;
-	}
+	return window.tiddlywikiSourceText;
 };
 
 var injectedConvertUriToUTF8 = function(path) {

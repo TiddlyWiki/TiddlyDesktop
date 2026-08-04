@@ -420,11 +420,18 @@ Scoped as follow-up work, not part of the initial migration.
 
 - **Relative resource loading generally**, not just attachments — every relative URL now resolves
   against the wiki origin, so `PORT_W` must serve the wiki's directory, not only `/attachments/`.
-- **TiddlyWiki Classic.** `utils/classic-inject.js`'s `injectedLoadFile` compares
-  `getLocalPath(document.location)` against a filesystem path; that comparison stops meaning
-  anything on an HTTP URL.
-- **Saver selection.** TiddlyWiki picks a saver from its environment and may prefer the HTTP `put`
-  saver over the TiddlyFox message-box path once on an HTTP origin. Needs pinning explicitly.
+- **TiddlyWiki Classic.** `utils/classic-inject.js`'s `injectedLoadFile` compared
+  `getLocalPath(document.location)` against a filesystem path, which stopped meaning anything on
+  an HTTP URL. Fixed by ignoring the argument entirely: the window owns one file and its contents
+  are already injected, so the path carries no information — the same reasoning that made the
+  saver stop trusting the path the page supplies.
+- ~~**Saver selection.**~~ **No change needed — checked.** The concern was that TiddlyWiki would
+  prefer the HTTP `put` saver (priority 2000) over TiddlyFox (1500) once the wiki was on an http
+  origin, since `put.canSave` tests `/^https?:/` and flips from false to true. It does get
+  selected first, but `PutSaver.save()` returns false unless `serverAcceptsPuts`, which requires
+  a `dav` header on an OPTIONS response. Our server answers 405 with no such header, so the saver
+  handler falls straight through to TiddlyFox. Confirmed live: the wiki file is still rewritten
+  after the origin move.
 - **New local exposure** — any local process can reach the ports; mitigated by session tokens.
 
 ### Unaffected
