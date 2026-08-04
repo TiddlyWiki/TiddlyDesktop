@@ -2,6 +2,7 @@
     "name": "TiddlyDesktop",
     "main": "./html/main.html",
     "node-main": "./js/node-main.js",
+    "node-remote": "http://127.0.0.1:*/__tiddlydesktop_shell__/*",
     "window": {
         "id": "tiddlydesktop://",
         "show": false,

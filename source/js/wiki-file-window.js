@@ -7,7 +7,9 @@ Class for wiki file windows
 var windowBase = require("../js/window-base.js"),
 	hash = require("../js/utils/hash.js"),
 	spellcheck = require("../js/utils/spellcheck.js"),
-	fs = require("fs");
+	wikiServer = require("../js/utils/wiki-server.js"),
+	fs = require("fs"),
+	pathMod = require("path");
 
 // Constructor
 function WikiFileWindow(options) {
@@ -18,24 +20,58 @@ function WikiFileWindow(options) {
 	this.info = options.info || {};
 	this.pathname = options.info.pathname;
 	this.mustQuitOnClose = options.mustQuitOnClose;
-	// Open the window
 	console.log("Opening window with id", this.getIdentifier());
-	$tw.desktop.gui.Window.open(
-		"html/wiki-file-window.html",
-		this.applyGeometryToOpenOptions({
-			id: hash.simpleHash(this.getIdentifier()),
-			show: true,
-			icon: "images/app-icon256.png",
-		}),
-		function (win) {
-			self.window_nwjs = win;
-			self.window_nwjs.once(
-				"loaded",
-				self.onloaded.bind(self),
+	// The window is served over loopback HTTP rather than loaded from file:// — see
+	// utils/wiki-server.js and DESIGN-http-wiki-origin.md. The shell keeps Node (its path
+	// matches the manifest's node-remote), the wiki one path segment away does not, and both
+	// share an origin so the parent's cross-document access still works.
+	//
+	// The server has to be listening before the window opens, so the open moves inside its
+	// callback. If it cannot start there is no safe fallback — loading the wiki from file://
+	// would silently reinstate the ambient file access this exists to remove — so we report and
+	// give up on the window rather than degrade quietly.
+	wikiServer.start(
+		{
+			appDir: pathMod.resolve(__dirname, ".."),
+			wikiDir: pathMod.dirname(this.pathname),
+			wikiFile: pathMod.basename(this.pathname),
+		},
+		function (err, handle) {
+			if (err || !handle) {
+				console.error(
+					"[TiddlyDesktop] could not start the wiki server:",
+					err && err.message,
+				);
+				$tw.desktop.utils.wiki.alert(
+					"Could not open this wiki: its local server failed to start. " +
+						((err && err.message) || ""),
+				);
+				return;
+			}
+			self.server = handle;
+			$tw.desktop.gui.Window.open(
+				handle.shellUrl,
+				self.applyGeometryToOpenOptions({
+					id: hash.simpleHash(
+						self.getIdentifier(),
+					),
+					show: true,
+					icon: "images/app-icon256.png",
+				}),
+				function (win) {
+					self.window_nwjs = win;
+					self.window_nwjs.once(
+						"loaded",
+						self.onloaded.bind(self),
+					);
+					self.window_nwjs.on(
+						"close",
+						self.onclose.bind(self),
+					);
+					self.trackGeometry();
+					self.restoreMaximizedState();
+				},
 			);
-			self.window_nwjs.on("close", self.onclose.bind(self));
-			self.trackGeometry();
-			self.restoreMaximizedState();
 		},
 	);
 }
@@ -79,15 +115,12 @@ WikiFileWindow.prototype.onloaded = function (event) {
 	);
 	// Add menu
 	$tw.desktop.utils.menu.createMenuBar(this.window_nwjs);
-	// Load the iframe, escaping specific characters that are troublesome in URLs
+	// Point the iframe at the wiki on our own loopback origin. The server URL-encodes the
+	// filename, so the "#" escaping the old file:// URL needed is handled there.
 	this.iframe = this.window_nwjs.window.document.getElementById(
 		"tid-main-wiki-file-viewer",
 	);
-	this.iframe.src =
-		"file://" +
-		this.pathname.replace(/[#]/g, function (s) {
-			return encodeURIComponent(s);
-		});
+	this.iframe.src = this.server.wikiUrl;
 	this.iframe.onload = this.onloadiframe.bind(this);
 	// Show dev tools
 	// this.window_nwjs.showDevTools(this.iframe);
@@ -105,6 +138,20 @@ WikiFileWindow.prototype.onloaded = function (event) {
 		this.window_nwjs.on(
 			"new-win-policy",
 			function (frame, url, policy) {
+				// INVARIANT: nothing on the shell path may ever open outside the
+				// nwdisable subtree. That path is Node-enabled (it is what the
+				// manifest's node-remote matches), and a top-level window or a
+				// plain sibling frame on it gets full Node — measured, with
+				// arbitrary execution confirmed. The wiki must never be able to
+				// navigate itself there, so refuse outright rather than open it.
+				if (self.server && self.server.isShellUrl(url)) {
+					console.warn(
+						"[TiddlyDesktop] refused to open a shell-path URL from the wiki:",
+						url,
+					);
+					policy.ignore();
+					return;
+				}
 				if (url && /^file:\/\//i.test(url)) {
 					policy.ignore(); // we open it ourselves below
 					$tw.desktop.gui.Window.open(
@@ -1338,6 +1385,14 @@ WikiFileWindow.prototype.onclose = function (event) {
 	// Delete the mutation observers for the title and the favicon
 	this.titleObserver.disconnect();
 	this.favIconObserver.disconnect();
+	// Stop serving this wiki. The server is per-window and its token dies with it, so a
+	// closed wiki is no longer reachable by anything else on the machine.
+	if (this.server) {
+		try {
+			this.server.close();
+		} catch (e) {}
+		this.server = null;
+	}
 	// Close the window, remove it from the window list
 	this.windowList.handleClose(this, this.mustRemoveFromWikiListOnClose);
 };
