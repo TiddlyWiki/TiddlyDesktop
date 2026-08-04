@@ -49,6 +49,54 @@ var http = require("http"),
 
 var SHELL_PREFIX = "/__tiddlydesktop_shell__/";
 
+/*
+Content-Security-Policy for wiki documents.
+
+Phase 11 of DESIGN-http-wiki-origin.md, and the only measure on any of our lists that constrains
+what a wiki can send OUT rather than what it can read. It is available at all only because the
+wiki is served: a file:// document cannot be given response headers.
+
+What it restricts, and what it deliberately does not:
+
+  connect-src   'self' plus the attachment origin. This is the point of the exercise — it stops a
+                tiddler beaconing to an arbitrary host with fetch/XHR/WebSocket/sendBeacon. It does
+                NOT break collaboration: the collab plugin's relay and LAN traffic go through the
+                parent-side bridges, which make the request from the parent and are governed by
+                their own scheme checks, not by the wiki's CSP.
+
+  object-src    'none'. Nothing legitimate embeds plugins.
+  base-uri      'none'. Stops a <base> tag silently repointing every relative URL in the document.
+  form-action   'none'. TiddlyWiki does not submit forms, and a form POST is otherwise a tidy
+                exfiltration channel that connect-src does not cover.
+
+  script-src    must keep 'unsafe-eval' and 'unsafe-inline': TiddlyWiki compiles filters and
+                widgets at runtime and ships inline scripts. A wiki is executable content by
+                design, so CSP is not being used to contain its script.
+
+  img-src /     left open. Wikis legitimately reference remote images and media, and a wiki that
+  media-src     wants to leak through an <img> query string can still do so. Closing that would
+  frame-src     break real wikis for a partial gain; frame-src likewise carries the allowlisted
+                media embeds and the plugin library.
+
+So this narrows the most direct exfiltration path without pretending to close every one.
+*/
+function cspFor(attachmentOrigin) {
+	var attach = attachmentOrigin || "";
+	return [
+		"default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: " + attach,
+		"script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:",
+		"style-src 'self' 'unsafe-inline' data:",
+		"img-src * data: blob:",
+		"media-src * data: blob:",
+		"font-src * data:",
+		"frame-src *",
+		"connect-src 'self' " + attach,
+		"object-src 'none'",
+		"base-uri 'none'",
+		"form-action 'none'"
+	].join("; ");
+}
+
 exports.SHELL_PREFIX = SHELL_PREFIX;
 
 // Content types for what we actually serve. Anything unlisted is sent as octet-stream, which the
@@ -213,7 +261,11 @@ exports.start = function(options, cb) {
 			path: req.url,
 			headers: headers
 		}, function(up) {
-			res.writeHead(up.statusCode, up.headers);
+			var headers = up.headers || {};
+			// TiddlyWiki's server sets no CSP of its own; ours is applied on the way back so a
+			// served folder wiki is governed exactly like a single-file one.
+			headers["content-security-policy"] = cspFor(attachOrigin);
+			res.writeHead(up.statusCode, headers);
 			up.pipe(res);
 		});
 		upstream.on("error", function(err) {
@@ -272,6 +324,9 @@ exports.start = function(options, cb) {
 		// session cookie is minted. It is what lets the folder wiki be served at the origin
 		// root without the token in every URL.
 		var extra = {};
+		if(root === wikiDir) {
+			extra["Content-Security-Policy"] = cspFor(attachOrigin);
+		}
 		if(root === appDir) {
 			extra["Set-Cookie"] = COOKIE_NAME + "=" + token +
 				"; Path=/; HttpOnly; SameSite=Strict";
