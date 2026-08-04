@@ -136,10 +136,30 @@ serves it at the origin root instead and gates access with a session cookie.
 						"--listen",
 						"host=" + lan.host,
 						"port=" + lan.port,
-						"credentials=" + (lan.credentials || "users.csv"),
 						"readers=" + (lan.readers || "(anon)"),
 						"writers=" + (lan.writers || "(authenticated)"),
 					);
+					// Only name a credentials file that actually exists. TiddlyWiki's basic
+					// authenticator reads it with readFileSync and, when that fails, returns an
+					// error string which the node-mode error path turns into process.exit — so a
+					// configured-but-absent users.csv does not fail the LAN binding, it kills
+					// this window and takes the wiki server with it. The settings default is a
+					// placeholder rather than a promise that the file is there.
+					var credPath = lan.credentials || "";
+					if (credPath) {
+						var resolved = path.resolve(
+							options.wikiPath,
+							credPath,
+						);
+						if (fs.existsSync(resolved)) {
+							argv.push("credentials=" + credPath);
+						} else {
+							console.warn(
+								"[TiddlyDesktop] ignoring credentials file (not found): " +
+									resolved,
+							);
+						}
+					}
 					if (lan.pathPrefix) {
 						argv.push("path-prefix=" + lan.pathPrefix);
 					}
