@@ -179,6 +179,11 @@ WikiFolderWindow.prototype.onloadiframe = function() {
 		});
 	} catch(e) { console.error("[TiddlyDesktop] find bar install failed:",e); }
 	try { require("./utils/zoom.js").install(this.window_nwjs,this.window_nwjs.window.document,doc); } catch(e) {}
+	// Route attachments onto the attachment origin. Folder wikis need RELATIVE ones handled too:
+	// TiddlyWiki's server answers only its own routes, so "pics/photo.png" would 404.
+	try {
+		require("./utils/attachments.js").install(doc,win,this.server,{wikiDir: this.pathname});
+	} catch(e) { console.error("[TiddlyDesktop] attachment routing install failed:",e); }
 	try { require("./utils/embeds.js").install(doc,win); } catch(e) {}
 	// Title and favicon, read straight off the wiki now that it renders in an iframe the
 	// backstage can see. This is what the live-state file used to carry across processes.

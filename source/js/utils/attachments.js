@@ -77,20 +77,43 @@ function resolveCanonicalUri(uri, wikiDir) {
 exports.resolveCanonicalUri = resolveCanonicalUri;
 
 /*
-	doc     the wiki's document
-	win     the wiki's window
-	handle  the server handle (needs attachmentUrl())
+	doc      the wiki's document
+	win      the wiki's window
+	handle   the server handle (needs attachmentUrl())
+	options  {wikiDir} — FOLDER wikis only, see below
 */
-exports.install = function(doc, win, handle) {
+exports.install = function(doc, win, handle, options) {
 	if(!doc || !win || !handle || typeof handle.attachmentUrl !== "function") { return; }
 	if(doc.__tdAttachmentsInstalled) { return; }
 	doc.__tdAttachmentsInstalled = true;
+	var wikiDir = (options && options.wikiDir) || null;
+
+	/*
+	Folder wikis also need RELATIVE attachments rewritten, which single-file wikis do not.
+
+	A single-file wiki is served out of its own directory, so "pics/photo.png" resolves against
+	the wiki URL and our server hands back the file. A folder wiki is served by TiddlyWiki, which
+	only answers its own routes — a wiki-relative attachment path is simply a 404 (measured). It
+	used to work because the page was Node-enabled and the URI was rewritten to file://.
+
+	Only paths with no scheme and no leading slash are treated this way. A leading slash belongs
+	to TiddlyWiki's own API (/recipes/…, /status), and must be left alone.
+	*/
+	function relativeToAbs(value) {
+		if(!wikiDir) { return null; }
+		var s = String(value || "");
+		if(!s || s.charAt(0) === "/" || s.charAt(0) === "#" || s.charAt(0) === "?") { return null; }
+		if((/^[a-z][a-z0-9+.-]*:/i).test(s)) { return null; }
+		var decoded = s.split("?")[0].split("#")[0];
+		try { decoded = decodeURI(decoded); } catch(e) {}
+		return require("path").resolve(wikiDir, decoded);
+	}
 
 	function rewriteElement(el) {
 		var attr = ATTR_BY_TAG[el.tagName];
 		if(!attr) { return; }
 		var value = el.getAttribute(attr);
-		var abs = fileUrlToPath(value);
+		var abs = fileUrlToPath(value) || relativeToAbs(value);
 		if(!abs) { return; }
 		try { el.setAttribute(attr, handle.attachmentUrl(abs)); } catch(e) {}
 	}
