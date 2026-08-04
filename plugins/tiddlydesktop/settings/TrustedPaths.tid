@@ -1,0 +1,27 @@
+title: $:/TiddlyDesktop/Settings/TrustedPaths
+caption: Trusted paths
+tags: $:/TiddlyDesktop/Settings
+
+A wiki can always read files inside its own folder. Anything elsewhere on disk has to be trusted first — either because you chose it in a save dialog, or because you allowed it when the wiki asked.
+
+Trusting a ''folder'' lets that wiki read everything underneath it, so prefer trusting individual files where you can.
+
+Revoking takes effect the next time the wiki asks for the file.
+
+<$list filter="[all[tiddlers]prefix[$:/TiddlyDesktop/Config/trusted-paths/]each[wiki]sort[wiki]]" variable="grantTiddler" emptyMessage="//No wiki has been granted access to anything outside its own folder.//">
+<$set name="thisWiki" value={{{ [<grantTiddler>get[wiki]] }}}>
+<div class="td-trusted-wiki">
+<div class="td-trusted-wiki-name"><$text text=<<thisWiki>>/></div>
+<$list filter="[all[tiddlers]prefix[$:/TiddlyDesktop/Config/trusted-paths/]field:wiki<thisWiki>sort[trust-path]]" variable="entry">
+<div class="td-trusted-entry">
+<span class="td-trusted-kind"><$text text={{{ [<entry>get[trust-kind]] }}}/></span>
+<code class="td-trusted-path"><$text text={{{ [<entry>get[trust-path]] }}}/></code>
+<$button class="tc-btn-invisible td-button td-trusted-revoke" tooltip="Stop this wiki reading this path">
+<$action-deletetiddler $tiddler=<<entry>>/>
+{{$:/language/TiddlyDesktop/TrustedPaths/Revoke}}
+</$button>
+</div>
+</$list>
+</div>
+</$set>
+</$list>

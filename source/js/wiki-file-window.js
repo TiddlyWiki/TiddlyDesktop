@@ -590,24 +590,23 @@ WikiFileWindow.prototype.onloadiframe = function () {
 		// Without this, any script in any wiki you open could read or write any file
 		// the user can — an arbitrary-write primitive, since the wiki controls the
 		// path string completely.
-		var _approvedPaths = Object.create(null);
+		//
+		// Grants persist in the backstage wiki, keyed by this wiki's identifier — see
+		// utils/trust.js. They were previously an in-memory map cleared on every iframe
+		// load: right for a one-shot save dialog, useless for anything re-read on each
+		// render, and it meant the user was re-asked after every reload.
+		var _trust = require("./utils/trust.js");
+		var _trustId = self.getIdentifier();
+		// Denials stay per-load and in memory. A "no" should not be permanent, but it has
+		// to stop a refused path re-prompting in a loop within a single load.
 		var _deniedPaths = Object.create(null);
 		self._iframeTeardowns.push(function () {
-			_approvedPaths = Object.create(null);
 			_deniedPaths = Object.create(null);
 		});
-		var _insideWikiDir = function (abs) {
-			var rel = _pathMod.relative(_wikiDir, abs);
-			// "" means the path IS the wiki dir; an absolute relative-path means a
-			// different Windows drive; a leading ".." segment means it escapes.
-			return (
-				rel === "" ||
-				(!_pathMod.isAbsolute(rel) &&
-					rel.split(_pathMod.sep)[0] !== "..")
-			);
-		};
 		var _pathAllowed = function (abs) {
-			return _insideWikiDir(abs) || _approvedPaths[abs] === true;
+			// The wiki's own directory is trusted implicitly: the wiki can already write
+			// there through the saver, so allowing it grants nothing new.
+			return _trust.isTrusted(_trustId, abs, [_wikiDir]);
 		};
 		// Reads need a softer rule than writes. An attachment that lives outside the wiki
 		// folder is recorded by the External Attachments plugin as an ABSOLUTE
@@ -615,8 +614,9 @@ WikiFileWindow.prototype.onloadiframe = function () {
 		// refusing outright would break a working feature. The collab plugin does prompt
 		// before serving, but that prompt is drawn by the wiki, so a hostile wiki could
 		// skip it and we cannot count it. Ask here instead, from the parent window, where
-		// the wiki cannot suppress or fake the dialog. The answer (either way) is
-		// remembered for this load, so a denied path can't spin in a prompt loop.
+		// the wiki cannot suppress or fake the dialog. Allowing records a persistent grant
+		// (revocable in Settings); denying is remembered only for this load, so a refused
+		// path can't spin in a prompt loop but a "no" is never permanent.
 		var _confirmOutsideRead = function (abs) {
 			if (_deniedPaths[abs]) {
 				return false;
@@ -626,13 +626,14 @@ WikiFileWindow.prototype.onloadiframe = function () {
 				ok = self.window_nwjs.window.confirm(
 					"This wiki wants to read a file outside its own folder:\n\n" +
 						abs +
-						"\n\nAllow until this wiki is reloaded or closed?",
+						"\n\nAllow it to read this file from now on?\n" +
+						"You can revoke this later in Settings → Trusted paths.",
 				);
 			} catch (e) {
 				ok = false;
 			}
 			if (ok) {
-				_approvedPaths[abs] = true;
+				_trust.grant(_trustId, abs, "file");
 			} else {
 				_deniedPaths[abs] = true;
 			}
@@ -668,7 +669,10 @@ WikiFileWindow.prototype.onloadiframe = function () {
 					? _pathMod.resolve(input.value)
 					: null;
 				if (chosen) {
-					_approvedPaths[chosen] = true;
+					// The user picked this path in a dialog we opened, so it is a
+					// genuine grant and persists — which is also what lets the
+					// attachment render later without asking again.
+					_trust.grant(_trustId, chosen, "file");
 				}
 				try {
 					input.parentNode.removeChild(input);

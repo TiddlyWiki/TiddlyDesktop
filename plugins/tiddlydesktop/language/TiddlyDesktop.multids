@@ -94,3 +94,4 @@ Share/RulesHeading: Domain rules
 Share/RulesHelp: One rule per line as <code>domain=kind</code> (e.g. <code>vimeo.com=youtube</code>, or <code>mastodon.social=mastodon</code> for a template you added above) to route a site to a particular template.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Backups of single-file wikis are written next to each wiki by default. Choose a folder here to collect all backups in one place instead.
+TrustedPaths/Revoke: revoke
