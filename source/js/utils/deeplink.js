@@ -76,7 +76,21 @@ exports.install = function(backstageWindow, guiRef) {
 		if(gui && gui.App) {
 			gui.App.on("open", function(args) {
 				var url = extractUrl(args);
-				if(url) { handleUrl(url); }
+				if(url) { handleUrl(url); return; }
+				// No URL: this is a PLAIN RELAUNCH. The user started TiddlyDesktop again while this
+				// instance was still running, so NW.js forwarded the command line here instead of
+				// starting a second process. Previously nothing happened at all — the launch simply
+				// vanished, which is indistinguishable from the app being broken. Bring the wiki
+				// list back instead. (Deliberately does NOT open a wiki by pathname: that is what
+				// the handler removed for issue #214 did, and it is not needed to un-stick a
+				// relaunch.)
+				try {
+					var desktop = global.$tw && global.$tw.desktop;
+					if(desktop && desktop.windowList) {
+						desktop.windowList.openByUrl("backstage://WikiListWindow", {mustQuitOnClose: true});
+					}
+				} catch(e) {}
+				focusApp();
 			});
 		}
 	} catch(e) {}

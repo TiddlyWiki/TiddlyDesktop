@@ -301,14 +301,27 @@ build_linux64_dev() {
 # Build the Rust td-process-checker binary for a Windows target.
 #   $1 = Rust target triple (e.g. x86_64-pc-windows-gnu)
 #   $2 = output directory (e.g. output/win64/TiddlyDesktop-win64-v$TD_VERSION)
+# $out_dir is relative to the repo root, so this must NOT cd into the crate first: a relative path
+# used after cd'ing resolves against the crate, which silently deposited every Windows build's
+# checker into bin/td-process-checker/output/... instead of the real package. .gitignore's "output/"
+# pattern matched that stray tree too, so nothing ever showed up as untracked. The shipped Windows
+# packages were therefore missing td-process-checker.exe entirely, disabling killStaleInstances,
+# killHungPrimary and the pref-writer's exitHelper. Build in place via --manifest-path instead.
 build_process_checker() {
-	local target="$1" out_dir="$2"
+	local target="$1" out_dir="$2" crate="bin/td-process-checker"
 	echo "Building td-process-checker for $target..."
-	cd bin/td-process-checker
-	cargo build --release --target "$target"
+	if ! cargo build --release --target "$target" --manifest-path "$crate/Cargo.toml"; then
+		echo "ERROR: td-process-checker failed to build for $target" >&2
+		exit 1
+	fi
 	mkdir -p "$out_dir/source/bin"
-	cp "target/$target/release/td-process-checker.exe" "$out_dir/source/bin/"
-	cd ../..
+	cp "$crate/target/$target/release/td-process-checker.exe" "$out_dir/source/bin/"
+	# bld.sh does not run under "set -e", so verify rather than assume: shipping a Windows package
+	# without this binary is exactly the silent failure above.
+	if [ ! -f "$out_dir/source/bin/td-process-checker.exe" ]; then
+		echo "ERROR: td-process-checker.exe missing from $out_dir/source/bin" >&2
+		exit 1
+	fi
 }
 
 if [ "$CI" = "true" ]; then

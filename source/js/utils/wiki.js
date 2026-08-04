@@ -46,124 +46,6 @@ function getBundledLanguages() {
 	}
 }
 
-// Additional language plugins from TIDDLYWIKI_LANGUAGE_PATH (colon-separated list of
-// directories, each containing language-plugin subdirectories). Returns bare language
-// names like "fr-FR" — TW resolves them against the configured library paths at boot.
-function getExtraLanguages() {
-	try {
-		var langPath = process.env.TIDDLYWIKI_LANGUAGE_PATH;
-		if (!langPath) {
-			return [];
-		}
-		var results = [],
-			seen = Object.create(null);
-		langPath.split(path.delimiter).forEach(function (dir) {
-			dir = (dir || "").trim();
-			if (!dir) {
-				return;
-			}
-			try {
-				fs.readdirSync(dir).forEach(function (name) {
-					try {
-						if (seen[name]) {
-							return;
-						}
-						if (
-							fs
-								.statSync(
-									path.resolve(
-										dir,
-										name,
-									),
-								)
-								.isDirectory()
-						) {
-							seen[name] = true;
-							results.push(name);
-						}
-					} catch (e) {}
-				});
-			} catch (e) {}
-		});
-		return results;
-	} catch (e) {
-		return [];
-	}
-}
-
-// Additional themes from TIDDLYWIKI_THEME_PATH (colon-separated list of directories,
-// each containing <author>/<name> subdirectory pairs). Returns "author/name" strings
-// that TW resolves against the configured theme library paths at boot.
-function getExtraThemes() {
-	try {
-		var themePath = process.env.TIDDLYWIKI_THEME_PATH;
-		if (!themePath) {
-			return [];
-		}
-		var results = [],
-			seen = Object.create(null);
-		themePath.split(path.delimiter).forEach(function (dir) {
-			dir = (dir || "").trim();
-			if (!dir) {
-				return;
-			}
-			try {
-				fs.readdirSync(dir).forEach(function (author) {
-					var authorDir = path.resolve(
-						dir,
-						author,
-					);
-					try {
-						if (
-							!fs
-								.statSync(
-									authorDir,
-								)
-								.isDirectory()
-						) {
-							return;
-						}
-						fs.readdirSync(
-							authorDir,
-						).forEach(function (name) {
-							var key =
-								author +
-								"/" +
-								name;
-							try {
-								if (seen[key]) {
-									return;
-								}
-								if (
-									fs
-										.statSync(
-											path.resolve(
-												authorDir,
-												name,
-											),
-										)
-										.isDirectory()
-								) {
-									seen[
-										key
-									] =
-										true;
-									results.push(
-										key,
-									);
-								}
-							} catch (e) {}
-						});
-					} catch (e) {}
-				});
-			} catch (e) {}
-		});
-		return results;
-	} catch (e) {
-		return [];
-	}
-}
-
 // Get the path of the backstage wiki folder, creating it if needed
 exports.getBackstageWikiFolder = function (appDataPath) {
 	// Create a user configuration wiki folder if it doesn't exist
@@ -197,29 +79,31 @@ exports.getBackstageWikiFolder = function (appDataPath) {
 			],
 		};
 	}
-	// Always (re)bundle every available language — set unconditionally so an upgrade that
-	// adds languages picks them up on the next launch without touching the user's wiki.
-	// Also includes any extra language plugins found in TIDDLYWIKI_LANGUAGE_PATH.
+	// Bundled languages are (re)set on every launch so an app upgrade that adds languages picks them
+	// up — the backstage language switcher needs them present. MERGED, not replaced: an entry the
+	// user installed through the PluginChooser (e.g. from TIDDLYWIKI_LANGUAGE_PATH) must survive,
+	// and this array used to be overwritten wholesale.
 	var allLanguages = getBundledLanguages();
-	getExtraLanguages().forEach(function (l) {
+	(packageJson.languages || []).forEach(function (l) {
 		if (allLanguages.indexOf(l) === -1) {
 			allLanguages.push(l);
 		}
 	});
 	packageJson.languages = allLanguages;
-	// Ensure the default themes are always present and add any from TIDDLYWIKI_THEME_PATH.
+	// Ensure the default themes are present. Nothing else is added here.
+	//
+	// This deliberately does NOT go looking for themes on TIDDLYWIKI_THEME_PATH. It used to, and
+	// scanned without checking for a plugin.info, so pointing that variable at a broad folder wrote
+	// every directory it found — .git, .github, unrelated checkouts — into this file as an
+	// unresolvable theme name. Discovery belongs to the PluginChooser: it is what presents the
+	// available themes and what the user chooses from. This function's only job is to guarantee the
+	// wiki can boot, so it guarantees the defaults and otherwise leaves the user's choices alone.
 	var defaultThemes = [
 		"tiddlywiki/vanilla",
 		"tiddlywiki/snowwhite",
 	];
-	var currentThemes = packageJson.themes || [];
 	var allThemes = defaultThemes.slice();
-	currentThemes.forEach(function (t) {
-		if (allThemes.indexOf(t) === -1) {
-			allThemes.push(t);
-		}
-	});
-	getExtraThemes().forEach(function (t) {
+	(packageJson.themes || []).forEach(function (t) {
 		if (allThemes.indexOf(t) === -1) {
 			allThemes.push(t);
 		}

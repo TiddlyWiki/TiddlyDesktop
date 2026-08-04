@@ -34,16 +34,25 @@ exports.startup = function() {
 	// module system where __dirname is derived from the tiddler title, not the
 	// physical file path.
 	// The three library kinds TiddlyWiki resolves at boot, each with its own search paths
-	// (bundled dir + env var). Plugins and THEMES are author-nested (`<root>/<author>/<name>`);
-	// LANGUAGES are flat (`<root>/<lang>`) and referenced by bare name — hence the per-kind flag.
-	var pluginPaths   = $tw.getLibraryItemSearchPaths($tw.config.pluginsPath,   $tw.config.pluginsEnvVar);
-	var themePaths    = $tw.getLibraryItemSearchPaths($tw.config.themesPath,    $tw.config.themesEnvVar);
-	var languagePaths = $tw.getLibraryItemSearchPaths($tw.config.languagesPath, $tw.config.languagesEnvVar);
-	var LIBRARY_KINDS = [
-		{paths: pluginPaths,   flat: false},
-		{paths: themePaths,    flat: false},
-		{paths: languagePaths, flat: true}
-	];
+	// (bundled dir + env var). No layout flag: _getAvailableItems scans both the author-nested and
+	// the flat shape for every kind, because an env-var library may use either (see its comment).
+	//
+	// Resolved LAZILY, on every call, rather than captured once here — because "here" is too early
+	// for languages. main.js points $tw.config.languagesPath at "../languages-backstage/" for the
+	// duration of the backstage boot (those copies carry the injected $:/language/TiddlyDesktop/*
+	// strings and plugin-priority 100, so the wiki list itself is translated) and restores the clean
+	// "../languages/" in its boot callback. Startup modules run BEFORE that callback, so anything
+	// captured at this point sees the backstage copies — which are the wrong thing to hand a user's
+	// wiki. Recomputing per call means the chooser, which enumerates when the user opens it, gets the
+	// clean library. (_cleanBundledLanguage below stays as a belt-and-braces strip for the same two
+	// customisations, since TIDDLYWIKI_LANGUAGE_PATH can supply a priority-bumped language too.)
+	function libraryKinds() {
+		return [
+			$tw.getLibraryItemSearchPaths($tw.config.pluginsPath,   $tw.config.pluginsEnvVar),
+			$tw.getLibraryItemSearchPaths($tw.config.themesPath,    $tw.config.themesEnvVar),
+			$tw.getLibraryItemSearchPaths($tw.config.languagesPath, $tw.config.languagesEnvVar)
+		];
+	}
 
 	// Enumerate the bundled / library plugins, themes and languages. This used to run only once
 	// ("bundled plugins don't change during a session"), but we now also re-scan when they change
@@ -51,11 +60,11 @@ exports.startup = function() {
 	// TIDDLYWIKI_PLUGIN_PATH / TIDDLYWIKI_THEME_PATH / TIDDLYWIKI_LANGUAGE_PATH change) shows up
 	// live in the wiki-list "updates available" badge and the chooser, without restarting. Closures
 	// below reference these vars by name, so reassigning them takes effect.
-	var available = [], availableByTitle = {};
+	var available = [], availableByTitle = {}, titleByEntry = {}, entryByTitle = {};
 	function refreshAvailable() {
 		available = [];
-		LIBRARY_KINDS.forEach(function(kind) {
-			available = available.concat(_getAvailableItems(kind.paths, kind.flat, fs, path));
+		libraryKinds().forEach(function(paths) {
+			available = available.concat(_getAvailableItems(paths, fs, path));
 		});
 		// Update detection (and the wiki-list badge) compares against the NEWEST available
 		// version of each plugin, so collapse duplicates here keeping the highest version.
@@ -63,6 +72,19 @@ exports.startup = function() {
 		available.forEach(function(p) {
 			var prev = availableByTitle[p.title];
 			if(!prev || _semverGt(p.version, prev.version)) { availableByTitle[p.title] = p; }
+		});
+		// A tiddlywiki.info entry is a FILESYSTEM lookup key; the title comes from the folder's
+		// plugin.info. They coincide for the bundled libraries (themes/tiddlywiki/vanilla ↔
+		// $:/themes/tiddlywiki/vanilla) but need not in general — a flat library reached through
+		// TIDDLYWIKI_THEME_PATH holds `elegant` for the title $:/themes/tiddlywiki/elegant. Derive
+		// the mapping from what is actually on disk instead of assuming one can be sliced from the
+		// other, so "is it installed?" and "remove it" work for any library layout.
+		titleByEntry = Object.create(null);
+		entryByTitle = Object.create(null);
+		available.forEach(function(p) {
+			var kind = _kindOf(p["plugin-type"]);
+			titleByEntry[kind + "\u0000" + p.name] = p.title;
+			if(!entryByTitle[p.title]) { entryByTitle[p.title] = {kind: kind, name: p.name}; }
 		});
 	}
 	refreshAvailable();
@@ -75,7 +97,7 @@ exports.startup = function() {
 		if(!target) { return; }
 		var wikiUrl           = target.fields.text;
 		var isFile            = (target.fields["wiki-type"] === "file");
-		var installed         = _getInstalledPlugins(wikiUrl, fs, path);
+		var installed         = _getInstalledPlugins(wikiUrl, fs, path, titleByEntry);
 		var installedVersions = _getInstalledVersions(wikiUrl, fs, path);
 		_clearChooserTiddlers(["available"]);
 
@@ -227,7 +249,7 @@ exports.startup = function() {
 			if(wikiUrl.startsWith("wikifile://")) {
 				_applyFileChanges(wikiUrl, [availTiddler.fields], [], fs, path);
 			} else {
-				_applyFolderChanges(wikiUrl, [availTiddler.fields], [], fs, path);
+				_applyFolderChanges(wikiUrl, [availTiddler.fields], [], fs, path, entryByTitle);
 			}
 			// Point the selection at the now-installed version and recompute every row from disk.
 			$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/TiddlyDesktop/PluginChooser/selected/" + pluginTitle, text: availTiddler.fields["plugin-path"]}));
@@ -256,7 +278,7 @@ exports.startup = function() {
 		// Collect toInstall / toRemove by diffing selection against installed. Selection holds
 		// the chosen version's plugin-path per title (or "" for "remove / not installed").
 		var isFile            = (targetTid.fields["wiki-type"] === "file");
-		var installed         = _getInstalledPlugins(wikiUrl, fs, path);
+		var installed         = _getInstalledPlugins(wikiUrl, fs, path, titleByEntry);
 		var installedVersions = _getInstalledVersions(wikiUrl, fs, path);
 		var toInstall = [], toRemove = [];
 
@@ -291,16 +313,29 @@ exports.startup = function() {
 
 		try {
 			if(wikiUrl === "backstage://self") {
-				// Edit the running backstage folder wiki's tiddlywiki.info, then reload the window so
-				// the installed plugin actually boots (TiddlyWiki only loads plugins at startup).
-				_applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path);
-				_closeChooser();
-				_reloadBackstage();
+				// Edit the running backstage folder wiki's tiddlywiki.info. The change is on disk
+				// immediately; it takes effect the next time TiddlyDesktop starts.
+				//
+				// This deliberately does NOT try to reload the wiki list in place. Loading a plugin
+				// means re-booting TiddlyWiki, which means re-running main.js in the hidden host
+				// window that owns $tw — and main.js is not idempotent: every run creates a tray
+				// icon, registers the custom protocol and installs deep-link hooks, none of which
+				// are torn down. NW.js keeps a window's Node context across navigation, so a reload
+				// orphans those resources; the tray in particular outlives every window and keeps
+				// the process (and the profile's Singleton lock) alive after the last window
+				// closes, which then blocks the next launch. Spawning a replacement instance
+				// instead races that same Singleton and can be absorbed by the exiting one.
+				//
+				// Writing the change and letting the user restart is the only option with no way to
+				// strand the app, so that is what we do.
+				_applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path, entryByTitle);
+				_setStatus("\u2713 " + $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/PluginChooser/SavedPendingRestart",
+					"Saved. Restart TiddlyDesktop to activate."));
 			} else {
 				if(wikiUrl.startsWith("wikifile://")) {
 					_applyFileChanges(wikiUrl, toInstall, toRemove, fs, path);
 				} else {
-					_applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path);
+					_applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path, entryByTitle);
 				}
 				_scanUpdatesForWiki(wikiUrl, availableByTitle, fs, path);
 				_closeChooser();
@@ -330,7 +365,7 @@ exports.startup = function() {
 			if(wikiUrl.startsWith("wikifile://")) {
 				_applyFileChanges(wikiUrl, [availTiddler.fields], [], fs, path);
 			} else {
-				_applyFolderChanges(wikiUrl, [availTiddler.fields], [], fs, path);
+				_applyFolderChanges(wikiUrl, [availTiddler.fields], [], fs, path, entryByTitle);
 			}
 			// Point the selection at the reinstalled version and recompute every row from disk.
 			$tw.wiki.addTiddler(new $tw.Tiddler({title: "$:/temp/TiddlyDesktop/PluginChooser/selected/" + pluginTitle, text: availTiddler.fields["plugin-path"]}));
@@ -376,8 +411,8 @@ exports.startup = function() {
 		_watchers.forEach(function(w) { try { w.close(); } catch(_e) {} });
 		_watchers = [];
 		var dirs = Object.create(null);
-		LIBRARY_KINDS.forEach(function(kind) {
-			kind.paths.forEach(function(root) {
+		libraryKinds().forEach(function(paths) {
+			paths.forEach(function(root) {
 				dirs[root] = true;
 				try { fs.readdirSync(root).forEach(function(a) { var ad = path.join(root, a); if(_isDir(ad, fs)) { dirs[ad] = true; } }); } catch(_e) {}
 			});
@@ -426,13 +461,6 @@ function _clearChooserTiddlers(prefixes) {
 	});
 }
 
-// Reload the current backstage window so a freshly-installed backstage plugin boots — main.html
-// re-runs the TiddlyWiki boot against the (now-edited) backstage folder wiki. Other open backstage
-// windows pick up the change the next time they (re)open.
-function _reloadBackstage() {
-	try { require("nw.gui").Window.get().reload(); } catch(e) {}
-}
-
 function _closeChooser() {
 	$tw.wiki.deleteTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
 	$tw.wiki.deleteTiddler("$:/temp/TiddlyDesktop/PluginChooser/search");
@@ -459,11 +487,13 @@ var _PROTECTED_FOLDER_NAMES = {
 
 // ── library enumeration (plugins / themes / languages) ──────────────────────────
 
-// Enumerate installable items under `searchPaths`. `flat` chooses the on-disk layout:
-//   flat=false → `<root>/<author>/<name>/plugin.info`  (plugins, themes; name = "author/name")
-//   flat=true  → `<root>/<name>/plugin.info`           (languages; name = "name")
-// The recorded `name` is exactly what goes in tiddlywiki.info's plugins/themes/languages array.
-function _getAvailableItems(searchPaths, flat, fs, path) {
+// Enumerate installable items under `searchPaths`, in either on-disk layout:
+//   `<root>/<author>/<name>/plugin.info`  → name = "author/name"
+//   `<root>/<name>/plugin.info`           → name = "name"
+// The recorded `name` is exactly what goes in tiddlywiki.info's plugins/themes/languages array —
+// a FILESYSTEM lookup key, not a title. The two coincide for the bundled libraries but need not
+// in general, which is why `title` is recorded separately and mapped explicitly below.
+function _getAvailableItems(searchPaths, fs, path) {
 	var items = [];
 
 	function addItem(itemDir, name, source) {
@@ -491,6 +521,17 @@ function _getAvailableItems(searchPaths, flat, fs, path) {
 		} catch(_e) {}
 	}
 
+	// Both layouts are scanned for every library, because TiddlyWiki itself doesn't care which one a
+	// library uses: findLibraryItem() just resolves `<searchRoot>/<entry>` and takes the title from
+	// that folder's plugin.info. The bundled libraries happen to be author-nested for plugins/themes
+	// and flat for languages, but a library supplied through TIDDLYWIKI_PLUGIN_PATH /
+	// TIDDLYWIKI_THEME_PATH / TIDDLYWIKI_LANGUAGE_PATH is free to be either — this repo's own
+	// themes/ directory is flat (themes/elegant) while its titles are author-style
+	// ($:/themes/tiddlywiki/elegant). Scanning only one shape made such a library invisible here.
+	//
+	// Running both is safe: addItem() skips anything without a plugin.info, so a flat scan over a
+	// nested root sees only author directories (no plugin.info) and a nested scan over a flat root
+	// sees only the item's own files (no sub-directory with a plugin.info).
 	function scanFlat(rootDir, source) {           // <root>/<name>/plugin.info
 		var entries;
 		try { entries = fs.readdirSync(rootDir); } catch(_e) { return; }
@@ -511,7 +552,8 @@ function _getAvailableItems(searchPaths, flat, fs, path) {
 	(searchPaths || []).forEach(function(rootDir, i) {
 		if(!fs.existsSync(rootDir)) return;
 		var source = i === 0 ? "bundled" : "external";
-		if(flat) { scanFlat(rootDir, source); } else { scanNested(rootDir, source); }
+		scanFlat(rootDir, source);
+		scanNested(rootDir, source);
 	});
 
 	// Group by title, newest version first within each title.
@@ -528,13 +570,18 @@ function _isDir(p, fs) {
 
 // ── installed-plugins query ───────────────────────────────────────────────────
 
-function _getInstalledPlugins(wikiUrl, fs, path) {
+// tiddlywiki.info's plugins/themes/languages arrays, mapped to the kind they live in.
+function _kindOf(pluginType) {
+	return pluginType === "theme" ? "themes" : (pluginType === "language" ? "languages" : "plugins");
+}
+
+function _getInstalledPlugins(wikiUrl, fs, path, titleByEntry) {
 	if(wikiUrl === "backstage://self") {
-		return _getInstalledFromFolder($tw.boot.wikiPath, fs, path);
+		return _getInstalledFromFolder($tw.boot.wikiPath, fs, path, titleByEntry);
 	} else if(wikiUrl.startsWith("wikifile://")) {
 		return _getInstalledFromFile(wikiUrl.slice("wikifile://".length), fs);
 	} else {
-		return _getInstalledFromFolder(wikiUrl.slice("wikifolder://".length), fs, path);
+		return _getInstalledFromFolder(wikiUrl.slice("wikifolder://".length), fs, path, titleByEntry);
 	}
 }
 
@@ -551,14 +598,21 @@ function _getInstalledFromFile(filePath, fs) {
 	}
 }
 
-function _getInstalledFromFolder(folderPath, fs, path) {
+// Resolve each tiddlywiki.info entry to the title it actually loads as, using the library scan.
+// The `prefix + entry` fallback is only for an entry no longer present in any library — it is a
+// guess (correct whenever the layout mirrors the title, which is the bundled convention).
+function _getInstalledFromFolder(folderPath, fs, path, titleByEntry) {
 	var infoPath = path.join(folderPath, "tiddlywiki.info");
 	try {
 		var info = JSON.parse(fs.readFileSync(infoPath, "utf8"));
 		var titles = [];
-		(info.plugins   || []).forEach(function(p) { titles.push("$:/plugins/" + p); });
-		(info.themes    || []).forEach(function(t) { titles.push("$:/themes/" + t); });
-		(info.languages || []).forEach(function(l) { titles.push("$:/languages/" + l); });
+		function add(kind, entry, prefix) {
+			var known = titleByEntry && titleByEntry[kind + "\u0000" + entry];
+			titles.push(known || (prefix + entry));
+		}
+		(info.plugins   || []).forEach(function(p) { add("plugins",   p, "$:/plugins/");   });
+		(info.themes    || []).forEach(function(t) { add("themes",    t, "$:/themes/");    });
+		(info.languages || []).forEach(function(l) { add("languages", l, "$:/languages/"); });
 		return titles;
 	} catch(_e) {
 		return [];
@@ -646,12 +700,22 @@ function _backupWikiFile(filePath, fs, path) {
 	fs.writeFileSync(backupPath, fs.readFileSync(filePath));
 }
 
-// The bundled language plugins are customised for TiddlyDesktop's OWN wiki-list UI: the build injects
-// its $:/language/TiddlyDesktop/* strings into each one and bumps them to plugin-priority 100 so the
-// active language's wiki-list strings win over the tiddlydesktop plugin's English defaults. When we
-// install a language into a USER's wiki those customisations are wrong — the TiddlyDesktop strings are
-// unused noise there, and priority 100 would make the language override core globally. Strip both so an
-// installed language is a plain plugin. Mutates and returns the loadPluginFolder result in place.
+// Strip the two customisations TiddlyDesktop's build applies to a language plugin, so what we install
+// into a USER's wiki is a plain language:
+//   * $:/language/TiddlyDesktop/* — the wiki-list UI strings (build-translations.js); unused noise
+//     outside the backstage.
+//   * plugin-priority 100 (set-language-priority.js) — needed in the backstage so the active
+//     language's wiki-list strings beat the tiddlydesktop plugin's English defaults, but in a user's
+//     wiki it makes the language override core globally. It must also stay a STRING: a numeric
+//     plugin-priority in a single-file store white-screens the wiki on boot.
+//
+// Those customisations live in `languages-backstage/`, and the chooser now enumerates the clean
+// `languages/` library (see libraryKinds() above), so this normally finds nothing to do. It is kept
+// deliberately: TIDDLYWIKI_LANGUAGE_PATH is also on the search path and can supply a language that
+// carries either customisation, and the failure mode — a globally-overriding or wiki-breaking
+// language silently baked into someone's wiki — is much worse than a redundant check.
+//
+// Mutates and returns the loadPluginFolder result in place.
 function _cleanBundledLanguage(bundled) {
 	if(!bundled || bundled["plugin-type"] !== "language") { return bundled; }
 	delete bundled["plugin-priority"];
@@ -710,7 +774,7 @@ function _applyFileChanges(wikiUrl, toInstall, toRemove, fs, path) {
 	fs.writeFileSync(filePath, newHtml, "utf8");
 }
 
-function _applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path) {
+function _applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path, entryByTitle) {
 	// "backstage://self" edits the running wiki-list (backstage) folder wiki in place.
 	var folderPath = (wikiUrl === "backstage://self") ? $tw.boot.wikiPath : wikiUrl.slice("wikifolder://".length);
 	var infoPath   = path.join(folderPath, "tiddlywiki.info");
@@ -720,10 +784,15 @@ function _applyFolderChanges(wikiUrl, toInstall, toRemove, fs, path) {
 	info.themes    = info.themes    || [];
 	info.languages = info.languages || [];
 
-	// tiddlywiki.info keeps plugins, themes and languages in separate arrays. Route by the title
-	// prefix ($:/themes/… / $:/languages/… / else plugins); the bare name (after the prefix) is
-	// what the array holds.
+	// tiddlywiki.info keeps plugins, themes and languages in separate arrays, and each holds a
+	// FILESYSTEM lookup key rather than a title. Prefer the entry recorded by the library scan —
+	// slicing the prefix off the title only happens to be right when a library's layout mirrors its
+	// titles (the bundled convention). For a flat library on TIDDLYWIKI_THEME_PATH the array holds
+	// `elegant` while the title is $:/themes/tiddlywiki/elegant, and the sliced guess would look for
+	// `tiddlywiki/elegant` — silently removing nothing.
 	function arrayFor(title) {
+		var known = entryByTitle && entryByTitle[title];
+		if(known && info[known.kind]) { return {arr: info[known.kind], name: known.name}; }
 		if(title.indexOf("$:/themes/")    === 0) { return {arr: info.themes,    name: title.slice("$:/themes/".length)}; }
 		if(title.indexOf("$:/languages/") === 0) { return {arr: info.languages, name: title.slice("$:/languages/".length)}; }
 		return {arr: info.plugins, name: title.replace(/^\$:\/plugins\//, "")};

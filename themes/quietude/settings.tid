@@ -1,0 +1,15 @@
+title: $:/themes/tiddlywiki/quietude/settings
+tags: [[$:/tags/Stylesheet]]
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/*
+** Reading width. The ControlPanel field re-points the measure token, which the
+** body, the title block, the subtitle, the tags row and the info panel all
+** follow. No `!important` is needed: this stylesheet loads after variables.tid
+** (pinned first by its `list-before` field), so a plain re-declaration on the
+** same :root wins on order. The `~[[40rem]]` tail keeps the default when the
+** config tiddler is absent or empty.
+*/
+
+:root{--q-measure:{{{ [[$:/config/themes/quietude/measure]get[text]] ~[[40rem]] }}};}

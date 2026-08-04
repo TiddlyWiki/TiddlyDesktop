@@ -1,0 +1,100 @@
+title: $:/themes/tiddlywiki/noir/tiddlydesktop
+tags: [[$:/tags/Stylesheet]]
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/*
+** TiddlyDesktop — Noir theme
+**
+** The WikiList is the same lit stage: rows separated by light and a hairline,
+** not by cast shadows. Every row used to carry the theme's layered shadow and
+** deepen it on hover, which made the window read as a deck of floating cards
+** rather than a list of entries lying on one surface.
+*/
+
+/* Toolbar — a rule, not a raised slab */
+.td-toolbar {
+	box-shadow: none;
+	border-bottom: 1px solid var(--n-line-strong);
+	font-family: var(--n-body);
+}
+
+/* Wiki-list rows — flat on the stage, lit on hover */
+.td-wikilist .td-wikilist-item {
+	border-radius: var(--n-radius);
+	box-shadow: none;
+	border-bottom: 1px solid var(--n-line);
+	transition: background-color var(--n-dur) var(--n-ease);
+}
+.td-wikilist .td-wikilist-item:hover {
+	background-color: var(--n-hover);
+}
+.td-wikilist .td-wikilist-item.tc-dragging {
+	box-shadow: none;
+	background-color: var(--n-recessed);
+}
+
+/* Title in the geometric display face, tightly tracked like every title here */
+.td-wikilist .td-wiki-title {
+	font-family: var(--n-display);
+	font-weight: 600;
+	letter-spacing: -0.024em;
+	overflow-wrap: anywhere;
+	min-width: 0;
+}
+.td-wikilist .td-wikilist-info {
+	font-family: var(--n-body);
+}
+/* The path is data, so it takes the mono */
+.td-wikilist .td-wiki-url {
+	font-family: var(--n-mono);
+	font-size: 0.8em;
+	color: var(--n-faint);
+	overflow-wrap: anywhere;
+	min-width: 0;
+}
+
+button.td-button {
+	border-radius: var(--n-radius);
+	font-family: var(--n-body);
+	font-size: 0.82em;
+	font-weight: 500;
+	transition: background-color var(--n-fast) var(--n-ease);
+}
+
+.td-toolbar input,
+.td-toolbar select {
+	font-family: var(--n-body);
+	border-radius: var(--n-radius);
+	border: 1px solid var(--n-line-strong);
+}
+
+/* ── The WikiList window ─────────────────────────────────────────────── */
+.td-search input.td-wikilist-search-input {
+	font-family: var(--n-body);
+	border-radius: var(--n-radius);
+	border: 1px solid var(--n-line-strong);
+	background: var(--n-recessed);
+	transition: border-color var(--n-dur) var(--n-ease);
+}
+.td-search input.td-wikilist-search-input:focus {
+	border-color: var(--n-accent);
+}
+.td-tags .tc-tag-label {
+	font-family: var(--n-body);
+}
+
+/* ── WikiList rows — recessed favicon cell, ruled actions ───────────── */
+.td-wikilist .td-wikilist-item .td-wikilist-thumbnail button {
+	border-radius: var(--n-radius);
+	border: 1px solid var(--n-line);
+	box-shadow: none;
+}
+.td-wikilist .td-wikilist-item .td-wiki-toolbar {
+	border-top: 1px solid var(--n-line);
+	padding-top: var(--n-space-2xs);
+}
+.td-wikilist .td-wiki-advanced-heading {
+	font-family: var(--n-display);
+	font-weight: 600;
+}

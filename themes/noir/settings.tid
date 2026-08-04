@@ -1,0 +1,19 @@
+title: $:/themes/tiddlywiki/noir/settings
+tags: [[$:/tags/Stylesheet]]
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/*
+** The key light switch.
+**
+** This control used to disable one infinite `animation` — the masthead pulse.
+** That animation is gone, so the old rule would have left a ControlPanel
+** checkbox that silently did nothing. It now governs the thing a reader would
+** actually want a switch for: the warm pool of light itself.
+**
+** Turning it off removes the radial from the page container and leaves the
+** flat palette surfaces, which is the readable-but-plain rendering some people
+** want for long sessions. Nothing else depends on it.
+*/
+
+{{{ [[$:/config/themes/noir/glow]get[text]match[no]then[.tc-page-container{background-image:none;}]] }}}

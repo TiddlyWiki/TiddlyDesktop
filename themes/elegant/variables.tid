@@ -1,0 +1,190 @@
+title: $:/themes/tiddlywiki/elegant/variables
+tags: [[$:/tags/Stylesheet]]
+list-before:
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/* Hallmark · genre: editorial · macrostructure: Long Document · theme: Elegant
+ * mood: luxury (considered warmth) · anchor hue: palette primary (garnet / rose)
+ * nav: n/a · footer: n/a — TiddlyWiki owns the chrome; a theme has neither.
+ * pre-emit critique: P5 H5 E5 S5 R5 V4
+ */
+
+/*
+** Elegant — design tokens
+**
+** A fine-press theme. The story river is one continuous leaf of paper; tiddlers
+** are sections of a folio divided by head rules and whitespace, not cards
+** floating on a desk. Corners are square, because print has no radius. Shadow
+** is spent only where something genuinely floats above the page — dropdowns,
+** modals, notifications — and nowhere else.
+**
+** Two typographic registers, held apart on purpose: SERIF IS CONTENT (titles,
+** prose, metadata, small caps), SANS IS CHROME (toolbars, tabs, buttons, the
+** WikiList). Nothing crosses.
+**
+** Every colour is derived from the active palette via <<colour>> and
+** color-mix(), so the theme stays at home in any palette, light or dark.
+** Mixing happens in OKLAB rather than sRGB: perceptually uniform, so a 70%
+** mix reads as 70% of the way there instead of sagging through a muddy
+** midpoint. Motion is built only on transform / opacity, which the browser
+** composites on the GPU.
+*/
+
+:root {
+
+	/* Ink & paper */
+	--e-ink: <<colour foreground>>;
+	--e-paper: <<colour tiddler-background>>;
+	/* Both secondary inks clear 4.5:1 against the paper in the bundled
+	   palettes — muted lands near 7:1, faint near 5:1. The previous 50% mix
+	   put the metadata byline at 3.7:1, under the floor for text that small. */
+	--e-muted: color-mix(in oklab, <<colour foreground>> 70%, <<colour background>>);
+	--e-faint: color-mix(in oklab, <<colour foreground>> 60%, <<colour background>>);
+
+	/* A single, restrained accent taken from the palette. It appears in four
+	   places and no others: links, the drop cap, the focus ring, and the
+	   selected state of a tab. Everything else in this theme is neutral. */
+	--e-accent: <<colour primary>>;
+	/* Held mostly at full strength and bent only slightly toward the palette's
+	   foreground (never #000), so a link still reads as garnet rather than as
+	   muddy near-black, while clearing 9:1 on light and 7:1 on dark. */
+	--e-accent-deep: color-mix(in oklab, <<colour primary>> 88%, <<colour foreground>>);
+	/* Meets the 3:1 floor for a meaningful UI boundary in both palettes. */
+	--e-accent-quiet: color-mix(in oklab, <<colour primary>> 70%, <<colour background>>);
+	--e-accent-light: color-mix(in oklab, <<colour primary>> 45%, <<colour background>>);
+	--e-wash-strong: color-mix(in oklab, <<colour primary>> 15%, transparent);
+	/* A neutral wash for hover on rows and cells, so the accent stays scarce */
+	--e-tint: color-mix(in oklab, <<colour foreground>> 5%, transparent);
+
+	/* Hairlines — the backbone of the layout. With frames and shadows gone,
+	   these rules carry the entire structure of the page. */
+	--e-rule: color-mix(in oklab, <<colour foreground>> 16%, transparent);
+	--e-rule-strong: color-mix(in oklab, <<colour foreground>> 32%, transparent);
+
+	/* Elevation — named for what it means, and spent ONLY on the surfaces that
+	   genuinely leave the page: dropdowns, modals, notifications, alerts. A
+	   tiddler, a table, an image and a plugin chip are ON the leaf, so they
+	   cast nothing. There is deliberately no third, smaller step: the moment a
+	   shadow is small enough to be decorative, it should be a hairline instead. */
+	--e-lift: 0 4px 14px color-mix(in oklab, <<colour foreground>> 10%, transparent),
+		0 18px 50px color-mix(in oklab, <<colour foreground>> 12%, transparent);
+	--e-lift-high: 0 10px 40px color-mix(in oklab, <<colour foreground>> 15%, transparent),
+		0 30px 80px color-mix(in oklab, <<colour foreground>> 19%, transparent);
+
+	/* Shape — square. A printed page has no rounded corners. Kept as a token so
+	   every rule downstream still reads as a deliberate choice rather than an
+	   omission, and so a fork can soften the whole theme from one line. */
+	--e-radius: 0;
+
+	/* Space — a 4pt scale, named by role. Nothing in this theme types a raw px. */
+	--e-space-3xs: 0.25rem;
+	--e-space-2xs: 0.5rem;
+	--e-space-xs: 0.75rem;
+	--e-space-sm: 1rem;
+	--e-space-md: 1.5rem;
+	--e-space-lg: 2.25rem;
+	--e-space-xl: 3.5rem;
+	--e-space-2xl: 5rem;
+
+	/* Measure — the reading column, bounded at roughly 68 characters. It is a
+	   max, never a min, so a narrow story river is left entirely alone. */
+	--e-measure: 34rem;
+
+	/* Type — two registers. Serif is content, sans is chrome.
+	   All three stacks are system faces: this theme ships inside an offline
+	   desktop app and inside standalone single-file wikis, so there is no CDN
+	   to fetch a webfont from and no sane way to embed one in a theme plugin. */
+	--e-display: Palatino, "Palatino Linotype", "Iowan Old Style", "Book Antiqua",
+		"URW Palladio L", "P052", Cambria, Georgia, serif;
+	--e-serif: Charter, "Bitstream Charter", "Sitka Text", "Charis SIL", Cambria,
+		Georgia, serif;
+	--e-sans: "Avenir Next", "Segoe UI Variable Text", "Segoe UI", Ubuntu,
+		Cantarell, system-ui, -apple-system, sans-serif;
+
+	/* Motion — one curve. Exponential ease-out: things arrive and settle, never
+	   overshoot. There is no matching ease-in because nothing in this theme
+	   animates on the way out; TiddlyWiki tears popups out of the DOM. */
+	--e-ease: cubic-bezier(0.16, 1, 0.3, 1);
+	--e-fast: 120ms;
+	--e-dur: 220ms;
+	--e-slow: 420ms;
+
+	/* Form controls inherit the accent */
+	accent-color: <<colour primary>>;
+	caret-color: <<colour primary>>;
+}
+
+/* Fallback for browsers without color-mix(): map the accent tints, hairlines and
+   soft shadows to solid palette colours. The washes drop out and the accent
+   ladder collapses to one tone, but the editorial structure — which lives in
+   the rules and the whitespace, not the colour — stays completely intact. */
+@supports not (color: color-mix(in oklab, red, blue)) {
+	:root {
+		--e-muted: <<colour muted-foreground>>;
+		--e-faint: <<colour muted-foreground>>;
+		--e-accent-deep: <<colour primary>>;
+		--e-accent-quiet: <<colour primary>>;
+		--e-accent-light: <<colour primary>>;
+		--e-wash-strong: transparent;
+		--e-tint: transparent;
+		--e-rule: <<colour tiddler-border>>;
+		--e-rule-strong: <<colour tiddler-border>>;
+		--e-lift: 0 4px 14px rgba(0,0,0,0.10), 0 18px 50px rgba(0,0,0,0.12);
+		--e-lift-high: 0 10px 40px rgba(0,0,0,0.14), 0 30px 80px rgba(0,0,0,0.18);
+	}
+}
+
+
+/* A refined, unobtrusive scrollbar — square, like everything else */
+html {
+	scroll-behavior: smooth;
+	background-color: <<colour page-background>>;
+	/* Hand the page (viewport) scrollbar back to the browser so it follows the
+	   palette's `color-scheme` on :root. The `* { scrollbar-color }` rule below
+	   themes inner scrollbars, but applied to the root it overrides the native
+	   colour-scheme scrollbar and leaves the page scrollbar light on dark palettes
+	   (notably in TiddlyDesktop). Resetting it restores the native dark bar. */
+	scrollbar-color: initial;
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--e-rule-strong) transparent;
+}
+*::-webkit-scrollbar {
+	width: 11px;
+	height: 11px;
+}
+*::-webkit-scrollbar-thumb {
+	background: var(--e-rule-strong);
+	border-radius: 0;
+	border: 3px solid transparent;
+	background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+	background: var(--e-accent-quiet);
+	background-clip: content-box;
+}
+*::-webkit-scrollbar-corner { background: transparent; }
+
+::selection {
+	background: var(--e-wash-strong);
+	color: var(--e-accent-deep);
+}
+
+/* A calm, considered focus ring. Never transitioned: a ring that fades in
+   leaves a keyboard user with no indicator for the length of the fade. */
+:where(button, input, textarea, select, a):focus-visible {
+	outline: 2px solid var(--e-accent);
+	outline-offset: 2px;
+	border-radius: var(--e-radius);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+	}
+}

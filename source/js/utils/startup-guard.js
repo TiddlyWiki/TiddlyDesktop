@@ -67,9 +67,9 @@ function winOwnerIsUs(user, domain) {
 	return true;
 }
 
-// Hard ceiling on the synchronous process-enumeration queries below (PowerShell on Windows, ps on
-// POSIX). A hung or slow query — PowerShell cold start, AppLocker / Constrained Language Mode, an
-// AV scan of the spawn — can otherwise stall startup indefinitely. The normal query returns in well
+// Hard ceiling on the synchronous process-enumeration queries below (the td-process-checker binary
+// on Windows, ps on POSIX). A hung or slow query — a stalled WMI service, AppLocker blocking the
+// spawn, an AV scan of it — can otherwise stall startup indefinitely. The normal query returns in well
 // under a second; this only bites a genuinely stuck one, where on timeout execFileSync throws, the
 // query returns null, and the caller no-ops — so the worst case is a bounded delay, never a hang.
 var PROCESS_QUERY_TIMEOUT_MS = 4000;
@@ -259,21 +259,24 @@ exports.killStaleInstances = function(dataPath) {
 // failed (→ caller no-ops).
 function enumerateWindowsState() {
 	try {
-		// Rust binary queries WMI + Win32 API for hung detection (EnumWindows + SendMessageTimeoutW),
-		// outputting the same TSV format the JS parser expects.
+		// Rust binary queries WMI + Win32 API for hung detection (EnumWindows + SendMessageTimeoutW).
+		// Both flags are Rust bools, so they print LOWERCASE "true"/"false" (print_hung in
+		// bin/td-process-checker/src/main.rs). The parser below previously demanded PowerShell's
+		// "True"/"False" plus a numeric window handle — a leftover from the pre-Rust implementation —
+		// so every row failed to match and killHungPrimary silently did nothing on Windows.
 		var out = cp.execFileSync(PROCESS_CHECKER_BIN, ["hung"],
 			{encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], windowsHide: true,
 				timeout: PROCESS_QUERY_TIMEOUT_MS, killSignal: "SIGKILL"});
 		return out.split(/\r?\n/).map(function(line) {
-			var m = /^(\d+)\t(\d+)\t(True|False)\t(\d+)\t([^\t]*)\t([^\t]*)\t(.*)$/.exec(line.replace(/\r$/, ""));
+			var m = /^(\d+)\t(\d+)\t(true|false)\t(true|false)\t([^\t]*)\t([^\t]*)\t(.*)$/.exec(line.replace(/\r$/, ""));
 			if(!m) { return null; }
 			// Drop any process not owned by us — a hung primary is only ever cleared for our own account.
 			if(!winOwnerIsUs(m[5], m[6])) { return null; }
 			return {
 				pid: parseInt(m[1], 10),
 				ppid: parseInt(m[2], 10),
-				responding: (m[3] === "True"),
-				hasWindow: parseInt(m[4], 10) !== 0,
+				responding: (m[3] === "true"),
+				hasWindow: (m[4] === "true"),
 				cmd: m[7]
 			};
 		}).filter(Boolean);
@@ -351,6 +354,93 @@ function removeStaleSingletonLock(userDataRoot) {
 		});
 	} catch(e) {}
 }
+
+// The pid of the BROWSER process for this profile, or 0.
+//
+// Chromium writes SingletonLock from the browser process itself, as "<hostname>-<pid>", which makes
+// it the one dependable way to identify that process from elsewhere in the app. main.js runs in a
+// window RENDERER, where process.exit() ends only that renderer — verified on a stuck instance: the
+// browser process survived with no renderer children, still holding this very lock. quitApp uses
+// this as its last-resort terminate target.
+//
+// (node-main.js is not a substitute: its process.pid does not match the browser process — measured
+// 65922 there against a live browser process of 66274, with 65922 already gone.)
+exports.getPrimaryPid = function(dataPath) {
+	try {
+		if(!dataPath) { return 0; }
+		var target = fs.readlinkSync(path.join(path.dirname(dataPath), "SingletonLock"));
+		var m = /-(\d+)$/.exec(target);
+		var pid = m ? parseInt(m[1], 10) : 0;
+		return pidAlive(pid) ? pid : 0;
+	} catch(e) {
+		return 0;
+	}
+};
+
+// --- Helper-process self-termination -----------------------------------------------------------
+
+
+// End the detached spellcheck pref-writer that main.js spawns at quit (TD_SPELLCHECK_WRITER=1).
+//
+// process.exit(0) alone is NOT enough: NW.js goes on to boot a full app instance in that process
+// anyway, and that instance takes the profile's Singleton lock — so the NEXT launch is refused as a
+// secondary. Measured on Linux: a helper still alive 68s past its exit, owning SingletonLock, and
+// having re-flushed use_spelling_service back to true, undoing the opt-out it had just written.
+//
+// POSIX: main.js spawns us with detached:true, i.e. setsid(), so we lead our own session. Signalling
+// the negated process-group id takes down this whole helper — browser process included — and can
+// reach nothing else, since the spawning app is in a different session.
+//
+// Windows has no process groups to signal (process.kill(-pid) is unsupported there), so the
+// equivalent is to climb to this helper's own root process and taskkill /T that tree, the same way
+// killStaleInstances tears down a stale one. Chromium additionally holds its children in a Job
+// Object, so killing the root is doubly sufficient.
+//
+// parentPid is TD_SPELLCHECK_PARENT_PID — the app instance that spawned us. The Windows climb is
+// bounded below it: it has normally exited by now, but if our wait timed out it may still be
+// quitting, and terminating the user's app is not this helper's business.
+exports.exitHelper = function(parentPid) {
+	try {
+		if(process.platform === "win32") {
+			// Worst case (both queries unavailable) this still tears down our own subtree.
+			var root = process.pid, rows = enumerateTiddlyDesktop();
+			if(rows) {
+				var byPid = byPidMap(rows);
+				// Dropping the parent is what stops rootOf() climbing past it into the spawning app.
+				// parentPid is the renderer that spawned us — our DIRECT parent — so removing it cuts
+				// the chain immediately below this helper's own root.
+				if(parentPid) { delete byPid[parentPid]; }
+				root = rootOf(byPid, process.pid);
+			}
+			// No fallback query: every Windows package ships td-process-checker.exe (bld.sh verifies
+			// it and fails the build otherwise), so enumeration returning null here means something
+			// is badly wrong with the install. Killing our own subtree is then the honest best
+			// effort — we do not reach for PowerShell, whose cold start is why the Rust binary
+			// exists in the first place.
+			if(root && root !== parentPid) {
+				cp.execFileSync("taskkill", ["/F", "/T", "/PID", String(root)],
+					{stdio: "ignore", windowsHide: true});
+			}
+		} else {
+			var pgid = 0, sid = 0;
+			try {
+				var stat = fs.readFileSync("/proc/self/stat", "utf8"),
+					f = stat.slice(stat.lastIndexOf(")") + 2).split(" ");	// state, ppid, pgrp, session, …
+				pgid = parseInt(f[2], 10);
+				sid = parseInt(f[3], 10);
+			} catch(e) {
+				// No /proc (macOS). BSD ps exposes no comparable session id, so the leadership check
+				// cannot be performed there — it holds by construction instead, since detached:true
+				// means setsid(). Stated, not verified.
+				pgid = sid = parseInt(cp.execFileSync("ps", ["-o", "pgid=", "-p", String(process.pid)],
+					{encoding: "utf8"}).trim(), 10);
+			}
+			// Only ever signal a group we lead a session for — never one we merely joined.
+			if(pgid > 0 && pgid === sid && pgid !== 1) { process.kill(-pgid, "SIGKILL"); }
+		}
+	} catch(e) {}
+	try { process.exit(0); } catch(e) {}
+};
 
 // dataPath is the active Chromium profile dir (gui.App.dataPath, e.g. .../TiddlyDesktop/Default).
 exports.guardProfile = function(dataPath) {

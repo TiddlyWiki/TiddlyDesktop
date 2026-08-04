@@ -1,0 +1,201 @@
+title: $:/themes/tiddlywiki/opaline/variables
+tags: [[$:/tags/Stylesheet]]
+list-before:
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/* Hallmark · genre: modern-minimal · macrostructure: Workbench · theme: Opaline
+ * mood: technical (precision optics) · anchor hue: palette primary (cool blue)
+ * note: "Workbench" here is the macrostructure (registered panels), NOT the
+ *       sibling $:/themes/tiddlywiki/workbench theme. Different thing entirely.
+ * nav: n/a · footer: n/a — TiddlyWiki owns the chrome; a theme has neither.
+ * pre-emit critique: P5 H5 E5 S5 R5 V4
+ */
+
+/*
+** Opaline — design tokens
+**
+** Built on how precious opal actually behaves. A stone is a MILKY BODY with
+** discrete flashes of fire that appear at some angles and are simply absent at
+** others — it is not a continuous rainbow smear. So this theme gives every
+** resting surface a quiet, translucent body and spends colour only where
+** something is ACTIVE: the tiddler you are editing, the tab you have selected,
+** the field that has focus. Fire is a state, not wallpaper. That is also the
+** only honest way to let decoration stay — it carries information.
+**
+** The play-of-colour is two stops in one hue family (the palette primary bent
+** toward its aqua neighbour), never five. The previous "warm gold" stop sat
+** 179.2 degrees from the primary in OKLCH — 0.8 degrees off exactly antipodal —
+** so `color-mix(in oklch, ...)` landed on whichever side of the shorter-arc
+** tipping point rounding chose. It never rendered as gold.
+**
+** Every colour derives from the active palette via <<colour>> and color-mix(),
+** mixed in OKLAB so a 72% mix reads as 72% of the way there. Motion is
+** transform / opacity only, which the browser composites on the GPU.
+*/
+
+:root {
+
+	/* Ink, paper, hush */
+	--o-ink: <<colour foreground>>;
+	--o-paper: <<colour tiddler-background>>;
+	/* Both secondary inks clear 4.5:1 on the paper in BOTH bundled palettes.
+	   The previous 50/52% srgb mixes rendered the byline at 3.04:1 and the
+	   blockquote at 3.20:1 on the light palette — under the floor for text. */
+	--o-muted: color-mix(in oklab, <<colour foreground>> 72%, <<colour background>>);
+	--o-faint: color-mix(in oklab, <<colour foreground>> 64%, <<colour background>>);
+	--o-rule: color-mix(in oklab, <<colour foreground>> 16%, transparent);
+	--o-rule-strong: color-mix(in oklab, <<colour foreground>> 32%, transparent);
+	/* A neutral wash for rows and cells, so the fire stays scarce */
+	--o-tint: color-mix(in oklab, <<colour foreground>> 5%, transparent);
+
+	/*
+	** The fire. Two stops, one hue family: the palette primary and its aqua
+	** neighbour, which sits a stable ~80 degrees away in OKLCH — far enough to
+	** read as play-of-colour, nowhere near the antipode where the mix becomes
+	** unstable. Both stops are then bent 72% toward the palette foreground by
+	** the SAME formula the CTA fill uses, which is what carries them over 3:1
+	** against paper in both palettes (the raw aqua managed only 2.09:1 on
+	** white, too faint to signal state).
+	*/
+	--o-iris-1: <<colour primary>>;
+	--o-iris-2: color-mix(in oklch, <<colour primary>> 46%, #00e6cf);
+	--o-fire-a: color-mix(in oklab, var(--o-iris-1) 72%, <<colour foreground>>);
+	--o-fire-b: color-mix(in oklab, var(--o-iris-2) 72%, <<colour foreground>>);
+	--o-fire: linear-gradient(90deg, var(--o-fire-a), var(--o-fire-b));
+
+	/* Accent inks. Mixing toward the palette FOREGROUND works in both modes:
+	   on light it darkens (white CTA text passes), on dark it lightens (dark
+	   CTA text passes). One formula, no mode-specific branch. */
+	--o-accent-ink: color-mix(in oklab, <<colour primary>> 64%, <<colour foreground>>);
+	--o-cta: color-mix(in oklab, <<colour primary>> 72%, <<colour foreground>>);
+	--o-wash-strong: color-mix(in oklab, <<colour primary>> 16%, transparent);
+
+	/* Elevation — only for surfaces that genuinely leave the page, and NEUTRAL:
+	   the old shadows mixed the accent in, which puts a coloured glow on a light
+	   surface. A panel on the page casts nothing at all. */
+	--o-lift: 0 2px 8px color-mix(in oklab, <<colour foreground>> 10%, transparent),
+		0 16px 40px color-mix(in oklab, <<colour foreground>> 12%, transparent);
+	--o-lift-high: 0 8px 28px color-mix(in oklab, <<colour foreground>> 14%, transparent),
+		0 32px 72px color-mix(in oklab, <<colour foreground>> 18%, transparent);
+
+	/* Shape — tight. An instrument is machined, not tumbled. */
+	--o-radius: 4px;
+	--o-radius-sm: 2px;
+
+	/* Space — a 4pt scale, named by role. Nothing here types a raw px. */
+	--o-space-3xs: 0.25rem;
+	--o-space-2xs: 0.5rem;
+	--o-space-sm: 1rem;
+	--o-space-md: 1.5rem;
+	--o-space-lg: 2rem;
+	--o-space-xl: 3rem;
+
+	/* Measure — the reading column inside the panel, ~66 characters. The panel
+	   itself keeps whatever width ThemeTweaks gives it; only the prose is bound. */
+	--o-measure: 36rem;
+
+	/*
+	** Type — two distinct roles.
+	**
+	** These stacks used to share "Candara" as their first available fallback, so
+	** on Windows AND Linux the display and body faces both resolved to the same
+	** font and the pairing silently collapsed to a single-font theme; it only
+	** ever worked on macOS. The chains below are disjoint on all three.
+	**   macOS:   Optima   / Avenir Next
+	**   Windows: Candara  / Segoe UI Variable Text
+	**   Linux:   Cantarell/ Noto Sans
+	** All system faces: this theme ships in an offline desktop app and in
+	** standalone single-file wikis, so there is no CDN to fetch a webfont from.
+	*/
+	--o-display: "Optima", "Candara", "Gill Sans Nova", "Gill Sans MT",
+		Cantarell, sans-serif;
+	--o-body: "Avenir Next", "Segoe UI Variable Text", "Segoe UI", "Noto Sans",
+		"DejaVu Sans", system-ui, sans-serif;
+	--o-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+
+	/* Motion — one curve. Exponential ease-out: things arrive and settle. There
+	   is no matching ease-in because nothing here animates on the way out;
+	   TiddlyWiki tears popups out of the DOM. */
+	--o-ease: cubic-bezier(0.16, 1, 0.3, 1);
+	--o-fast: 120ms;
+	--o-dur: 220ms;
+	--o-slow: 400ms;
+
+	accent-color: <<colour primary>>;
+	caret-color: <<colour primary>>;
+}
+
+/* Fallback for browsers without color-mix(): collapse the fire to a single
+   accent and map the derived tokens to solid palette colours. The play-of-colour
+   goes, but every surface, line and state indicator stays valid and legible. */
+@supports not (color: color-mix(in oklab, red, blue)) {
+	:root {
+		--o-muted: <<colour muted-foreground>>;
+		--o-faint: <<colour muted-foreground>>;
+		--o-rule: <<colour tiddler-border>>;
+		--o-rule-strong: <<colour tiddler-border>>;
+		--o-tint: transparent;
+		--o-iris-2: <<colour primary>>;
+		--o-fire-a: <<colour primary>>;
+		--o-fire-b: <<colour primary>>;
+		--o-fire: linear-gradient(90deg, <<colour primary>>, <<colour primary>>);
+		--o-accent-ink: <<colour primary>>;
+		--o-cta: <<colour primary>>;
+		--o-wash-strong: transparent;
+		--o-lift: 0 2px 8px rgba(0,0,0,0.14), 0 16px 40px rgba(0,0,0,0.16);
+		--o-lift-high: 0 8px 28px rgba(0,0,0,0.18), 0 32px 72px rgba(0,0,0,0.22);
+	}
+}
+
+
+/* A quiet, machined scrollbar */
+html {
+	scroll-behavior: smooth;
+	background-color: <<colour page-background>>;
+	/* Hand the page (viewport) scrollbar back to the browser so it follows the
+	   palette's `color-scheme` on :root. The `* { scrollbar-color }` rule below
+	   themes inner scrollbars, but applied to the root it overrides the native
+	   colour-scheme scrollbar and leaves the page scrollbar light on dark palettes
+	   (notably in TiddlyDesktop). Resetting it restores the native dark bar. */
+	scrollbar-color: initial;
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--o-rule-strong) transparent;
+}
+*::-webkit-scrollbar { width: 12px; height: 12px; }
+*::-webkit-scrollbar-thumb {
+	background: var(--o-rule-strong);
+	border-radius: var(--o-radius-sm);
+	border: 3px solid transparent;
+	background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+	background: var(--o-fire-a);
+	background-clip: content-box;
+}
+*::-webkit-scrollbar-corner { background: transparent; }
+
+::selection {
+	background: var(--o-wash-strong);
+	color: var(--o-accent-ink);
+}
+
+/* Focus ring — the sharpest instance of "fire marks the active thing". Never
+   transitioned: a ring that fades in leaves a keyboard user with no indicator
+   for the length of the fade. */
+:where(button, input, textarea, select, a):focus-visible {
+	outline: 2px solid var(--o-fire-a);
+	outline-offset: 2px;
+	border-radius: var(--o-radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+	}
+}

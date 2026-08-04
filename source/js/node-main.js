@@ -86,6 +86,20 @@ function runSpellcheckPrefWriter() {
 	} catch(e) {
 		try { console.error("[TiddlyDesktop] spellcheck pref-writer failed:", e); } catch(_e) {}
 	}
+	exitHelper(parseInt(process.env.TD_SPELLCHECK_PARENT_PID, 10) || 0);
+}
+
+// End the pref-writer helper. process.exit(0) is NOT enough on its own: NW.js goes on to boot a full
+// app instance in this process regardless, and that instance takes the profile's Singleton lock, so
+// the next launch is refused as a secondary. The platform-specific teardown (POSIX process group /
+// Windows process tree) lives in startup-guard.js beside the other process machinery — see
+// exitHelper() there. The exit below is the fallback if that require or teardown fails.
+function exitHelper(parentPid) {
+	try {
+		require("./utils/startup-guard.js").exitHelper(parentPid);
+	} catch(e) {
+		try { console.error("[TiddlyDesktop] helper exit failed:", e); } catch(_e) {}
+	}
 	try { process.exit(0); } catch(e) {}
 }
 

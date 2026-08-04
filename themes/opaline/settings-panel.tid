@@ -1,0 +1,7 @@
+title: $:/themes/tiddlywiki/opaline/settings-panel
+tags: $:/tags/ControlPanel/Appearance
+caption: Opaline
+
+! Opaline theme
+
+<$checkbox tiddler="$:/config/themes/opaline/fire" field="text" checked="yes" unchecked="no" default="yes"> Play-of-colour on the masthead, the selected tab and the panel being edited</$checkbox>

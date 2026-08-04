@@ -1,0 +1,238 @@
+title: $:/themes/tiddlywiki/elegant/typography
+tags: [[$:/tags/Stylesheet]]
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/*
+** Typography — the soul of Elegant
+**
+** Hierarchy is carried by SIZE at the top of the page and by WEIGHT further
+** down it. The tiddler title is set light and very large — nearly three times
+** the body — because at that size a bold serif reads as shouting, and a light
+** one reads as a title page. The headings inside the body have no such room,
+** so they take the contrast in weight instead: 700 against a 400 body.
+*/
+
+/* The reading column: a warm humanist serif, generously set. The measure is
+   bounded by the frame, not here, so this stays purely about the letterform. */
+.tc-tiddler-body {
+	font-family: var(--e-serif);
+	font-size: clamp(1.02rem, 0.98rem + 0.2vw, 1.15rem);
+	line-height: 1.75;
+	color: var(--e-ink);
+	font-variant-numeric: oldstyle-nums proportional-nums;
+	font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+	text-wrap: pretty;
+	hanging-punctuation: first allow-end last;
+}
+
+.tc-tiddler-body p {
+	margin: 0 0 1.1em 0;
+}
+
+/* Titles & headings: the display serif, tightly tracked and balanced */
+.tc-titlebar h2,
+.tc-site-title,
+.tc-tiddler-body h1,
+.tc-tiddler-body h2,
+.tc-tiddler-body h3,
+.tc-tiddler-body h4,
+.tc-tiddler-body h5,
+.tc-tiddler-body h6 {
+	font-family: var(--e-display);
+	font-style: normal;
+	line-height: 1.15;
+	text-wrap: balance;
+	font-feature-settings: "kern" 1, "liga" 1, "dlig" 1;
+	/* Tiddler titles are routinely long unbroken strings — system paths like
+	   $:/themes/tiddlywiki/elegant/variables have no space to break at. The
+	   inherited `word-wrap: break-word` breaks the line but still reports the
+	   whole word as the min-content width, so in a flex titlebar it can push
+	   the row wide. `anywhere` + `min-width: 0` makes the break count. */
+	overflow-wrap: anywhere;
+	min-width: 0;
+}
+
+/* The tiddler title — size carries it, so the weight stays light */
+.tc-titlebar h2 {
+	font-size: clamp(2.05rem, 1.6rem + 2vw, 3rem);
+	font-weight: 400;
+	letter-spacing: -0.022em;
+	line-height: 1.1;
+}
+
+/* Body headings — no room for size, so they take the contrast in weight */
+.tc-tiddler-body h1,
+.tc-tiddler-body h2,
+.tc-tiddler-body h3,
+.tc-tiddler-body h4 {
+	font-weight: 700;
+	letter-spacing: -0.01em;
+}
+.tc-tiddler-body h1 { font-size: 1.7em; margin: 1.6em 0 0.5em; }
+.tc-tiddler-body h2 { font-size: 1.38em; margin: 1.5em 0 0.5em; }
+.tc-tiddler-body h3 { font-size: 1.15em; margin: 1.35em 0 0.4em; }
+.tc-tiddler-body h4 { font-size: 1em; margin: 1.25em 0 0.4em; letter-spacing: 0; }
+
+/* The lowest two levels drop out of the size ladder entirely and become small
+   caps — a label rather than a heading. Still the serif: this is content. */
+.tc-tiddler-body h5,
+.tc-tiddler-body h6 {
+	font-family: var(--e-serif);
+	font-weight: 700;
+	font-variant-caps: all-small-caps;
+	letter-spacing: 0.1em;
+	font-size: 0.95em;
+	color: var(--e-muted);
+	margin: 1.2em 0 0.35em;
+}
+
+/*
+** Signature — a drop cap on the opening paragraph. Float fallback first, then
+** the proper `initial-letter` where supported. Only fires when the body opens
+** with a paragraph, so lists and headings are never disturbed.
+*/
+.tc-tiddler-body > p:first-child::first-letter {
+	font-family: var(--e-display);
+	float: left;
+	font-size: 3.4em;
+	line-height: 0.78;
+	font-weight: 400;
+	padding: 0.02em 0.08em 0 0;
+	margin: 0.02em 0.06em 0 0;
+	color: var(--e-accent-deep);
+}
+
+@supports (initial-letter: 3) or (-webkit-initial-letter: 3) {
+	.tc-tiddler-body > p:first-child::first-letter {
+		float: none;
+		font-size: inherit;
+		-webkit-initial-letter: 3 2;
+		initial-letter: 3 2;
+		margin-right: 0.1em;
+		padding: 0;
+	}
+}
+
+/* Links: one signal, not four. The ink stays put; only the rule beneath it
+   comes up to full strength on hover, so nothing shifts and nothing flashes. */
+.tc-tiddler-body a.tc-tiddlylink,
+.tc-tiddler-body a.tc-tiddlylink-resolves {
+	color: var(--e-accent-deep);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-decoration-color: var(--e-accent-light);
+	text-underline-offset: 0.18em;
+	transition: text-decoration-color var(--e-dur) var(--e-ease);
+}
+/* `:not(.tc-plugin-info)` keeps us clear of plugin boxes, whose vanilla hover is
+   white text on a primary fill — recolouring it to the accent kills contrast. */
+.tc-tiddler-body a.tc-tiddlylink:not(.tc-plugin-info):hover {
+	text-decoration-color: var(--e-accent);
+}
+.tc-tiddler-body a.tc-tiddlylink-missing {
+	text-decoration-style: dotted;
+	opacity: 0.85;
+}
+
+/* Lists: comfortable indentation, markers in the rule colour rather than the
+   accent — the accent is spent on links, the drop cap and focus, nothing else */
+.tc-tiddler-body ul,
+.tc-tiddler-body ol {
+	padding-left: 1.5em;
+}
+.tc-tiddler-body li {
+	margin: 0.32em 0;
+}
+/* Markers take the muted ink, not the rule colour: a bullet is non-text content
+   that still has to clear 3:1, and a 32%-opacity hairline does not. */
+.tc-tiddler-body li::marker {
+	color: var(--e-muted);
+}
+
+/* Block quotes: set in from both sides and voiced in italic, the way a printed
+   extract is. A hairline marks the edge; the old 2px accent bar is gone. */
+.tc-tiddler-body blockquote {
+	margin: 1.5em 0;
+	margin-inline-start: 0;
+	padding: 0.1em 0 0.1em 1.4em;
+	padding-inline-end: 1.4em;
+	border-inline-start: 1px solid var(--e-rule-strong);
+	font-style: italic;
+	color: var(--e-muted);
+}
+.tc-tiddler-body blockquote .tc-big-quote {
+	font-family: var(--e-display);
+	color: var(--e-rule-strong);
+}
+
+/* Horizontal rule: a short centred rule. No ornament — the restraint IS the
+   ornament, and a filigree diamond is a flourish this theme has to earn. */
+.tc-tiddler-body hr {
+	border: none;
+	height: 1px;
+	width: 28%;
+	margin: 2.6em auto;
+	background: var(--e-rule-strong);
+}
+
+/* Inline code & pre: hairline-framed, flat on the page */
+.tc-tiddler-body code {
+	font-size: 0.88em;
+	padding: 0.1em 0.38em;
+	border-radius: var(--e-radius);
+	border: 1px solid var(--e-rule);
+	background: var(--e-tint);
+}
+.tc-tiddler-body pre {
+	border-radius: var(--e-radius);
+	border: 1px solid var(--e-rule);
+	box-shadow: none;
+}
+.tc-tiddler-body pre code {
+	border: none;
+	background: none;
+	padding: 0;
+}
+
+/* Tables: editorial — a rule above and below the header, hairlines between
+   rows, nothing else. No frame, no shadow, no fill. */
+.tc-tiddler-body table {
+	border-collapse: collapse;
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+	font-variant-numeric: tabular-nums lining-nums;
+}
+.tc-tiddler-body table th {
+	font-family: var(--e-serif);
+	font-weight: 700;
+	font-variant-caps: all-small-caps;
+	letter-spacing: 0.08em;
+	font-size: 0.94em;
+	text-align: start;
+	background: none;
+	border-top: 1px solid var(--e-rule-strong);
+	border-bottom: 1px solid var(--e-rule-strong);
+}
+.tc-tiddler-body table td {
+	border: none;
+	border-bottom: 1px solid var(--e-rule);
+}
+.tc-tiddler-body table tr:hover td {
+	background: var(--e-tint);
+}
+
+/* Images: a hairline mat, sitting flat on the leaf like a tipped-in plate */
+.tc-tiddler-body img {
+	border-radius: 0;
+	border: 1px solid var(--e-rule);
+	box-shadow: none;
+}
+
+/* Emphasis & small print */
+.tc-tiddler-body strong { font-weight: 700; }
+.tc-tiddler-body small {
+	font-family: var(--e-serif);
+	color: var(--e-muted);
+}

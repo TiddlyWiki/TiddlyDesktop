@@ -1,0 +1,252 @@
+title: $:/themes/tiddlywiki/workbench/story
+tags: [[$:/tags/Stylesheet]]
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/*
+** Story river, records & typography — the ledger
+**
+** The river is one continuous sheet ruled into records. A tiddler is not a
+** card: it has no frame, no radius, no surface and no shadow of its own. What
+** separates one record from the next is a single strong rule and the space
+** around it, exactly as a ledger separates entries.
+**
+** The panel used to carry `box-shadow: inset 3px 0 0` on its leading edge,
+** turning accent on hover — a thick coloured stripe down one side of a card,
+** which is among the most recognisable generated-UI tells there is.
+*/
+
+/* The sheet */
+.tc-story-river {
+	padding-top: 0;
+	background: var(--w-panel);
+}
+
+/*
+** Record.
+**
+** The story views drive this node with inline transform/opacity and popups are
+** anchored through it, so it carries NO transform / will-change / animation and
+** no new positioning context. It is now purely a rule and a rhythm.
+*/
+.tc-tiddler-frame {
+	--w-frame-pad-x: var(--w-row-x);
+	margin-bottom: 0;
+	padding: var(--w-row-y) var(--w-frame-pad-x);
+	background: none;
+	border: none;
+	border-top: 1px solid var(--w-grid-strong);
+	border-radius: 0;
+	box-shadow: none;
+}
+
+/* The record currently being edited is the "active row" — one of the three
+   places this theme spends accent. The rule above it goes accent and the row
+   takes a neutral tint; no stripe, no glow. */
+.tc-tiddler-frame.tc-tiddler-edit-frame {
+	border-top-color: var(--w-accent);
+	background: var(--w-tint);
+}
+
+/* Record header. `.tc-tiddler-subtitle` is a separate ViewTemplate segment and
+   a SIBLING of `.tc-tiddler-title`, not a child, so the metadata cannot be put
+   on the title's own line without restructuring a node the story views drive.
+   It stays stacked directly beneath, set as a field line. */
+.tc-tiddler-title {
+	margin-bottom: var(--w-space-xs);
+	padding-bottom: var(--w-space-2xs);
+	border-bottom: 1px solid var(--w-grid);
+}
+.tc-titlebar h2, .tc-site-title {
+	font-family: var(--w-mono);
+	font-style: normal;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	/* Tiddler titles are routinely long unbroken strings — system paths like
+	   $:/themes/tiddlywiki/workbench/variables have no space to break at, and a
+	   monospace face makes them wider still. `anywhere` + `min-width: 0` stops
+	   the flex titlebar being pushed past the sheet. */
+	overflow-wrap: anywhere;
+	min-width: 0;
+}
+.tc-titlebar h2 {
+	font-size: clamp(1.15rem, 1.05rem + 0.5vw, 1.5rem);
+	color: <<colour tiddler-title-foreground>>;
+}
+.tc-tiddler-subtitle {
+	font-family: var(--w-mono);
+	font-size: 0.74rem;
+	letter-spacing: 0.01em;
+	color: var(--w-faint);
+}
+
+/* Body — compact reading in the system sans; mono stays the system voice */
+.tc-tiddler-body {
+	font-family: var(--w-sans);
+	font-size: 0.92rem;
+	line-height: 1.52;
+	color: var(--w-ink);
+	margin-top: var(--w-space-xs);
+}
+.tc-tiddler-body p { margin: 0 0 0.7em 0; }
+
+/* Text is measured; data is not. The bound sits on the prose-level children
+   rather than on the body container, so paragraphs, lists and quotations stay
+   readable while tables, code blocks and images keep the full record width. */
+.tc-tiddler-body > p,
+.tc-tiddler-body > ul,
+.tc-tiddler-body > ol,
+.tc-tiddler-body > blockquote,
+.tc-tiddler-body > h1,
+.tc-tiddler-body > h2,
+.tc-tiddler-body > h3,
+.tc-tiddler-body > h4,
+.tc-tiddler-body > h5,
+.tc-tiddler-body > h6 {
+	max-width: var(--w-measure);
+}
+.tc-tiddler-body h1, .tc-tiddler-body h2,
+.tc-tiddler-body h3, .tc-tiddler-body h4,
+.tc-tiddler-body h5, .tc-tiddler-body h6 {
+	font-family: var(--w-mono);
+	font-style: normal;
+	font-weight: 600;
+	line-height: 1.25;
+	overflow-wrap: anywhere;
+	min-width: 0;
+}
+.tc-tiddler-body h1 { font-size: 1.4em; margin: 1em 0 0.4em; }
+.tc-tiddler-body h2 { font-size: 1.22em; margin: 0.9em 0 0.35em; }
+.tc-tiddler-body h3 { font-size: 1.08em; margin: 0.8em 0 0.3em; }
+.tc-tiddler-body h4 { font-size: 1em; margin: 0.8em 0 0.3em; color: var(--w-muted); }
+.tc-tiddler-body h5, .tc-tiddler-body h6 {
+	font-size: 0.88em;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--w-muted);
+	margin: 0.8em 0 0.3em;
+}
+
+/* Links — the second of the three accent uses. One signal: the ink shifts. */
+.tc-tiddler-body a.tc-tiddlylink,
+.tc-tiddler-body a.tc-tiddlylink-resolves {
+	color: var(--w-accent-ink);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.14em;
+	transition: color var(--w-dur) var(--w-ease);
+}
+.tc-tiddler-body a.tc-tiddlylink:not(.tc-plugin-info):hover { color: var(--w-accent); }
+.tc-tiddler-body a.tc-tiddlylink-missing { text-decoration-style: dotted; }
+
+/* Markers take the muted ink, not the accent. A bullet is not a signal. */
+.tc-tiddler-body ul, .tc-tiddler-body ol { padding-left: 1.3em; }
+.tc-tiddler-body li { margin: 0.15em 0; }
+.tc-tiddler-body li::marker { color: var(--w-muted); }
+
+/* Block quote — a plain rule and an indent. The accent bar plus accent wash it
+   used to carry made every quotation look like a callout. */
+.tc-tiddler-body blockquote {
+	margin: 0.8em 0;
+	margin-inline-start: 0;
+	padding: 0.3em 0 0.3em 0.9em;
+	border-inline-start: 2px solid var(--w-grid-strong);
+	background: none;
+	color: var(--w-muted);
+}
+
+.tc-tiddler-body hr { border: none; height: 1px; margin: 1.2em 0; background: var(--w-grid-strong); }
+
+/* Code — neutral field, not an accent wash */
+.tc-tiddler-body code {
+	font-family: var(--w-mono);
+	font-size: 0.86em;
+	padding: 0.08em 0.32em;
+	border-radius: 0;
+	border: 1px solid var(--w-grid);
+	background: var(--w-zebra);
+}
+.tc-tiddler-body pre {
+	border-radius: 0;
+	border: 1px solid var(--w-grid);
+}
+.tc-tiddler-body pre code { border: none; background: none; padding: 0; }
+
+/*
+** Tables — the centrepiece. This is the one place the theme is unapologetically
+** a data grid: collapsed borders, hairline cells, zebra rows, a ruled header.
+** The header's accent wash is gone (a column heading is structure, not signal)
+** and the four corner-radius rules went with the radius, which also retires the
+** `border-collapse: separate` workaround they existed to support.
+*/
+.tc-tiddler-body table {
+	border-collapse: collapse;
+	border: 1px solid var(--w-grid-strong);
+	border-radius: 0;
+	font-size: 0.88em;
+}
+.tc-tiddler-body table th {
+	font-family: var(--w-mono);
+	font-weight: 600;
+	font-size: 0.92em;
+	text-align: start;
+	background: none;
+	border: 1px solid var(--w-grid);
+	border-bottom: 2px solid var(--w-grid-strong);
+}
+.tc-tiddler-body table td {
+	border: 1px solid var(--w-grid);
+	padding: 0.28em 0.55em;
+}
+.tc-tiddler-body table th { padding: 0.28em 0.55em; }
+/* Long unbroken cell values (paths, hashes, URLs) must break rather than force
+   the whole grid wider than the record on narrow viewports. */
+.tc-tiddler-body table th,
+.tc-tiddler-body table td {
+	overflow-wrap: anywhere;
+}
+.tc-tiddler-body table tr:nth-child(even) td { background: var(--w-zebra); }
+.tc-tiddler-body table tr:hover td { background: var(--w-tint); }
+
+/* Field sheets in the editor / info panel read as the same data grid */
+.tc-view-field-name, .tc-edit-field-name {
+	font-family: var(--w-mono);
+	color: var(--w-muted);
+}
+.tc-view-field-table tr:nth-child(even) td { background: var(--w-zebra); }
+
+.tc-tiddler-body img { border-radius: 0; }
+
+@media (max-width: 769px) {
+	.tc-tiddler-frame {
+		--w-frame-pad-x: var(--w-space-sm);
+	}
+}
+
+/* Fold / unfold banners — vanilla positions both with negative margins sized to
+   its own 42px frame padding, which is not our padding. Re-anchor them to the
+   record edge with left/right so they stay correct whatever the gutter is.
+   Desktop only: on mobile vanilla lays the unfold banner out statically, and
+   forcing it absolute there would strand it. */
+@media (min-width: 770px) {
+	.tc-unfold-banner.tc-unfold-banner {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: auto;
+		-webkit-margin-start: 0;
+		margin-inline-start: 0;
+		border-radius: 0;
+	}
+	.tc-fold-banner.tc-fold-banner {
+		inset-inline-start: 0;
+		top: 0;
+		bottom: 0;
+		max-width: var(--w-frame-pad-x);
+		-webkit-margin-start: 0;
+		margin-inline-start: 0;
+		border-radius: 0;
+	}
+}

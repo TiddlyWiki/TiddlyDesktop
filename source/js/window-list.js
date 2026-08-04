@@ -409,9 +409,23 @@ WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
 	}
 	// Close the window
 	w.window_nwjs.close(true);
-	// Close the backstage window if there are no windows left
+	// No windows left: quit the application outright, rather than only closing the hidden host.
+	//
+	// Closing that window is not enough to end the process. main.js creates a tray icon, and a live
+	// tray keeps NW.js running with nothing on screen — so the app carries on invisibly, still
+	// holding the profile's Singleton lock. The next launch is then absorbed by that instance and
+	// looks like it did nothing, which reads as "I can't restart the app".
+	//
+	// quitApp() (main.js) removes the tray, force-closes every window, asks NW.js to quit and has a
+	// hard process.exit backstop, so no handle can keep us alive. Falling back to the old behaviour
+	// if it is somehow unavailable keeps this safe during early startup.
 	if(this.windows.length === 0) {
-		this.backstageWindow_nwjs.close(true);
+		var quitApp = $tw.desktop && $tw.desktop.quitApp;
+		if(typeof quitApp === "function") {
+			quitApp();
+		} else {
+			this.backstageWindow_nwjs.close(true);
+		}
 	}
 };
 

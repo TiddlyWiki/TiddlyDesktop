@@ -1,0 +1,17 @@
+title: $:/themes/tiddlywiki/workbench/settings
+tags: [[$:/tags/Stylesheet]]
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/*
+** Density.
+**
+** This used to override `.tc-tiddler-frame` and `.tc-story-river` directly with
+** hard-coded px and `!important` on both. It now re-points the two density
+** tokens instead, so every record, gutter, info panel and fold banner follows
+** from one switch — and nothing needs `!important`, because this stylesheet
+** loads after variables.tid (which is pinned first by its `list-before` field)
+** and simply re-declares the custom properties on the same :root.
+*/
+
+{{{ [[$:/config/themes/workbench/density]get[text]match[comfortable]then[:root{--w-row-y:var(--w-space-lg);--w-row-x:var(--w-space-lg);}]] }}}

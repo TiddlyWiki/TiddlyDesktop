@@ -1,0 +1,104 @@
+title: $:/themes/tiddlywiki/workbench/tiddlydesktop
+tags: [[$:/tags/Stylesheet]]
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/*
+** TiddlyDesktop — Workbench theme
+**
+** The WikiList is the same ledger as the story river: rows separated by rules,
+** square cells, monospace for anything that is data, no decorative anything.
+**
+** Deliberately NOT zebra-striped, unlike the tables in the story river: the
+** drag handler sets `display: none` on the row being dragged, and a hidden row
+** still counts for `:nth-child`, so the stripes would re-phase mid-drag. Rules
+** carry the row structure instead and are stable under reordering.
+*/
+
+/* Toolbar — flat, a structural rule below, no shadow */
+.td-toolbar {
+	box-shadow: none;
+	border-bottom: 1px solid var(--w-grid-strong);
+	font-family: var(--w-sans);
+	font-size: 0.88em;
+}
+
+/* Wiki-list rows — ruled, square, flat */
+.td-wikilist .td-wikilist-item {
+	border-radius: 0;
+	box-shadow: none;
+	border-bottom: 1px solid var(--w-grid);
+	transition: background-color var(--w-fast) var(--w-ease);
+}
+.td-wikilist .td-wikilist-item:hover {
+	background-color: var(--w-tint);
+}
+.td-wikilist .td-wikilist-item.tc-dragging {
+	box-shadow: none;
+	background-color: var(--w-zebra);
+}
+
+/* Title in the reading sans; the path is data, so it is monospace */
+.td-wikilist .td-wiki-title {
+	font-family: var(--w-sans);
+	font-weight: 600;
+	overflow-wrap: anywhere;
+	min-width: 0;
+}
+.td-wikilist .td-wikilist-info {
+	font-family: var(--w-sans);
+}
+.td-wikilist .td-wiki-url {
+	font-family: var(--w-mono);
+	font-size: 0.82em;
+	color: var(--w-faint);
+	overflow-wrap: anywhere;
+	min-width: 0;
+}
+
+/* Buttons — square, compact */
+button.td-button {
+	border-radius: var(--w-radius);
+	font-family: var(--w-sans);
+	font-size: 0.82em;
+	font-weight: 500;
+	transition: background-color var(--w-fast) var(--w-ease);
+}
+
+/* Toolbar inputs — hairline border matching the grid */
+.td-toolbar input,
+.td-toolbar select {
+	font-family: var(--w-sans);
+	border-radius: var(--w-radius);
+	border: 1px solid var(--w-grid-strong);
+}
+
+/* ── The WikiList window — dense data console ──────────────────────── */
+.td-search input.td-wikilist-search-input {
+	font-family: var(--w-mono);
+	border-radius: var(--w-radius);
+	border: 1px solid var(--w-grid-strong);
+	transition: border-color var(--w-dur) var(--w-ease);
+}
+.td-search input.td-wikilist-search-input:focus {
+	border-color: var(--w-accent);
+}
+.td-tags .tc-tag-label {
+	font-family: var(--w-mono);
+	border-radius: var(--w-radius);
+}
+
+/* ── WikiList rows — ruled favicon cell, ruled actions ─────────────── */
+.td-wikilist .td-wikilist-item .td-wikilist-thumbnail button {
+	border-radius: var(--w-radius);
+	border: 1px solid var(--w-grid);
+	box-shadow: none;
+}
+.td-wikilist .td-wikilist-item .td-wiki-toolbar {
+	border-top: 1px solid var(--w-grid);
+	padding-top: var(--w-space-xs);
+}
+.td-wikilist .td-wiki-advanced-heading {
+	font-family: var(--w-mono);
+	font-weight: 600;
+}

@@ -1,0 +1,105 @@
+title: $:/themes/tiddlywiki/opaline/tiddlydesktop
+tags: [[$:/tags/Stylesheet]]
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/*
+** TiddlyDesktop — Opaline theme
+**
+** The WikiList window is the same optical bench as the story river: machined
+** panels on a flat field, hairline edges, no coloured glow. Fire appears only
+** where something is active — the focused search field, the row you are on.
+*/
+
+/* Toolbar — closed by a rule rather than lifted by an accent-tinted shadow */
+.td-toolbar {
+	box-shadow: none;
+	border-bottom: 1px solid var(--o-rule-strong);
+	font-family: var(--o-body);
+}
+
+/* Wiki-list entries — hairline-edged, flat, lit from above by the same
+   one-step-lighter top edge the tiddler panels use. The shadow that used to
+   lift them (and deepen on hover) implied they could be picked up; they can't,
+   so the hover now just firms the edge. */
+.td-wikilist .td-wikilist-item {
+	border-radius: var(--o-radius);
+	border: 1px solid var(--o-rule-strong);
+	border-top-color: var(--o-rule);
+	box-shadow: none;
+	transition: border-color var(--o-dur) var(--o-ease);
+}
+.td-wikilist .td-wikilist-item:hover {
+	border-color: var(--o-accent-ink);
+}
+.td-wikilist .td-wikilist-item.tc-dragging {
+	box-shadow: none;
+}
+
+/* Title — the luminous display face, set tight like every other title */
+.td-wikilist .td-wiki-title {
+	font-family: var(--o-display);
+	font-weight: 600;
+	letter-spacing: -0.018em;
+}
+.td-wikilist .td-wikilist-info {
+	font-family: var(--o-body);
+}
+
+/* Buttons — machined, not pebbled */
+button.td-button {
+	border-radius: var(--o-radius-sm);
+	font-family: var(--o-body);
+	font-size: 0.82em;
+	font-weight: 500;
+	transition: background-color var(--o-fast) var(--o-ease);
+}
+
+/* Toolbar inputs */
+.td-toolbar input,
+.td-toolbar select {
+	font-family: var(--o-body);
+	border-radius: var(--o-radius-sm);
+}
+
+/* ── The WikiList window ─────────────────────────────────────────────── */
+
+/* Search field — takes a fire edge on focus, like every other focused field.
+   The ring itself is the instant `:focus-visible` outline from variables.tid. */
+.td-search input.td-wikilist-search-input {
+	font-family: var(--o-body);
+	border-radius: var(--o-radius-sm);
+	border: 1px solid var(--o-rule-strong);
+	transition: border-color var(--o-dur) var(--o-ease);
+}
+.td-search input.td-wikilist-search-input:focus {
+	border-color: var(--o-fire-a);
+}
+.td-tags .tc-tag-label {
+	font-family: var(--o-body);
+}
+
+/* ── WikiList rows ───────────────────────────────────────────────────── */
+
+/* Favicon in a hairline mat, flat on the row */
+.td-wikilist .td-wikilist-item .td-wikilist-thumbnail button {
+	border-radius: var(--o-radius-sm);
+	border: 1px solid var(--o-rule);
+	box-shadow: none;
+	overflow: hidden;
+}
+
+/* The path is data — reading sans, quiet, and it must be able to break, since
+   a wiki path is a long unbroken string with nowhere obvious to wrap. */
+.td-wikilist .td-wiki-url {
+	font-family: var(--o-body);
+	font-size: 0.82em;
+	color: var(--o-muted);
+	overflow-wrap: anywhere;
+	min-width: 0;
+}
+
+.td-wikilist .td-wiki-advanced-heading {
+	font-family: var(--o-display);
+	font-weight: 600;
+}

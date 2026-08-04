@@ -39,6 +39,15 @@ function showBackstageWindow() {
 }
 
 backstageWindow.on("close",function(event) {
+	// NW.js CANCELS a close unless the handler calls close(true). Hiding is right for a
+	// user-initiated close — this window is the hidden host, not something to destroy — but during
+	// a quit that veto is exactly what stops gui.App.quit() / closeAllWindows() from ever
+	// completing, leaving a windowless browser process alive holding the profile's Singleton lock.
+	// So once we are quitting, let the close through.
+	if(_quitting) {
+		try { backstageWindow.close(true); } catch(e) {}
+		return;
+	}
 	backstageWindow.hide();
 });
 
@@ -62,7 +71,12 @@ function quitApp() {
 			});
 		}
 	} catch(e) {}
-	try { backstageWindow.close(true); } catch(e) {}
+	// Ask NW.js to quit. Deliberately does NOT close backstageWindow first: this script runs in
+	// THAT window's renderer, so closing it here tears down the very context that still has to run
+	// App.quit() and the process.exit backstop below. Everything after the close would silently not
+	// happen, which is how a windowless browser process was surviving a "quit" and then blocking
+	// the next launch. The host window is closed by the backstop instead, once it has nothing left
+	// to do.
 	try { gui.App.closeAllWindows(); } catch(e) {}
 	try { gui.App.quit(); } catch(e) {}
 	// Spellcheck prefs (Google opt-in + language) only survive if written to the profile Preferences
@@ -87,8 +101,26 @@ function quitApp() {
 			}).unref();
 		}
 	} catch(e) {}
-	// Backstop: if anything would otherwise keep the process alive, terminate it outright.
-	setTimeout(function() { try { (_realProcessExit || process.exit)(0); } catch(e) {} }, 300);
+	// Backstop: if anything would otherwise keep the process alive, terminate it outright. This runs
+	// last and in a still-live renderer, which is the whole reason the host window is closed here
+	// rather than earlier.
+	setTimeout(function() {
+		try { backstageWindow.close(true); } catch(e) {}
+		// Terminate the BROWSER process. This is the only thing that reliably ends the app: we are
+		// in a renderer, so the process.exit() below kills this renderer and nothing else, and
+		// gui.App.quit() above does not always take. Killing the browser process makes Chromium
+		// tear down every child (gpu, utility, zygotes, this renderer) with it.
+		//
+		// The pid comes from the profile's SingletonLock, which Chromium writes FROM that process —
+		// read now rather than cached, so it is always the live owner. Resolved late for the same
+		// reason: nothing else in the app knows this pid (node-main.js's own pid is a different
+		// process entirely).
+		try {
+			var browserPid = startupGuard.getPrimaryPid(gui.App.dataPath);
+			if(browserPid && browserPid !== process.pid) { process.kill(browserPid); }
+		} catch(e) {}
+		try { (_realProcessExit || process.exit)(0); } catch(e) {}
+	}, 300);
 }
 
 // Create the tray icon
@@ -240,12 +272,6 @@ var defaultCommand = "open",
 // immediately. The heavy TiddlyWiki boot below paints the real content into
 // the already-open window via BackstageWindow.tryRender().
 var initialArgv = gui.App.argv.slice(0);
-// A tiddlydesktop:// deep link (OAuth return) launched cold lands in argv — pull it out so it
-// isn't treated as a wiki path, and act on it once boot has finished (see below).
-var _coldStartDeepLink = deeplink.findColdStartUrl(initialArgv);
-if(_coldStartDeepLink) {
-	initialArgv = initialArgv.filter(function(a) { return deeplink.extractUrl(a) !== _coldStartDeepLink; });
-}
 var hasNonFlagArg = initialArgv.some(function(a) { return !a.startsWith("--"); });
 if(!hasNonFlagArg) {
 	$tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});
@@ -262,7 +288,15 @@ setTimeout(function() {
 	// language wins in the backstage UI. The shared "../languages/" library stays clean, so the
 	// PluginChooser and folder wikis get plain languages (no TiddlyDesktop strings, no priority
 	// bump). deepDefaults during boot preserves this (it only fills missing keys); it is restored to
-	// the clean default in the boot callback below, before the PluginChooser can enumerate anything.
+	// the clean default in the boot callback below.
+	//
+	// NB: the restore happens AFTER startup modules have run — $tw.boot.boot() executes every
+	// startup task and only then invokes this callback. So a startup module that resolves the
+	// language library eagerly captures the BACKSTAGE copies, not the clean ones. The PluginChooser
+	// (plugins/tiddlydesktop/modules/startup/plugin-manager.js) is such a module, and resolves its
+	// library paths lazily for exactly this reason — don't "optimise" that back into a one-time
+	// capture, or installing a language into a user's wiki starts shipping the wiki-list strings
+	// and plugin-priority 100 with it.
 	$tw.config = $tw.config || {};
 	$tw.config.languagesPath = "../languages-backstage/";
 	$tw.boot.boot(function() {

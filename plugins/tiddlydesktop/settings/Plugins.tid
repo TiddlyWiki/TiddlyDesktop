@@ -4,8 +4,8 @@ tags: $:/TiddlyDesktop/Settings
 
 Install plugins, themes and languages into the wiki list itself (the backstage wiki). Sources are the
 bundled library plus your custom plugin folder (Android) / `TIDDLYWIKI_PLUGIN_PATH`,
-`TIDDLYWIKI_THEME_PATH` and `TIDDLYWIKI_LANGUAGE_PATH` (Desktop). Applying changes **reloads the wiki
-list** so the plugin activates.
+`TIDDLYWIKI_THEME_PATH` and `TIDDLYWIKI_LANGUAGE_PATH` (Desktop). Applying changes writes them straight away; they take effect the
+next time you start TiddlyDesktop.
 
 <$button class="td-button">
 <$action-sendmessage $message="tiddlydesktop-open-plugin-chooser" $param="backstage://self"/>

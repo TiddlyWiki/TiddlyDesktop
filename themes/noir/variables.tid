@@ -1,0 +1,209 @@
+title: $:/themes/tiddlywiki/noir/variables
+tags: [[$:/tags/Stylesheet]]
+list-before:
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/* Hallmark · genre: atmospheric · macrostructure: Photographic · theme: Noir
+ * mood: austere (chiaroscuro — hard key light, deep falloff) · anchor hue: warm amber
+ * nav: n/a · footer: n/a — TiddlyWiki owns the chrome; a theme has neither.
+ * pre-emit critique: P5 H5 E5 S5 R5 V4
+ */
+
+/*
+** Noir — design tokens
+**
+** A dark-native theme built on ONE depth system instead of five. The reading
+** surface is a lit stage: it separates from the surround by lightness and by
+** the key light falling on it, and by nothing else. It previously carried a
+** border AND a rim highlight AND two cast shadows AND an accent glow AND a
+** surface-lightness ladder, all at once, which is why it read as generated —
+** five devices arguing about the same edge.
+**
+** Shadow survives in exactly one role: genuine occlusion. A dropdown or a
+** modal floats above the page and must say so. A tiddler does not float.
+**
+** The lamp is the signature and it stays: one warm radial, fixed-attached,
+** never animated. It is also load-bearing now rather than decorative — on the
+** dark palette the pool of light is most of what separates the stage from the
+** surround, which is what chiaroscuro actually means.
+*/
+
+:root {
+	--n-ink: <<colour foreground>>;
+	/* The lit stage, and the dark it sits in */
+	--n-stage: <<colour tiddler-background>>;
+
+	/* Secondary inks. Both used to fail on the LIGHT palette — the 0.74rem
+	   subtitle sat at 3.47:1 and the blockquote ink at 4.21:1. */
+	--n-muted: color-mix(in oklab, <<colour foreground>> 66%, <<colour background>>);
+	--n-faint: color-mix(in oklab, <<colour foreground>> 58%, <<colour background>>);
+
+	/* Recessed — things set INTO the stage (code, fields, inputs). Mixing the
+	   stage back toward the page works in both directions, because the page is
+	   the deeper surface in both palettes. */
+	--n-recessed: color-mix(in oklab, <<colour background>> 60%, <<colour page-background>>);
+
+	--n-line: color-mix(in oklab, <<colour foreground>> 14%, transparent);
+	--n-line-strong: color-mix(in oklab, <<colour foreground>> 28%, transparent);
+
+	/*
+	** The accent ladder, made palette-aware.
+	**
+	** `--n-accent-bright` used to be `color-mix(in oklch, primary 82%, white)`.
+	** Mixing toward WHITE is dark-mode reasoning: it brightens correctly on a
+	** dark palette and, on cream, pushes the accent lighter than the paper can
+	** carry. It measured 2.63:1 there while being used as the link-hover ink,
+	** the focus ring and the primary-button hover fill — so links hovered to
+	** WORSE contrast than at rest, and the focus indicator sat under the 3:1
+	** floor. Mixing toward the palette FOREGROUND instead brightens on dark and
+	** deepens on light, and all three clear their thresholds in both palettes.
+	*/
+	--n-accent: <<colour primary>>;
+	--n-accent-ink: color-mix(in oklab, <<colour primary>> 64%, <<colour foreground>>);
+	--n-accent-bright: color-mix(in oklab, <<colour primary>> 76%, <<colour foreground>>);
+	--n-select: color-mix(in oklab, <<colour primary>> 22%, transparent);
+
+	/* Hover — a step of light, not a wash of colour. Overlaying the foreground
+	   lightens on a dark palette and deepens on a light one, so one token gives
+	   the correct direction in both. */
+	--n-hover: color-mix(in oklab, <<colour foreground>> 8%, transparent);
+
+	/* The key light. Tokenised so the one place it is painted stays readable. */
+	--n-keylight: color-mix(in oklab, <<colour primary>> 22%, transparent);
+
+	/* Occlusion only — for surfaces that genuinely float. Palette-derived
+	   rather than hard-coded rgba(0,0,0), which was both untokenised and far
+	   too heavy on the light palette. */
+	--n-lift: 0 4px 16px color-mix(in oklab, <<colour foreground>> 22%, transparent);
+	--n-lift-high: 0 12px 40px color-mix(in oklab, <<colour foreground>> 32%, transparent);
+
+	/* Shape — a film frame, not a pebble. The genre permits pill CTAs; the
+	   austere register declines them. */
+	--n-radius: 6px;
+
+	/* Space — 4pt scale */
+	--n-space-3xs: 0.25rem;
+	--n-space-2xs: 0.5rem;
+	--n-space-sm: 1rem;
+	--n-space-md: 1.5rem;
+	--n-space-lg: 2.25rem;
+	--n-space-xl: 3.5rem;
+
+	/* Measure — the reading column, ~68 characters */
+	--n-measure: 35rem;
+
+	/*
+	** Type. Display and body used to be the SAME face — Inter in both roles,
+	** which is the named one-font tell; Inter is also absent from most systems,
+	** so both roles silently resolved to the same system fallback anyway.
+	**
+	** Display is now geometric — the register of a title card, and a display
+	** style no other theme in this family uses. Body is a plain reading sans,
+	** and mono carries metadata and code. All system faces: this ships offline.
+	**   macOS:   Futura         / Segoe-less -> falls to Avenir-class
+	**   Windows: Century Gothic / Segoe UI Variable Text
+	**   Linux:   URW Gothic     / Cantarell
+	*/
+	--n-display: Futura, "Century Gothic", "URW Gothic", "Trebuchet MS",
+		sans-serif;
+	--n-body: "Segoe UI Variable Text", "Segoe UI", Cantarell, "Avenir Next",
+		ui-sans-serif, system-ui, sans-serif;
+	--n-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+
+	/* Motion — the genre asks for fade only: no slide, no bounce, the
+	   atmosphere does the work. One curve, and almost nothing uses it. */
+	--n-ease: cubic-bezier(0.16, 1, 0.3, 1);
+	--n-fast: 120ms;
+	--n-dur: 220ms;
+	--n-slow: 380ms;
+
+	accent-color: <<colour primary>>;
+	caret-color: var(--n-accent-bright);
+}
+
+/* Fallback for browsers without color-mix(): map the derived surfaces, lines
+   and accent ladder to solid palette colours. The key light and the hover step
+   drop out and the stage flattens toward the page, but every surface, edge and
+   state indicator stays valid and legible. */
+@supports not (color: color-mix(in oklab, red, blue)) {
+	:root {
+		--n-muted: <<colour muted-foreground>>;
+		--n-faint: <<colour muted-foreground>>;
+		--n-recessed: <<colour pre-background>>;
+		--n-line: <<colour tiddler-border>>;
+		--n-line-strong: <<colour tiddler-border>>;
+		--n-accent-ink: <<colour primary>>;
+		--n-accent-bright: <<colour primary>>;
+		--n-select: transparent;
+		--n-hover: transparent;
+		--n-keylight: transparent;
+		--n-lift: 0 4px 16px rgba(0,0,0,0.32);
+		--n-lift-high: 0 12px 40px rgba(0,0,0,0.44);
+	}
+}
+
+
+/*
+** Signature — the key light. One warm radial spilling from above, painted as a
+** FIXED BACKGROUND on the page container so it sits behind all content and
+** never enters the stacking order: no z-index, no positioned wrappers, and
+** therefore no effect on sidebar / story-river layering or popup placement.
+**
+** Tightened from the original 68vmax spread into a more directional pool —
+** a key light rather than an ambient wash, which is the difference between
+** chiaroscuro and a glow. Fixed, never animated; the genre allows one such
+** bloom and this is it.
+*/
+.tc-page-container {
+	background-image: radial-gradient(54vmax 40vmax at 50% -11vmax,
+		var(--n-keylight), transparent 68%);
+	background-attachment: fixed;
+	background-repeat: no-repeat;
+}
+
+html {
+	scroll-behavior: smooth;
+	background-color: <<colour page-background>>;
+	/* Hand the page (viewport) scrollbar back to the browser so it follows the
+	   palette's `color-scheme` on :root. The `* { scrollbar-color }` rule below
+	   themes inner scrollbars, but applied to the root it overrides the native
+	   colour-scheme scrollbar and leaves the page scrollbar light on dark palettes
+	   (notably in TiddlyDesktop). Resetting it restores the native dark bar. */
+	scrollbar-color: initial;
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--n-line-strong) transparent;
+}
+*::-webkit-scrollbar { width: 12px; height: 12px; }
+*::-webkit-scrollbar-thumb {
+	background: var(--n-line-strong);
+	border-radius: var(--n-radius);
+	border: 3px solid transparent;
+	background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+	background: var(--n-accent-ink);
+	background-clip: content-box;
+}
+*::-webkit-scrollbar-corner { background: transparent; }
+
+::selection { background: var(--n-select); }
+
+/* Focus ring — never transitioned: a ring that fades in leaves a keyboard user
+   with no indicator for the length of the fade. */
+:where(button, input, textarea, select, a):focus-visible {
+	outline: 2px solid var(--n-accent-bright);
+	outline-offset: 2px;
+	border-radius: var(--n-radius);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*, *::before, *::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+	}
+}

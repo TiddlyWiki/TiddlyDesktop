@@ -1,0 +1,251 @@
+title: $:/themes/tiddlywiki/quietude/story
+tags: [[$:/tags/Stylesheet]]
+
+\rules only filteredtranscludeinline transcludeinline macrodef macrocallinline
+
+/*
+** Story river, the letter & typography
+**
+** The page reads as a letter: one bounded column, no frames, and the gap is
+** the divider. Where a separator is needed at all it is a short centred rule
+** rather than a full-width line — a break in a written page, not a border.
+*/
+
+/* The reading column is centred WITHIN the story river (see the body/title
+   rules below) rather than by moving the river itself — moving the river would
+   slide it under the sidebar in the fluid-fixed layout. */
+.tc-story-river {
+	padding-top: var(--q-space-lg);
+	padding-bottom: var(--q-space-xl);
+}
+
+/*
+** The leaf — seamless. No card border, no fill, no shadow. Tiddlers are
+** separated by a generous band of whitespace, closed by a short centred rule.
+*/
+.tc-tiddler-frame {
+	--q-frame-pad-x: var(--q-space-2xs);
+	--q-fold-banner-w: 18px;
+	margin-bottom: var(--q-space-lg);
+	padding: var(--q-space-md) var(--q-frame-pad-x) var(--q-space-lg) var(--q-fold-banner-w);
+	background: transparent;
+	border: none;
+	border-radius: 0;
+	box-shadow: none;
+	position: relative;
+}
+
+/* The break between one tiddler and the next. A 1.21:1 full-width hairline was
+   doing this job before, which in a frameless theme meant nothing was. */
+.tc-tiddler-frame::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	bottom: 0;
+	transform: translateX(-50%);
+	width: 4rem;
+	height: 1px;
+	background: var(--q-rule);
+}
+
+/* Writing is a different mode from reading, so it gets a surface */
+.tc-tiddler-frame.tc-tiddler-edit-frame {
+	background: var(--q-paper);
+	border: 1px solid var(--q-line);
+	border-radius: var(--q-radius);
+	padding: var(--q-space-md);
+}
+.tc-tiddler-frame.tc-tiddler-edit-frame::after { display: none; }
+
+/* Title — large, light, unhurried */
+.tc-tiddler-title { margin-bottom: var(--q-space-xs); }
+.tc-titlebar h2, .tc-site-title,
+.tc-tiddler-body h1, .tc-tiddler-body h2,
+.tc-tiddler-body h3, .tc-tiddler-body h4,
+.tc-tiddler-body h5, .tc-tiddler-body h6 {
+	font-family: var(--q-sans);
+	font-style: normal;
+	font-weight: 600;
+	line-height: 1.25;
+	letter-spacing: -0.012em;
+	text-wrap: balance;
+	/* Tiddler titles are routinely long unbroken strings — system paths like
+	   $:/themes/tiddlywiki/quietude/variables have no space to break at. */
+	overflow-wrap: anywhere;
+	min-width: 0;
+}
+.tc-titlebar h2 {
+	font-size: clamp(1.8rem, 1.5rem + 1.4vw, 2.6rem);
+	font-weight: 650;
+	color: <<colour tiddler-title-foreground>>;
+}
+.tc-tiddler-subtitle {
+	font-family: var(--q-sans);
+	font-size: 0.82rem;
+	color: var(--q-faint);
+}
+
+/*
+** The chrome recedes — by INK, and only where hovering is possible.
+**
+** Outside this block the toolbar is drawn at full strength, so a touch device
+** (which never fires :hover) always shows it. Inside, on a fine pointer, it
+** rests in the muted ink and comes forward on hover or keyboard focus.
+** Recession by `opacity` is what put it at 1.25:1 and stranded touch users;
+** ink recedes without ever becoming unreadable.
+*/
+@media (hover: hover) and (pointer: fine) {
+	.tc-tiddler-controls button svg {
+		fill: var(--q-faint);
+		transition: fill var(--q-slow) var(--q-ease);
+	}
+	.tc-tiddler-frame:hover .tc-tiddler-controls button svg,
+	.tc-tiddler-controls:focus-within button svg {
+		fill: var(--q-ink);
+	}
+}
+
+/* Reading column — large, airy, bounded measure, centred under the title */
+.tc-tiddler-body {
+	font-family: var(--q-sans);
+	font-size: clamp(1.12rem, 1.05rem + 0.35vw, 1.3rem);
+	line-height: 1.8;
+	color: var(--q-ink);
+	max-width: var(--q-measure);
+	margin: var(--q-space-sm) auto 0;
+	text-wrap: pretty;
+	font-feature-settings: "kern" 1, "liga" 1;
+}
+.tc-tiddler-body p { margin: 0 0 1.2em 0; }
+.tc-tiddler-body h1 { font-size: 1.7em; margin: 1.5em 0 0.5em; }
+.tc-tiddler-body h2 { font-size: 1.42em; margin: 1.4em 0 0.45em; }
+.tc-tiddler-body h3 { font-size: 1.2em; margin: 1.3em 0 0.4em; }
+.tc-tiddler-body h4 { font-size: 1.06em; margin: 1.2em 0 0.35em; }
+.tc-tiddler-body h5, .tc-tiddler-body h6 {
+	font-size: 0.9em;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--q-muted);
+	margin: 1.2em 0 0.35em;
+}
+
+/* Title block & subtitle also follow the measure for a tidy centred column */
+.tc-tiddler-title .tc-titlebar,
+.tc-tiddler-subtitle,
+.tc-tags-wrapper {
+	max-width: var(--q-measure);
+	margin-inline: auto;
+}
+
+/* Links — quiet at rest, and hovering makes them EASIER to read, not harder.
+   The old hover swapped to the raw accent, dropping a link from 7.66:1 to
+   4.40:1 on the light palette. */
+.tc-tiddler-body a.tc-tiddlylink,
+.tc-tiddler-body a.tc-tiddlylink-resolves {
+	color: var(--q-accent-ink);
+	text-decoration: underline;
+	text-decoration-thickness: 1px;
+	text-decoration-color: var(--q-line);
+	text-underline-offset: 0.18em;
+	transition: color var(--q-dur) var(--q-ease),
+		text-decoration-color var(--q-dur) var(--q-ease);
+}
+.tc-tiddler-body a.tc-tiddlylink:not(.tc-plugin-info):hover {
+	color: var(--q-accent-deep);
+	text-decoration-color: var(--q-accent-deep);
+}
+.tc-tiddler-body a.tc-tiddlylink-missing { text-decoration-style: dotted; opacity: 0.8; }
+
+/* Markers in the muted ink — a bullet is not a signal */
+.tc-tiddler-body ul, .tc-tiddler-body ol { padding-left: 1.4em; }
+.tc-tiddler-body li { margin: 0.4em 0; }
+.tc-tiddler-body li::marker { color: var(--q-muted); }
+
+/* An extract, set in from the margin. Italic survives here because this is
+   body copy, which is the one place the rules allow it. */
+.tc-tiddler-body blockquote {
+	margin: 1.4em 0;
+	margin-inline-start: 0;
+	padding: 0.3em 0 0.3em 1.2em;
+	border-inline-start: 1px solid var(--q-rule);
+	color: var(--q-muted);
+	font-style: italic;
+}
+
+/* The letter's own break — a short centred rule, same device as the one
+   between tiddlers, so the page has a single divider language. */
+.tc-tiddler-body hr {
+	border: none;
+	height: 1px;
+	margin: 2.4em auto;
+	width: 4rem;
+	background: var(--q-rule);
+}
+
+.tc-tiddler-body code {
+	font-family: var(--q-mono);
+	font-size: 0.86em;
+	padding: 0.1em 0.38em;
+	border-radius: var(--q-radius-sm);
+	background: var(--q-tint);
+}
+.tc-tiddler-body pre {
+	border-radius: var(--q-radius);
+	border: 1px solid var(--q-line);
+	background: var(--q-tint);
+}
+.tc-tiddler-body pre code { background: none; padding: 0; }
+
+/* Tables — quiet. The four corner-radius rules and the `border-collapse:
+   separate` they required are gone; a collapsed grid with a soft outer radius
+   does the same job without the clipping hazard. */
+.tc-tiddler-body table {
+	border-collapse: collapse;
+	border: 1px solid var(--q-line);
+	border-radius: var(--q-radius);
+	font-variant-numeric: tabular-nums;
+}
+.tc-tiddler-body table th {
+	font-weight: 600;
+	text-align: start;
+	background: var(--q-tint);
+	border: 1px solid var(--q-line);
+	border-bottom: 1px solid var(--q-rule);
+}
+.tc-tiddler-body table td { border: 1px solid var(--q-line); }
+.tc-tiddler-body table th, .tc-tiddler-body table td {
+	padding: 0.45em 0.7em;
+	overflow-wrap: anywhere;
+}
+
+.tc-tiddler-body img {
+	border-radius: var(--q-radius-sm);
+	border: 1px solid var(--q-line);
+}
+
+.tc-tiddler-body strong { font-weight: 650; }
+.tc-tiddler-body small { color: var(--q-muted); }
+
+/* Fold / unfold banners — vanilla positions both with negative margins sized to
+   its own 42px frame padding, which is not our padding. Re-anchor them to the
+   leaf edge. Desktop only: on mobile vanilla lays the unfold banner out
+   statically, and forcing it absolute there would strand it. */
+@media (min-width: 770px) {
+	.tc-unfold-banner.tc-unfold-banner {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: auto;
+		-webkit-margin-start: 0;
+		margin-inline-start: 0;
+	}
+	.tc-fold-banner.tc-fold-banner {
+		inset-inline-start: 0;
+		top: 0;
+		bottom: 0;
+		width: var(--q-fold-banner-w);
+		-webkit-margin-start: 0;
+		margin-inline-start: 0;
+	}
+}

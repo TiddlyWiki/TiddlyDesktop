@@ -1,0 +1,10 @@
+{
+	"title": "$:/themes/tiddlywiki/workbench",
+	"name": "Workbench",
+	"author": "TiddlyWiki",
+	"core-version": ">=5.0.0",
+	"plugin-type": "theme",
+	"description": "A ledger for large wikis: ruled records, dense rows, no ornament",
+	"dependents": ["$:/themes/tiddlywiki/vanilla"],
+	"plugin-priority": "0"
+}

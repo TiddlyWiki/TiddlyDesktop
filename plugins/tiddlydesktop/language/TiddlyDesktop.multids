@@ -51,7 +51,7 @@ PluginChooser/Heading: Manage Plugins
 PluginChooser/Close: Close
 PluginChooser/OpenWarning: This wiki is currently open. Close its window first, then click Apply.
 PluginChooser/BackstageTarget: This wiki list
-PluginChooser/BackstageNote: applying reloads the wiki list
+PluginChooser/BackstageNote: takes effect after restarting TiddlyDesktop
 PluginChooser/FilterPlaceholder: Filter plugins…
 PluginChooser/Clear: Clear
 PluginChooser/NoMatch: No plugins match your filter.
@@ -68,6 +68,7 @@ PluginChooser/SourceExternal: external
 PluginChooser/Update: Update
 PluginChooser/UpdateAvailable: A newer version is bundled — click to update
 PluginChooser/Updated: Updated
+PluginChooser/SavedPendingRestart: Saved. Restart TiddlyDesktop to activate.
 Row/PluginUpdates: Plugin updates available
 Toolbar/ThemeLabel: Theme
 Toolbar/PaletteLabel: Palette
