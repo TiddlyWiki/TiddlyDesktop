@@ -96,10 +96,19 @@ the parent forwards, which is what keeps that a plain forwarder rather than a re
 				$tw.boot = $tw.boot || {};
 				$tw.boot.suppressBoot = true;
 				var argv = [
-					// Guarantee the two plugins a served wiki needs to save, without touching
+					// Guarantee the two plugins a served wiki needs to save, WITHOUT touching
 					// the user's tiddlywiki.info. boot.js treats a leading "+" as an extra
-					// plugin reference, so this works even for a folder wiki that was created
-					// elsewhere and never went through ensureFolderWikiPlugins.
+					// plugin reference held in memory for this boot only, so this works even
+					// for a folder wiki created elsewhere that never went through
+					// ensureFolderWikiPlugins.
+					//
+					// INVARIANT: opening a folder wiki must not modify tiddlywiki.info.
+					// Verified by hashing the file across a full open-and-save cycle — it is
+					// byte-identical, mtime included, for a wiki declaring no plugins at all
+					// while still saving correctly. Do not "fix" a missing plugin by writing
+					// to that file on open; the only writes belong to wikis TiddlyDesktop
+					// itself generates (ensureFolderWikiPlugins, on create/clone/convert),
+					// where declaring them keeps the result usable with stock TiddlyWiki too.
 					//
 					// This matters more than it looks: the browser half now saves through the
 					// tiddlyweb sync adaptor, so a wiki missing that plugin would load and
