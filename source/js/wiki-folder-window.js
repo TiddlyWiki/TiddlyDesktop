@@ -185,6 +185,22 @@ WikiFolderWindow.prototype.onloadiframe = function() {
 		require("./utils/attachments.js").install(doc,win,this.server,{wikiDir: this.pathname});
 	} catch(e) { console.error("[TiddlyDesktop] attachment routing install failed:",e); }
 	try { require("./utils/embeds.js").install(doc,win); } catch(e) {}
+	// Node-backed bridges. Folder wikis need these now for the same reason single-file wikis
+	// always did: the wiki has no Node, so the parent performs the privileged operations the
+	// collab plugin needs. Before phase 9 they used Node directly in-page, which is what
+	// asset-util.js's nodeFs branch was for — with both wiki kinds on the bridge, that split
+	// no longer has two sides.
+	try {
+		require("./utils/bridges.js").install({
+			iframe: this.iframe,
+			window_nwjs: this.window_nwjs,
+			pathname: this.pathname,
+			wikiDir: this.pathname,
+			identifier: this.getIdentifier(),
+			teardowns: this._iframeTeardowns,
+			owner: this
+		});
+	} catch(e) { console.error("[TiddlyDesktop] bridge install failed:",e); }
 	// Title and favicon, read straight off the wiki now that it renders in an iframe the
 	// backstage can see. This is what the live-state file used to carry across processes.
 	var MutationObserver = this.window_nwjs.window.MutationObserver;
