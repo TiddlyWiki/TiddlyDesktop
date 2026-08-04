@@ -339,18 +339,11 @@ WindowList.prototype.removeByUrl = function(url) {
 	if(w) {
 		// Mark for removal, then close the window first — exactly like single-file wikis.
 		w.removeFromWikiListOnClose();
-		if(w instanceof WikiFolderWindow) {
-			// A folder wiki runs in its own process (new_instance), so closing its window
-			// doesn't fire a close event back to the backstage — which is why these used to
-			// stay in the list once opened. Run its close handler ourselves: it tears down
-			// the live-state watcher, then handleClose closes the window and removes the
-			// wiki-list entry (the same end result as a single-file wiki's own close event).
-			w.onclose();
-		} else {
-			// Single-file: closing fires the window's own close handler, which honours the
-			// remove-on-close flag (and may still prompt via onbeforeunload).
-			w.window_nwjs.close();
-		}
+		// Closing fires the window's own close handler, which honours the remove-on-close flag
+		// (and may still prompt via onbeforeunload). Folder wikis used to need their onclose
+		// invoked by hand, because `new_instance: true` put them in their own app instance and
+		// no close event came back; they share the instance now, so both kinds behave alike.
+		w.window_nwjs.close();
 	} else {
 		// No open window. The wiki-list entry's tiddler is titled by this url (it is
 		// the row's currentTiddler), so delete it directly. This is robust for URL

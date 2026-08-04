@@ -7,14 +7,18 @@ Class for wiki folder windows
 var windowBase = require("../js/window-base.js"),
 	hash = require("../js/utils/hash.js"),
 	spellcheck = require("../js/utils/spellcheck.js"),
+	wikiServer = require("../js/utils/wiki-server.js"),
 	fs = require("fs"),
 	path = require("path");
 
-// Path of the per-wiki "live state" file for a given wiki identifier. A folder wiki runs
-// in its own process (new_instance), so the backstage can't observe its DOM the way it
-// does a single-file wiki's iframe; instead the folder window writes its current title
-// and favicon here (as a small JSON payload) and the backstage watches the file. Exported
-// so window-list.js can clean the file up when a wiki is removed from the list.
+/*
+Path of the per-wiki "live state" file for a given wiki identifier.
+
+Kept only so window-list.js can delete files left behind by earlier versions; nothing writes it
+now. A folder wiki used to open with `new_instance: true`, giving it its own app instance, which
+meant the backstage could not observe its DOM and had to watch this file for the wiki's title and
+favicon. See the constructor for why that isolation is gone.
+*/
 function liveStateFileFor(identifier) {
 	return path.resolve($tw.desktop.gui.App.dataPath,"FolderWikiState",hash.simpleHash(identifier));
 }
@@ -23,49 +27,64 @@ function liveStateFileFor(identifier) {
 function WikiFolderWindow(options) {
 	var self = this;
 	options = options || {};
-	// Save the options
 	this.windowList = options.windowList;
 	this.info = options.info || {};
 	this.pathname = options.info.pathname;
 	this.mustQuitOnClose = options.mustQuitOnClose;
-	// Save the wiki list tiddler
 	this.saveWikiListTiddler();
-	// Compute (and pre-create) the file used to mirror this wiki's live title and favicon
-	// across the process boundary. We pass the exact path to the window so both sides agree
-	// even if data-path resolution differs in the new instance, and pre-create it so
-	// fs.watch has a stable inode to attach to before the folder window first writes.
-	this.stateFile = liveStateFileFor(this.getIdentifier());
-	try {
-		fs.mkdirSync(path.dirname(this.stateFile),{recursive: true});
-		if(!fs.existsSync(this.stateFile)) { fs.writeFileSync(this.stateFile,""); }
-	} catch(e) {}
-	// Get the host, port, credentials and other --listen server options
-	var host = $tw.wiki.getTiddlerText(this.getConfigTitle("host"),""),
-		port = $tw.wiki.getTiddlerText(this.getConfigTitle("port"),""),
-		credentials = $tw.wiki.getTiddlerText(this.getConfigTitle("credentials"),"users.csv"),
-		readers = $tw.wiki.getTiddlerText(this.getConfigTitle("readers"),"(anon)"),
-		writers = $tw.wiki.getTiddlerText(this.getConfigTitle("writers"),"(authenticated)"),
-		pathPrefix = $tw.wiki.getTiddlerText(this.getConfigTitle("path-prefix"),""),
-		rootTiddler = $tw.wiki.getTiddlerText(this.getConfigTitle("root-tiddler"),""),
-		anonUsername = $tw.wiki.getTiddlerText(this.getConfigTitle("anon-username"),""),
-		gzip = $tw.wiki.getTiddlerText(this.getConfigTitle("gzip"),"no");
-	// Open the window
-	$tw.desktop.gui.Window.open("html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname) + "&host=" + encodeURIComponent(host) + "&port=" + encodeURIComponent(port)
-			+ "&credentials=" + encodeURIComponent(credentials) + "&readers=" + encodeURIComponent(readers) + "&writers=" + encodeURIComponent(writers)
-			+ "&pathprefix=" + encodeURIComponent(pathPrefix) + "&roottiddler=" + encodeURIComponent(rootTiddler) + "&anonusername=" + encodeURIComponent(anonUsername) + "&gzip=" + encodeURIComponent(gzip)
-			+ "&spellcheck=" + encodeURIComponent(spellcheck.isEnabled($tw) ? "yes" : "no")
-			+ "&spellcheck-lang=" + encodeURIComponent(spellcheck.getLanguage($tw))
-			+ "&stateFile=" + encodeURIComponent(this.stateFile),this.applyGeometryToOpenOptions({
-		id: hash.simpleHash(this.getIdentifier()),
-		show: true,
-		new_instance: true,
-		icon: "images/app-icon256.png"
-	}),function(win) {
-		self.window_nwjs = win;
-		self.window_nwjs.once("loaded",self.onloaded.bind(self));
-		self.window_nwjs.on("close",self.onclose.bind(self));
-		self.trackGeometry();
-		self.restoreMaximizedState();
+	// The user's optional LAN sharing. A SEPARATE binding from the one this window uses:
+	// different port, its own principals and the user's own path-prefix, so sharing a wiki on
+	// the network can never expose the shell path or the internal credential.
+	this.lanOptions = {
+		host: $tw.wiki.getTiddlerText(this.getConfigTitle("host"),""),
+		port: $tw.wiki.getTiddlerText(this.getConfigTitle("port"),""),
+		credentials: $tw.wiki.getTiddlerText(this.getConfigTitle("credentials"),""),
+		readers: $tw.wiki.getTiddlerText(this.getConfigTitle("readers"),"(anon)"),
+		writers: $tw.wiki.getTiddlerText(this.getConfigTitle("writers"),"(authenticated)"),
+		pathPrefix: $tw.wiki.getTiddlerText(this.getConfigTitle("path-prefix"),""),
+		rootTiddler: $tw.wiki.getTiddlerText(this.getConfigTitle("root-tiddler"),""),
+		anonUsername: $tw.wiki.getTiddlerText(this.getConfigTitle("anon-username"),""),
+		gzip: $tw.wiki.getTiddlerText(this.getConfigTitle("gzip"),"no")
+	};
+	/*
+	Served over loopback HTTP like a single-file wiki: the shell keeps Node (its path matches the
+	manifest's node-remote) and the wiki, served at the origin root, does not. See
+	utils/wiki-server.js and DESIGN-http-wiki-origin.md.
+
+	`new_instance: true` is deliberately gone. It existed because a folder wiki booted TiddlyWiki
+	— UI and all — into its own page, which had to be isolated from the rest of the app. The shell
+	now runs only a node-only TiddlyWiki SERVER, and the wiki renders in a sandboxed iframe with
+	its own renderer process, so that isolation buys nothing.
+
+	It cost a good deal, though. A separate app instance has its own browser process, so the
+	window did not report closing back to the backstage (window-list.js had to invoke onclose by
+	hand), the title and favicon had to be mirrored through a file on disk, and quitApp's
+	terminate-the-browser-process backstop could not reach it. Sharing the instance retires all
+	three.
+	*/
+	wikiServer.start({
+		appDir: path.resolve(__dirname,".."),
+		wikiDir: this.pathname,
+		wikiFile: "",
+		identifier: this.getIdentifier()
+	},function(err,handle) {
+		if(err || !handle) {
+			console.error("[TiddlyDesktop] could not start the wiki server:",err && err.message);
+			$tw.desktop.utils.wiki.alert("Could not open this wiki: its local server failed to start. " + ((err && err.message) || ""));
+			return;
+		}
+		self.server = handle;
+		$tw.desktop.gui.Window.open(handle.shellUrlFor("html/wiki-folder-shell.html"),self.applyGeometryToOpenOptions({
+			id: hash.simpleHash(self.getIdentifier()),
+			show: true,
+			icon: "images/app-icon256.png"
+		}),function(win) {
+			self.window_nwjs = win;
+			self.window_nwjs.once("loaded",self.onloaded.bind(self));
+			self.window_nwjs.on("close",self.onclose.bind(self));
+			self.trackGeometry();
+			self.restoreMaximizedState();
+		});
 	});
 }
 
@@ -86,7 +105,7 @@ WikiFolderWindow.prototype.matchInfo = function(info) {
 	return info.pathname === this.pathname;
 };
 
-// The identifier for wiki file windows is the prefix `wikifolder://` plus the pathname of the file
+// The identifier for wiki folder windows is the prefix `wikifolder://` plus the pathname
 WikiFolderWindow.prototype.getIdentifier = function() {
 	return "wikifolder://" + this.pathname;
 };
@@ -94,85 +113,157 @@ WikiFolderWindow.prototype.getIdentifier = function() {
 // Load handler for window
 WikiFolderWindow.prototype.onloaded = function(event) {
 	var self = this;
-	// Mirror the folder window's live title and favicon into the wiki-list config. The
-	// folder window writes them to this.stateFile whenever they change ($:/SiteTitle /
-	// $:/SiteSubtitle / $:/favicon.ico); we watch that file and react immediately — no polling.
-	this.readStateFile();
-	try {
-		this.stateWatcher = fs.watch(this.stateFile,function() {
-			// fs.watch can fire several events per write; coalesce with a short debounce.
-			if(self.stateReadTimer) { clearTimeout(self.stateReadTimer); }
-			self.stateReadTimer = setTimeout(function() { self.readStateFile(); },50);
+	this.window_nwjs.window.$tw = $tw;
+	$tw.desktop.utils.devtools.trapDevTools(this.window_nwjs,this.window_nwjs.window.document);
+	$tw.desktop.utils.menu.createMenuBar(this.window_nwjs);
+	this.iframe = this.window_nwjs.window.document.getElementById("tid-main-wiki-folder-viewer");
+	// Ask the shell to boot TiddlyWiki as a server, then point our forwarder at it. The backend
+	// does not exist until this returns, which is why the proxy target is set late.
+	var starter = this.window_nwjs.window.tdStartWikiServer;
+	if(typeof starter !== "function") {
+		console.error("[TiddlyDesktop] folder wiki shell did not expose tdStartWikiServer");
+		return;
+	}
+	starter({
+		appDir: path.resolve(__dirname,".."),
+		wikiPath: this.pathname,
+		lan: this.lanOptions
+	},function(err,backend) {
+		if(err || !backend) {
+			$tw.desktop.utils.wiki.alert("Could not open this wiki: TiddlyWiki failed to start. " + ((err && err.message) || ""));
+			return;
+		}
+		self.server.setProxy({origin: backend.origin, authHeader: backend.authHeader});
+		self.iframe.onload = self.onloadiframe.bind(self);
+		// The wiki lives at the origin root. The session cookie was set when the shell was
+		// served, so this request carries it.
+		self.iframe.src = self.server.origin + "/";
+	});
+	this.window_nwjs.show();
+	this.window_nwjs.focus();
+};
+
+/*
+Load handler for the wiki iframe. Runs on every load, including in-place reloads, so the previous
+load's teardowns run first — the same contract as wiki-file-window.js.
+*/
+WikiFolderWindow.prototype.onloadiframe = function() {
+	var self = this;
+	if(this._iframeTeardowns) {
+		this._iframeTeardowns.forEach(function(fn) { try { fn(); } catch(e) {} });
+	}
+	this._iframeTeardowns = [];
+	if(!this._iframeCloseBound) {
+		this._iframeCloseBound = true;
+		this.window_nwjs.once("close",function() {
+			(self._iframeTeardowns || []).forEach(function(fn) { try { fn(); } catch(e) {} });
+			self._iframeTeardowns = [];
 		});
-		this.stateWatcher.on("error",function() {});
+	}
+	this.applySpellcheck();
+	var doc = this.iframe.contentDocument,
+		win = this.iframe.contentWindow;
+	try { $tw.desktop.utils.links.trapLinks(doc); } catch(e) { console.error("[TiddlyDesktop] trapLinks failed:",e); }
+	try {
+		$tw.desktop.utils.dragdrop.installImportInterceptor(doc,win,{
+			parentDocument: this.window_nwjs.window.document,
+			parentWindow: this.window_nwjs.window
+		});
+	} catch(e) { console.error("[TiddlyDesktop] dragdrop install failed:",e); }
+	try {
+		$tw.desktop.utils.findbar.installFindBar({
+			hostWindow: this.window_nwjs.window,
+			hostDocument: this.window_nwjs.window.document,
+			getContentWindow: function() { return self.iframe.contentWindow; },
+			getContentDocument: function() { return self.iframe.contentDocument; }
+		});
+	} catch(e) { console.error("[TiddlyDesktop] find bar install failed:",e); }
+	try { require("./utils/zoom.js").install(this.window_nwjs,this.window_nwjs.window.document,doc); } catch(e) {}
+	try { require("./utils/embeds.js").install(doc,win); } catch(e) {}
+	// Title and favicon, read straight off the wiki now that it renders in an iframe the
+	// backstage can see. This is what the live-state file used to carry across processes.
+	var MutationObserver = this.window_nwjs.window.MutationObserver;
+	var titleNode = doc.getElementsByTagName("title")[0];
+	this.extractIframeTitle();
+	if(titleNode) {
+		this.titleObserver = new MutationObserver(this.extractIframeTitle.bind(this));
+		this.titleObserver.observe(titleNode,{attributes: true, childList: true, characterData: true});
+	}
+	var faviconLink = doc.getElementById("faviconLink");
+	this.extractIframeFavicon();
+	if(faviconLink) {
+		this.favIconObserver = new MutationObserver(this.extractIframeFavicon.bind(this));
+		this.favIconObserver.observe(faviconLink,{attributes: true, childList: true, characterData: true});
+	}
+};
+
+// Apply the local-spellcheck setting to the wiki's document. Safe to call any time.
+WikiFolderWindow.prototype.applySpellcheck = function() {
+	try {
+		spellcheck.applyToDocument(this.iframe && this.iframe.contentDocument,
+			spellcheck.isEnabled($tw),spellcheck.getLanguage($tw));
 	} catch(e) {}
 };
 
-// Read the live-state file and push any changed title/favicon to the wiki-list config.
-WikiFolderWindow.prototype.readStateFile = function() {
-	var raw, state;
-	try { raw = fs.readFileSync(this.stateFile,"utf8"); } catch(e) { return; }
-	if(!raw) { return; }
-	try { state = JSON.parse(raw); } catch(e) { return; }
-	if(state.title && state.title !== this.wikiTitle) {
-		this.wikiTitle = state.title;
+WikiFolderWindow.prototype.extractIframeTitle = function() {
+	try {
+		this.wikiTitle = this.iframe.contentDocument.title;
+		this.window_nwjs.window.document.title = this.wikiTitle;
 		this.onTitleChange();
-	}
-	// Favicon is a {type, text} pair; only update when either side actually changes. With
-	// no favicon, clear the config so the wiki list shows the missing-favicon placeholder
-	// rather than a stale/broken thumbnail.
-	var favText = state.faviconText || "",
-		favType = state.faviconType || "";
-	if(favText) {
-		if(favText !== this.wikiFavIconText || favType !== this.wikiFavIconType) {
-			this.wikiFavIconText = favText;
-			this.wikiFavIconType = favType;
-			this.onFavIconChange();
-		}
-	} else {
-		this.clearFavIcon();
-	}
+	} catch(e) {}
 };
 
-// Reopen this window — just focus it, like single-file wikis (a closed folder wiki is
-// re-opened by window-list.open() constructing a fresh window, so this only runs for an
-// already-open one).
+WikiFolderWindow.prototype.extractIframeFavicon = function() {
+	try {
+		var faviconLink = this.iframe.contentDocument.getElementById("faviconLink"),
+			href = faviconLink && faviconLink.getAttribute("href");
+		// Only a real data: URI is a favicon; the static placeholder means "none", and clearing
+		// lets the wiki list show its missing-favicon placeholder rather than a broken thumbnail.
+		if(href && href.indexOf("data:") === 0) {
+			var posColon = href.indexOf(":"),
+				posSemiColon = href.indexOf(";"),
+				posComma = href.indexOf(",");
+			this.wikiFavIconType = href.substring(posColon + 1,posSemiColon);
+			this.wikiFavIconText = href.substring(posComma + 1);
+			this.onFavIconChange();
+		} else {
+			this.clearFavIcon();
+		}
+	} catch(e) {}
+};
+
+// Reopen this window — just focus it.
 WikiFolderWindow.prototype.reopen = function() {
 	try { this.window_nwjs.focus(); } catch(e) {}
 };
 
-// removeFromWikiListOnClose() is inherited from window-base (just sets the flag); the
-// close handler below honours it, so removing a folder wiki works like a single-file one.
-
-// Get the wiki title (kept in sync from the live-state file by readStateFile)
 WikiFolderWindow.prototype.getWikiTitle = function() {
 	return this.wikiTitle || "";
 };
 
-// Get the wiki favicon text (kept in sync from the live-state file by readStateFile)
 WikiFolderWindow.prototype.getWikiFavIconText = function() {
 	return this.wikiFavIconText || "";
 };
 
-// Get the wiki favicon type (kept in sync from the live-state file by readStateFile)
 WikiFolderWindow.prototype.getWikiFavIconType = function() {
 	return this.wikiFavIconType || "";
 };
 
 // Close handler for window
 WikiFolderWindow.prototype.onclose = function(event) {
-	// Stop watching the live-state file
-	if(this.stateReadTimer) { clearTimeout(this.stateReadTimer); this.stateReadTimer = null; }
-	if(this.stateWatcher) {
-		try { this.stateWatcher.close(); } catch(e) {}
-		this.stateWatcher = null;
+	if(this.titleObserver) { try { this.titleObserver.disconnect(); } catch(e) {} }
+	if(this.favIconObserver) { try { this.favIconObserver.disconnect(); } catch(e) {} }
+	// Stop serving this wiki. The server and its session token die with the window, so a closed
+	// wiki is no longer reachable by anything else on the machine.
+	if(this.server) {
+		try { this.server.close(); } catch(e) {}
+		this.server = null;
 	}
-	// Close the window, removing it from the wiki list if it was marked for removal
-	// (same as single-file wikis).
+	// Close the window, removing it from the wiki list if it was marked for removal.
 	this.windowList.handleClose(this,this.mustRemoveFromWikiListOnClose);
 };
 
-// Save a tiddler to the backstage wiki describing this wiki file
+// Save a tiddler to the backstage wiki describing this wiki folder
 WikiFolderWindow.prototype.saveWikiListTiddler = function() {
 	var fields = {
 		title: this.getIdentifier(),
