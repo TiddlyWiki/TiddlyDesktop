@@ -3,21 +3,27 @@ Safe embedding of external media (YouTube, Vimeo, maps, …) in TiddlyDesktop wi
 
 Security model
 --------------
-Folder wikis render in a Node-enabled page (an RCE boundary): a remote page that somehow
-obtained Node would be remote code execution. Single-file wikis render in an `nwdisable`
-iframe (no Node). In NW.js a remote `https` iframe does NOT receive Node by default, but we
-do not want to rely on that alone, and we do not want a tiddler to be able to beacon to an
-arbitrary server just by being rendered.
+Both wiki kinds now render in an `nwdisable nwfaketop` iframe with no Node, served over loopback
+http. We still do not want a tiddler to be able to beacon to an arbitrary server just by being
+rendered, so the allowlist stays.
 
 So:
-  • A curated allowlist decides which external embeds get routed through a loopback http shim
-    (local-server.js): the iframe's src is rewritten to
-    http://127.0.0.1:<port>/<token>/embed?src=<original>. The shim, served from a real http
-    origin, embeds the provider — so the provider sees an http Referer and plays, instead of
-    YouTube's file:// rejection (error 153). The embed stays a plain in-flow <iframe> (natural
-    layout/scroll/stacking); the wiki document itself stays file://, so saving, the collab
-    bridges and external attachments are untouched. If the shim server can't start we fall back
-    to hardening the iframe in place (no playback, but no breakage). The list is editable
+  • A curated allowlist decides which external embeds may be routed through the loopback shim
+    (local-server.js). Whether that routing happens at all depends on the document's origin:
+
+      served over http    nothing to fix — the provider already gets a usable Referer, so the
+                          iframe is hardened and left pointing straight at it. This is both wiki
+                          kinds since the origin move.
+      anything else       the src is rewritten to
+                          http://127.0.0.1:<port>/<token>/embed?src=<original>, and the shim —
+                          served from a real http origin — embeds the provider in turn, so it
+                          sees an http Referer and plays instead of rejecting (YouTube error
+                          153). This still covers the backstage window and a folder wiki opened
+                          through the unsandboxed escape hatch, both of which render on a
+                          chrome-extension:// origin.
+
+    The embed stays a plain in-flow <iframe> either way. If the shim is needed and cannot start,
+    we fall back to hardening in place (no playback, but no breakage). The list is editable
     per-wiki via $:/config/TiddlyDesktop/EmbedHosts (added to the defaults).
   • Any external iframe whose host is NOT on the allowlist is left EXACTLY as the wiki author
     wrote it — src and attributes untouched — and loads as a normal browser iframe (e.g. the
@@ -61,6 +67,22 @@ exports.install = function(doc, win) {
 	var URLctor = (win && win.URL) || (typeof URL !== "undefined" ? URL : null);
 	var embedBase   = null;    // shim handle once the server is up; null if it failed to start
 	var serverReady = false;   // false = still starting (distinct from "failed", which is ready+null)
+	/*
+	Does this document need the shim at all?
+
+	The shim exists because a provider rejects an embed whose Referer is not http — error 153 on
+	YouTube. A wiki served over loopback http already has a real http origin, so it can point
+	straight at the provider and play. That covers both wiki kinds since the origin move.
+
+	It does NOT cover everything embeds.js is installed on. The backstage window is an app page on
+	a chrome-extension:// origin, and it is a real TiddlyWiki, so a tiddler there can carry a media
+	embed; and a folder wiki opened through the unsandboxed escape hatch renders in-page on that
+	same origin. Both still need the detour, which is why the shim stays.
+	*/
+	var needsShim = true;
+	try {
+		needsShim = !(/^https?:$/i).test((win.location && win.location.protocol) || "");
+	} catch(e) {}
 	var parked      = [];      // allowlisted iframes blanked while the shim server starts
 
 	// Defaults plus any extra hosts configured in the wiki itself (whitespace/comma list,
@@ -118,6 +140,12 @@ exports.install = function(doc, win) {
 	// original src and harden in place (no playback, but no breakage).
 	function pointAtShim(iframe, originalSrc, host) {
 		hardenIframe(iframe);
+		if(!needsShim) {
+			// Already on an http origin: the provider gets a usable Referer from the wiki itself.
+			// Deliberately does not touch src — reassigning the same URL would restart the load.
+			setMask(iframe, false);
+			return;
+		}
 		if(embedBase) {
 			embedBase.registerHost(host);
 			// Mask with the spinner until the shim (a real http origin → no error 153) loads.
@@ -214,7 +242,12 @@ exports.install = function(doc, win) {
 	// the instant it appears — before the file:// 153 page can paint — even though the shim
 	// server starts asynchronously. Allowlisted embeds found before the server is ready are
 	// parked (blanked) and released by flushParked() once ensureStarted resolves.
-	try {
+	if(!needsShim) {
+		// Nothing to wait for, so nothing is ever parked: an embed is hardened and left pointing
+		// at the provider the moment it appears.
+		serverReady = true;
+		embedBase = null;
+	} else try {
 		localServer.registerHosts(allowedHosts());
 		localServer.ensureStarted(function(handle) {
 			embedBase = handle;   // may be null on failure
