@@ -77,6 +77,42 @@ So a folder wiki takes the same shape as a single-file one: shell at
 `wikiPort/__tiddlydesktop_shell__/`, TiddlyWiki's server serving the UI, wiki in an
 `nwdisable nwfaketop` iframe. One architecture, one set of bridges, one trust model.
 
+#### How the folder wiki's server runs (measured)
+
+NW.js ships no `node` binary — only `nw`, `nwjc` and `chromedriver` — so the Android approach of
+spawning `tiddlywiki --listen` as a separate process is not available. TiddlyWiki has to boot
+inside an NW.js context.
+
+Booting it in the shell naively would defeat the whole exercise: in a renderer both `$tw.browser`
+and `$tw.node` are truthy, so TiddlyWiki would render the wiki's UI *and run the wiki's
+browser-side JavaScript* in a Node-enabled context — exactly the RCE this phase removes.
+
+The way out is to force node-only mode. `bootprefix.js` assigns the platform only when the key is
+absent:
+
+```js
+if(!("browser" in $tw)) { $tw.browser = typeof(window) !== "undefined" && … ; }
+```
+
+so passing `{browser: null}` in is supported rather than a hack, and it must be pre-set rather
+than overwritten afterwards. Boot then has to use the documented `suppressBoot` + `boot(callback)`
+pattern; reading state straight after `TiddlyWiki($tw)` sees an unfinished boot.
+
+Verified against the bundled TiddlyWiki inside a real NW.js renderer:
+
+| | result |
+|---|---|
+| `$tw.browser` after bootprefix | `null` |
+| wiki folder loaded | yes (`$tw.boot.wikiPath` set) |
+| **wiki UI rendered into the shell page** | **no** — the security property this rests on |
+| unauthenticated request | 401 |
+| authenticated request | 200, real wiki content |
+| server URL | `http://127.0.0.1:<port>/wiki/<token>` — `path-prefix` honoured |
+| filesystem syncer | running |
+
+So the server takes `username`/`password` (no CSV needed) and `path-prefix=/wiki/<token>`, and our
+per-window server forwards to it verbatim with the credential attached.
+
 The code collapse is real. `asset-util.js` branches on `nodeFs` throughout purely because folder
 wikis have Node and single-file wikis do not; unifying them removes that split entirely, and
 `wiki-folder-main.js` becomes a shell like `wiki-file-window.js` rather than a parallel
