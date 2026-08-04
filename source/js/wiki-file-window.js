@@ -286,12 +286,18 @@ WikiFileWindow.prototype.onloadiframe = function () {
 				self.getConfigTitle("backup-count"),
 				"",
 			);
+		},
+		// The one file this window owns — the only path the saver will ever write to,
+		// whatever path the wiki's own scripts put on the TiddlyFox save message.
+		getPathnameFn = function () {
+			return self.pathname;
 		};
 	$tw.desktop.utils.saving.enableSaving(
 		this.iframe.contentDocument,
 		areBackupsEnabledFn,
 		loadFileTextFn,
 		backupCountFn,
+		getPathnameFn,
 	);
 	// Trap links
 	$tw.desktop.utils.links.trapLinks(this.iframe.contentDocument);

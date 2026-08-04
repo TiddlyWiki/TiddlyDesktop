@@ -4,8 +4,11 @@ Saving support for TiddlyWiki5 and TiddlyWiki Classic
 
 "use strict";
 
-// Helper to enable TiddlyFox-style saving for a window
-exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn,backupCountFn) {
+// Helper to enable TiddlyFox-style saving for a window.
+// `getPathnameFn` returns the pathname of the file this window owns, and is the ONLY destination
+// this saver will ever write to — see the security note in the save handler below. It is required:
+// without it the saver refuses to save rather than falling back on a page-supplied path.
+exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn,backupCountFn,getPathnameFn) {
 	// Create the message box
 	var messageBox = doc.createElement("div");
 	messageBox.id = "tiddlyfox-message-box";
@@ -18,12 +21,28 @@ exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn,backupCou
 	// Listen for save events
 	messageBox.addEventListener("tiddlyfox-save-file",function(event) {
 		// Get the details from the message
-		var message = event.target,
-			filepath = message.getAttribute("data-tiddlyfox-path"),
+		var path = require("path"),
+			message = event.target,
+			claimedPath = message.getAttribute("data-tiddlyfox-path"),
 			content = message.getAttribute("data-tiddlyfox-content");
-		// Convert filepath from UTF8 binary to a real string
-		if(process.platform !== "win32" || isClassic) {
-			filepath = (new Buffer(filepath,"binary")).toString("utf8");			
+		// Convert the claimed path from UTF8 binary to a real string
+		if(claimedPath && (process.platform !== "win32" || isClassic)) {
+			claimedPath = Buffer.from(claimedPath,"binary").toString("utf8");
+		}
+		// SECURITY: never save to the path the page asked for. This listener runs in the parent's
+		// Node context but is attached to the WIKI's document, so any script in the wiki controls
+		// data-tiddlyfox-path — honouring it is an arbitrary file write as the user (~/.bashrc, an
+		// autostart entry, the app's own JS). A wiki-file window owns exactly one file, so the
+		// window's own pathname is the authoritative destination and the attribute is redundant.
+		// TW5's "save as" / download goes through Chromium's download path rather than TiddlyFox,
+		// so there is no legitimate case where the two differ.
+		var filepath = typeof getPathnameFn === "function" ? getPathnameFn() : null;
+		if(!filepath) {
+			console.error("[TiddlyDesktop] save refused: this window has no authoritative pathname");
+			return false;
+		}
+		if(claimedPath && path.resolve(claimedPath) !== path.resolve(filepath)) {
+			console.warn("[TiddlyDesktop] ignoring save path supplied by the page:",claimedPath,"- saving to",filepath);
 		}
 		// Backup the existing file (if any)
 		if(areBackupsEnabledFn() && !isClassic) {
