@@ -451,12 +451,10 @@ Scoped as follow-up work, not part of the initial migration.
 
 ### Deleted
 
-- **`source/js/utils/local-server.js`** (the embed shim) and the parking/masking machinery in
-  `utils/embeds.js` — but **only once folder wikis have moved too**. Its comment says the problem
-  is that "single-file wikis are `file://` pages"; that is incomplete. It is also installed for
-  folder wikis (`wiki-folder-main.js:459`), and those run on a `chrome-extension://` origin —
-  measured — which providers reject for the same reason. Both wiki kinds must be on http before
-  the shim can go. The host allowlist in `embed-hosts.js` may still be wanted as policy.
+- ~~The embed shim~~ — **not deleted; see work item 10.** Both wiki kinds are on http now, so
+  neither routes through it, but `utils/local-server.js` stays: the backstage window and the
+  unsandboxed escape hatch both render on `chrome-extension://`, which providers reject exactly
+  as they rejected `file://`. What goes is the shim being used on served wikis, not the shim.
 - All three `--allow-file-*` chromium-args.
 
 ### Changed
@@ -654,10 +652,24 @@ the permission model Android didn't need."
     `nodeFs`/bridge split collapsed, LAN `--listen` split onto its own binding. Largest single
     phase, and the one that removes the last unsandboxed surface. *(can follow the single-file
     work; does not block it)*
-10. Delete the embed shim — **only after step 9**. The shim is not single-file-only: it is
-    installed for folder wikis too (`wiki-folder-main.js:459`), and those render on a
-    `chrome-extension://` origin, which providers reject exactly as they reject `file://`.
-    Removing it earlier would break media embeds in every folder wiki.
+10. **Bypass** the embed shim where the origin is already http — do not delete it. An earlier
+    draft said "delete", which is wrong: `utils/embeds.js` is installed on four kinds of
+    document, and only two of them moved to http.
+
+    | install site | origin | still needs the shim |
+    |---|---|---|
+    | `wiki-file-window.js` (wiki iframe) | http | no |
+    | `wiki-folder-window.js` (wiki iframe) | http | no |
+    | `backstage-window.js` | `chrome-extension://` | **yes** |
+    | `wiki-folder-main.js` (unsandboxed escape hatch) | `chrome-extension://` | **yes** |
+
+    The backstage is an app page and a real TiddlyWiki, so a tiddler there can carry a media
+    embed; and the escape hatch deliberately restores the pre-sandbox in-page path on that same
+    origin. Both would lose media playback if the shim went away.
+
+    So the work is for `embeds.js` to route through the shim only when
+    `document.location.protocol` is not http(s), and to leave media on a served wiki pointing
+    straight at the provider. The shim server then starts only for the documents that need it.
 11. CSP. *(follow-up)*
 
 Steps 1–3 stand on their own even if the origin move is never scheduled: the trust store makes
