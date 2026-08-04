@@ -478,6 +478,55 @@ WikiFileWindow.prototype.onloadiframe = function () {
 	} catch (e) {
 		console.error("[TiddlyDesktop] attachment routing install failed:", e);
 	}
+	// In-wiki offer to trust an attachment's location. The panel only ASKS; the picker below is
+	// opened, held and read by the parent, so nothing is granted without a real selection.
+	try {
+		var _tuSelf = this;
+		var _trustUi = require("./utils/trust-ui.js").install(
+			this.iframe.contentDocument,
+			this.iframe.contentWindow,
+			{
+				identifier: this.getIdentifier(),
+				wikiDir: pathMod.dirname(this.pathname),
+				openPicker: function (kind, seedPath, cb) {
+					var hostDoc =
+						_tuSelf.window_nwjs.window.document;
+					var input = hostDoc.createElement("input");
+					input.type = "file";
+					if (kind === "dir") {
+						input.setAttribute("nwdirectory", "");
+					}
+					if (seedPath) {
+						input.setAttribute(
+							"nwworkingdir",
+							String(seedPath),
+						);
+					}
+					input.style.display = "none";
+					hostDoc.body.appendChild(input);
+					input.addEventListener("change", function () {
+						var chosen = input.value
+							? pathMod.resolve(input.value)
+							: null;
+						try {
+							input.parentNode.removeChild(
+								input,
+							);
+						} catch (e) {}
+						try {
+							cb(chosen);
+						} catch (e) {}
+					});
+					input.click();
+				},
+			},
+		);
+		if (_trustUi) {
+			self._iframeTeardowns.push(_trustUi.teardown);
+		}
+	} catch (e) {
+		console.error("[TiddlyDesktop] trust UI install failed:", e);
+	}
 	// Safe external embeds: enforce the allowlist and route allowlisted media iframes through
 	// a loopback http shim (real origin -> avoids YouTube's file:// error 153). The wiki
 	// document stays file://, so saving and the collab bridges below are unaffected.

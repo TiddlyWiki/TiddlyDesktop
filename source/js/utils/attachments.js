@@ -61,6 +61,22 @@ function fileUrlToPath(url) {
 exports.fileUrlToPath = fileUrlToPath;
 
 /*
+A tiddler's _canonical_uri -> the absolute filesystem path it refers to, or null when it does not
+refer to a local file (http(s):, data:, or empty). Relative URIs resolve against the wiki's own
+directory, which is exactly how TiddlyWiki resolves them against the wiki document's URL.
+*/
+function resolveCanonicalUri(uri, wikiDir) {
+	var s = String(uri || "");
+	if(!s) { return null; }
+	if((/^(https?|data|blob):/i).test(s)) { return null; }
+	var abs = fileUrlToPath(s);
+	if(abs) { return require("path").resolve(abs); }
+	try { s = decodeURI(s); } catch(e) {}
+	return require("path").resolve(wikiDir || ".", s);
+}
+exports.resolveCanonicalUri = resolveCanonicalUri;
+
+/*
 	doc     the wiki's document
 	win     the wiki's window
 	handle  the server handle (needs attachmentUrl())
