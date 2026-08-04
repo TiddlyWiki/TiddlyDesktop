@@ -26,9 +26,18 @@ exports.handler = function(request,response,state) {
 		suppliedFilename = $tw.utils.decodeURIComponentSafe(state.params[0]),
 		baseFilename = path.resolve(state.boot.wikiPath,"attachments"),
 		filename = path.resolve(baseFilename,suppliedFilename),
+		relativePath = path.relative(baseFilename,filename),
 		extension = path.extname(filename);
-	// Check that the filename is inside the wiki attachments folder
-	if(path.relative(baseFilename,filename).indexOf("..") === 0) {
+	// Check that the filename is inside the wiki attachments folder.
+	//
+	// path.relative() returns an ABSOLUTE path whenever the target cannot be expressed relative to
+	// the base — on Windows that happens for a different drive letter, so a supplied filename of
+	// "D:/Windows/win.ini" yields "D:\Windows\win.ini", which has no leading ".." and would pass a
+	// bare indexOf("..") test. Checking path.isAbsolute() as well closes that escape.
+	//
+	// Testing the first path SEGMENT rather than a bare prefix also stops a legitimate attachment
+	// named e.g. "..config.png" from being rejected.
+	if(relativePath === ".." || relativePath.indexOf(".." + path.sep) === 0 || path.isAbsolute(relativePath)) {
 		return state.sendResponse(404,{"Content-Type": "text/plain"},"File '" + suppliedFilename + "' not found");
 	}
 	fs.stat(filename, function(err, stats) {
