@@ -95,3 +95,5 @@ Share/RulesHelp: One rule per line as <code>domain=kind</code> (e.g. <code>vimeo
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Backups of single-file wikis are written next to each wiki by default. Choose a folder here to collect all backups in one place instead.
 TrustedPaths/Revoke: revoke
+Advanced/Unsandboxed: Run this wiki without the sandbox
+Advanced/UnsandboxedHelp: This wiki's own JavaScript will run with full access to your computer — it can read, change and delete any file you can. Only enable this for a wiki you wrote or fully trust, and only if it needs to run node modules or shell commands.

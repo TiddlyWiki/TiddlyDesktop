@@ -62,6 +62,10 @@ function WikiFolderWindow(options) {
 	terminate-the-browser-process backstop could not reach it. Sharing the instance retires all
 	three.
 	*/
+	if(this.isUnsandboxed()) {
+		this.openUnsandboxed();
+		return;
+	}
 	wikiServer.start({
 		appDir: path.resolve(__dirname,".."),
 		wikiDir: this.pathname,
@@ -87,6 +91,98 @@ function WikiFolderWindow(options) {
 		});
 	});
 }
+
+/*
+Escape hatch: run this wiki the old way — TiddlyWiki booted straight into the window, with full
+Node available to the wiki's own JavaScript.
+
+Off by default, and deliberately per wiki. Sandboxing a folder wiki is a compatibility break: its
+code could previously require() anything, and a wiki that shells out or uses a node module has no
+other way to keep working. Making that reachable is the point; making it the default is not.
+
+The flag lives in the BACKSTAGE config, never in the wiki, for the same reason trusted paths do —
+a wiki that could set its own flag would grant itself Node.
+*/
+WikiFolderWindow.prototype.isUnsandboxed = function() {
+	// Trimmed: the value may have been written by a checkbox, by hand, or by a tool that left a
+	// trailing newline, and "yes\n" must not read as "not enabled".
+	return String($tw.wiki.getTiddlerText(this.getConfigTitle("unsandboxed"),"no")).trim() === "yes";
+};
+
+/*
+The pre-sandbox boot path, kept verbatim for the escape hatch: html/wiki-folder-window.html boots
+TiddlyWiki in-page via wiki-folder-main.js, in its own app instance, with the live-state file
+carrying the title and favicon back because the backstage cannot see into another instance.
+
+Those files are not dead code; this is what they are for now.
+*/
+WikiFolderWindow.prototype.openUnsandboxed = function() {
+	var self = this;
+	console.warn("[TiddlyDesktop] opening " + this.getIdentifier() + " UNSANDBOXED: its scripts run with full Node access");
+	this.stateFile = liveStateFileFor(this.getIdentifier());
+	try {
+		fs.mkdirSync(path.dirname(this.stateFile),{recursive: true});
+		if(!fs.existsSync(this.stateFile)) { fs.writeFileSync(this.stateFile,""); }
+	} catch(e) {}
+	var lan = this.lanOptions;
+	$tw.desktop.gui.Window.open("html/wiki-folder-window.html?pathname=" + encodeURIComponent(this.pathname)
+			+ "&host=" + encodeURIComponent(lan.host) + "&port=" + encodeURIComponent(lan.port)
+			+ "&credentials=" + encodeURIComponent(lan.credentials) + "&readers=" + encodeURIComponent(lan.readers)
+			+ "&writers=" + encodeURIComponent(lan.writers) + "&pathprefix=" + encodeURIComponent(lan.pathPrefix)
+			+ "&roottiddler=" + encodeURIComponent(lan.rootTiddler) + "&anonusername=" + encodeURIComponent(lan.anonUsername)
+			+ "&gzip=" + encodeURIComponent(lan.gzip)
+			+ "&spellcheck=" + encodeURIComponent(spellcheck.isEnabled($tw) ? "yes" : "no")
+			+ "&spellcheck-lang=" + encodeURIComponent(spellcheck.getLanguage($tw))
+			+ "&stateFile=" + encodeURIComponent(this.stateFile),this.applyGeometryToOpenOptions({
+		id: hash.simpleHash(this.getIdentifier()),
+		show: true,
+		new_instance: true,
+		icon: "images/app-icon256.png"
+	}),function(win) {
+		self.window_nwjs = win;
+		self.window_nwjs.once("loaded",self.onloadedUnsandboxed.bind(self));
+		self.window_nwjs.on("close",self.onclose.bind(self));
+		self.trackGeometry();
+		self.restoreMaximizedState();
+	});
+};
+
+// Load handler for the unsandboxed path: watch the live-state file, since the window runs in its
+// own app instance and its DOM is not reachable from here.
+WikiFolderWindow.prototype.onloadedUnsandboxed = function() {
+	var self = this;
+	this.readStateFile();
+	try {
+		this.stateWatcher = fs.watch(this.stateFile,function() {
+			if(self.stateReadTimer) { clearTimeout(self.stateReadTimer); }
+			self.stateReadTimer = setTimeout(function() { self.readStateFile(); },50);
+		});
+		this.stateWatcher.on("error",function() {});
+	} catch(e) {}
+};
+
+// Read the live-state file and push any changed title/favicon to the wiki-list config.
+WikiFolderWindow.prototype.readStateFile = function() {
+	var raw, state;
+	try { raw = fs.readFileSync(this.stateFile,"utf8"); } catch(e) { return; }
+	if(!raw) { return; }
+	try { state = JSON.parse(raw); } catch(e) { return; }
+	if(state.title && state.title !== this.wikiTitle) {
+		this.wikiTitle = state.title;
+		this.onTitleChange();
+	}
+	var favText = state.faviconText || "",
+		favType = state.faviconType || "";
+	if(favText) {
+		if(favText !== this.wikiFavIconText || favType !== this.wikiFavIconType) {
+			this.wikiFavIconText = favText;
+			this.wikiFavIconType = favType;
+			this.onFavIconChange();
+		}
+	} else {
+		this.clearFavIcon();
+	}
+};
 
 // Static method for getting the identifier for the specified info
 WikiFolderWindow.getIdentifierFromInfo = function(info) {
@@ -272,6 +368,8 @@ WikiFolderWindow.prototype.getWikiFavIconType = function() {
 
 // Close handler for window
 WikiFolderWindow.prototype.onclose = function(event) {
+	if(this.stateReadTimer) { clearTimeout(this.stateReadTimer); this.stateReadTimer = null; }
+	if(this.stateWatcher) { try { this.stateWatcher.close(); } catch(e) {} this.stateWatcher = null; }
 	if(this.titleObserver) { try { this.titleObserver.disconnect(); } catch(e) {} }
 	if(this.favIconObserver) { try { this.favIconObserver.disconnect(); } catch(e) {} }
 	// Stop serving this wiki. The server and its session token die with the window, so a closed

@@ -132,6 +132,11 @@ title: WikiListRow
 <$checkbox tiddler="""$:/TiddlyDesktop/Config/gzip/$(currentTiddler)$""" field="text" checked="yes" unchecked="no" default="no"/>
 <span>{{$:/language/TiddlyDesktop/Advanced/Gzip}}</span>
 </label>
+<label class="td-wiki-advanced-toggle td-wiki-advanced-danger">
+<$checkbox tiddler="""$:/TiddlyDesktop/Config/unsandboxed/$(currentTiddler)$""" field="text" checked="yes" unchecked="no" default="no"/>
+<span>{{$:/language/TiddlyDesktop/Advanced/Unsandboxed}}</span>
+</label>
+<div class="td-wiki-advanced-note">{{$:/language/TiddlyDesktop/Advanced/UnsandboxedHelp}}</div>
 </div>
 <div class="td-wiki-advanced-section">
 <div class="td-wiki-advanced-heading">{{$:/language/TiddlyDesktop/Advanced/Access}}</div>
