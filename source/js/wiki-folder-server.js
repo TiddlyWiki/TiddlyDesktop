@@ -36,8 +36,10 @@ readers/writers then default to that user, so anonymous requests are refused. Th
 per-window server is the only thing holding the credential, and it is reached through an
 unguessable token — see utils/wiki-server.js.
 
-It also runs with `path-prefix=/wiki/<token>` so the URLs TiddlyWiki generates already match what
-the parent forwards, which is what keeps that a plain forwarder rather than a rewriting proxy.
+It deliberately runs with NO path-prefix. TiddlyWiki's prefix support is server-side only — the
+client's tiddlyweb adaptor builds its URLs from $protocol$/$host$ and knows nothing about it — so
+under a prefix the wiki loads but its syncer 404s on /status and 405s on every save. The parent
+serves it at the origin root instead and gates access with a session cookie.
 */
 
 "use strict";
@@ -70,7 +72,6 @@ the parent forwards, which is what keeps that a plain forwarder rather than a re
 
 		options.appDir      absolute path of the application directory
 		options.wikiPath    the wiki folder
-		options.pathPrefix  the prefix the parent forwards, e.g. /wiki/<token>
 		options.lan         optional {host, port, credentials, readers, writers, pathPrefix,
 		                    rootTiddler, anonUsername, gzip} for the user's LAN sharing feature
 
@@ -125,7 +126,6 @@ the parent forwards, which is what keeps that a plain forwarder rather than a re
 					"port=" + port,
 					"username=" + user,
 					"password=" + pass,
-					"path-prefix=" + options.pathPrefix,
 				];
 				// The user's LAN sharing is a SEPARATE binding with its own credentials and
 				// principals. It must never carry the internal one, and it must never serve the

@@ -140,8 +140,17 @@ variables, and its readers/writers then default to that user, so anonymous acces
 Without that, every local process could read and write the wiki, which is exactly the weakness
 the Android folder-wiki servers have (audit finding #6).
 
-TiddlyWiki is started with path-prefix=/wiki/<token> so the URLs it generates already match what
-we forward; the request path is passed through unchanged.
+A folder wiki is served at the ORIGIN ROOT, not under /wiki/<token>. TiddlyWiki's `path-prefix`
+only strips the prefix server-side — nothing tells the client about it, and `getHost()` in the
+tiddlyweb adaptor substitutes only $protocol$ and $host$. Under a prefix the client therefore syncs
+to the wrong paths: GET /status 404s and saves 405. Making it work would mean setting
+$:/config/tiddlyweb/host inside the wiki, i.e. writing to the user's wiki, which we will not do.
+
+Serving at the root makes the client's default host correct with no changes to the wiki at all.
+The token then cannot live in the path, so it is carried by an HttpOnly cookie that we set when we
+serve the shell — same origin, so it is ours to set — and required on every proxied request. A
+local process that has not been given the token cannot bootstrap the cookie, so it still cannot
+reach the wiki.
 
 Two servers are started, on two OS-assigned ports:
 
@@ -175,6 +184,18 @@ exports.start = function(options, cb) {
 
 	// Forward a request to the folder wiki's TiddlyWiki server, adding the credential it
 	// requires. Everything else — method, path, body, status, headers — passes through.
+	var COOKIE_NAME = "tdsession";
+
+	function hasSessionCookie(req) {
+		var raw = req.headers.cookie || "";
+		var parts = raw.split(";");
+		for(var i = 0; i < parts.length; i++) {
+			var kv = parts[i].split("=");
+			if(kv[0] && kv[0].trim() === COOKIE_NAME && (kv[1] || "").trim() === token) { return true; }
+		}
+		return false;
+	}
+
 	function proxyRequest(req, res) {
 		var headers = {};
 		Object.keys(req.headers).forEach(function(k) {
@@ -211,7 +232,14 @@ exports.start = function(options, cb) {
 		try { urlPath = req.url.split("?")[0].split("#")[0]; } catch(e) { urlPath = ""; }
 		// Folder wikis: hand the whole method set to TiddlyWiki's server. Checked before the
 		// GET/HEAD restriction below, which exists for the static routes only.
-		if(proxy && urlPath.indexOf(wikiBase) === 0) {
+		if(proxy && urlPath.indexOf(SHELL_PREFIX) !== 0) {
+			// Folder wiki: everything outside the shell prefix belongs to TiddlyWiki, whose
+			// client expects to live at the origin root.
+			if(!hasSessionCookie(req)) {
+				res.writeHead(403, {"Content-Type": "text/plain"});
+				res.end("Forbidden");
+				return;
+			}
 			proxyRequest(req, res);
 			return;
 		}
@@ -240,7 +268,15 @@ exports.start = function(options, cb) {
 			res.end("Forbidden");
 			return;
 		}
-		sendFile(res, file, req.method);
+		// Reaching a shell URL means presenting the path token, so this response is where the
+		// session cookie is minted. It is what lets the folder wiki be served at the origin
+		// root without the token in every URL.
+		var extra = {};
+		if(root === appDir) {
+			extra["Set-Cookie"] = COOKIE_NAME + "=" + token +
+				"; Path=/; HttpOnly; SameSite=Strict";
+		}
+		sendFile(res, file, req.method, extra);
 	});
 
 	/*
