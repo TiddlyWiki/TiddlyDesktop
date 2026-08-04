@@ -442,8 +442,20 @@ WikiFileWindow.prototype.onloadiframe = function () {
 				var queue = cw._nwjsHttpQueue;
 				if (!queue || !queue.length) return;
 				var item = queue.shift();
+				// Web schemes only. This bridge answers with the raw response body, so it
+				// is a CORS-free fetch — a real capability the file:// page does not
+				// otherwise have. It is NOT host-scoped: collab relays are frequently
+				// self-hosted on a LAN or on localhost, so pinning to a host list would
+				// break legitimate setups. The residual surface is reads of whatever HTTP
+				// endpoints the machine can reach; see the note in the audit.
+				if (!/^https?:\/\//i.test(String(item.url || ""))) {
+					var _r = cw._nwjsHttpResults;
+					if (_r) {
+						_r[item.id] = { err: "URL scheme not permitted" };
+					}
+					return;
+				}
 				var mod =
-					item.url &&
 					item.url.substr(0, 8) === "https://"
 						? _httpsM
 						: _httpM;
@@ -508,6 +520,18 @@ WikiFileWindow.prototype.onloadiframe = function () {
 		});
 		// Shell.openExternal bridge (GUI call — not affected by nwdisable).
 		self.iframe.contentWindow._nwjsOpenExternal = function (url) {
+			// Only ever hand the OS a web URL. openExternal invokes the system handler for
+			// whatever scheme it is given, so an unrestricted bridge would let wiki script
+			// launch local files (file://), UNC paths, and any exotic scheme the OS has
+			// registered. The only caller is the OAuth flow, which opens https:// provider
+			// pages, so an allowlist costs nothing.
+			if (!/^https?:\/\//i.test(String(url))) {
+				console.warn(
+					"[TiddlyDesktop] refusing to open a non-web URL:",
+					url,
+				);
+				return;
+			}
 			// Remember which window opened an external URL, so the OAuth deep-link return
 			// (tiddlydesktop://auth…) re-focuses THIS window — the one sign-in was started
 			// from — rather than the backstage window.
@@ -553,6 +577,108 @@ WikiFileWindow.prototype.onloadiframe = function () {
 				? p
 				: _pathMod.resolve(_wikiDir, p);
 		};
+		// ── which paths this bridge may touch ────────────────────────────────
+		// The wiki renders in an nwdisable iframe precisely so its scripts get no
+		// filesystem access; this bridge hands a slice of that back for the collab
+		// asset feature. So the PARENT decides what is reachable, never the iframe:
+		//
+		//   • anything inside the wiki's own directory — the wiki can already write
+		//     there through the saver, so this grants nothing new; and
+		//   • anything else only if the USER picked it in a dialog the parent opened
+		//     and whose result the parent read itself (_nwjsChooseSavePath below).
+		//
+		// Without this, any script in any wiki you open could read or write any file
+		// the user can — an arbitrary-write primitive, since the wiki controls the
+		// path string completely.
+		var _approvedPaths = Object.create(null);
+		var _deniedPaths = Object.create(null);
+		self._iframeTeardowns.push(function () {
+			_approvedPaths = Object.create(null);
+			_deniedPaths = Object.create(null);
+		});
+		var _insideWikiDir = function (abs) {
+			var rel = _pathMod.relative(_wikiDir, abs);
+			// "" means the path IS the wiki dir; an absolute relative-path means a
+			// different Windows drive; a leading ".." segment means it escapes.
+			return (
+				rel === "" ||
+				(!_pathMod.isAbsolute(rel) &&
+					rel.split(_pathMod.sep)[0] !== "..")
+			);
+		};
+		var _pathAllowed = function (abs) {
+			return _insideWikiDir(abs) || _approvedPaths[abs] === true;
+		};
+		// Reads need a softer rule than writes. An attachment that lives outside the wiki
+		// folder is recorded by the External Attachments plugin as an ABSOLUTE
+		// _canonical_uri, and its owner must be able to read it to serve it to a peer — so
+		// refusing outright would break a working feature. The collab plugin does prompt
+		// before serving, but that prompt is drawn by the wiki, so a hostile wiki could
+		// skip it and we cannot count it. Ask here instead, from the parent window, where
+		// the wiki cannot suppress or fake the dialog. The answer (either way) is
+		// remembered for this load, so a denied path can't spin in a prompt loop.
+		var _confirmOutsideRead = function (abs) {
+			if (_deniedPaths[abs]) {
+				return false;
+			}
+			var ok = false;
+			try {
+				ok = self.window_nwjs.window.confirm(
+					"This wiki wants to read a file outside its own folder:\n\n" +
+						abs +
+						"\n\nAllow until this wiki is reloaded or closed?",
+				);
+			} catch (e) {
+				ok = false;
+			}
+			if (ok) {
+				_approvedPaths[abs] = true;
+			} else {
+				_deniedPaths[abs] = true;
+			}
+			return ok;
+		};
+		var _denyFileOp = function (cw, id, abs) {
+			console.warn(
+				"[TiddlyDesktop] file bridge refused a path outside the wiki folder:",
+				abs,
+			);
+			var r = cw._nwjsFileResults;
+			if (r) {
+				r[id] = { err: "path not permitted" };
+			}
+		};
+		// Open a native "save as" dialog and approve whatever the user picks. The input
+		// is created, held and read by the PARENT, and a file input's value cannot be set
+		// by script — so the path that comes back is genuinely the user's choice and the
+		// iframe cannot substitute one. This is the only way a path outside the wiki
+		// directory ever becomes writable.
+		self.iframe.contentWindow._nwjsChooseSavePath = function (
+			suggestedName,
+			cb,
+		) {
+			var hostDoc = self.window_nwjs.window.document;
+			var input = hostDoc.createElement("input");
+			input.type = "file";
+			input.setAttribute("nwsaveas", String(suggestedName || ""));
+			input.style.display = "none";
+			hostDoc.body.appendChild(input);
+			input.addEventListener("change", function () {
+				var chosen = input.value
+					? _pathMod.resolve(input.value)
+					: null;
+				if (chosen) {
+					_approvedPaths[chosen] = true;
+				}
+				try {
+					input.parentNode.removeChild(input);
+				} catch (e) {}
+				try {
+					cb(chosen);
+				} catch (e) {}
+			});
+			input.click();
+		};
 		var _fileTimer = setInterval(function () {
 			try {
 				var cw = self.iframe.contentWindow;
@@ -560,8 +686,16 @@ WikiFileWindow.prototype.onloadiframe = function () {
 				if (!q || !q.length) return;
 				var item = q.shift();
 				if (item.op === "read") {
+					var src = _resolveAssetPath(item.path);
+					if (
+						!_pathAllowed(src) &&
+						!_confirmOutsideRead(src)
+					) {
+						_denyFileOp(cw, item.id, src);
+						return;
+					}
 					_fsMod.readFile(
-						_resolveAssetPath(item.path),
+						src,
 						function (err, buf) {
 							var r =
 								cw._nwjsFileResults;
@@ -579,6 +713,10 @@ WikiFileWindow.prototype.onloadiframe = function () {
 					);
 				} else if (item.op === "write") {
 					var dest = _resolveAssetPath(item.path);
+					if (!_pathAllowed(dest)) {
+						_denyFileOp(cw, item.id, dest);
+						return;
+					}
 					try {
 						_fsMod.mkdirSync(
 							_pathMod.dirname(dest),
@@ -629,6 +767,23 @@ WikiFileWindow.prototype.onloadiframe = function () {
 				while (cmds && cmds.length) {
 					var cmd = cmds.shift();
 					if (cmd.op === "create") {
+						// WebSocket schemes only (same reasoning as the HTTP
+						// bridge above: not host-scoped, because a self-hosted
+						// or localhost relay is a normal setup).
+						if (
+							!/^wss?:\/\//i.test(
+								String(cmd.url || ""),
+							)
+						) {
+							if (cw._nwjsWsEventQueue) {
+								cw._nwjsWsEventQueue.push({
+									id: cmd.id,
+									type: "error",
+									data: "URL scheme not permitted",
+								});
+							}
+							continue;
+						}
 						(function (id, url, hdrs) {
 							var wsHeaders = {
 								"User-Agent":

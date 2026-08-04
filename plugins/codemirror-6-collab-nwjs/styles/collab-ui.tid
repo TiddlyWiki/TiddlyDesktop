@@ -550,19 +550,11 @@ tags: $:/tags/Stylesheet
   white-space: nowrap;
 }
 
-/* "Save to disk" attachment picker. The native file input can't be styled directly, so we use
-   the same trick as TiddlyWiki's import button: an invisible full-size <input type=file>
-   (.tc-file-input-wrapper, from the core theme) overlaid on a normal <$button> that reads like
-   the sibling "Get" button. The visible button can't catch :hover (the input sits on top), so
-   the hover state is driven from the wrapper. */
-.tc-collab-get-asset-wrapper {
-  flex-shrink: 0;
-}
-
-.tc-collab-get-asset-wrapper:hover .tc-collab-get-btn {
-  background: <<colour primary>>;
-  color: #fff;
-}
+/* The "save to disk" attachment button used to be an invisible <input type=file> overlaid on a
+   button (TiddlyWiki's import-button trick). It is now a plain <$button>: the file dialog is
+   opened by the PARENT window rather than from inside the wiki, so the chosen path can be
+   trusted (see _nwjsChooseSavePath in source/js/wiki-file-window.js). It therefore needs no
+   wrapper and catches :hover itself, like every other button here. */
 
 .tc-collab-get-btn {
   font-size: 0.75em;

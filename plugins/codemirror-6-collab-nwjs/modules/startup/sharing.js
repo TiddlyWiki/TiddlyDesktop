@@ -1882,17 +1882,45 @@ exports.startup = function() {
 		return false;
 	});
 
-	// Get an external-attachment asset. From a $browse "save as" the chosen path
-	// arrives on the event's file input; with no path we embed it inline.
+	// Ask the user where to save an incoming attachment. The destination must come from a
+	// real file dialog and never from script: in a single-file wiki the PARENT owns that
+	// dialog (window._nwjsChooseSavePath, see wiki-file-window.js) and records the chosen
+	// path as the one out-of-wiki path its file bridge will write to — so a path we made
+	// up here would simply be refused. Folder wikis have direct fs access and no bridge,
+	// so they open the dialog in their own document. cb(null) = cancelled.
+	function _chooseSavePath(suggestedName, cb) {
+		if(typeof window._nwjsChooseSavePath === "function") {
+			window._nwjsChooseSavePath(suggestedName || "", cb);
+			return;
+		}
+		try {
+			var input = document.createElement("input");
+			input.type = "file";
+			input.setAttribute("nwsaveas", suggestedName || "");
+			input.style.display = "none";
+			document.body.appendChild(input);
+			input.addEventListener("change", function() {
+				var chosen = input.value || null;
+				try { input.parentNode.removeChild(input); } catch(e) {}
+				cb(chosen);
+			});
+			input.click();
+		} catch(e) { cb(null); }
+	}
+
+	// Get an external-attachment asset. saveAs="yes" (the "save to disk" button) prompts for
+	// a destination; the plain button omits it and the bytes are embedded inline instead.
 	$tw.rootWidget.addEventListener("codemirror-6-collab-get-asset", function(ev) {
 		var title = ev.param || (ev.paramObject && ev.paramObject.title);
-		var dest = "";
-		// From a $browse "save as", the chosen path arrives as ev.files[0].path;
-		// the inline $button has no files (dest stays "" → embed).
-		try {
-			if(ev.files && ev.files[0] && ev.files[0].path) { dest = ev.files[0].path; }
-		} catch(e) {}
-		if(title) { _getAsset(title, dest); }
+		if(!title) { return false; }
+		if(!(ev.paramObject && ev.paramObject.saveAs === "yes")) {
+			_getAsset(title, "");   // embed inline
+			return false;
+		}
+		var avail = availableTiddlers[title] || {};
+		_chooseSavePath(avail.assetName || "", function(dest) {
+			if(dest) { _getAsset(title, dest); }
+		});
 		return false;
 	});
 
