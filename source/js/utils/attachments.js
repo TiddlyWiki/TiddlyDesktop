@@ -87,6 +87,11 @@ exports.install = function(doc, win, handle, options) {
 	if(doc.__tdAttachmentsInstalled) { return; }
 	doc.__tdAttachmentsInstalled = true;
 	var wikiDir = (options && options.wikiDir) || null;
+	// "all"     — folder wikis: TiddlyWiki's server answers only its own routes, so every
+	//             wiki-relative attachment must be rerouted.
+	// "outside" — single-file wikis: the wiki is served from its own directory, so relative
+	//             paths that stay inside it already work; only ones that escape need rerouting.
+	var relativeMode = (options && options.relativeMode) || "all";
 
 	/*
 	Folder wikis also need RELATIVE attachments rewritten, which single-file wikis do not.
@@ -106,7 +111,18 @@ exports.install = function(doc, win, handle, options) {
 		if((/^[a-z][a-z0-9+.-]*:/i).test(s)) { return null; }
 		var decoded = s.split("?")[0].split("#")[0];
 		try { decoded = decodeURI(decoded); } catch(e) {}
-		return require("path").resolve(wikiDir, decoded);
+		var pathm = require("path"),
+			abs = pathm.resolve(wikiDir, decoded);
+		if(relativeMode === "outside") {
+			// Single-file wikis: a relative path that stays INSIDE the wiki directory already
+			// resolves against the wiki's own URL and is served from there, so leave it be. Only
+			// one that climbs out ("../Bilder/x.jpg") has nothing to resolve against and must go
+			// to the attachment origin — where it is trust-checked like any other outside path.
+			var rel = pathm.relative(wikiDir, abs);
+			var inside = rel === "" || (!pathm.isAbsolute(rel) && rel.split(pathm.sep)[0] !== "..");
+			if(inside) { return null; }
+		}
+		return abs;
 	}
 
 	function rewriteElement(el) {

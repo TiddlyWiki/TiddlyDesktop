@@ -474,6 +474,10 @@ WikiFileWindow.prototype.onloadiframe = function () {
 			this.iframe.contentDocument,
 			this.iframe.contentWindow,
 			this.server,
+			{
+				wikiDir: pathMod.dirname(this.pathname),
+				relativeMode: "outside",
+			},
 		);
 	} catch (e) {
 		console.error("[TiddlyDesktop] attachment routing install failed:", e);
