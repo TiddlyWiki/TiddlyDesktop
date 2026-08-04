@@ -65,7 +65,7 @@ var TEMPLATE_TEXT = [
 
 /*
 	doc/win  the wiki's document and window
-	options  {identifier, wikiDir, openPicker(kind, seedPath, cb)}
+	options  {identifier, wikiDir, openPicker(kind, seedPath, cb), onGranted()}
 
 `openPicker` is supplied by the caller because only it can create an input in the parent's own
 document; cb receives the selected path or null.
@@ -76,7 +76,8 @@ exports.install = function(doc, win, options) {
 	if(!tw || !tw.wiki) { return null; }
 	var identifier = options.identifier,
 		wikiDir = options.wikiDir,
-		openPicker = options.openPicker;
+		openPicker = options.openPicker,
+		onGranted = options.onGranted;
 
 	// Inject the template once per document load.
 	try {
@@ -153,6 +154,12 @@ exports.install = function(doc, win, options) {
 			if(!chosen) { return; }
 			trust.grant(identifier, chosen, kind);
 			refresh();
+			// Removing the panel is not enough: the attachment's request was already refused,
+			// and a failed subresource is not retried. Ask for a re-fetch or the grant appears
+			// to have done nothing.
+			if(typeof onGranted === "function") {
+				try { onGranted(); } catch(e) {}
+			}
 		});
 	}
 

@@ -278,8 +278,35 @@ WikiFolderWindow.prototype.onloadiframe = function() {
 	// Route attachments onto the attachment origin. Folder wikis need RELATIVE ones handled too:
 	// TiddlyWiki's server answers only its own routes, so "pics/photo.png" would 404.
 	try {
-		require("./utils/attachments.js").install(doc,win,this.server,{wikiDir: this.pathname});
+		this._attachments = require("./utils/attachments.js").install(doc,win,this.server,{wikiDir: this.pathname});
 	} catch(e) { console.error("[TiddlyDesktop] attachment routing install failed:",e); }
+	// In-wiki offer to trust an attachment's location. Folder wikis were missing this entirely —
+	// their absolute attachments could be refused with no way to grant from inside the wiki.
+	try {
+		var _tu = require("./utils/trust-ui.js").install(doc,win,{
+			identifier: this.getIdentifier(),
+			wikiDir: this.pathname,
+			onGranted: function() {
+				if(self._attachments) { self._attachments.refresh(); }
+			},
+			openPicker: function(kind,seedPath,cb) {
+				var hostDoc = self.window_nwjs.window.document;
+				var input = hostDoc.createElement("input");
+				input.type = "file";
+				if(kind === "dir") { input.setAttribute("nwdirectory",""); }
+				if(seedPath) { input.setAttribute("nwworkingdir",String(seedPath)); }
+				input.style.display = "none";
+				hostDoc.body.appendChild(input);
+				input.addEventListener("change",function() {
+					var chosen = input.value ? path.resolve(input.value) : null;
+					try { input.parentNode.removeChild(input); } catch(e) {}
+					try { cb(chosen); } catch(e) {}
+				});
+				input.click();
+			}
+		});
+		if(_tu) { this._iframeTeardowns.push(_tu.teardown); }
+	} catch(e) { console.error("[TiddlyDesktop] trust UI install failed:",e); }
 	// Dropping a file with External Attachments enabled should reference it where it lives rather
 	// than embedding its bytes, resolved against the WIKI FOLDER. That hook used to run in-page
 	// with Node; it is installed onto the wiki's own $tw from here now.

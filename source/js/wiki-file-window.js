@@ -470,7 +470,7 @@ WikiFileWindow.prototype.onloadiframe = function () {
 	// the user has trusted the path for this wiki. Relative attachments need nothing — they
 	// resolve against the wiki's own URL and the wiki server serves them.
 	try {
-		require("./utils/attachments.js").install(
+		this._attachments = require("./utils/attachments.js").install(
 			this.iframe.contentDocument,
 			this.iframe.contentWindow,
 			this.server,
@@ -488,6 +488,13 @@ WikiFileWindow.prototype.onloadiframe = function () {
 			{
 				identifier: this.getIdentifier(),
 				wikiDir: pathMod.dirname(this.pathname),
+				// A grant only removes the panel; the attachment's own request was already
+				// refused and will not be retried on its own.
+				onGranted: function () {
+					if (_tuSelf._attachments) {
+						_tuSelf._attachments.refresh();
+					}
+				},
 				openPicker: function (kind, seedPath, cb) {
 					var hostDoc =
 						_tuSelf.window_nwjs.window.document;

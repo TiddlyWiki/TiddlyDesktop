@@ -167,5 +167,34 @@ exports.install = function(doc, win, handle, options) {
 		}
 	} catch(e) {}
 
+	/*
+	Re-fetch anything already pointing at the attachment origin.
+
+	Needed because granting trust does not, by itself, put a picture on the screen. By the time
+	the user grants, the element has already been rewritten and its request already refused, and
+	a browser does not retry a failed subresource. Without this the trust panel disappears and
+	the attachment stays broken until the wiki is reloaded, which looks exactly like trust not
+	working.
+
+	The query string is what changes; the server ignores it when resolving the path.
+	*/
+	var refreshCount = 0;
+	function refresh() {
+		refreshCount++;
+		try {
+			var nodes = doc.querySelectorAll(SELECTOR);
+			for(var i = 0; i < nodes.length; i++) {
+				var el = nodes[i],
+					attr = ATTR_BY_TAG[el.tagName];
+				if(!attr) { continue; }
+				var value = el.getAttribute(attr) || "";
+				if(handle.attachmentOrigin && value.indexOf(handle.attachmentOrigin) === 0) {
+					el.setAttribute(attr, value.split("?")[0] + "?v=" + refreshCount);
+				}
+			}
+		} catch(e) {}
+	}
+
 	scan(doc);
+	return {refresh: refresh};
 };
