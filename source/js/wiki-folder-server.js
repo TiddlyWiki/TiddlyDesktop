@@ -96,6 +96,20 @@ the parent forwards, which is what keeps that a plain forwarder rather than a re
 				$tw.boot = $tw.boot || {};
 				$tw.boot.suppressBoot = true;
 				var argv = [
+					// Guarantee the two plugins a served wiki needs to save, without touching
+					// the user's tiddlywiki.info. boot.js treats a leading "+" as an extra
+					// plugin reference, so this works even for a folder wiki that was created
+					// elsewhere and never went through ensureFolderWikiPlugins.
+					//
+					// This matters more than it looks: the browser half now saves through the
+					// tiddlyweb sync adaptor, so a wiki missing that plugin would load and
+					// render but silently fail to save. In-page booting never needed it.
+					// The name must be "plugins/<publisher>/<name>": boot.js only acts on a
+					// three-part reference whose first part is plugins/themes/languages, and
+					// SILENTLY IGNORES anything else — a two-part name looks right, does
+					// nothing, and leaves the wiki serving happily while saving nowhere.
+					"+plugins/tiddlywiki/filesystem",
+					"+plugins/tiddlywiki/tiddlyweb",
 					options.wikiPath,
 					"--listen",
 					"host=127.0.0.1",
