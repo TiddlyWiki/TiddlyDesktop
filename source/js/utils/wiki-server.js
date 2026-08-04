@@ -165,6 +165,8 @@ exports.start = function(options, cb) {
 		identifier = options.identifier,
 		token = crypto.randomBytes(16).toString("hex");
 
+	// Mutable: a folder wiki's backend does not exist until its shell has booted TiddlyWiki, so
+	// the target is set afterwards via handle.setProxy().
 	var proxy = options.proxy || null;
 
 	var shellBase = SHELL_PREFIX + token + "/",
@@ -311,6 +313,12 @@ exports.start = function(options, cb) {
 				origin: wikiOrigin,
 				token: token,
 				shellUrl: wikiOrigin + shellBase + "html/wiki-file-window.html",
+				// Folder wikis use a different shell page, and their wiki URL is the proxied
+				// root rather than a file in the wiki directory.
+				shellUrlFor: function(relPath) {
+					return wikiOrigin + shellBase + String(relPath).replace(/^\/+/, "");
+				},
+				wikiRootUrl: wikiOrigin + wikiBase,
 				wikiUrl: wikiOrigin + wikiBase + encodeURIComponent(wikiFile),
 				// True for any URL on this origin that would be Node-enabled if opened. Used to
 				// enforce the invariant that nothing on the shell path is ever opened outside the
@@ -326,6 +334,10 @@ exports.start = function(options, cb) {
 				attachmentUrl: function(absPath) {
 					return attachOrigin + attachBase +
 						Buffer.from(String(absPath), "utf8").toString("base64");
+				},
+				// Point /wiki/<token>/… at a backend. Passing null reverts to serving files.
+				setProxy: function(target) {
+					proxy = target || null;
 				},
 				close: function() {
 					try { server.close(); } catch(e) {}

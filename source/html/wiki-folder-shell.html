@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<title>TiddlyDesktop - Wiki Folder Window</title>
+<!-- TiddlyWiki's favicon startup sets this link's href from $:/favicon.ico. The backstage reads
+it to show the wiki-list favicon. -->
+<link id="faviconLink" rel="shortcut icon" href="favicon.ico">
+<style>
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+.td-wiki-folder-viewer-wrapper { position: absolute; inset: 0; }
+.td-wiki-folder-viewer { width: 100%; height: 100%; border: none; }
+</style>
+</head>
+<body class="td-wiki-folder-window">
+<div class="td-wiki-folder-viewer-wrapper">
+<!-- SECURITY: `nwdisable nwfaketop` is the boundary between this Node-enabled shell and the
+wiki's own scripts. BOTH attributes are required — neither is sufficient on its own, as measured
+against NW.js 0.114:
+
+  nwdisable nwfaketop  no Node, window.parent is the frame itself      -> blocked
+  nwdisable only       no Node, but window.parent is the REAL parent   -> wiki calls
+                                                                          parent.require("child_process")
+  nwfaketop only       parent hidden, but the frame keeps its own Node -> arbitrary execution
+  neither              both                                            -> arbitrary execution
+
+`nwfaketop` reads like a TiddlyWiki framing shim; it is not. It is what stops a same-origin wiki
+document climbing to this window's `require`. Do not remove either attribute, and do not add a
+same-origin frame that lacks them.
+
+This matters more here than for single-file wikis: until this shell existed, a folder wiki's own
+JavaScript ran with full Node by design. -->
+<iframe id="tid-main-wiki-folder-viewer" class="td-wiki-folder-viewer" src="" nwdisable nwfaketop allow="fullscreen *">
+</iframe>
+</div>
+<script src="../js/wiki-folder-server.js"></script>
+</body>
+</html>
