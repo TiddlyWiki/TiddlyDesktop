@@ -203,6 +203,12 @@ stability stays a best-effort nicety with no failure mode, which is exactly what
 Moving the parent shell off `file://` changes how NW.js grants Node, so this was measured against
 NW.js 0.114.0 (SDK, linux-x64) rather than assumed. Results:
 
+App pages are served from a **`chrome-extension://`** origin, not `file://` — measured. That
+matters twice over: it is why the backstage window can reach into a wiki window cross-origin at
+all (NW.js app pages carry extension privileges, which is what survives removing
+`--allow-file-access-from-files`), and it is why folder wikis hit the same media-embed rejection
+as `file://` pages did.
+
 | context | Node? |
 |---|---|
 | app page (app-**relative** URL, e.g. `Window.open("html/x.html")`) | yes |
@@ -410,10 +416,11 @@ Scoped as follow-up work, not part of the initial migration.
 ### Deleted
 
 - **`source/js/utils/local-server.js`** (the embed shim) and the parking/masking machinery in
-  `utils/embeds.js`. Its entire documented purpose is that "single-file wikis are `file://` pages"
-  and providers reject the null Referer with error 153. On an HTTP origin the problem does not
-  exist. The host allowlist in `embed-hosts.js` may still be wanted as policy, but the shim
-  server and iframe rewriting go.
+  `utils/embeds.js` — but **only once folder wikis have moved too**. Its comment says the problem
+  is that "single-file wikis are `file://` pages"; that is incomplete. It is also installed for
+  folder wikis (`wiki-folder-main.js:459`), and those run on a `chrome-extension://` origin —
+  measured — which providers reject for the same reason. Both wiki kinds must be on http before
+  the shim can go. The host allowlist in `embed-hosts.js` may still be wanted as policy.
 - All three `--allow-file-*` chromium-args.
 
 ### Changed
@@ -606,12 +613,15 @@ the permission model Android didn't need."
 6. `PORT_A` server: trust-checked attachment serving with the media/text policy split.
 7. View template for untrusted `_canonical_uri` tiddlers, with file/folder trust actions.
 8. TiddlyWiki Classic and saver-selection fixes.
-9. Delete the embed shim.
-10. **Folder wikis onto the same shell**: TiddlyWiki's server serving the UI, wiki in an
+9. **Folder wikis onto the same shell**: TiddlyWiki's server serving the UI, wiki in an
     `nwdisable nwfaketop` iframe, `wiki-folder-main.js` reduced to a shell, `asset-util.js`'s
     `nodeFs`/bridge split collapsed, LAN `--listen` split onto its own binding. Largest single
     phase, and the one that removes the last unsandboxed surface. *(can follow the single-file
     work; does not block it)*
+10. Delete the embed shim — **only after step 9**. The shim is not single-file-only: it is
+    installed for folder wikis too (`wiki-folder-main.js:459`), and those render on a
+    `chrome-extension://` origin, which providers reject exactly as they reject `file://`.
+    Removing it earlier would break media embeds in every folder wiki.
 11. CSP. *(follow-up)*
 
 Steps 1–3 stand on their own even if the origin move is never scheduled: the trust store makes

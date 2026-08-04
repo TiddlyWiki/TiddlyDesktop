@@ -3,10 +3,18 @@ Local loopback HTTP shim for media embeds.
 
 The problem
 -----------
-Single-file wikis are `file://` pages. An embedded `<iframe src="https://youtube.com/embed/…">`
-inside a `file://` page loads with a `file://`/empty Referer, and YouTube rejects that with
-player error 153 (other providers behave similarly). NW.js gives us no way to fix the request
-header — `chrome.webRequest` is unavailable in the app's event-page context.
+Wiki content renders on an origin providers will not accept a Referer from. An embedded
+`<iframe src="https://youtube.com/embed/…">` then loads with an empty/opaque Referer and YouTube
+rejects it with player error 153 (other providers behave similarly). NW.js gives us no way to fix
+the request header — `chrome.webRequest` is unavailable in the app's event-page context.
+
+This affects BOTH wiki kinds, which is easy to miss:
+  • single-file wikis were `file://` documents (they are served over loopback http since the
+    origin move, so they no longer need this); and
+  • folder wikis render on the app's own `chrome-extension://` origin — measured — which is
+    rejected for the same reason. utils/embeds.js is installed for them too
+    (wiki-folder-main.js), so this shim is still load-bearing for folder wikis and must not be
+    removed until they are served over http as well. See DESIGN-http-wiki-origin.md.
 
 The fix
 -------
