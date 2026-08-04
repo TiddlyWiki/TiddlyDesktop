@@ -311,6 +311,69 @@ WikiFileWindow.prototype.onloadiframe = function () {
 			parentWindow: this.window_nwjs.window,
 		},
 	);
+	// ── grant-on-add ────────────────────────────────────────────────────────────
+	// A file the user drags into the wiki, or picks in its import dialog, is a path
+	// they chose — and we witness it here in the parent. Record it as trusted so the
+	// attachment renders later without asking again. Same gesture-based rule as the
+	// save dialog, applied on the way in rather than the way out.
+	//
+	// Scoped to exactly what was picked: the file, never its folder. Widening "I
+	// chose this image" into "this wiki may read ~/Pictures" would claim authority
+	// the user never gave; folder trust stays an explicit choice.
+	//
+	// Script cannot manufacture these grants. NW.js sets `path` only on File objects
+	// that came from a real user selection, so a File built in script has none and
+	// grants nothing. The isTrusted check is a second line, not the basis.
+	try {
+		var _trustMod = require("./utils/trust.js");
+		var _wikiId = self.getIdentifier();
+		var _grantFiles = function (files) {
+			if (!files) {
+				return;
+			}
+			for (var i = 0; i < files.length; i++) {
+				var p = files[i] && files[i].path;
+				if (p) {
+					_trustMod.grant(_wikiId, p, "file");
+				}
+			}
+		};
+		var _onDrop = function (ev) {
+			if (!ev || !ev.isTrusted) {
+				return;
+			}
+			try {
+				_grantFiles(ev.dataTransfer && ev.dataTransfer.files);
+			} catch (e) {}
+		};
+		var _onFileInput = function (ev) {
+			var t = ev && ev.target;
+			if (!ev.isTrusted || !t || t.tagName !== "INPUT") {
+				return;
+			}
+			if (String(t.type).toLowerCase() !== "file") {
+				return;
+			}
+			try {
+				_grantFiles(t.files);
+			} catch (e) {}
+		};
+		var _gdoc = this.iframe.contentDocument;
+		// Capture phase, so a wiki that stops propagation on its own handlers cannot
+		// prevent the grant being recorded for a file the user really did choose.
+		_gdoc.addEventListener("drop", _onDrop, true);
+		_gdoc.addEventListener("change", _onFileInput, true);
+		self._iframeTeardowns.push(function () {
+			try {
+				_gdoc.removeEventListener("drop", _onDrop, true);
+			} catch (e) {}
+			try {
+				_gdoc.removeEventListener("change", _onFileInput, true);
+			} catch (e) {}
+		});
+	} catch (e) {
+		console.error("[TiddlyDesktop] grant-on-add install failed:", e);
+	}
 	// Browser-style find-in-page (Ctrl/Cmd+F). The bar lives in the outer wiki
 	// window and searches the iframe content; it defers to any focused editor that
 	// claims the shortcut (e.g. CodeMirror 6).
@@ -597,48 +660,23 @@ WikiFileWindow.prototype.onloadiframe = function () {
 		// render, and it meant the user was re-asked after every reload.
 		var _trust = require("./utils/trust.js");
 		var _trustId = self.getIdentifier();
-		// Denials stay per-load and in memory. A "no" should not be permanent, but it has
-		// to stop a refused path re-prompting in a loop within a single load.
-		var _deniedPaths = Object.create(null);
-		self._iframeTeardowns.push(function () {
-			_deniedPaths = Object.create(null);
-		});
 		var _pathAllowed = function (abs) {
 			// The wiki's own directory is trusted implicitly: the wiki can already write
 			// there through the saver, so allowing it grants nothing new.
 			return _trust.isTrusted(_trustId, abs, [_wikiDir]);
 		};
-		// Reads need a softer rule than writes. An attachment that lives outside the wiki
-		// folder is recorded by the External Attachments plugin as an ABSOLUTE
-		// _canonical_uri, and its owner must be able to read it to serve it to a peer — so
-		// refusing outright would break a working feature. The collab plugin does prompt
-		// before serving, but that prompt is drawn by the wiki, so a hostile wiki could
-		// skip it and we cannot count it. Ask here instead, from the parent window, where
-		// the wiki cannot suppress or fake the dialog. Allowing records a persistent grant
-		// (revocable in Settings); denying is remembered only for this load, so a refused
-		// path can't spin in a prompt loop but a "no" is never permanent.
-		var _confirmOutsideRead = function (abs) {
-			if (_deniedPaths[abs]) {
-				return false;
-			}
-			var ok = false;
-			try {
-				ok = self.window_nwjs.window.confirm(
-					"This wiki wants to read a file outside its own folder:\n\n" +
-						abs +
-						"\n\nAllow it to read this file from now on?\n" +
-						"You can revoke this later in Settings → Trusted paths.",
-				);
-			} catch (e) {
-				ok = false;
-			}
-			if (ok) {
-				_trust.grant(_trustId, abs, "file");
-			} else {
-				_deniedPaths[abs] = true;
-			}
-			return ok;
-		};
+		// An earlier version asked window.confirm() here before allowing a read outside the
+		// wiki folder. That gate does not hold: measured against NW.js 0.114, the parent
+		// window's confirm() returns TRUE with no user present and no dialog shown,
+		// depending on the window's state at the moment it is called — so a wiki could
+		// read any file simply by asking at the right time. It is removed rather than
+		// patched, because a dialog that sometimes auto-approves is worse than no dialog:
+		// it looks like consent.
+		//
+		// Out-of-wiki reads are now simply refused unless the path is already trusted.
+		// Trust is minted only where the user's choice is unforgeable — the drop/import
+		// listener above, and the parent-owned save picker below — never from a prompt
+		// whose return value we cannot rely on.
 		var _denyFileOp = function (cw, id, abs) {
 			console.warn(
 				"[TiddlyDesktop] file bridge refused a path outside the wiki folder:",
@@ -691,10 +729,7 @@ WikiFileWindow.prototype.onloadiframe = function () {
 				var item = q.shift();
 				if (item.op === "read") {
 					var src = _resolveAssetPath(item.path);
-					if (
-						!_pathAllowed(src) &&
-						!_confirmOutsideRead(src)
-					) {
+					if (!_pathAllowed(src)) {
 						_denyFileOp(cw, item.id, src);
 						return;
 					}

@@ -84,8 +84,12 @@ missing its fields is skipped, so a damaged tiddler denies access instead of thr
 function list(identifier) {
 	var out = [];
 	try {
-		$tw.wiki.forEachTiddler(function(title, tiddler) {
-			if(title.indexOf(PREFIX) !== 0) { return; }
+		// $tw.wiki.each, NOT forEachTiddler: the latter goes through getTiddlers(), which
+		// EXCLUDES system tiddlers unless asked otherwise — and every record here is a
+		// $:/ tiddler, so it would silently find nothing. each() walks every title, and
+		// hands the callback (tiddler, title) in that order.
+		$tw.wiki.each(function(tiddler, title) {
+			if(!tiddler || title.indexOf(PREFIX) !== 0) { return; }
 			var f = tiddler.fields;
 			if(f.wiki !== identifier) { return; }
 			if(typeof f["trust-path"] !== "string" || !f["trust-path"]) { return; }
