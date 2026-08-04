@@ -1,17 +1,21 @@
 /*
-Reference a file dropped into a folder wiki, instead of embedding it.
+Reference a file added to a wiki, instead of embedding it.
 
 Phase 9 of DESIGN-http-wiki-origin.md.
 
-When External Attachments is enabled, dropping a file into a wiki should record a `_canonical_uri`
-pointing at where the file already lives, rather than reading its bytes into the tiddler. The stock
-plugin does that relative to the wiki DOCUMENT; for a folder wiki the reference has to be relative
-to the WIKI FOLDER, so TiddlyDesktop has always supplied its own hook.
+When External Attachments is enabled, adding a file to a wiki — dropped in or chosen through the
+import button — should record a `_canonical_uri` pointing at where the file already lives, rather
+than reading its bytes into the tiddler.
 
-That hook used to live in wiki-folder-main.js and ran in-page with Node. The wiki has no Node now,
-so it is installed from the parent onto the wiki's own `$tw.hooks` instead. Nothing here actually
-needs Node: the file's absolute path comes from the File object (NW.js sets `path` only for a real
-user selection), and the rest is path arithmetic.
+The stock plugin resolves that against the wiki DOCUMENT. That has never suited a folder wiki,
+whose references belong relative to the WIKI FOLDER, so TiddlyDesktop has always supplied its own
+hook; and since wikis are served over http it does not suit a single-file wiki either, because the
+document is now a loopback URL rather than a path on disk. Both kinds therefore use this.
+
+The folder-wiki version of this hook lived in wiki-folder-main.js and ran in-page with Node. The
+wiki has no Node now, so it is installed from the parent onto the wiki's own `$tw.hooks` instead.
+Nothing here actually needs Node: the file's absolute path comes from the File object (NW.js sets
+`path` only for a real user selection), and the rest is path arithmetic.
 
 The two-hook arrangement is deliberate and worth preserving. `th-importing-file` is a "piped" hook:
 every handler sees the value returned by the previous one, and the importer embeds the file inline
@@ -38,14 +42,15 @@ function relativePath(from, to) {
 
 /*
 	win      the wiki's window
-	wikiDir  the wiki folder, which references are resolved against
+	wikiDir  the directory references are resolved against — the wiki folder for a folder wiki,
+	         the file's own directory for a single-file wiki
 */
 exports.install = function(win, wikiDir) {
 	var tw = null;
 	try { tw = win && win.$tw; } catch(e) { tw = null; }
 	if(!tw || !tw.hooks || !wikiDir) { return; }
-	if(win.__tdFolderImportInstalled) { return; }
-	win.__tdFolderImportInstalled = true;
+	if(win.__tdAttachmentImportInstalled) { return; }
+	win.__tdAttachmentImportInstalled = true;
 
 	// Mirrors the stock plugin's makePathRelative, but rooted at the wiki folder rather than the
 	// document, and reading the plugin's own UseAbsolute settings.
@@ -83,7 +88,7 @@ exports.install = function(win, wikiDir) {
 				return true;
 			}
 		} catch(e) {
-			console.error("[TiddlyDesktop] folder-wiki external attachment failed:", e);
+			console.error("[TiddlyDesktop] external attachment import failed:", e);
 		}
 		return false;
 	}

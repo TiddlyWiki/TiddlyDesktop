@@ -310,7 +310,7 @@ WikiFolderWindow.prototype.onloadiframe = function() {
 	// Dropping a file with External Attachments enabled should reference it where it lives rather
 	// than embedding its bytes, resolved against the WIKI FOLDER. That hook used to run in-page
 	// with Node; it is installed onto the wiki's own $tw from here now.
-	try { require("./utils/folder-import.js").install(win,this.pathname); } catch(e) {
+	try { require("./utils/attachment-import.js").install(win,this.pathname); } catch(e) {
 		console.error("[TiddlyDesktop] folder import hook install failed:",e);
 	}
 	try { require("./utils/embeds.js").install(doc,win); } catch(e) {}

@@ -470,6 +470,18 @@ WikiFileWindow.prototype.onloadiframe = function () {
 	// the user has trusted the path for this wiki. Relative attachments need nothing — they
 	// resolve against the wiki's own URL and the wiki server serves them.
 	try {
+		// Adding a file with External Attachments enabled should reference it where it lives
+		// rather than embedding its bytes. The stock plugin resolves against the wiki DOCUMENT,
+		// which is a loopback URL now, so it cannot produce a usable path — this resolves
+		// against the wiki file's own directory instead.
+		try {
+			require("./utils/attachment-import.js").install(
+				this.iframe.contentWindow,
+				pathMod.dirname(this.pathname),
+			);
+		} catch (e) {
+			console.error("[TiddlyDesktop] attachment import hook install failed:", e);
+		}
 		this._attachments = require("./utils/attachments.js").install(
 			this.iframe.contentDocument,
 			this.iframe.contentWindow,
