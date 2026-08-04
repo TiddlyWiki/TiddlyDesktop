@@ -99,7 +99,7 @@ function resolveWithin(root, relUrlPath) {
 	return target;
 }
 
-function sendFile(res, file, method) {
+function sendFile(res, file, method, extraHeaders) {
 	fs.stat(file, function(err, stats) {
 		if(err || !stats.isFile()) {
 			res.writeHead(404, {"Content-Type": "text/plain"});
@@ -109,10 +109,10 @@ function sendFile(res, file, method) {
 		var headers = {
 			"Content-Type": contentType(file),
 			"Content-Length": stats.size,
-			// Nothing here is meant for another origin to read.
 			"X-Content-Type-Options": "nosniff",
 			"Cache-Control": "no-store"
 		};
+		Object.keys(extraHeaders || {}).forEach(function(k) { headers[k] = extraHeaders[k]; });
 		if(method === "HEAD") { res.writeHead(200, headers); res.end(); return; }
 		res.writeHead(200, headers);
 		var stream = fs.createReadStream(file);
@@ -124,21 +124,36 @@ function sendFile(res, file, method) {
 /*
 Start a server for one wiki window.
 
-	options.appDir   the application directory (source/), whose html/ and js/ the shell needs
-	options.wikiDir  the directory containing the wiki file
-	options.wikiFile the wiki file's basename
+	options.appDir     the application directory (source/), whose html/ and js/ the shell needs
+	options.wikiDir    the directory containing the wiki file
+	options.wikiFile   the wiki file's basename
+	options.identifier this wiki's identifier, for trusted-path lookups
+
+Two servers are started, on two OS-assigned ports:
+
+  the WIKI origin        shell + wiki, as described above
+  the ATTACHMENT origin  files outside the wiki folder, and ONLY those the user has
+                         trusted for this wiki
+
+They are separate origins on purpose. A cross-origin image taints any canvas it is drawn
+to, so script cannot launder attachment bytes out through getImageData(). The attachment
+origin is also deliberately absent from node-remote — nothing served from it is ever
+Node-eligible, which matters because it serves user files.
 
 cb(err, handle) where handle is:
-	{origin, token, shellUrl, wikiUrl, isShellUrl(url), close()}
+	{origin, token, shellUrl, wikiUrl, isShellUrl(url),
+	 attachmentOrigin, attachmentUrl(absPath), close()}
 */
 exports.start = function(options, cb) {
 	var appDir = options.appDir,
 		wikiDir = options.wikiDir,
 		wikiFile = options.wikiFile,
+		identifier = options.identifier,
 		token = crypto.randomBytes(16).toString("hex");
 
 	var shellBase = SHELL_PREFIX + token + "/",
-		wikiBase = "/wiki/" + token + "/";
+		wikiBase = "/wiki/" + token + "/",
+		attachBase = "/a/" + token + "/";
 
 	var server = http.createServer(function(req, res) {
 		if(req.method !== "GET" && req.method !== "HEAD") {
@@ -171,36 +186,115 @@ exports.start = function(options, cb) {
 		sendFile(res, file, req.method);
 	});
 
-	server.on("error", function(err) {
-		try { cb(err, null); } catch(e) {}
-		cb = function() {};
+	/*
+	The attachment server. Serves files by ABSOLUTE path — the path is base64url in the URL, so
+	nothing is ever joined and there is no traversal surface at all; the decoded path is simply
+	checked against this wiki's trusted paths.
+
+	CORS is decided per request from Sec-Fetch-Dest, not from the file's type:
+
+	  Sec-Fetch-Dest: empty       a fetch/XHR, i.e. TiddlyWiki's loadRemoteTiddler pulling a
+	                              .tid/.txt attachment into the store -> must be readable by
+	                              script, so send Access-Control-Allow-Origin
+	  anything else               a renderer load (<img>, <video>, …) -> no CORS header, so an
+	                              opportunistic fetch() of the same URL gets an opaque response
+
+	Classifying by content type instead was tried and abandoned: TiddlyWiki dispatches on the
+	tiddler's `type` field, which the server cannot see and the WIKI writes — so a wiki wanting
+	an image's bytes would just declare it text/plain. The no-CORS default is therefore hardening,
+	not a boundary. The boundary is trust; see DESIGN-http-wiki-origin.md.
+	*/
+	var attachServer = http.createServer(function(req, res) {
+		if(req.method !== "GET" && req.method !== "HEAD") {
+			res.writeHead(405, {"Content-Type": "text/plain"});
+			res.end("Method not allowed");
+			return;
+		}
+		var urlPath;
+		try { urlPath = req.url.split("?")[0].split("#")[0]; } catch(e) { urlPath = ""; }
+		if(urlPath.indexOf(attachBase) !== 0) {
+			res.writeHead(404, {"Content-Type": "text/plain"});
+			res.end("Not found");
+			return;
+		}
+		var abs;
+		try {
+			abs = Buffer.from(urlPath.slice(attachBase.length), "base64").toString("utf8");
+		} catch(e) { abs = ""; }
+		if(!abs || abs.indexOf("\0") !== -1 || !path.isAbsolute(abs)) {
+			res.writeHead(400, {"Content-Type": "text/plain"});
+			res.end("Bad request");
+			return;
+		}
+		// Resolve symlinks before the trust check, so a trusted path that is a link to an
+		// untrusted file cannot be used to read through it.
+		var real = abs;
+		try { real = fs.realpathSync(abs); } catch(e) {}
+		var allowed = false;
+		try { allowed = trust.isTrusted(identifier, real, [wikiDir]); } catch(e) { allowed = false; }
+		if(!allowed) {
+			console.warn("[TiddlyDesktop] attachment refused (not trusted for this wiki):", abs);
+			res.writeHead(403, {"Content-Type": "text/plain"});
+			res.end("Not trusted");
+			return;
+		}
+		var headers = {};
+		if(String(req.headers["sec-fetch-dest"] || "").toLowerCase() === "empty") {
+			headers["Access-Control-Allow-Origin"] = wikiOrigin || "null";
+		}
+		sendFile(res, real, req.method, headers);
 	});
 
+	var wikiOrigin = null, attachOrigin = null, reported = false;
+	function report(err) {
+		if(reported) { return; }
+		if(err) { reported = true; try { cb(err, null); } catch(e) {} return; }
+		if(!wikiOrigin || !attachOrigin) { return; }   // wait for both
+		reported = true;
+		try {
+			cb(null, {
+				origin: wikiOrigin,
+				token: token,
+				shellUrl: wikiOrigin + shellBase + "html/wiki-file-window.html",
+				wikiUrl: wikiOrigin + wikiBase + encodeURIComponent(wikiFile),
+				// True for any URL on this origin that would be Node-enabled if opened. Used to
+				// enforce the invariant that nothing on the shell path is ever opened outside the
+				// nwdisable subtree.
+				isShellUrl: function(url) {
+					if(!url) { return false; }
+					return String(url).indexOf(wikiOrigin + SHELL_PREFIX) === 0;
+				},
+				attachmentOrigin: attachOrigin,
+				// URL for an absolute path on the attachment origin. Returns a URL whether or not
+				// the path is trusted — the server decides that per request, so a grant made after
+				// the page rendered takes effect on the next load without rewriting anything.
+				attachmentUrl: function(absPath) {
+					return attachOrigin + attachBase +
+						Buffer.from(String(absPath), "utf8").toString("base64");
+				},
+				close: function() {
+					try { server.close(); } catch(e) {}
+					try { attachServer.close(); } catch(e) {}
+				}
+			});
+		} catch(e) {}
+	}
+
+	server.on("error", function(err) { report(err); });
+	attachServer.on("error", function(err) { report(err); });
+
 	server.listen(0, "127.0.0.1", function() {
-		var origin = "http://127.0.0.1:" + server.address().port;
-		var handle = {
-			origin: origin,
-			token: token,
-			shellUrl: origin + shellBase + "html/wiki-file-window.html",
-			wikiUrl: origin + wikiBase + encodeURIComponent(wikiFile),
-			// True for any URL on this origin that would be Node-enabled if opened. Used to
-			// enforce the invariant that nothing on the shell path is ever opened outside the
-			// nwdisable subtree.
-			isShellUrl: function(url) {
-				if(!url) { return false; }
-				var s = String(url);
-				return s.indexOf(origin + SHELL_PREFIX) === 0;
-			},
-			close: function() {
-				try { server.close(); } catch(e) {}
-			}
-		};
-		try { cb(null, handle); } catch(e) {}
-		cb = function() {};
+		wikiOrigin = "http://127.0.0.1:" + server.address().port;
+		report(null);
+	});
+	attachServer.listen(0, "127.0.0.1", function() {
+		attachOrigin = "http://127.0.0.1:" + attachServer.address().port;
+		report(null);
 	});
 
 	// A listening server keeps Node's event loop alive, which would stop the window's process
-	// exiting cleanly when it closes. unref() lets the process exit while the server still serves
+	// exiting cleanly when it closes. unref() lets the process exit while the servers still serve
 	// normally for as long as the window is open — same reasoning as utils/local-server.js.
 	try { server.unref(); } catch(e) {}
+	try { attachServer.unref(); } catch(e) {}
 };

@@ -35,6 +35,7 @@ function WikiFileWindow(options) {
 			appDir: pathMod.resolve(__dirname, ".."),
 			wikiDir: pathMod.dirname(this.pathname),
 			wikiFile: pathMod.basename(this.pathname),
+			identifier: this.getIdentifier(),
 		},
 		function (err, handle) {
 			if (err || !handle) {
@@ -464,6 +465,18 @@ WikiFileWindow.prototype.onloadiframe = function () {
 			"[TiddlyDesktop] disable-permalinks install failed:",
 			e,
 		);
+	}
+	// Route absolute file:// attachments onto the attachment origin, which serves them only if
+	// the user has trusted the path for this wiki. Relative attachments need nothing — they
+	// resolve against the wiki's own URL and the wiki server serves them.
+	try {
+		require("./utils/attachments.js").install(
+			this.iframe.contentDocument,
+			this.iframe.contentWindow,
+			this.server,
+		);
+	} catch (e) {
+		console.error("[TiddlyDesktop] attachment routing install failed:", e);
 	}
 	// Safe external embeds: enforce the allowlist and route allowlisted media iframes through
 	// a loopback http shim (real origin -> avoids YouTube's file:// error 153). The wiki
