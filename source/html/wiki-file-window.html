@@ -25,6 +25,19 @@
 <section class="td-wiki-file-toolbar td-toolbar">
 </section>
 <div class="td-wiki-file-viewer-wrapper">
+<!-- SECURITY: `nwdisable nwfaketop` is the boundary between this Node-enabled window and the
+wiki's own scripts. BOTH attributes are required — neither is sufficient on its own, as measured
+against NW.js 0.114:
+
+  nwdisable nwfaketop  no Node, window.parent is the frame itself      -> blocked
+  nwdisable only       no Node, but window.parent is the REAL parent   -> wiki calls
+                                                                          parent.require("child_process")
+  nwfaketop only       parent hidden, but the frame keeps its own Node -> arbitrary execution
+  neither              both                                            -> arbitrary execution
+
+`nwfaketop` reads like a TiddlyWiki framing shim; it is not. It is what stops a same-origin wiki
+document climbing to this window's `require`. Do not remove either attribute, and do not add a
+same-origin frame that lacks them. -->
 <iframe id="tid-main-wiki-file-viewer" class="td-wiki-file-viewer" src="" nwdisable nwfaketop allow="fullscreen *">
 </iframe>
 </div>
