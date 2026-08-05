@@ -325,7 +325,14 @@ object NodeEnvironment {
             File(context.filesDir, "tw-store-cache")
         )
         wikiFolder?.let { writable.add(it) }
-        val flags = mutableListOf("--permission", "--allow-fs-read=*")
+        // --allow-net is REQUIRED, not a loosening: from Node 26 the permission model also gates
+        // networking, so without it the wiki's own `--listen` dies with
+        // ERR_ACCESS_DENIED { permission: 'Net' } and no server ever comes up. Node's net
+        // permission is all-or-nothing today, so it cannot be narrowed to loopback. It costs
+        // little here: the page it serves already has the network through the WebView, and what
+        // this confinement is for -- reading and rewriting the device's files, and spawning
+        // processes -- is unaffected.
+        val flags = mutableListOf("--permission", "--allow-net", "--allow-fs-read=*")
         writable.forEach { dir ->
             // Both forms: the directory itself, and everything beneath it.
             flags.add("--allow-fs-write=${dir.absolutePath}")
