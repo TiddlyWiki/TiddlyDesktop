@@ -294,6 +294,47 @@ object NodeEnvironment {
     }
 
     /**
+     * Node's own permission model, confining what a wiki's code can touch.
+     *
+     * TiddlyWiki executes tiddlers declaring `module-type` inside this Node process at boot, and a
+     * wiki can write such a tiddler through the sync API -- both measured. That is a legitimate
+     * feature (plugins, macros, widgets are exactly this), so the answer is not to police what may
+     * be written, but to bound what the resulting code can reach. These flags are enforced by the
+     * runtime BELOW JavaScript, so a Worker inherits them and process.binding() cannot slip past --
+     * unlike stubbing fs, which was measured leaking through fs.promises, openSync,
+     * createReadStream, process.binding and worker_threads on the first attempts.
+     *
+     * Writes are confined to the wiki being served plus the app's own scratch and cache dirs.
+     * Spawning is denied outright: nothing here shells out, and it is the shortest way back to an
+     * unrestricted process.
+     *
+     * READS ARE STILL OPEN. Scoping them was tried and TiddlyWiki would not boot: its filesystem
+     * adaptor calls createDirectory, which walks UP the path calling existsSync on each ancestor,
+     * and those ancestors are outside any sane allow-list. Closing that needs the ancestor chain
+     * enumerated, which is worth doing but is not this change.
+     *
+     * Every path Node legitimately writes has to be listed or the app simply will not run, so keep
+     * this in step with applyEnv() below -- the two are one decision split across two functions.
+     */
+    fun permissionFlags(context: Context, wikiFolder: File?): List<String> {
+        val writable = mutableListOf<File>(
+            File(context.filesDir, "node_home"),      // HOME
+            File(context.filesDir, "tmp"),            // TMPDIR
+            File(context.filesDir, "node-compile-cache"),
+            File(context.filesDir, "tw-compile-cache"),
+            File(context.filesDir, "tw-store-cache")
+        )
+        wikiFolder?.let { writable.add(it) }
+        val flags = mutableListOf("--permission", "--allow-fs-read=*")
+        writable.forEach { dir ->
+            // Both forms: the directory itself, and everything beneath it.
+            flags.add("--allow-fs-write=${dir.absolutePath}")
+            flags.add("--allow-fs-write=${dir.absolutePath}/*")
+        }
+        return flags
+    }
+
+    /**
      * Environment overrides that let the Termux-built node run inside this app's sandbox.
      * Apply to every ProcessBuilder.environment() before spawning node.
      */

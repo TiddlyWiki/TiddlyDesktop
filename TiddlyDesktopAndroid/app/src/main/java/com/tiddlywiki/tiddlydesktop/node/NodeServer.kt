@@ -53,8 +53,10 @@ class NodeServer(
 
         // Boot via our wrapper so the WikiList can use its "backstage" language set.
         val bootScript = NodeEnvironment.ensureBackstageBootScript(context)
-        val cmd = listOf(
-            node.absolutePath,
+        val cmd = listOf(node.absolutePath) +
+            // Confine what a wiki's own module-type tiddlers can reach once Node executes them.
+            NodeEnvironment.permissionFlags(context, wikiFolder) +
+            listOf(
             bootScript.absolutePath,
             wikiFolder.absolutePath,
             "--listen",
@@ -144,7 +146,8 @@ class NodeServer(
         Log.i(TAG, "Initialising new wiki folder: ${wikiFolder.absolutePath}")
         wikiFolder.mkdirs()
         val pb = ProcessBuilder(
-            node.absolutePath, twJs.absolutePath, wikiFolder.absolutePath, "--init", "server"
+            listOf(node.absolutePath) + NodeEnvironment.permissionFlags(context, wikiFolder) +
+                listOf(twJs.absolutePath, wikiFolder.absolutePath, "--init", "server")
         ).directory(twDir).redirectErrorStream(true)
         NodeEnvironment.applyEnv(context, pb.environment())
         try {
