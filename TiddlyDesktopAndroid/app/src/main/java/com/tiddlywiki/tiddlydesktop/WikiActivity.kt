@@ -550,6 +550,29 @@ class WikiActivity : ComponentActivity() {
     // ── external attachments (window.TDAttach) ───────────────────────────────────────
 
     /** JS-facing bridge: the external-attachments import hook copies files here. */
+    /**
+     * Resolve a path the WIKI supplied to a file it is actually allowed to touch.
+     *
+     * The two bridge methods below take a path from wiki JavaScript, and their intended contract is
+     * "a file MainActivity staged for a share" -- always inside cacheDir/shared. They took it on
+     * trust, so any wiki could name any path the app could read: with All-Files-Access that is the
+     * user's whole storage handed back as base64, and importSharedFile additionally DELETES what it
+     * copies. Both are callable by any opened wiki with no other app involved.
+     *
+     * Canonical paths are compared, so symlinks and ".." cannot walk out of the staging directory.
+     * Returns null for anything else, which both callers already surface as "".
+     */
+    private fun stagedShareFile(tempPath: String): File? {
+        if (tempPath.isBlank()) return null
+        return runCatching {
+            val root = File(cacheDir, "shared").canonicalFile
+            val f = File(tempPath).canonicalFile
+            var p: File? = f.parentFile
+            while (p != null) { if (p == root) return@runCatching f; p = p.parentFile }
+            null
+        }.getOrNull()
+    }
+
     inner class WikiAttachBridge {
         /** Returns "./attachments/[<subfolder>/]<name>" for the _canonical_uri, or "" on failure. */
         @android.webkit.JavascriptInterface
@@ -585,7 +608,10 @@ class WikiActivity : ComponentActivity() {
         @android.webkit.JavascriptInterface
         fun importSharedFile(tempPath: String, filename: String, mime: String, subfolder: String): String =
             runCatching {
-                val src = File(tempPath)
+                val src = stagedShareFile(tempPath) ?: run {
+                    Log.w(TAG, "importSharedFile refused a path outside the share staging dir")
+                    return ""
+                }
                 if (!src.exists()) return ""
                 val sub = sanitizeAttachmentRel(subfolder)
                 val dir = (attachmentsDir()?.let { if (sub.isEmpty()) it else File(it, sub) })
@@ -602,7 +628,10 @@ class WikiActivity : ComponentActivity() {
         @android.webkit.JavascriptInterface
         fun sharedFileBase64(tempPath: String): String =
             runCatching {
-                val src = File(tempPath)
+                val src = stagedShareFile(tempPath) ?: run {
+                    Log.w(TAG, "sharedFileBase64 refused a path outside the share staging dir")
+                    return ""
+                }
                 if (!src.exists()) return ""
                 val b64 = android.util.Base64.encodeToString(src.readBytes(), android.util.Base64.NO_WRAP)
                 runCatching { src.delete() }
