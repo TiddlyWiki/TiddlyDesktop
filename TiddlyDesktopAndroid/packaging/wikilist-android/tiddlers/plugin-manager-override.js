@@ -109,7 +109,13 @@ exports.startup = function () {
 			// updated since). Give it a row of its own so it can be pre-selected and kept —
 			// otherwise the newest LIBRARY version is pre-selected, and pressing Apply silently
 			// overwrites the wiki's copy with it, downgrading if the library is behind.
-			if (isFile && isInstalled && installedVer &&
+			// Only when the library actually reports versions. TiddlyWiki's bundled plugin.info
+			// files carry no version field at all -- the version is stamped in when the plugin is
+			// packed -- so the library says "" while the copy inside the wiki says e.g. "5.4.0".
+			// That is a missing version string, not a different version, and treating it as a
+			// mismatch put a second row on every bundled plugin.
+			var libraryHasVersions = group.some(function (p) { return !!(p.version || ""); });
+			if (isFile && isInstalled && installedVer && libraryHasVersions &&
 				!group.some(function (p) { return (p.version || "") === installedVer; })) {
 				group.push(keepItem(title, installedVer, group[0] && group[0]["plugin-type"]));
 			}
@@ -240,7 +246,11 @@ exports.startup = function () {
 			var installedVer = (inst.versions && inst.versions[title]) || "";
 			if (selPath) {
 				var item = fieldsByPath[selPath];
-				if (item && (!wasInstalled || (isFile && (item.version || "") !== installedVer))) {
+				// A library item with no version string is not evidence of a different version
+				// (bundled plugin.info files omit it), so it must not read as an upgrade --
+				// otherwise Apply reinstalls every bundled plugin every time.
+				var itemVer = item ? (item.version || "") : "";
+				if (item && (!wasInstalled || (isFile && itemVer && itemVer !== installedVer))) {
 					toInstall.push({ name: item["plugin-name"], "plugin-type": item["plugin-type"], title: title });
 				}
 			} else if (wasInstalled) { toRemove.push(title); }
