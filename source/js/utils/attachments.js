@@ -205,6 +205,10 @@ exports.install = function(doc, win, handle, options) {
 				if(!attr) { continue; }
 				var value = el.getAttribute(attr) || "";
 				if(handle.attachmentOrigin && value.indexOf(handle.attachmentOrigin) === 0) {
+					// TiddlyWiki marks a failed image and never unmarks it, so the class outlives
+					// the failure and would still be describing the refused request after the
+					// re-fetch below succeeds.
+					try { el.classList.remove("tc-image-error"); } catch(e) {}
 					el.setAttribute(attr, value.split("?")[0] + "?v=" + refreshCount);
 				}
 			}

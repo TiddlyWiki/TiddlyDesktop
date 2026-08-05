@@ -45,7 +45,9 @@ var http = require("http"),
 	fs = require("fs"),
 	path = require("path"),
 	crypto = require("crypto"),
-	trust = require("./trust.js");
+	trust = require("./trust.js"),
+	attachments = require("./attachments.js"),
+	shim = require("./attachment-shim.js");
 
 var SHELL_PREFIX = "/__tiddlydesktop_shell__/";
 
@@ -240,7 +242,11 @@ exports.start = function(options, cb) {
 
 	var shellBase = SHELL_PREFIX + token + "/",
 		wikiBase = "/wiki/" + token + "/",
-		attachBase = "/a/" + token + "/";
+		attachBase = "/a/" + token + "/",
+		// Attachments named by their RAW _canonical_uri rather than by absolute path. The shim uses
+		// this so it does not have to resolve anything itself; the resolution happens below, with
+		// the same trust check either route ends in.
+		attachRawBase = "/r/" + token + "/";
 
 	// Forward a request to the folder wiki's TiddlyWiki server, adding the credential it
 	// requires. Everything else — method, path, body, status, headers — passes through.
@@ -326,6 +332,16 @@ exports.start = function(options, cb) {
 			headers[k] = req.headers[k];
 		});
 		if(proxy.authHeader) { headers["authorization"] = proxy.authHeader; }
+		/*
+		A folder wiki's document needs the attachment shim too, and a shim cannot be inserted into
+		gzipped bytes. Compression is therefore declined for NAVIGATIONS only — one document per
+		window, over loopback — while every other response keeps it.
+		*/
+		// "iframe" because that is what the wiki actually is here — it is loaded inside the shell
+		// page, so a check for "document" alone never matches.
+		var dest = String(req.headers["sec-fetch-dest"] || "").toLowerCase(),
+			isDocument = dest === "document" || dest === "iframe" || dest === "frame";
+		if(isDocument) { delete headers["accept-encoding"]; }
 		var target = new URL(proxy.origin);
 		var upstream = http.request({
 			hostname: target.hostname,
@@ -338,6 +354,31 @@ exports.start = function(options, cb) {
 			// TiddlyWiki's server sets no CSP of its own; ours is applied on the way back so a
 			// served folder wiki is governed exactly like a single-file one.
 			headers["content-security-policy"] = cspFor(attachOrigin);
+			/*
+			Inject into the wiki's own document, for the reason in utils/attachment-shim.js. Only a
+			plain, uncompressed 200 HTML navigation qualifies; anything else — a redirect, an error,
+			a response that came back compressed anyway — is passed straight through, so the worst
+			case is the old behaviour rather than a mangled page.
+			*/
+			var isHtml = (/^text\/html\b/i).test(String(headers["content-type"] || ""));
+			if(isDocument && isHtml && up.statusCode === 200 && !headers["content-encoding"]) {
+				var parts = [], total = 0;
+				up.on("data", function(c) { parts.push(c); total += c.length; });
+				up.on("end", function() {
+					var body = Buffer.concat(parts, total);
+					try {
+						body = shim.inject(body, shim.source({origin: attachOrigin, base: attachRawBase}));
+					} catch(e) {
+						console.error("[TiddlyDesktop] could not inject the attachment shim:", e && e.message);
+					}
+					headers["content-length"] = String(body.length);
+					delete headers["transfer-encoding"];
+					res.writeHead(up.statusCode, headers);
+					res.end(body);
+				});
+				up.on("error", function() { try { res.destroy(); } catch(e) {} });
+				return;
+			}
 			res.writeHead(up.statusCode, headers);
 			pipeCoalesced(up, res);
 		});
@@ -350,6 +391,39 @@ exports.start = function(options, cb) {
 			}
 		});
 		req.pipe(upstream);
+	}
+
+	/*
+	Serve an HTML document with the attachment shim inserted, in a single write.
+
+	Read whole rather than streamed because the document has to be edited before any of it goes out.
+	That is affordable — it is one file per window, the same one Chromium is about to parse in full —
+	and it is also the fastest shape available here, for the reason in sendFile.
+
+	Any failure falls back to serving the file untouched: a missing shim costs the flash of broken
+	images this was written to remove, which is a far better outcome than a wiki that will not load.
+	*/
+	function sendHtmlWithShim(res, file, method, extraHeaders) {
+		fs.readFile(file, function(err, buf) {
+			if(err) { sendFile(res, file, method, extraHeaders); return; }
+			var out = buf;
+			try {
+				out = shim.inject(buf, shim.source({origin: attachOrigin, base: attachRawBase}));
+			} catch(e) {
+				console.error("[TiddlyDesktop] could not inject the attachment shim:", e && e.message);
+				out = buf;
+			}
+			var headers = {
+				"Content-Type": contentType(file),
+				"Content-Length": out.length,
+				"X-Content-Type-Options": "nosniff",
+				"Cache-Control": "no-store"
+			};
+			Object.keys(extraHeaders || {}).forEach(function(k) { headers[k] = extraHeaders[k]; });
+			if(method === "HEAD") { res.writeHead(200, headers); res.end(); return; }
+			res.writeHead(200, headers);
+			res.end(out);
+		});
 	}
 
 	var server = http.createServer(function(req, res) {
@@ -404,6 +478,13 @@ exports.start = function(options, cb) {
 			extra["Set-Cookie"] = COOKIE_NAME + "=" + token +
 				"; Path=/; HttpOnly; SameSite=Strict";
 		}
+		// The wiki document itself gets the attachment shim, so its attachments resolve on their
+		// first fetch instead of appearing broken and then loading. Only this one file: other HTML
+		// in the wiki folder is the user's to serve unaltered.
+		if(root === wikiDir && wikiFile && path.resolve(file) === path.resolve(wikiDir, wikiFile)) {
+			sendHtmlWithShim(res, file, req.method, extra);
+			return;
+		}
 		sendFile(res, file, req.method, extra);
 	});
 
@@ -433,14 +514,23 @@ exports.start = function(options, cb) {
 		}
 		var urlPath;
 		try { urlPath = req.url.split("?")[0].split("#")[0]; } catch(e) { urlPath = ""; }
-		if(urlPath.indexOf(attachBase) !== 0) {
+		var raw = urlPath.indexOf(attachRawBase) === 0;
+		if(!raw && urlPath.indexOf(attachBase) !== 0) {
 			res.writeHead(404, {"Content-Type": "text/plain"});
 			res.end("Not found");
 			return;
 		}
 		var abs;
 		try {
-			abs = Buffer.from(urlPath.slice(attachBase.length), "base64").toString("utf8");
+			var encoded = urlPath.slice((raw ? attachRawBase : attachBase).length),
+				decoded = Buffer.from(encoded, "base64").toString("utf8");
+			/*
+			The raw route carries an unresolved _canonical_uri, so resolve it exactly as the
+			trust panel and the DOM rewriter do — one implementation, one set of answers. It may
+			resolve to anywhere, including outside the wiki; that is not a decision, it is just a
+			path, and the trust check below is what decides.
+			*/
+			abs = raw ? attachments.resolveCanonicalUri(decoded.split("?")[0].split("#")[0], wikiDir) : decoded;
 		} catch(e) { abs = ""; }
 		if(!abs || abs.indexOf("\0") !== -1 || !path.isAbsolute(abs)) {
 			res.writeHead(400, {"Content-Type": "text/plain"});
