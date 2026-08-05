@@ -27,6 +27,9 @@ node bin/patch-boot-store-cache.js source/tiddlywiki/boot/boot.js
 # Add the /attachments/ range-capable server route (external attachments) to the bundled core-server
 # plugin, mirroring core's /files/ route. Copied post-core-copy so pack-bundled-plugins captures it.
 cp overrides/core-server/server/routes/get-attachments.js source/tiddlywiki/core-server/server/routes/
+# Replace /status so the credential locking our internal loopback binding is not reported as the
+# user's identity (it ended up in $:/status/UserName, signing every edit "td"). See the file.
+cp overrides/core-server/server/routes/get-status.js source/tiddlywiki/core-server/server/routes/
 
 # Drop the demo/documentation editions the desktop never boots (~37 MB: tw5.com, geospatialdemo,
 # tour, the language demo editions, …), keeping only the tiny starter editions. We keep "empty"

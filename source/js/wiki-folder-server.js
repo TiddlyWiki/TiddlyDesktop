@@ -126,6 +126,13 @@ serves it at the origin root instead and gates access with a session cookie.
 					"port=" + port,
 					"username=" + user,
 					"password=" + pass,
+					// Declares the above as a credential rather than a person, so /status
+					// does not report it as the user's identity — left unsaid it reached
+					// $:/status/UserName and signed every edit "td". Our own get-status
+					// override reads this; see overrides/core-server/. Scoped to THIS
+					// binding: the LAN one below never sees it, so real logins there keep
+					// reporting real names.
+					"system-username=" + user,
 				];
 				// The user's LAN sharing is a SEPARATE binding with its own credentials and
 				// principals. It must never carry the internal one, and it must never serve the

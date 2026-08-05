@@ -73,7 +73,12 @@ class NodeServer(
             // requires BOTH to enforce anything -- a username with no password authenticates
             // nobody -- and the password is random per launch and never leaves this process.
             "username=$nodeUser",
-            "password=$nodePassword"
+            "password=$nodePassword",
+            // Declares the above as a credential rather than a person. Without it /status
+            // reports it as the logged-in user, the syncer copies that into
+            // $:/status/UserName, and every edit gets signed "td". Read by our get-status
+            // override; see overrides/core-server/ in the desktop repo.
+            "system-username=$nodeUser"
         )
         Log.i(TAG, "Starting node server: ${cmd.joinToString(" ")}")
 
