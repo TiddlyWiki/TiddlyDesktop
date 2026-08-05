@@ -2,6 +2,7 @@ package com.tiddlywiki.tiddlydesktop.node
 
 import android.content.Context
 import android.util.Log
+import com.tiddlywiki.tiddlydesktop.server.AuthProxy
 import java.io.BufferedReader
 import java.io.File
 import java.net.ServerSocket
@@ -11,8 +12,11 @@ import java.util.concurrent.atomic.AtomicInteger
 /**
  * Spawns and supervises a single `tiddlywiki <folder> --listen` Node.js server.
  *
- * Node servers bind loopback (127.0.0.1) on a free port. The WebView then loads
- * http://127.0.0.1:PORT. One instance per open wiki (and one for the WikiList).
+ * The WebView never talks to Node directly. Node binds loopback on a PRIVATE port behind HTTP
+ * basic credentials generated per launch, and an [AuthProxy] on [port] is what the WebView loads;
+ * the proxy holds the credentials and admits callers on a session cookie. On Android 127.0.0.1 is
+ * reachable by any app holding INTERNET, so an unauthenticated Node server meant every other app
+ * on the device could read and rewrite an open wiki. Both ports now need a secret to get past.
  *
  * Node needs a *filesystem* path; folder wikis are served directly from their real path in
  * shared storage (All-Files-Access), so there's no SAF copy/mirror.
@@ -25,7 +29,15 @@ class NodeServer(
     private var process: Process? = null
     @Volatile var isRunning = false; private set
 
-    val url: String get() = "http://127.0.0.1:$port"
+    // Node's own port, reachable only with the credentials below. Distinct from [port], which is
+    // the proxy's and the only one anything outside this class is given.
+    private val nodePort: Int = allocatePort()
+    private val nodeUser: String = "td"
+    private val nodePassword: String = AuthProxy.randomToken()
+    private var proxy: AuthProxy? = null
+
+    /** The address for the WebView: the proxy, carrying its one-time token. */
+    val url: String get() = proxy?.url ?: "http://127.0.0.1:$port/"
 
     fun start(): String {
         val node = NodeEnvironment.nodeBinary(context)
@@ -46,8 +58,13 @@ class NodeServer(
             bootScript.absolutePath,
             wikiFolder.absolutePath,
             "--listen",
-            "port=$port",
-            "host=127.0.0.1"
+            "port=$nodePort",
+            "host=127.0.0.1",
+            // Without these, any app on the device can read and write this wiki. TiddlyWiki
+            // requires BOTH to enforce anything -- a username with no password authenticates
+            // nobody -- and the password is random per launch and never leaves this process.
+            "username=$nodeUser",
+            "password=$nodePassword"
         )
         Log.i(TAG, "Starting node server: ${cmd.joinToString(" ")}")
 
@@ -98,15 +115,20 @@ class NodeServer(
         Thread {
             val code = try { proc.waitFor() } catch (_: InterruptedException) { -1 }
             isRunning = false
-            Log.w(TAG, "node server on port $port exited (code=$code)")
+            Log.w(TAG, "node server on port $nodePort exited (code=$code)")
         }.apply { isDaemon = true; start() }
 
         waitForPort()
+        // Only start the gate once Node is actually answering, so the first request through it
+        // cannot arrive before there is anything to forward to.
+        proxy = AuthProxy(nodePort, nodeUser, nodePassword, port).also { it.start() }
         return url
     }
 
     fun stop() {
         isRunning = false
+        try { proxy?.stop() } catch (_: Exception) {}
+        proxy = null
         val p = process
         process = null
         if (p != null) {
@@ -142,12 +164,12 @@ class NodeServer(
         val deadline = System.currentTimeMillis() + timeoutMs
         while (System.currentTimeMillis() < deadline) {
             try {
-                Socket("127.0.0.1", port).use { return }
+                Socket("127.0.0.1", nodePort).use { return }
             } catch (_: Exception) {
                 Thread.sleep(200)
             }
         }
-        Log.w(TAG, "node server on port $port not ready after ${timeoutMs}ms")
+        Log.w(TAG, "node server on port $nodePort not ready after ${timeoutMs}ms")
     }
 
     companion object {
