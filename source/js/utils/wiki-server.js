@@ -163,7 +163,19 @@ function sendFile(res, file, method, extraHeaders) {
 		Object.keys(extraHeaders || {}).forEach(function(k) { headers[k] = extraHeaders[k]; });
 		if(method === "HEAD") { res.writeHead(200, headers); res.end(); return; }
 		res.writeHead(200, headers);
-		var stream = fs.createReadStream(file);
+		/*
+		The chunk size is a performance fix, not a tuning preference.
+
+		NW.js pumps Node's event loop from Chromium's message loop, so a loop turn costs far more
+		here than in plain Node. A stream chunk takes one turn, which makes transfer time scale with
+		the NUMBER of chunks rather than with the bytes: at the 64KB default, a 7.8MB wiki is 122
+		chunks and took 1566ms to deliver over loopback, against 26ms for the same code in a
+		standalone node process. At 4MB it is two chunks and 88ms (measured, both).
+
+		Still a stream rather than a readFile, so a large video attachment does not have to be held
+		in memory in one piece.
+		*/
+		var stream = fs.createReadStream(file, {highWaterMark: 4 * 1024 * 1024});
 		stream.on("error", function() { try { res.destroy(); } catch(e) {} });
 		stream.pipe(res);
 	});
@@ -244,6 +256,67 @@ exports.start = function(options, cb) {
 		return false;
 	}
 
+	/*
+	up.pipe(res) for a body that arrives in many pieces, but writing far fewer of them.
+
+	Same NW.js cost as sendFile's chunk size, reached from the other end. Here the arrival size is
+	not ours to choose — Node reads a TCP socket in 64KB regardless of any highWaterMark (tried;
+	no effect) — but the expense turns out to be per RESPONSE WRITE, not per arrival: coalescing the
+	writes alone took a 3MB folder wiki from 737ms of transfer to 44ms (measured).
+
+	Held to FLUSH_BYTES with a FLUSH_MS deadline so this stays a proxy and not a download buffer:
+	a video served from the wiki's files/ folder starts playing on the timer rather than waiting for
+	a megabyte to accumulate. Backpressure is honoured — without it a client slower than the backend
+	would have the whole response queued in memory.
+	*/
+	var FLUSH_BYTES = 1024 * 1024,
+		FLUSH_MS = 20;
+
+	function pipeCoalesced(up, res) {
+		var buf = [],
+			size = 0,
+			timer = null,
+			ended = false;
+
+		function flush() {
+			if(timer) { clearTimeout(timer); timer = null; }
+			if(!size) { return true; }
+			var chunk = buf.length === 1 ? buf[0] : Buffer.concat(buf, size);
+			buf = [];
+			size = 0;
+			return res.write(chunk);
+		}
+
+		up.on("data", function(c) {
+			buf.push(c);
+			size += c.length;
+			if(size >= FLUSH_BYTES) {
+				if(!flush()) {
+					// The client is behind: stop reading until it drains.
+					up.pause();
+					res.once("drain", function() { up.resume(); });
+				}
+			} else if(!timer) {
+				timer = setTimeout(function() { timer = null; flush(); }, FLUSH_MS);
+			}
+		});
+		up.on("end", function() {
+			if(ended) { return; }
+			ended = true;
+			flush();
+			res.end();
+		});
+		up.on("error", function() {
+			if(timer) { clearTimeout(timer); timer = null; }
+			try { res.destroy(); } catch(e) {}
+		});
+		// A client that goes away must not leave the backend response draining into a dead socket.
+		res.on("close", function() {
+			if(timer) { clearTimeout(timer); timer = null; }
+			if(!ended) { try { up.destroy(); } catch(e) {} }
+		});
+	}
+
 	function proxyRequest(req, res) {
 		var headers = {};
 		Object.keys(req.headers).forEach(function(k) {
@@ -266,7 +339,7 @@ exports.start = function(options, cb) {
 			// served folder wiki is governed exactly like a single-file one.
 			headers["content-security-policy"] = cspFor(attachOrigin);
 			res.writeHead(up.statusCode, headers);
-			up.pipe(res);
+			pipeCoalesced(up, res);
 		});
 		upstream.on("error", function(err) {
 			if(!res.headersSent) {

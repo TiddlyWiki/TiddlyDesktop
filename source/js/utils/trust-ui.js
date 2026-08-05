@@ -163,9 +163,26 @@ exports.install = function(doc, win, options) {
 		});
 	}
 
+	/*
+	refresh() walks every tiddler in the wiki twice, so running it per change event is far too eager:
+	TiddlyWiki fires a change for every step of its own boot and rendering, and a large wiki was
+	measured doing this 23 times before it had finished loading.
+
+	Coalesced onto a trailing timer. The request tiddler is still handled immediately — that one is a
+	user click waiting on a file dialog, and a delay there is felt.
+	*/
+	var refreshTimer = null;
+	function refreshSoon() {
+		if(refreshTimer) { return; }
+		refreshTimer = setTimeout(function() {
+			refreshTimer = null;
+			refresh();
+		}, 250);
+	}
+
 	var onChange = function(changes) {
 		if(changes && changes[REQUEST_TITLE]) { handleRequest(); }
-		refresh();
+		refreshSoon();
 	};
 	try { tw.wiki.addEventListener("change", onChange); } catch(e) {}
 
@@ -175,6 +192,8 @@ exports.install = function(doc, win, options) {
 		refresh: refresh,
 		teardown: function() {
 			try { tw.wiki.removeEventListener("change", onChange); } catch(e) {}
+			// A pending refresh would run against a wiki whose window has gone.
+			if(refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
 		}
 	};
 };

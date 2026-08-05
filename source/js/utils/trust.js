@@ -81,7 +81,38 @@ Every grant recorded for one wiki, as [{title, path, kind}]. Iterates rather tha
 string, because a path may contain characters that would need escaping in filter syntax. A record
 missing its fields is skipped, so a damaged tiddler denies access instead of throwing.
 */
+/*
+Grants are read on every attachment request and once per attachment per trust-panel refresh, and
+each read walks every tiddler in the backstage wiki (core shadows included) — thousands of titles to
+find a handful of records. Booting a wiki with a dozen attachments did that hundreds of times.
+
+Cached per identifier, and dropped WHOLESALE whenever the backstage wiki changes. That coarseness is
+deliberate: a revoke must take effect immediately, so the invalidation must be something no grant
+write can miss. Every write here goes through $tw.wiki, and every $tw.wiki write fires "change" —
+including ones made by Settings, or by the filesystem syncer loading grants at startup. A cache miss
+costs one scan; a stale hit could serve a file the user just withdrew.
+*/
+var listCache = Object.create(null),
+	cacheHooked = false;
+
+function invalidateCache() {
+	listCache = Object.create(null);
+}
+exports.invalidateCache = invalidateCache;
+
+function hookCache() {
+	if(cacheHooked) { return; }
+	try {
+		$tw.wiki.addEventListener("change", invalidateCache);
+		cacheHooked = true;
+	} catch(e) {
+		// Without a listener we cannot know when a grant changes, so never cache.
+	}
+}
+
 function list(identifier) {
+	hookCache();
+	if(cacheHooked && listCache[identifier]) { return listCache[identifier].slice(); }
 	var out = [];
 	try {
 		// $tw.wiki.each, NOT forEachTiddler: the latter goes through getTiddlers(), which
@@ -100,6 +131,10 @@ function list(identifier) {
 		console.error("[TiddlyDesktop] could not read trusted paths:", e && e.message);
 		return [];
 	}
+	// Cache a copy and hand back the original, so neither this caller nor the next can reach the
+	// stored records — a caller that trimmed the returned array would otherwise empty the cache and
+	// silently deny every grant.
+	if(cacheHooked) { listCache[identifier] = out.slice(); }
 	return out;
 }
 exports.list = list;
@@ -157,6 +192,7 @@ function grant(identifier, absPath, kind) {
 		"trust-kind": kind,
 		text: ""
 	}));
+	invalidateCache();
 	console.log("[TiddlyDesktop] trusted", kind, abs, "for", identifier);
 	return true;
 }
@@ -170,7 +206,10 @@ function revoke(identifier, absPath) {
 			try { $tw.wiki.deleteTiddler(e.title); removed = true; } catch(err) {}
 		}
 	});
-	if(removed) { console.log("[TiddlyDesktop] revoked", target, "for", identifier); }
+	if(removed) {
+		invalidateCache();
+		console.log("[TiddlyDesktop] revoked", target, "for", identifier);
+	}
 	return removed;
 }
 exports.revoke = revoke;
@@ -181,5 +220,6 @@ function revokeAll(identifier) {
 	list(identifier).forEach(function(e) {
 		try { $tw.wiki.deleteTiddler(e.title); } catch(err) {}
 	});
+	invalidateCache();
 }
 exports.revokeAll = revokeAll;
