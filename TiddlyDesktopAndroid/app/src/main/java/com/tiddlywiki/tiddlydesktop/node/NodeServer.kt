@@ -31,7 +31,14 @@ class NodeServer(
 
     // Node's own port, reachable only with the credentials below. Distinct from [port], which is
     // the proxy's and the only one anything outside this class is given.
-    private val nodePort: Int = allocatePort()
+    //
+    // MUST exclude [port] explicitly. allocatePort() hands out the first free port from 38000, and
+    // callers may ASK for a fixed one from that same range (the WikiList pins 38000 so a
+    // language-switch reboot rebinds a stable URL). Nothing has bound it yet at construction time,
+    // so the allocator would hand back the very port the proxy is about to take -- Node and the
+    // proxy then fight over one port and neither comes up, which presents as the WikiList never
+    // loading.
+    private val nodePort: Int = allocatePort(avoid = port)
     private val nodeUser: String = "td"
     private val nodePassword: String = AuthProxy.randomToken()
     private var proxy: AuthProxy? = null
@@ -181,12 +188,15 @@ class NodeServer(
         // Node servers: 38000-38999 (mirrors the RS convention, leaves room for other servers).
         private val nextPort = AtomicInteger(38000)
 
-        fun allocatePort(): Int {
+        /** [avoid] is a port a caller has reserved but not yet bound, so probing cannot see it. */
+        fun allocatePort(avoid: Int = -1): Int {
             repeat(1000) {
                 val p = nextPort.getAndUpdate { if (it >= 38999) 38000 else it + 1 }
-                try {
-                    ServerSocket(p).use { return p }
-                } catch (_: Exception) { /* in use, try next */ }
+                if (p != avoid) {
+                    try {
+                        ServerSocket(p).use { return p }
+                    } catch (_: Exception) { /* in use, try next */ }
+                }
             }
             error("No free port in 38000-38999")
         }
