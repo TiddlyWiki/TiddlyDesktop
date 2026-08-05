@@ -696,7 +696,8 @@ WikiFileWindow.prototype.getWikiFavIconType = function () {
 // Close handler for window
 WikiFileWindow.prototype.onclose = function (event) {
 	// Check the hosted wiki is happy to close
-	var onbeforeunload = this.iframe.contentWindow.onbeforeunload;
+	var contentWindow = this.iframe.contentWindow;
+	var onbeforeunload = contentWindow.onbeforeunload;
 	if (onbeforeunload) {
 		var msg = onbeforeunload({});
 		if (
@@ -708,6 +709,21 @@ WikiFileWindow.prototype.onclose = function (event) {
 		) {
 			return false;
 		}
+		/*
+		The question has now been asked and answered, so retire the wiki's handler before the
+		window actually unloads.
+
+		Leaving it registered meant the user was asked TWICE: once by the dialog above, and then
+		again by Chromium's own beforeunload dialog as the frame tore down — same unsaved changes,
+		same decision, two prompts. Clearing it is not suppressing a warning, it is not repeating
+		one we have already shown.
+
+		Only reached when the user chose to close (the cancel path returns above), so a wiki that
+		is staying open keeps its handler.
+		*/
+		try {
+			contentWindow.onbeforeunload = null;
+		} catch (e) {}
 	}
 	// Delete the mutation observers for the title and the favicon
 	this.titleObserver.disconnect();
