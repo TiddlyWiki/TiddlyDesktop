@@ -109,7 +109,18 @@ exports.startup = function() {
 
 		var idx = 0;
 		Object.keys(byTitle).forEach(function(title) {
-			var items = byTitle[title].slice().sort(function(a, b) {
+			var isInstalled  = installed.indexOf(title) !== -1;
+			var installedVer = installedVersions[title] || "";
+			var group = byTitle[title].slice();
+			// The wiki can hold a version the library doesn't have (installed from elsewhere, or
+			// updated since). Give it a row of its own so it can be pre-selected and kept —
+			// otherwise the newest LIBRARY version is pre-selected and pressing Apply silently
+			// overwrites the wiki's copy with it, downgrading whenever the library is behind.
+			if(isFile && isInstalled && installedVer &&
+				!group.some(function(p) { return (p.version || "") === installedVer; })) {
+				group.push(_keepItem(title, installedVer, group[0] && group[0]["plugin-type"]));
+			}
+			var items = group.sort(function(a, b) {
 				if(_semverGt(a.version, b.version)) { return -1; }
 				if(_semverGt(b.version, a.version)) { return 1; }
 				// Same version: prefer the bundled copy so reinstall/install uses it.
@@ -125,11 +136,11 @@ exports.startup = function() {
 				seenVer[v] = true;
 				return true;
 			});
-			var isInstalled  = installed.indexOf(title) !== -1;
-			var installedVer = installedVersions[title] || "";
 			// The version to pre-select: the one matching what's installed (so opening + Apply
 			// is a no-op), else the newest. Folder wikis don't embed a version, so "installed"
-			// just means present — pre-select the newest there.
+			// just means present — pre-select the newest there. For file wikis the match always
+			// exists now, because the loop above adds a row for the embedded copy when the
+			// library has no counterpart.
 			var defaultItem = null;
 			if(isInstalled) {
 				if(isFile) {
@@ -177,25 +188,32 @@ exports.startup = function() {
 	// manage them.
 	installed.forEach(function(title) {
 		if(byTitle[title]) return;
+		// A "keep" row, NOT an empty one. An empty plugin-path makes the checkbox's checked and
+		// unchecked values identical, so the row renders as ticked, can never be ticked, and the
+		// empty selection reads as "remove this" — silently deleting a plugin the user only
+		// opened the chooser to look at. Untick it and the selection goes empty, so removal
+		// still works; leave it alone and apply finds nothing to do.
+		var ver = installedVersions[title] || "";
+		var item = _keepItem(title, ver);
 		var selTitle = "$:/temp/TiddlyDesktop/PluginChooser/selected/" + title;
 		$tw.wiki.addTiddler(new $tw.Tiddler({
 			title: "$:/temp/TiddlyDesktop/PluginChooser/available/" + (idx++),
 			tags: ["$:/temp/TiddlyDesktop/PluginChooser/available"],
 			"plugin-title": title,
-			"plugin-name": title.replace(/^\$:\/(plugins|themes|languages)\//, ""),
-			"plugin-path": "",
-			"plugin-type": title.indexOf("$:/themes/") === 0 ? "theme" : (title.indexOf("$:/languages/") === 0 ? "language" : "plugin"),
+			"plugin-name": item.name,
+			"plugin-path": item.path,
+			"plugin-type": item["plugin-type"],
 			description: "",
-			version: "",
+			version: ver,
 			"version-order": "0",
 			"version-count": "1",
-			"installed-version": "",
+			"installed-version": ver,
 			installed: "yes",
 			"update-available": "",
 			source: ""
 		}));
 		if(!preserveSelection || !$tw.wiki.tiddlerExists(selTitle)) {
-			$tw.wiki.addTiddler(new $tw.Tiddler({title: selTitle, text: ""}));
+			$tw.wiki.addTiddler(new $tw.Tiddler({title: selTitle, text: item.path}));
 		}
 	});
 	}
@@ -239,6 +257,9 @@ exports.startup = function() {
 		var availTiddler = event.param && $tw.wiki.getTiddler(event.param);
 		var target = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
 		if(!availTiddler || !target) return false;
+		// A "keep" row stands for the wiki's own embedded copy — there is no library folder
+		// behind it to install from, so reinstall/update have nothing to do.
+		if(String(availTiddler.fields["plugin-path"] || "").indexOf(_KEEP_PREFIX) === 0) return false;
 		var wikiUrl = target.fields.text, pluginTitle = availTiddler.fields["plugin-title"];
 		if(target.fields["wiki-open"] === "yes") {
 			_setStatus("✗ " + $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/PluginChooser/OpenWarning", "Close the wiki first."));
@@ -356,6 +377,9 @@ exports.startup = function() {
 		var availTiddler = event.param && $tw.wiki.getTiddler(event.param);
 		var target = $tw.wiki.getTiddler("$:/temp/TiddlyDesktop/PluginChooser/target");
 		if(!availTiddler || !target) return false;
+		// A "keep" row stands for the wiki's own embedded copy — there is no library folder
+		// behind it to install from, so reinstall/update have nothing to do.
+		if(String(availTiddler.fields["plugin-path"] || "").indexOf(_KEEP_PREFIX) === 0) return false;
 		var wikiUrl = target.fields.text, pluginTitle = availTiddler.fields["plugin-title"];
 		if(target.fields["wiki-open"] === "yes") {
 			_setStatus("✗ " + $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/PluginChooser/OpenWarning", "Close the wiki first."));
@@ -485,6 +509,30 @@ var _PROTECTED_FOLDER_NAMES = {
 	"tiddlywiki/filesystem": true
 };
 
+// ── "keep" rows ──────────────────────────────────────────────────────────────
+
+// Prefix for the selection value of a row representing the copy a wiki ALREADY holds, where the
+// library has nothing matching it. It must be non-empty and unique per title: an empty selection
+// is how the chooser says "remove this".
+var _KEEP_PREFIX = "keep:";
+
+// A pseudo-library entry standing for that embedded copy. There is no folder behind it to install
+// from, so selecting it means "leave this alone" — and because its version is the installed one,
+// the apply diff compares equal and skips it.
+function _keepItem(title, version, pluginType) {
+	return {
+		path: _KEEP_PREFIX + title,
+		name: title.replace(/^\$:\/(plugins|themes|languages)\//, ""),
+		title: title,
+		description: "",
+		version: version || "",
+		"plugin-type": pluginType ||
+			(title.indexOf("$:/themes/") === 0 ? "theme" :
+				(title.indexOf("$:/languages/") === 0 ? "language" : "plugin")),
+		source: ""
+	};
+}
+
 // ── library enumeration (plugins / themes / languages) ──────────────────────────
 
 // Enumerate installable items under `searchPaths`, in either on-disk layout:
@@ -590,8 +638,13 @@ function _getInstalledFromFile(filePath, fs) {
 		var html  = fs.readFileSync(filePath, "utf8");
 		var match = html.match(/<script[^>]*class="tiddlywiki-tiddler-store"[^>]*>([\s\S]*?)<\/script>/);
 		if(!match) return [];
+		// Protected titles are dropped here, once, so nothing downstream offers them in the
+		// chooser or queues them for removal. $:/core carries a plugin-type like any plugin, and
+		// a row for something the library has no copy of gets an empty selection — which apply
+		// reads as "remove this". _applyFileChanges refuses to carry that out, but the chooser
+		// should never ask in the first place.
 		return JSON.parse(match[1])
-			.filter(function(t) { return !!t["plugin-type"]; })
+			.filter(function(t) { return !!t["plugin-type"] && !_PROTECTED_TITLES[t.title]; })
 			.map(function(t) { return t.title; });
 	} catch(_e) {
 		return [];

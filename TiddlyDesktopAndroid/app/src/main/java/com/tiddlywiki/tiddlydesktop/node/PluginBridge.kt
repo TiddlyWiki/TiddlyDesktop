@@ -259,6 +259,16 @@ class PluginBridge(private val context: Context) {
 
     /** Add/replace/remove tiddlers in the (last) JSON tiddler store of a single-file wiki. */
     private fun modifyStore(html: String, add: List<JSONObject>, removeTitles: Set<String>): String {
+        // Never drop core infrastructure, whatever the caller asked for. $:/core carries a
+        // plugin-type, so it comes back from getInstalled() looking like any other plugin and a
+        // remove list can name it by accident — which is exactly what happened: installing one
+        // plugin deleted $:/core, taking 2.3 MB with it and leaving a wiki that still parses,
+        // still has its tiddlers, and boots to a blank screen. The manager must not ask for this;
+        // this makes it impossible to carry out. Mirrors the desktop guard in
+        // plugins/tiddlydesktop/modules/startup/plugin-manager.js (_applyFileChanges).
+        val refused = removeTitles.intersect(PROTECTED_TITLES)
+        if (refused.isNotEmpty()) Log.w(TAG, "refused to remove protected titles: $refused")
+        @Suppress("NAME_SHADOWING") val removeTitles = removeTitles - PROTECTED_TITLES
         val m = Regex("(<script[^>]*class=\"tiddlywiki-tiddler-store\"[^>]*>)([\\s\\S]*?)(</script>)")
             .findAll(html).lastOrNull() ?: error("no tiddler store found (older div-store wikis aren't supported)")
         val arr = JSONArray(m.groupValues[2].trim())
@@ -308,6 +318,10 @@ class PluginBridge(private val context: Context) {
     }
 
     private fun removeName(info: JSONObject, key: String, name: String) {
+        if (name in PROTECTED_FOLDER_NAMES) {
+            Log.w(TAG, "refused to remove protected folder-wiki plugin: $name")
+            return
+        }
         val arr = info.optJSONArray(key) ?: return
         val kept = JSONArray()
         for (i in 0 until arr.length()) if (arr.getString(i) != name) kept.put(arr.getString(i))
@@ -365,5 +379,14 @@ class PluginBridge(private val context: Context) {
     companion object {
         private const val TAG = "PluginBridge"
         const val INTERFACE_NAME = "TDPlugins"
+
+        /** Plugin titles that are core infrastructure — never removable from a single-file wiki. */
+        private val PROTECTED_TITLES = setOf("\$:/core", "\$:/core-server")
+
+        /**
+         * tiddlywiki.info entries a folder wiki needs in order to serve and save at all. Same
+         * reasoning as [PROTECTED_TITLES], one layer down: these are names, not titles.
+         */
+        private val PROTECTED_FOLDER_NAMES = setOf("tiddlywiki/tiddlyweb", "tiddlywiki/filesystem")
     }
 }

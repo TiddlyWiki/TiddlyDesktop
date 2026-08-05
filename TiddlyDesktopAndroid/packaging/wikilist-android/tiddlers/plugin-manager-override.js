@@ -20,6 +20,38 @@ exports.startup = function () {
 	var CH = "$:/temp/TiddlyDesktop/PluginChooser/";
 	var available = [], availableByTitle = Object.create(null);
 
+	// Core infrastructure, not user-manageable plugins. $:/core carries a plugin-type, so the
+	// native scan reports it as installed like anything else — and since it is in no library, it
+	// used to become a row with an empty selection, which apply reads as "remove this". Installing
+	// any plugin then deleted $:/core and the wiki booted to a blank screen.
+	var PROTECTED_TITLES = { "$:/core": true, "$:/core-server": true };
+
+	// Selection value for a row standing for the copy the wiki ALREADY holds, when the library has
+	// nothing matching it. It must be non-empty and unique per title, because "" means "remove".
+	var KEEP_PREFIX = "keep:";
+
+	function typeFromTitle(title) {
+		if (title.indexOf("$:/themes/") === 0) { return "theme"; }
+		if (title.indexOf("$:/languages/") === 0) { return "language"; }
+		return "plugin";
+	}
+
+	// A pseudo-library entry for the copy embedded in the wiki. There is nothing to install from,
+	// so selecting it means "leave this alone" — and because its version is the installed one,
+	// apply's version comparison finds no difference and skips it. Untick it and the selection
+	// goes empty, which still means remove, so managing these rows keeps working.
+	function keepItem(title, version, pluginType) {
+		return {
+			path: KEEP_PREFIX + title,
+			name: title.replace(/^\$:\/(plugins|themes|languages)\//, ""),
+			title: title,
+			description: "",
+			version: version || "",
+			"plugin-type": pluginType || typeFromTitle(title),
+			source: ""
+		};
+	}
+
 	function semverGt(a, b) {
 		a = String(a || "0").split(".").map(Number); b = String(b || "0").split(".").map(Number);
 		for (var i = 0; i < 3; i++) { var x = a[i] || 0, y = b[i] || 0; if (x > y) return true; if (x < y) return false; }
@@ -43,8 +75,11 @@ exports.startup = function () {
 	function setStatus(t) { $tw.wiki.addTiddler(new $tw.Tiddler({ title: CH + "status", text: t })); }
 	function getInstalled(url) {
 		try {
-			if (url === "backstage://self") { return JSON.parse(host.wikiListInstalled()); }
-			return JSON.parse(host.getInstalled(url));
+			var res = (url === "backstage://self") ? JSON.parse(host.wikiListInstalled())
+				: JSON.parse(host.getInstalled(url));
+			// Drop protected titles here, once, so nothing downstream can offer or remove them.
+			res.titles = (res.titles || []).filter(function (t) { return !PROTECTED_TITLES[t]; });
+			return res;
 		} catch (e) { return { titles: [], versions: {} }; }
 	}
 	// Back up to the wiki's folder (if granted) using its configured backup count.
@@ -67,14 +102,23 @@ exports.startup = function () {
 
 		var idx = 0;
 		Object.keys(byTitle).sort().forEach(function (title) {
-			var items = byTitle[title].slice().sort(function (a, b) {
+			var isInstalled = inst.titles.indexOf(title) !== -1;
+			var installedVer = (inst.versions && inst.versions[title]) || "";
+			var group = byTitle[title].slice();
+			// The wiki can hold a version the library doesn't have (installed from elsewhere, or
+			// updated since). Give it a row of its own so it can be pre-selected and kept —
+			// otherwise the newest LIBRARY version is pre-selected, and pressing Apply silently
+			// overwrites the wiki's copy with it, downgrading if the library is behind.
+			if (isFile && isInstalled && installedVer &&
+				!group.some(function (p) { return (p.version || "") === installedVer; })) {
+				group.push(keepItem(title, installedVer, group[0] && group[0]["plugin-type"]));
+			}
+			var items = group.sort(function (a, b) {
 				return semverGt(a.version, b.version) ? -1 : (semverGt(b.version, a.version) ? 1 : 0);
 			});
 			var seen = Object.create(null);
 			items = items.filter(function (it) { var v = it.version || ""; if (seen[v]) return false; seen[v] = true; return true; });
 
-			var isInstalled = inst.titles.indexOf(title) !== -1;
-			var installedVer = (inst.versions && inst.versions[title]) || "";
 			var defaultItem = null;
 			if (isInstalled) {
 				if (isFile) { for (var k = 0; k < items.length; k++) { if ((items[k].version || "") === installedVer) { defaultItem = items[k]; break; } } }
@@ -112,25 +156,31 @@ exports.startup = function () {
 	// manage them.
 	inst.titles.forEach(function (title) {
 		if (byTitle[title]) return;
+		// A "keep" row, NOT an empty one. An empty plugin-path made the checkbox's checked and
+		// unchecked values identical, so the row rendered as ticked, could never be ticked, and
+		// apply read the empty selection as "remove this" — which is how installing one plugin
+		// deleted $:/core and any theme the library had no copy of.
+		var ver = (inst.versions && inst.versions[title]) || "";
+		var item = keepItem(title, ver);
 		$tw.wiki.addTiddler(new $tw.Tiddler({
 			title: CH + "available/" + (idx++),
 			tags: [CH + "available"],
 			"plugin-title": title,
-			"plugin-name": title.replace(/^\$:\/(plugins|themes|languages)\//, ""),
-			"plugin-path": "",
-			"plugin-type": title.indexOf("$:/themes/") === 0 ? "theme" : (title.indexOf("$:/languages/") === 0 ? "language" : "plugin"),
+			"plugin-name": item.name,
+			"plugin-path": item.path,
+			"plugin-type": item["plugin-type"],
 			description: "",
-			version: "",
+			version: ver,
 			"version-order": "0",
 			"version-count": "1",
-			"installed-version": "",
+			"installed-version": ver,
 			installed: "yes",
 			"update-available": "",
 			source: ""
 		}));
 		$tw.wiki.addTiddler(new $tw.Tiddler({
 			title: CH + "selected/" + title,
-			text: ""
+			text: item.path
 		}));
 	});
 	}
@@ -222,6 +272,10 @@ exports.startup = function () {
 		var avail = param && $tw.wiki.getTiddler(param);
 		if (!target || !host || !avail) { return; }
 		var f = avail.fields;
+		// A "keep" row stands for the wiki's own embedded copy; there is no library folder behind
+		// it to install from, so reinstall/update are meaningless here. Doing nothing beats
+		// rewriting the whole file to no effect.
+		if (String(f["plugin-path"] || "").indexOf(KEEP_PREFIX) === 0) { return; }
 		var url = target.fields.text;
 		try { if (host.isWikiOpen(url)) { setStatus("⚠ Please close the wiki window before applying changes."); return; } } catch (e) {}
 		setStatus("Applying…");

@@ -178,6 +178,14 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
             }
         }
         webView.webChromeClient = object : android.webkit.WebChromeClient() {
+            // Surface the WikiList page's console.* in logcat, as WikiActivity does for wiki
+            // windows. Without this the PluginChooser and the rest of the backstage UI fail
+            // silently: a plugin install that corrupted a wiki left nothing in logcat at all,
+            // and the cause had to be reconstructed from the file on disk.
+            override fun onConsoleMessage(m: android.webkit.ConsoleMessage): Boolean {
+                Log.d("TDConsole", "${m.message()} (${m.sourceId()}:${m.lineNumber()})")
+                return true
+            }
             override fun onReceivedTitle(view: WebView, title: String?) {
                 val t = title?.takeIf { it.isNotBlank() } ?: return
                 setTitle(t)
