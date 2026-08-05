@@ -153,7 +153,18 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             V="${GITHUB_REF#refs/tags/v}"
           else
-            V=$(grep -oE 'versionName = "[0-9]+\.[0-9]+\.[0-9]+"' TiddlyDesktopAndroid/app/build.gradle.kts | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+            # A manual run passes no -PversionName, so Gradle falls back to the default in
+            # build.gradle.kts and that is the version actually built. Match the line rather than a
+            # literal assignment: the version became overridable
+            # (versionName = (findProperty("versionName") as String?) ?: "X.Y.Z"), so the old
+            # `versionName = "X.Y.Z"` pattern matches nothing -- and under `bash -e` a grep that
+            # finds nothing exits 1 and fails the step with no explanation.
+            V=$(grep -E '^[[:space:]]*versionName[[:space:]]*=' TiddlyDesktopAndroid/app/build.gradle.kts \
+                | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | tail -n1)
+          fi
+          if [ -z "$V" ]; then
+            echo "::error::Could not determine the Android version from TiddlyDesktopAndroid/app/build.gradle.kts"
+            exit 1
           fi
           echo "Android version: $V"
           echo "version=$V" >> "$GITHUB_OUTPUT"
