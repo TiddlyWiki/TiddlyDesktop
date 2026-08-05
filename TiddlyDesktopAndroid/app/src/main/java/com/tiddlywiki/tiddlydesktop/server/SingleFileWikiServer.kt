@@ -59,7 +59,12 @@ class SingleFileWikiServer(
     private val sessionToken: String = randomToken()
     private val cookieName = "_tdwiki_$port"
 
-    val url: String get() = "http://127.0.0.1:$port/"
+    /**
+     * The address for the WebView. Carries the session token once, because the very first request
+     * cannot present a cookie it has not been given yet; serveWiki() sets the cookie, and every
+     * request after this one is admitted on that instead.
+     */
+    val url: String get() = "http://127.0.0.1:$port/?$AUTH_PARAM=$sessionToken"
     fun isRunning(): Boolean = running.get()
 
     fun start(): String {
@@ -101,7 +106,8 @@ class SingleFileWikiServer(
                 val requestLine = lines.firstOrNull()?.split(" ") ?: return
                 if (requestLine.size < 2) { sendError(output, 400, "Bad Request"); return }
                 val method = requestLine[0]
-                val path = requestLine[1].substringBefore('?')
+                val target = requestLine[1]
+                val path = target.substringBefore('?')
 
                 val headers = HashMap<String, String>()
                 for (i in 1 until lines.size) {
@@ -111,10 +117,20 @@ class SingleFileWikiServer(
                         line.substring(c + 1).trim()
                 }
 
-                // Public routes: initial load (GET/HEAD /) and the saver's OPTIONS probe.
-                val isPublic = (method == "GET" && path == "/") ||
-                    (method == "HEAD" && path == "/") || method == "OPTIONS"
-                if (!isPublic && !hasValidCookie(headers)) {
+                /*
+                Loading the wiki used to be a public route, which meant any app on the device could
+                GET / and read the whole wiki -- every tiddler of it -- because on Android 127.0.0.1
+                is reachable by anything holding the normal INTERNET permission. Only writes were
+                gated. The bootstrap problem that made it public is real (no cookie exists yet on the
+                first request), so it is solved the way the folder-wiki proxy solves it: the entry URL
+                carries the token once, and the response mints the cookie.
+
+                OPTIONS stays open deliberately. It is the saver's capability probe, it discloses
+                nothing but "PUT is allowed here", and gating it risks breaking saving for no real
+                gain -- a caller that cannot authenticate cannot PUT anyway.
+                */
+                val isPublic = method == "OPTIONS"
+                if (!isPublic && !hasValidCookie(headers) && !presentsToken(target)) {
                     sendError(output, 403, "Forbidden"); return
                 }
 
@@ -395,6 +411,16 @@ class SingleFileWikiServer(
 
     // ── small helpers ────────────────────────────────────────────────────────────
 
+    /** Does this request line carry the entry token? Compared without an early exit. */
+    private fun presentsToken(target: String): Boolean {
+        val supplied = target.substringAfter('?', "").split('&')
+            .firstOrNull { it.startsWith("$AUTH_PARAM=") }?.substringAfter('=') ?: return false
+        if (supplied.length != sessionToken.length) return false
+        var diff = 0
+        for (i in supplied.indices) diff = diff or (supplied[i].code xor sessionToken[i].code)
+        return diff == 0
+    }
+
     private fun hasValidCookie(headers: Map<String, String>): Boolean {
         val cookie = headers["cookie"] ?: return false
         return cookie.split(";").any { it.trim() == "$cookieName=$sessionToken" }
@@ -440,6 +466,9 @@ class SingleFileWikiServer(
     }
 
     companion object {
+        /** Query parameter carrying the session token on the very first load. */
+        private const val AUTH_PARAM = "__tdauth"
+
         private const val TAG = "SingleFileWikiServer"
 
         // Single-file servers: 39000-39999 (Node folder servers use 38000-38999).
