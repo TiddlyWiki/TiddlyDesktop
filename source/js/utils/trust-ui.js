@@ -1,8 +1,6 @@
 /*
 In-wiki UI for granting trust to an attachment's location.
 
-Phase 6 of DESIGN-http-wiki-origin.md.
-
 An attachment stored outside the wiki folder is only served once the user has trusted its path
 (see utils/trust.js). Before this, the only way to create a grant was to add the file again —
 fine for new attachments, useless for the ones already in a wiki. This puts the offer where the

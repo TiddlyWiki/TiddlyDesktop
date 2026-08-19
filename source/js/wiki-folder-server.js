@@ -1,8 +1,6 @@
 /*
 Starts a folder wiki's TiddlyWiki SERVER as a confined child process.
 
-Phase 9 of DESIGN-http-wiki-origin.md.
-
 Folder wikis used to boot TiddlyWiki straight into this page, which rendered the UI here and ran
 the wiki's own JavaScript with full Node — a downloaded folder wiki was arbitrary code execution
 by design. TiddlyWiki now runs as a SERVER only, and its UI is rendered by the sandboxed iframe

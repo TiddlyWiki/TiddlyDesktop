@@ -3,7 +3,7 @@ Per-wiki trusted-path store.
 
 A wiki may read a path on disk only if that path is trusted for THAT wiki. This module owns the
 records; callers decide what to do with the answer. Today the only consumer is the file bridge in
-wiki-file-window.js; the attachment server will be the second (see DESIGN-http-wiki-origin.md),
+wiki-file-window.js; the attachment server will be the second (see docs/security-model.md),
 which is why the policy lives here rather than inside either of them.
 
 Where the records live, and why it matters

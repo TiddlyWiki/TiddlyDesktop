@@ -14,7 +14,7 @@ This affects BOTH wiki kinds, which is easy to miss:
   • folder wikis render on the app's own `chrome-extension://` origin — measured — which is
     rejected for the same reason. utils/embeds.js is installed for them too
     (wiki-folder-main.js), so this shim is still load-bearing for folder wikis and must not be
-    removed until they are served over http as well. See DESIGN-http-wiki-origin.md.
+    removed until they are served over http as well. See docs/security-model.md.
 
 The fix
 -------

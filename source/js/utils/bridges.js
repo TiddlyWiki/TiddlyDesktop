@@ -19,7 +19,7 @@ take the bridge.
 	})
 
 Every path constraint lives in utils/trust.js; see the comments below and
-DESIGN-http-wiki-origin.md.
+docs/security-model.md.
 */
 
 "use strict";

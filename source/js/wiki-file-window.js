@@ -22,7 +22,7 @@ function WikiFileWindow(options) {
 	this.mustQuitOnClose = options.mustQuitOnClose;
 	console.log("Opening window with id", this.getIdentifier());
 	// The window is served over loopback HTTP rather than loaded from file:// — see
-	// utils/wiki-server.js and DESIGN-http-wiki-origin.md. The shell keeps Node (its path
+	// utils/wiki-server.js and docs/security-model.md. The shell keeps Node (its path
 	// matches the manifest's node-remote), the wiki one path segment away does not, and both
 	// share an origin so the parent's cross-document access still works.
 	//

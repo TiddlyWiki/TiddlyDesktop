@@ -49,7 +49,7 @@ function WikiFolderWindow(options) {
 	/*
 	Served over loopback HTTP like a single-file wiki: the shell keeps Node (its path matches the
 	manifest's node-remote) and the wiki, served at the origin root, does not. See
-	utils/wiki-server.js and DESIGN-http-wiki-origin.md.
+	utils/wiki-server.js and docs/security-model.md.
 
 	`new_instance: true` is deliberately gone. It existed because a folder wiki booted TiddlyWiki
 	— UI and all — into its own page, which had to be isolated from the rest of the app. The shell

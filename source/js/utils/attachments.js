@@ -1,8 +1,6 @@
 /*
 Route the wiki's absolute external attachments onto the attachment origin.
 
-Phase 5 of DESIGN-http-wiki-origin.md.
-
 The problem
 -----------
 The External Attachments plugin records a tiddler's `_canonical_uri` as a RELATIVE path when the

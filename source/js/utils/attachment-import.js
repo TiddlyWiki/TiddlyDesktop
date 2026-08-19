@@ -1,8 +1,6 @@
 /*
 Reference a file added to a wiki, instead of embedding it.
 
-Phase 9 of DESIGN-http-wiki-origin.md.
-
 When External Attachments is enabled, adding a file to a wiki — dropped in or chosen through the
 import button — should record a `_canonical_uri` pointing at where the file already lives, rather
 than reading its bytes into the tiddler.

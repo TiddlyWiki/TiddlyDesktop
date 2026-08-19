@@ -1,8 +1,8 @@
 /*
 Per-window loopback HTTP server.
 
-Phase 4 of DESIGN-http-wiki-origin.md. Each wiki window gets its own server on an OS-assigned
-port, serving two things from one origin:
+Each wiki window gets its own server on an OS-assigned port, serving two things from one
+origin:
 
 	/__tiddlydesktop_shell__/<token>/…   the app's own files (the window shell)
 	/wiki/<token>/…                      the wiki file and its directory
@@ -54,8 +54,8 @@ var SHELL_PREFIX = "/__tiddlydesktop_shell__/";
 /*
 Content-Security-Policy for wiki documents.
 
-Phase 11 of DESIGN-http-wiki-origin.md, and the only measure on any of our lists that constrains
-what a wiki can send OUT rather than what it can read. It is available at all only because the
+The only measure on any of our lists that constrains what a wiki can send OUT rather than
+what it can read. It is available at all only because the
 wiki is served: a file:// document cannot be given response headers.
 
 What it restricts, and what it deliberately does not:
@@ -504,7 +504,7 @@ exports.start = function(options, cb) {
 	Classifying by content type instead was tried and abandoned: TiddlyWiki dispatches on the
 	tiddler's `type` field, which the server cannot see and the WIKI writes — so a wiki wanting
 	an image's bytes would just declare it text/plain. The no-CORS default is therefore hardening,
-	not a boundary. The boundary is trust; see DESIGN-http-wiki-origin.md.
+	not a boundary. The boundary is trust; see docs/security-model.md.
 	*/
 	var attachServer = http.createServer(function(req, res) {
 		if(req.method !== "GET" && req.method !== "HEAD") {
