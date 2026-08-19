@@ -405,11 +405,20 @@ WikiFolderWindow.prototype.onclose = function(event) {
 	if(this.stateWatcher) { try { this.stateWatcher.close(); } catch(e) {} this.stateWatcher = null; }
 	if(this.titleObserver) { try { this.titleObserver.disconnect(); } catch(e) {} }
 	if(this.favIconObserver) { try { this.favIconObserver.disconnect(); } catch(e) {} }
-	// Stop serving this wiki. The server and its session token die with the window, so a closed
-	// wiki is no longer reachable by anything else on the machine.
+	// Stop serving this wiki. The parent's per-window server and its session token die with the
+	// window, so a closed wiki is no longer reachable by anything else on the machine.
 	if(this.server) {
 		try { this.server.close(); } catch(e) {}
 		this.server = null;
+	}
+	// TiddlyWiki itself now runs as a CHILD PROCESS (wiki-folder-server.js), which does not die
+	// with the window the way the old in-window server did. Left running it would keep the wiki
+	// folder writable through a loopback port nothing is watching any more.
+	try {
+		var stopper = this.window_nwjs && this.window_nwjs.window && this.window_nwjs.window.tdStopWikiServer;
+		if(typeof stopper === "function") { stopper(); }
+	} catch(e) {
+		console.error("[TiddlyDesktop] could not stop the folder wiki server:",e);
 	}
 	// Close the window, removing it from the wiki list if it was marked for removal.
 	this.windowList.handleClose(this,this.mustRemoveFromWikiListOnClose);

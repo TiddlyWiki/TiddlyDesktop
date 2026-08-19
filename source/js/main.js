@@ -63,9 +63,20 @@ function quitApp() {
 	_quitting = true;
 	try { if(tray) { tray.remove(); } } catch(e) {}
 	// Force-close every tracked wiki window (close(true) skips close handlers / save prompts).
+	//
+	// Because it skips the close handlers, it also skips the one that stops a folder wiki's
+	// TiddlyWiki child process — which, unlike the old in-window server, does NOT die with its
+	// window. So stop those first, or quitting leaves a server running against the user's wiki
+	// folder on a loopback port with nothing watching it. See wiki-folder-server.js.
 	try {
 		var wl = $tw && $tw.desktop && $tw.desktop.windowList;
 		if(wl && wl.windows) {
+			wl.windows.slice().forEach(function(w) {
+				try {
+					var stopper = w && w.window_nwjs && w.window_nwjs.window && w.window_nwjs.window.tdStopWikiServer;
+					if(typeof stopper === "function") { stopper(); }
+				} catch(e) {}
+			});
 			wl.windows.slice().forEach(function(w) {
 				try { if(w && w.window_nwjs) { w.window_nwjs.close(true); } } catch(e) {}
 			});
