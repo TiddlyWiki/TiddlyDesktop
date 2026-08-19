@@ -275,15 +275,19 @@ class CollabBridge(
                         if (wa != null && attachName != null) {
                             "{data:${jsStr(wa.writeCollabAsset(base64, attachName))}}"
                         } else {
-                            openOut(path).use { it.write(android.util.Base64.decode(base64, android.util.Base64.DEFAULT)) }
-                            "{data:${jsStr(path)}}"
+                            val target = confinedFile(path)
+                                ?: throw SecurityException("refused a write outside the wiki: $path")
+                            java.io.FileOutputStream(target).use { it.write(android.util.Base64.decode(base64, android.util.Base64.DEFAULT)) }
+                            "{data:${jsStr(target.absolutePath)}}"
                         }
                     }
                     "read" -> {
                         val bytes = if (wa != null && attachName != null) {
                             wa.readAttachmentBytes(attachName) ?: throw java.io.FileNotFoundException("attachment not found: $path")
                         } else {
-                            openIn(path).use { it.readBytes() }
+                            val source = confinedFile(path)
+                                ?: throw SecurityException("refused a read outside the wiki: $path")
+                            java.io.FileInputStream(source).use { it.readBytes() }
                         }
                         "{data:${jsStr(android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP))}}"
                     }
@@ -301,15 +305,43 @@ class CollabBridge(
         return if (p.startsWith("attachments/")) Uri.decode(p.removePrefix("attachments/")).ifBlank { null } else null
     }
 
-    private fun openOut(path: String): java.io.OutputStream =
-        if (path.startsWith("content://"))
-            activity.contentResolver.openOutputStream(Uri.parse(path), "wt") ?: throw java.io.IOException("cannot write $path")
-        else java.io.FileOutputStream(path)
-
-    private fun openIn(path: String): java.io.InputStream =
-        if (path.startsWith("content://"))
-            activity.contentResolver.openInputStream(Uri.parse(path)) ?: throw java.io.IOException("cannot read $path")
-        else java.io.FileInputStream(path)
+    /**
+     * Resolve a raw fileCmd path, or null if it escapes the wiki's own directory.
+     *
+     * fileCmd is reachable from the wiki's own JavaScript, so an unconstrained path here is
+     * arbitrary file read and write with this app's authority -- which, holding All-Files-Access,
+     * is the user's entire shared storage plus this app's private data directory. Collab assets
+     * never need that: they arrive as "attachments/<name>" and are handled by the branch above,
+     * which resolves them against the wiki's own folder. Anything else is confined to the wiki
+     * directory, and content:// URIs are refused outright -- a wiki naming a provider URI is not
+     * a case that arises legitimately, and honouring one would reach into other apps' data
+     * through permissions this app holds.
+     *
+     * Same confinement the share bridge already has (WikiActivity.stagedShareFile).
+     */
+    private fun confinedFile(path: String): java.io.File? {
+        if (path.isBlank() || path.startsWith("content://")) {
+            Log.w(TAG, "refused a non-filesystem fileCmd path: $path")
+            return null
+        }
+        val base = runCatching { java.io.File(wikiDir).canonicalFile }.getOrNull()
+        if (base == null) {
+            Log.w(TAG, "no wiki directory to confine fileCmd against; refusing: $path")
+            return null
+        }
+        val resolved = runCatching {
+            val f = java.io.File(path).canonicalFile
+            if (f == base) return@runCatching f
+            var parent: java.io.File? = f.parentFile
+            while (parent != null) {
+                if (parent == base) return@runCatching f
+                parent = parent.parentFile
+            }
+            null
+        }.getOrNull()
+        if (resolved == null) Log.w(TAG, "refused a fileCmd path outside the wiki dir: $path")
+        return resolved
+    }
 
     // ── helpers ──────────────────────────────────────────────────────────────────
 
