@@ -794,7 +794,6 @@ function _cleanBundledLanguage(bundled) {
 
 function _applyFileChanges(wikiUrl, toInstall, toRemove, fs, path) {
 	var filePath = wikiUrl.slice("wikifile://".length);
-	_backupWikiFile(filePath, fs, path);
 	var html = fs.readFileSync(filePath, "utf8");
 
 	var storeRe = /(<script[^>]*class="tiddlywiki-tiddler-store"[^>]*>)([\s\S]*?)(<\/script>)/;
@@ -834,6 +833,12 @@ function _applyFileChanges(wikiUrl, toInstall, toRemove, fs, path) {
 	// Use a function replacer so $ characters in newStoreJson are not interpreted
 	// as replacement pattern specifiers ($& $1 $` $' etc.) — plugin JS code is full of $
 	var newHtml = html.replace(storeRe, function() { return match[1] + newStoreJson + match[3]; });
+	// Nothing actually changed: leave the file alone entirely — no rewrite, no mtime bump, and no
+	// backup slot spent. Applying without installing or removing anything should be observable
+	// only by the chooser closing.
+	if(newHtml === html) { return; }
+	// Back up only once we know we are going to write.
+	_backupWikiFile(filePath, fs, path);
 	fs.writeFileSync(filePath, newHtml, "utf8");
 }
 

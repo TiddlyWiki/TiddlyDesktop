@@ -192,13 +192,25 @@ class PluginBridge(private val context: Context) {
      */
     private fun applyFile(path: String, install: JSONArray, remove: JSONArray, backupDir: String, backupCount: Int) {
         val oldBytes = readBytes(path) ?: error("cannot read wiki")
-        // Back up the current wiki before editing its store.
-        Backups.write(context, path, oldBytes, backupDir.ifBlank { null }, if (backupCount > 0) backupCount else 20)
-
         val html = oldBytes.toString(Charsets.UTF_8)
         val add = if (install.length() > 0) packPlugins(install) else emptyList()
         val removeTitles = (0 until remove.length()).map { remove.getString(it) }.toMutableSet()
         val newHtml = modifyStore(html, add, removeTitles)
+
+        // Nothing actually changed: leave the file alone entirely -- no rewrite, no mtime bump,
+        // and no backup slot spent. Applying without installing or removing anything should be
+        // observable only by the chooser closing.
+        //
+        // This is only reachable because modifyStore now serialises the way TiddlyWiki's own saver
+        // does; while it escaped "</" differently, re-serialising an unchanged store still produced
+        // a file that differed by tens of kilobytes and the comparison could never hold.
+        if (newHtml == html) {
+            Log.i(TAG, "apply made no change to $path; leaving the file untouched")
+            return
+        }
+
+        // Back up the current wiki before editing its store.
+        Backups.write(context, path, oldBytes, backupDir.ifBlank { null }, if (backupCount > 0) backupCount else 20)
         writeBytes(path, newHtml.toByteArray())
     }
 
@@ -281,8 +293,24 @@ class PluginBridge(private val context: Context) {
             kept.put(t)
         }
         add.forEach { kept.put(it) }
-        // Escape "<" so a tiddler containing "</script>" can't break the store's script tag.
-        val serialized = kept.toString().replace("<", "\\u003c")
+        /*
+        Serialise exactly the way TiddlyWiki's own saver does, so a wiki does not churn by tens of
+        kilobytes each time the chooser touches it and TiddlyWiki writes it back.
+
+        Two differences had to be reconciled. Android's org.json escapes a forward slash, but only
+        when it follows "<" -- so every "</" in the wiki came out as "\u003c\/" where TiddlyWiki
+        writes "\u003C/", one character longer, 68450 times in a 6 MB wiki. And TiddlyWiki uses an
+        uppercase \u003C (the jsontiddler widget, $:/core/modules/widgets/jsontiddler.js).
+
+        Unescaping the slash first is safe: org.json emits every literal backslash as a pair, so the
+        two-character sequence \/ in its output can only ever be an escaped slash.
+
+        Escaping "<" at all is what stops a tiddler containing "</script>" from breaking out of the
+        store's script tag.
+        */
+        val serialized = kept.toString()
+            .replace("\\/", "/")
+            .replace("<", "\\u003C")
         return html.substring(0, m.range.first) + m.groupValues[1] + serialized +
             m.groupValues[3] + html.substring(m.range.last + 1)
     }
