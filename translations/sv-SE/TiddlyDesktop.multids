@@ -78,7 +78,9 @@ Share/Heading: Lägg till delat innehåll i…
 Share/Cancel: Avbryt
 Share/TemplatesHeading: Delningsmallar
 Share/TemplatesHelp: När du delar en länk till en wiki berikar TiddlyDesktop den (titel, beskrivning, bild, inbäddning) och bygger en tiddler från den matchande mallen nedan. Platshållare:
+Share/GeneratedHelp: Genereras i det ögonblick du delar — främst för titeln, så att dela samma sida två gånger inte ger två tiddlers med samma namn:
 Share/DeleteTemplate: Ta bort den här mallen
+Share/TitleLabel: Titel:
 Share/TagsLabel: Taggar:
 Share/AddHeading: Lägg till din egen mall
 Share/AddHelp: Ge den ett namn (för att rikta in den från en domänregel nedan) och redigera sedan dess innehåll ovan. Den börjar som en kopia av den generiska mallen.

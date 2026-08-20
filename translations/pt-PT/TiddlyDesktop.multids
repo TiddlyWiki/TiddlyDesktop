@@ -78,7 +78,9 @@ Share/Heading: Adicionar o conteúdo partilhado a…
 Share/Cancel: Cancelar
 Share/TemplatesHeading: Modelos de partilha
 Share/TemplatesHelp: Quando partilha uma ligação num wiki, o TiddlyDesktop enriquece-a (título, descrição, imagem, incorporação) e cria um tiddler a partir do modelo correspondente abaixo. Marcadores:
+Share/GeneratedHelp: Gerado no momento em que partilha — sobretudo para o título, para que partilhar duas vezes a mesma página não produza dois tiddlers com o mesmo nome:
 Share/DeleteTemplate: Eliminar este modelo
+Share/TitleLabel: Título:
 Share/TagsLabel: Etiquetas:
 Share/AddHeading: Adicione o seu próprio modelo
 Share/AddHelp: Dê-lhe um nome (para o referenciar a partir de uma regra de domínio abaixo) e depois edite o seu conteúdo acima. Começa como uma cópia do modelo genérico.

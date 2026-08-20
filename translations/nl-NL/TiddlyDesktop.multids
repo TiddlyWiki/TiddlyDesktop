@@ -78,7 +78,9 @@ Share/Heading: Gedeelde inhoud toevoegen aan…
 Share/Cancel: Annuleren
 Share/TemplatesHeading: Deelsjablonen
 Share/TemplatesHelp: Wanneer je een link in een wiki deelt, verrijkt TiddlyDesktop deze (titel, beschrijving, afbeelding, insluiting) en bouwt een tiddler op basis van het overeenkomende sjabloon hieronder. Plaatsaanduidingen:
+Share/GeneratedHelp: Wordt gegenereerd op het moment van delen — vooral voor de titel, zodat dezelfde pagina twee keer delen geen twee tiddlers met dezelfde naam oplevert:
 Share/DeleteTemplate: Dit sjabloon verwijderen
+Share/TitleLabel: Titel:
 Share/TagsLabel: Labels:
 Share/AddHeading: Eigen sjabloon toevoegen
 Share/AddHelp: Geef het een naam (om het aan te sturen vanuit een domeinregel hieronder) en bewerk vervolgens de inhoud hierboven. Het begint als een kopie van het generieke sjabloon.

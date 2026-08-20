@@ -78,7 +78,9 @@ Share/Heading: Tilføj delt indhold til…
 Share/Cancel: Annuller
 Share/TemplatesHeading: Delingsskabeloner
 Share/TemplatesHelp: Når du deler et link i en wiki, beriger TiddlyDesktop det (titel, beskrivelse, billede, indlejring) og bygger en tiddler ud fra den matchende skabelon nedenfor. Pladsholdere:
+Share/GeneratedHelp: Genereres i det øjeblik, du deler — mest til titlen, så deling af den samme side to gange ikke giver to tiddlere med samme navn:
 Share/DeleteTemplate: Slet denne skabelon
+Share/TitleLabel: Titel:
 Share/TagsLabel: Mærker:
 Share/AddHeading: Tilføj din egen skabelon
 Share/AddHelp: Giv den et navn (for at målrette den fra en domæneregel nedenfor), og rediger derefter dens indhold ovenfor. Den starter som en kopi af den generiske skabelon.

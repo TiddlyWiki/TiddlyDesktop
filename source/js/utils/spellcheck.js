@@ -16,9 +16,10 @@ Three deliberately separate concerns:
    Chromium loads and reconciles the profile Preferences early, so this node-main pre-seed can lose the
    race (it is authoritative over its own spellcheck block — e.g. it re-derives spellcheck.dictionaries
    from intl.selected_languages). writeSpellingPrefsAtQuit(profileDir, allowed, lang) is the companion:
-   on quit, main.js spawns a DETACHED pref-writer (node-main.js writer mode) that waits for the app to
-   fully exit and then calls it, so the values are on disk before the next launch's Chromium reads them
-   — the only write that survives, since anything written while Chromium runs gets re-flushed away.
+   on quit, main.js calls spawnPrefWriter() to start a DETACHED js/spellcheck-writer.js that waits for
+   the app to fully exit and then calls it, so the values are on disk before the next launch's Chromium
+   reads them — the only write that survives, since anything written while Chromium runs gets
+   re-flushed away.
 
 2. isEnabled($tw) / applyToDocument(doc, enabled, lang) — the user-facing on/off toggle for LOCAL
    spellcheck ($:/config/TiddlyDesktop/EnableSpellcheck, default "yes"). Chromium keeps
@@ -183,9 +184,41 @@ exports.syncSpellingServicePref = function(profileDir, lang) {
 	}
 };
 
+// Absolute path of the application directory (source/), derived from this module's own location so
+// it is correct both unbuilt and inside a packaged build, and independent of the cwd the app was
+// launched from. The pref-writer's script path is resolved against it.
+var APP_DIR = require("path").resolve(__dirname, "..", "..");
+
+// Spawn the detached pref-writer that writes the spellcheck prefs once this app instance is gone.
+// Called from main.js quitApp(); see js/spellcheck-writer.js for why it must be gone by then.
+//
+// NWJS_START_AS_NODE turns our own binary into a plain Node interpreter, which is what keeps the
+// helper window-less and stops it opening — and locking — the Chromium profile it is writing into.
+// process.execPath is that binary; NW.js ships no separate node to point at. The script path is
+// absolute and the cwd is pinned to the app directory, so nothing here depends on where the user
+// launched TiddlyDesktop from.
+exports.spawnPrefWriter = function(profileDir, allowed, lang) {
+	try {
+		var env = Object.assign({}, process.env, {
+			NWJS_START_AS_NODE: "1",
+			TD_SPELLCHECK_PROFILE: profileDir || "",
+			TD_SPELLCHECK_ALLOWED: allowed ? "1" : "0",
+			TD_SPELLCHECK_LANG: lang || "en-GB",
+			TD_SPELLCHECK_PARENT_PID: String(process.pid)
+		});
+		require("child_process").spawn(
+			process.execPath,
+			[require("path").join(APP_DIR, "js", "spellcheck-writer.js")],
+			{detached: true, stdio: "ignore", cwd: APP_DIR, env: env}
+		).unref();
+	} catch(e) {
+		try { console.error("[TiddlyDesktop] spellcheck pref-writer spawn failed:", e); } catch(_e) {}
+	}
+};
+
 // Write the spellcheck prefs into the profile's Preferences. Called by the DETACHED pref-writer AFTER
-// the app has fully exited (see node-main.js writer mode and main.js quitApp), so it is the last write
-// and survives into the next launch — Chromium re-flushes these prefs while running, so an in-process
+// the app has fully exited (js/spellcheck-writer.js, started by spawnPrefWriter above), so it is the
+// last write and survives into the next launch — Chromium re-flushes these prefs while running, so an in-process
 // write loses that race. Best-effort and fail-safe.
 //   - use_spelling_service: the Google remote-spellcheck opt-in.
 //   - dictionaries: force the chosen language. Chromium keeps a spellcheck dictionary only for a

@@ -78,7 +78,9 @@ Share/Heading: 共有内容の追加先…
 Share/Cancel: キャンセル
 Share/TemplatesHeading: 共有テンプレート
 Share/TemplatesHelp: ウィキにリンクを共有すると、TiddlyDesktop はそれを補強し（タイトル、説明、画像、埋め込み）、下の一致するテンプレートからティドラーを作成します。プレースホルダー:
+Share/GeneratedHelp: 共有した時点で生成されます。主にタイトル用で、同じページを2回共有しても同名のティドラーが2つできないようにします:
 Share/DeleteTemplate: このテンプレートを削除
+Share/TitleLabel: タイトル:
 Share/TagsLabel: タグ:
 Share/AddHeading: 独自のテンプレートを追加
 Share/AddHelp: 名前を付け（下のドメイン規則から指定するため）、上でその本文を編集します。汎用テンプレートのコピーとして始まります。

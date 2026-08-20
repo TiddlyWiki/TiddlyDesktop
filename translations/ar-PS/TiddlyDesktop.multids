@@ -78,7 +78,9 @@ Share/Heading: أضف المحتوى المشترك إلى…
 Share/Cancel: إلغاء
 Share/TemplatesHeading: قوالب المشاركة
 Share/TemplatesHelp: عند مشاركة رابط في ويكي، يقوم TiddlyDesktop بإثرائه (العنوان، الوصف، الصورة، التضمين) وينشئ تيدلر من القالب المطابق أدناه. العناصر النائبة:
+Share/GeneratedHelp: يُنشأ لحظة المشاركة — خاصةً للعنوان، حتى لا تُنتج مشاركة الصفحة نفسها مرتين تدلرين بالاسم نفسه:
 Share/DeleteTemplate: حذف هذا القالب
+Share/TitleLabel: العنوان:
 Share/TagsLabel: الوسوم:
 Share/AddHeading: أضف قالبك الخاص
 Share/AddHelp: امنحه اسمًا (لاستهدافه من قاعدة نطاق أدناه)، ثم عدّل محتواه أعلاه. يبدأ كنسخة من القالب العام.

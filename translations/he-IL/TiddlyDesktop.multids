@@ -78,7 +78,9 @@ Share/Heading: הוסף תוכן משותף אל…
 Share/Cancel: ביטול
 Share/TemplatesHeading: תבניות שיתוף
 Share/TemplatesHelp: כאשר אתה משתף קישור לוויקי, TiddlyDesktop מעשיר אותו (כותרת, תיאור, תמונה, הטמעה) ובונה טידלר מהתבנית התואמת שלמטה. מצייני מיקום:
+Share/GeneratedHelp: נוצר ברגע השיתוף — בעיקר עבור הכותרת, כדי ששיתוף אותו עמוד פעמיים לא ייצור שני טידלרים בעלי אותו שם:
 Share/DeleteTemplate: מחק תבנית זו
+Share/TitleLabel: כותרת:
 Share/TagsLabel: תגיות:
 Share/AddHeading: הוסף תבנית משלך
 Share/AddHelp: תן לה שם (כדי לכוון אליה מכלל דומיין למטה), ואז ערוך את תוכנה למעלה. היא מתחילה כעותק של התבנית הכללית.

@@ -24,14 +24,8 @@ Everything is wrapped so a failure here can never stop the app from starting.
 
 "use strict";
 
-// Detached pref-writer mode (spawned by main.js quitApp): this process exists only to write the
-// spellcheck prefs into the profile Preferences AFTER the app instance that spawned us has fully
-// exited — the one moment they survive, since Chromium owns and re-flushes those prefs while it runs,
-// so the in-process pre-seed below loses that race. It runs before NW.js opens a window or forwards to
-// a primary, blocks until the parent is gone, writes, and exits; the app never boots in this process.
-if(process.env.TD_SPELLCHECK_WRITER === "1") {
-	runSpellcheckPrefWriter();
-}
+// (The quit-time pref writer is NOT here: it runs as a plain Node script under our own binary, which
+// never loads this file. See js/spellcheck-writer.js.)
 
 // Resolve the active Chromium profile directory (e.g. .../TiddlyDesktop/Default).
 function resolveProfileDir() {
@@ -52,55 +46,6 @@ function resolveProfileDir() {
 		root = p.join(process.env.XDG_CONFIG_HOME || p.join(home, ".config"), name);
 	}
 	return p.join(root, "Default");
-}
-
-// Synchronous sleep so the writer mode blocks node-main — and therefore NW.js booting a window — until
-// it is done. Atomics.wait avoids a busy-loop; the busy-wait is only a fallback if it is unavailable.
-function sleepSync(ms) {
-	try {
-		Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
-	} catch(e) {
-		var end = Date.now() + ms;
-		while(Date.now() < end) { /* fallback busy-wait */ }
-	}
-}
-
-// Wait for the app instance that spawned us (TD_SPELLCHECK_PARENT_PID) to exit — so Chromium's final
-// Preferences flush is done and ours is the last write — then write the spellcheck prefs and quit.
-// Synchronous throughout, so NW.js never proceeds to boot the app in this process.
-function runSpellcheckPrefWriter() {
-	try {
-		var spellcheck = require("./utils/spellcheck.js");
-		var profileDir = process.env.TD_SPELLCHECK_PROFILE || resolveProfileDir();
-		var allowed = process.env.TD_SPELLCHECK_ALLOWED === "1";
-		var lang = process.env.TD_SPELLCHECK_LANG || "en-GB";
-		var parentPid = parseInt(process.env.TD_SPELLCHECK_PARENT_PID, 10) || 0;
-		var waited = 0, TIMEOUT = 15000;
-		while(parentPid && waited < TIMEOUT) {
-			try { process.kill(parentPid, 0); } catch(e) { break; } // throws once the pid is gone
-			sleepSync(100);
-			waited += 100;
-		}
-		sleepSync(200); // brief grace for the OS to release the Preferences file after the parent exits
-		spellcheck.writeSpellingPrefsAtQuit(profileDir, allowed, lang);
-	} catch(e) {
-		try { console.error("[TiddlyDesktop] spellcheck pref-writer failed:", e); } catch(_e) {}
-	}
-	exitHelper(parseInt(process.env.TD_SPELLCHECK_PARENT_PID, 10) || 0);
-}
-
-// End the pref-writer helper. process.exit(0) is NOT enough on its own: NW.js goes on to boot a full
-// app instance in this process regardless, and that instance takes the profile's Singleton lock, so
-// the next launch is refused as a secondary. The platform-specific teardown (POSIX process group /
-// Windows process tree) lives in startup-guard.js beside the other process machinery — see
-// exitHelper() there. The exit below is the fallback if that require or teardown fails.
-function exitHelper(parentPid) {
-	try {
-		require("./utils/startup-guard.js").exitHelper(parentPid);
-	} catch(e) {
-		try { console.error("[TiddlyDesktop] helper exit failed:", e); } catch(_e) {}
-	}
-	try { process.exit(0); } catch(e) {}
 }
 
 try {

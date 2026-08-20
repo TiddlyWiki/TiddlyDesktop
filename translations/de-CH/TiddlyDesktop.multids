@@ -78,7 +78,9 @@ Share/Heading: Geteilten Inhalt hinzufügen zu…
 Share/Cancel: Abbrechen
 Share/TemplatesHeading: Freigabe-Vorlagen
 Share/TemplatesHelp: Wenn du einen Link in ein Wiki teilst, reichert TiddlyDesktop ihn an (Titel, Beschreibung, Bild, Einbettung) und erstellt aus der passenden Vorlage unten einen Tiddler. Platzhalter:
+Share/GeneratedHelp: Wird im Moment des Teilens erzeugt – vor allem für den Titel, damit zweimaliges Teilen derselben Seite nicht zwei Tiddler mit demselben Namen ergibt:
 Share/DeleteTemplate: Diese Vorlage löschen
+Share/TitleLabel: Titel:
 Share/TagsLabel: Schlagwörter:
 Share/AddHeading: Eigene Vorlage hinzufügen
 Share/AddHelp: Gib ihr einen Namen (um sie über eine Domänenregel unten anzusprechen) und bearbeite dann oben ihren Inhalt. Sie beginnt als Kopie der generischen Vorlage.

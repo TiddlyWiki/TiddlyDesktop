@@ -78,7 +78,9 @@ Share/Heading: Añadir el contenido compartido a…
 Share/Cancel: Cancelar
 Share/TemplatesHeading: Plantillas de compartición
 Share/TemplatesHelp: Cuando compartes un enlace en un wiki, TiddlyDesktop lo enriquece (título, descripción, imagen, incrustación) y crea un tiddler a partir de la plantilla coincidente de abajo. Marcadores:
+Share/GeneratedHelp: Se genera en el momento de compartir: sobre todo para el título, para que compartir dos veces la misma página no produzca dos tiddlers con el mismo nombre:
 Share/DeleteTemplate: Eliminar esta plantilla
+Share/TitleLabel: Título:
 Share/TagsLabel: Etiquetas:
 Share/AddHeading: Añade tu propia plantilla
 Share/AddHelp: Ponle un nombre (para apuntarla desde una regla de dominio de abajo) y luego edita su contenido arriba. Empieza como una copia de la plantilla genérica.

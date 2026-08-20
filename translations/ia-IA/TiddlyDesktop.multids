@@ -78,7 +78,9 @@ Share/Heading: Adder le contento compartite a…
 Share/Cancel: Cancellar
 Share/TemplatesHeading: Modellos de compartir
 Share/TemplatesHelp: Quando tu comparti un ligamine in un wiki, TiddlyDesktop lo inricchi (titulo, description, imagine, incorporation) e construe un tiddler ex le modello concordante infra. Substitutos:
+Share/GeneratedHelp: Generate al momento de compartir — principalmente pro le titulo, de sorta que compartir le mesme pagina duo vices non produce duo tiddlers con le mesme nomine:
 Share/DeleteTemplate: Deler iste modello
+Share/TitleLabel: Titulo:
 Share/TagsLabel: Etiquettas:
 Share/AddHeading: Adde tu proprie modello
 Share/AddHelp: Da lo un nomine (pro appellar lo ab un regula de dominio infra), pois redige su contento supra. Illo comencia como un copia del modello generic.

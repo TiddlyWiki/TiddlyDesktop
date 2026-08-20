@@ -78,7 +78,9 @@ Share/Heading: Dodaj udostępnioną treść do…
 Share/Cancel: Anuluj
 Share/TemplatesHeading: Szablony udostępniania
 Share/TemplatesHelp: Gdy udostępniasz link do wiki, TiddlyDesktop wzbogaca go (tytuł, opis, obraz, osadzenie) i tworzy tiddlera z pasującego szablonu poniżej. Symbole zastępcze:
+Share/GeneratedHelp: Generowane w chwili udostępniania — głównie dla tytułu, aby dwukrotne udostępnienie tej samej strony nie utworzyło dwóch tiddlerów o tej samej nazwie:
 Share/DeleteTemplate: Usuń ten szablon
+Share/TitleLabel: Tytuł:
 Share/TagsLabel: Tagi:
 Share/AddHeading: Dodaj własny szablon
 Share/AddHelp: Nadaj mu nazwę (aby wskazać go z reguły domeny poniżej), a następnie edytuj jego treść powyżej. Zaczyna jako kopia szablonu ogólnego.

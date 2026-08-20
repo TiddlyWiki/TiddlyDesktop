@@ -84,7 +84,9 @@ Share/Heading: Add shared content to…
 Share/Cancel: Cancel
 Share/TemplatesHeading: Share Templates
 Share/TemplatesHelp: When you share a link into a wiki, TiddlyDesktop enriches it (title, description, image, embed) and builds a tiddler from the matching template below. Placeholders:
+Share/GeneratedHelp: Generated at the moment you share — mostly for the title, so sharing the same page twice doesn't produce two tiddlers with the same name:
 Share/DeleteTemplate: Delete this template
+Share/TitleLabel: Title:
 Share/TagsLabel: Tags:
 Share/AddHeading: Add your own template
 Share/AddHelp: Give it a name (used to target it from a domain rule below), then edit its body above. It starts as a copy of the generic template.

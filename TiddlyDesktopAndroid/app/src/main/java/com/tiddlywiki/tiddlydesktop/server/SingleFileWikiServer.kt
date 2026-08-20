@@ -492,8 +492,15 @@ class SingleFileWikiServer(
          *                and widgets at runtime and ships inline scripts. A wiki is executable
          *                content by design, so this is not being used to contain its script.
          *   img/media/   left open. Wikis legitimately reference remote media, and one that wants
-         *   font/frame   to leak through an <img> query string still can. Closing it would break
+         *   font         to leak through an <img> query string still can. Closing it would break
          *                real wikis for a partial gain.
+         *   frame-src    left open, and it must ALSO name data: and blob: explicitly. A bare `*`
+         *                matches only network schemes -- CSP excludes data:, blob: and filesystem:
+         *                from the wildcard -- and TiddlyWiki renders every text/html tiddler as an
+         *                iframe whose src is `data:text/html;charset=utf-8,...`. Without them such
+         *                a tiddler renders as an empty frame with a CSP violation, which is a plain
+         *                regression rather than a security gain: the frame is sandboxed by the
+         *                parser and carries content the wiki could equally have rendered inline.
          */
         const val CSP =
             "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; " +
@@ -502,7 +509,7 @@ class SingleFileWikiServer(
             "img-src * data: blob:; " +
             "media-src * data: blob:; " +
             "font-src * data:; " +
-            "frame-src *; " +
+            "frame-src * data: blob:; " +
             "connect-src 'self'; " +
             "object-src 'none'; " +
             "base-uri 'none'; " +

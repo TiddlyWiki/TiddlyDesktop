@@ -92,24 +92,14 @@ function quitApp() {
 	try { gui.App.quit(); } catch(e) {}
 	// Spellcheck prefs (Google opt-in + language) only survive if written to the profile Preferences
 	// AFTER we and Chromium have fully exited — Chromium re-flushes them while running, so an in-process
-	// write loses the race (see utils/spellcheck.js and node-main.js). Spawn a detached copy of our own
-	// binary (the only interpreter guaranteed present) that waits for us to die, then writes. Only when
-	// there is something to enforce, so ordinary quits stay cheap.
+	// write loses the race (see utils/spellcheck.js and js/spellcheck-writer.js). Spawn a detached
+	// helper that waits for us to die, then writes. Only when there is something to enforce, so
+	// ordinary quits stay cheap.
 	try {
 		var googleAllowed = $tw.wiki.getTiddlerText(spellcheck.GOOGLE_CONFIG_TITLE, "no") === "yes";
 		var spellcheckLang = spellcheck.getLanguage($tw);
 		if(googleAllowed || spellcheckLang !== "en-GB") {
-			require("child_process").spawn(process.execPath, [], {
-				detached: true,
-				stdio: "ignore",
-				env: Object.assign({}, process.env, {
-					TD_SPELLCHECK_WRITER: "1",
-					TD_SPELLCHECK_PROFILE: gui.App.dataPath || "",
-					TD_SPELLCHECK_ALLOWED: googleAllowed ? "1" : "0",
-					TD_SPELLCHECK_LANG: spellcheckLang,
-					TD_SPELLCHECK_PARENT_PID: String(process.pid)
-				})
-			}).unref();
+			spellcheck.spawnPrefWriter(gui.App.dataPath || "", googleAllowed, spellcheckLang);
 		}
 	} catch(e) {}
 	// Backstop: if anything would otherwise keep the process alive, terminate it outright. This runs

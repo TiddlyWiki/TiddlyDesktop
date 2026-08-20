@@ -78,7 +78,9 @@ Share/Heading: 공유된 콘텐츠를 추가할 위키…
 Share/Cancel: 취소
 Share/TemplatesHeading: 공유 템플릿
 Share/TemplatesHelp: 위키에 링크를 공유하면 TiddlyDesktop이 이를 보강하고(제목, 설명, 이미지, 임베드) 아래의 일치하는 템플릿에서 티들러를 만듭니다. 자리 표시자:
+Share/GeneratedHelp: 공유하는 시점에 생성됩니다. 주로 제목에 사용하여 같은 페이지를 두 번 공유해도 같은 이름의 티들러가 두 개 생기지 않도록 합니다:
 Share/DeleteTemplate: 이 템플릿 삭제
+Share/TitleLabel: 제목:
 Share/TagsLabel: 태그:
 Share/AddHeading: 나만의 템플릿 추가
 Share/AddHelp: 이름을 지정하고(아래 도메인 규칙에서 대상으로 지정하기 위해) 위에서 본문을 편집하세요. 일반 템플릿의 복사본으로 시작합니다.

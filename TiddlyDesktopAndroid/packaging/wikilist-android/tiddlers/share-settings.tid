@@ -10,6 +10,10 @@ tags: $:/tags/ControlPanel/SettingsTab
 
 `{{$title}}` `{{$url}}` `{{$description}}` `{{$image}}` `{{$embed}}` `{{$author}}` `{{$siteName}}` `{{$text}}`
 
+<<lingo Share/GeneratedHelp>>
+
+`{{$timestamp}}` `{{$date}}` `{{$time}}` `{{$uuid}}` `{{$now:DDth MMM YYYY}}`
+
 <$list filter="[all[tiddlers]tag[$:/tags/TiddlyDesktop/ShareTemplate]sort[share-kind]]">
 <div class="td-share-tpl-edit">
 <h3><$view field="share-kind"/>
@@ -18,6 +22,7 @@ tags: $:/tags/ControlPanel/SettingsTab
 {{$:/core/images/delete-button}}
 </$button>
 </h3>
+<div><<lingo Share/TitleLabel>> <$edit-text tiddler=<<currentTiddler>> field="share-title" tag="input" default="" class="tc-edit-texteditor" placeholder="{{$title}}"/></div>
 <div><<lingo Share/TagsLabel>> <$edit-text tiddler=<<currentTiddler>> field="share-tags" tag="input" default="" class="tc-edit-texteditor"/></div>
 <$edit-text tiddler=<<currentTiddler>> tag="textarea" class="tc-edit-texteditor"/>
 </div>
@@ -35,6 +40,7 @@ tags: $:/tags/ControlPanel/SettingsTab
 	tags="$:/tags/TiddlyDesktop/ShareTemplate"
 	share-kind=<<kind>>
 	share-tags="shared"
+	share-title={{{ [[$:/config/TiddlyDesktop/ShareTemplates/generic]get[share-title]] }}}
 	text={{{ [[$:/config/TiddlyDesktop/ShareTemplates/generic]get[text]] }}}/>
 <$action-deletetiddler $tiddler="$:/temp/TiddlyDesktop/NewShareTemplate"/>
 <<lingo Share/CreateTemplate>>

@@ -78,7 +78,9 @@ Share/Heading: Pridať zdieľaný obsah do…
 Share/Cancel: Zrušiť
 Share/TemplatesHeading: Šablóny zdieľania
 Share/TemplatesHelp: Keď zdieľate odkaz do wiki, TiddlyDesktop ho obohatí (názov, popis, obrázok, vloženie) a vytvorí tiddler z príslušnej šablóny nižšie. Zástupné symboly:
+Share/GeneratedHelp: Generuje sa v okamihu zdieľania — hlavne pre názov, aby dvojité zdieľanie tej istej stránky nevytvorilo dva tiddlery s rovnakým názvom:
 Share/DeleteTemplate: Odstrániť túto šablónu
+Share/TitleLabel: Názov:
 Share/TagsLabel: Značky:
 Share/AddHeading: Pridajte vlastnú šablónu
 Share/AddHelp: Dajte jej názov (aby ste na ňu cielili z pravidla domény nižšie) a potom upravte jej obsah vyššie. Začína ako kópia všeobecnej šablóny.

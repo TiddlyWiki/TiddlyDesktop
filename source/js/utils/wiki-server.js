@@ -77,8 +77,17 @@ What it restricts, and what it deliberately does not:
 
   img-src /     left open. Wikis legitimately reference remote images and media, and a wiki that
   media-src     wants to leak through an <img> query string can still do so. Closing that would
-  frame-src     break real wikis for a partial gain; frame-src likewise carries the allowlisted
-                media embeds and the plugin library.
+                break real wikis for a partial gain.
+
+  frame-src     left open, and it must ALSO name data: and blob: explicitly. A bare `*` matches only
+                network schemes — CSP deliberately excludes data:, blob: and filesystem: from the
+                wildcard — and TiddlyWiki renders every text/html tiddler as an iframe whose src is
+                `data:text/html;charset=utf-8,…` (core/modules/parsers/htmlparser.js). Without them
+                such a tiddler renders as an empty frame with a CSP violation in the console, which
+                is a plain regression rather than a security gain: the frame is sandboxed by the
+                parser and carries content the wiki could equally have rendered inline. blob: is
+                listed for the same reason, for anything framing a Blob it has built. This directive
+                also carries the allowlisted media embeds and the plugin library.
 
 So this narrows the most direct exfiltration path without pretending to close every one.
 */
@@ -91,7 +100,7 @@ function cspFor(attachmentOrigin) {
 		"img-src * data: blob:",
 		"media-src * data: blob:",
 		"font-src * data:",
-		"frame-src *",
+		"frame-src * data: blob:",
 		"connect-src 'self' " + attach,
 		"object-src 'none'",
 		"base-uri 'none'",

@@ -78,7 +78,9 @@ Share/Heading: Dodaj deljeno vsebino v…
 Share/Cancel: Prekliči
 Share/TemplatesHeading: Predloge za deljenje
 Share/TemplatesHelp: Ko delite povezavo v wiki, jo TiddlyDesktop obogati (naslov, opis, sliko, vdelavo) in iz ustrezne predloge spodaj ustvari tiddler. Ograde:
+Share/GeneratedHelp: Ustvari se v trenutku deljenja — predvsem za naslov, da dvakratno deljenje iste strani ne ustvari dveh tiddlerjev z istim imenom:
 Share/DeleteTemplate: Izbriši to predlogo
+Share/TitleLabel: Naslov:
 Share/TagsLabel: Oznake:
 Share/AddHeading: Dodajte svojo predlogo
 Share/AddHelp: Poimenujte jo (za sklicevanje iz pravila domene spodaj), nato pa uredite njeno vsebino zgoraj. Začne kot kopija splošne predloge.
