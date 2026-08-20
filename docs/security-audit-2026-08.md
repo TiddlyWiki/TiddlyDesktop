@@ -18,13 +18,20 @@ below are not one-off bugs so much as a systematic parity gap.
 
 | # | Severity | Finding | Status |
 |---|---|---|---|
-| 1 | High | Android serves wikis with no Content-Security-Policy | open |
-| 2 | High | `CollabBridge.httpGet` / `wsCreate` are unconstrained outbound channels | open |
-| 3 | Medium | `openExternal` and `shouldOverrideUrlLoading` launch arbitrary intents | open |
-| 4 | Info | `sanitizeAttachmentName` permits `..` as a leaf name | open, not exploitable |
+| 1 | High | Android serves wikis with no Content-Security-Policy | **fixed**, `61f8039` |
+| 2 | High | `CollabBridge.httpGet` / `wsCreate` are unconstrained outbound channels | **fixed**, `61f8039` |
+| 3 | Medium | `openExternal` and `shouldOverrideUrlLoading` launch arbitrary intents | **fixed**, `77f3c3e` |
+| 4 | Info | `sanitizeAttachmentName` permits `..` as a leaf name | **fixed**, `77f3c3e` |
 | — | Critical | `CollabBridge.fileCmd` allowed arbitrary file read/write | **fixed**, `4c61586` |
 
+All five are fixed in code but **none has been exercised on a device**. The two worth watching when
+they are: a wiki that fetches a remote API from the page is now blocked by the CSP (intended, and
+matching desktop, but the most visible change), and a folder wiki now has its response head parsed
+by `AuthProxy` rather than streamed blind.
+
 ## 1. Android serves wikis with no CSP (High)
+
+**Fixed in `61f8039`.**
 
 Desktop applies a Content-Security-Policy to every served wiki (`source/js/utils/wiki-server.js`):
 `connect-src` limited to self plus the attachment origin, `object-src 'none'`, `base-uri 'none'`,
@@ -40,6 +47,8 @@ including its deliberate exceptions (`script-src` must keep `unsafe-eval`/`unsaf
 `img-src`/`media-src` stay open).
 
 ## 2. `CollabBridge.httpGet` / `wsCreate` are unconstrained (High)
+
+**Fixed in `61f8039`.**
 
 Both take a URL and a header map straight from wiki JavaScript:
 
@@ -61,6 +70,8 @@ wiki at all or only by one running a collab session.
 
 ## 3. Arbitrary intent launch (Medium)
 
+**Fixed in `77f3c3e`.**
+
 `CollabBridge.openExternal(url)` does `startActivity(ACTION_VIEW, Uri.parse(url))` with no
 validation. `WikiActivity.shouldOverrideUrlLoading` does the same for any non-loopback top-level
 navigation.
@@ -73,6 +84,8 @@ wiki script launch local files (file://), UNC paths, and any exotic scheme the O
 **Fix:** allowlist `http`, `https`, `mailto`, `tel` in both places.
 
 ## 4. `sanitizeAttachmentName` permits `..` (Info — not exploitable)
+
+**Fixed in `77f3c3e`.**
 
 The character whitelist `[A-Za-z0-9._-]` allows dots, so the leaf name `..` survives sanitisation.
 It does **not** traverse: `File(dir, "..")` exists, so the duplicate-name loop rewrites it to
