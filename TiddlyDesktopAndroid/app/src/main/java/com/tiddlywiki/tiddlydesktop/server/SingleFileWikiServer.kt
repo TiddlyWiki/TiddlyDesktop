@@ -197,6 +197,7 @@ class SingleFileWikiServer(
             output.write((
                 "HTTP/1.1 200 OK\r\n" +
                 "Content-Type: text/html; charset=utf-8\r\n" +
+                "Content-Security-Policy: $CSP\r\n" +
                 "Content-Encoding: gzip\r\n" +
                 "Content-Length: ${gzipped.size}\r\n" +
                 "Vary: Accept-Encoding\r\n" +
@@ -209,6 +210,7 @@ class SingleFileWikiServer(
             output.write((
                 "HTTP/1.1 200 OK\r\n" +
                 "Content-Type: text/html; charset=utf-8\r\n" +
+                "Content-Security-Policy: $CSP\r\n" +
                 "Content-Length: $total\r\n" +
                 "$setCookie\r\n" +
                 "Connection: close\r\n\r\n"
@@ -248,6 +250,7 @@ class SingleFileWikiServer(
         output.write((
             "HTTP/1.1 200 OK\r\n" +
             "Content-Type: text/html; charset=UTF-8\r\n" +
+            "Content-Security-Policy: $CSP\r\n" +
             "Content-Length: ${bytes.size}\r\n" +
             "Cache-Control: no-store\r\n" +
             "Connection: close\r\n\r\n"
@@ -466,6 +469,46 @@ class SingleFileWikiServer(
     }
 
     companion object {
+        /**
+         * Content-Security-Policy for the wiki document.
+         *
+         * The only measure that constrains what a wiki can send OUT rather than what it can read,
+         * and it exists only because the wiki is served: a file:// document cannot be given
+         * response headers. Mirrors the desktop policy in source/js/utils/wiki-server.js; keep the
+         * two in step.
+         *
+         *   connect-src  'self' only -- this is the point of the exercise. It stops a tiddler
+         *                beaconing to an arbitrary host with fetch/XHR/WebSocket/sendBeacon. It
+         *                does NOT break collaboration: the collab plugin's traffic goes through
+         *                CollabBridge, which makes the request from the app rather than the page
+         *                and is governed by its own scheme checks. Unlike desktop there is no
+         *                separate attachment origin to allow -- attachments are served from this
+         *                same server.
+         *   object-src   'none'. Nothing legitimate embeds plugins.
+         *   base-uri     'none'. Stops a <base> tag silently repointing every relative URL.
+         *   form-action  'none'. TiddlyWiki does not submit forms, and a form POST is otherwise a
+         *                tidy exfiltration channel that connect-src does not cover.
+         *   script-src   must keep 'unsafe-eval' and 'unsafe-inline': TiddlyWiki compiles filters
+         *                and widgets at runtime and ships inline scripts. A wiki is executable
+         *                content by design, so this is not being used to contain its script.
+         *   img/media/   left open. Wikis legitimately reference remote media, and one that wants
+         *   font/frame   to leak through an <img> query string still can. Closing it would break
+         *                real wikis for a partial gain.
+         */
+        const val CSP =
+            "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; " +
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; " +
+            "style-src 'self' 'unsafe-inline' data:; " +
+            "img-src * data: blob:; " +
+            "media-src * data: blob:; " +
+            "font-src * data:; " +
+            "frame-src *; " +
+            "connect-src 'self'; " +
+            "object-src 'none'; " +
+            "base-uri 'none'; " +
+            "form-action 'none'"
+
+
         /** Query parameter carrying the session token on the very first load. */
         private const val AUTH_PARAM = "__tdauth"
 

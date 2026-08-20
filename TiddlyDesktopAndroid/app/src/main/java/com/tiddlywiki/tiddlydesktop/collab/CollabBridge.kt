@@ -67,6 +67,11 @@ class CollabBridge(
 
     @JavascriptInterface
     fun httpGet(id: Int, url: String, headersJson: String) {
+        if (!schemeAllowed(url, ws = false)) {
+            Log.w(TAG, "httpGet refused a non-web scheme: $url")
+            deliverHttp(id, err = "URL scheme not permitted", jsonBody = null)
+            return
+        }
         Thread {
             try {
                 val builder = Request.Builder().url(url)
@@ -115,6 +120,11 @@ class CollabBridge(
 
     @JavascriptInterface
     fun wsCreate(id: Int, url: String, headersJson: String) {
+        if (!schemeAllowed(url, ws = true)) {
+            Log.w(TAG, "wsCreate refused a non-WebSocket scheme: $url")
+            wsEvent(id, "error", "URL scheme not permitted")
+            return
+        }
         try {
             val builder = Request.Builder().url(url)
             builder.header("User-Agent", "TiddlyDesktopAndroid/1.0")
@@ -303,6 +313,24 @@ class CollabBridge(
         val p = path.removePrefix("./")
         // Keep the full sub-path under attachments/ (subfolders preserved), not just the basename.
         return if (p.startsWith("attachments/")) Uri.decode(p.removePrefix("attachments/")).ifBlank { null } else null
+    }
+
+    /**
+     * Web schemes only, for the two bridges that make a network request on the page's behalf.
+     *
+     * These answer with the raw response, so they are CORS-free fetches — a real capability the
+     * page does not otherwise have, and one that bypasses the wiki's Content-Security-Policy
+     * because the request is made by the app rather than by the document. Restricting the scheme
+     * is what the desktop bridge does (source/js/utils/bridges.js, "URL scheme not permitted").
+     *
+     * Deliberately NOT host-scoped: collab relays are frequently self-hosted on a LAN or on
+     * localhost, so pinning to a host list would break legitimate setups. The residual surface is
+     * reads of whatever HTTP endpoints the device can reach; see docs/security-audit-2026-08.md.
+     */
+    private fun schemeAllowed(url: String, ws: Boolean): Boolean {
+        val u = url.trim().lowercase()
+        return if (ws) u.startsWith("ws://") || u.startsWith("wss://")
+        else u.startsWith("http://") || u.startsWith("https://")
     }
 
     /**

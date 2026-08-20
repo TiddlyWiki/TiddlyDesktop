@@ -183,7 +183,7 @@ class AuthProxy(
             upOut.flush()
 
             // Node closes once it has answered, so the response is everything up to EOF.
-            copyUntilEof(upstream.getInputStream(), client.getOutputStream())
+            forwardResponse(upstream.getInputStream(), client.getOutputStream())
         }
     }
 
@@ -243,6 +243,63 @@ class AuthProxy(
             buf.write(b)
         }
         return null
+    }
+
+    /**
+     * Relay the response, adding our Content-Security-Policy to the wiki document.
+     *
+     * TiddlyWiki's server sets no CSP of its own, so ours goes on here, on the way back — which
+     * makes a served folder wiki governed exactly like a single-file one, and is the same place
+     * the desktop app applies it (source/js/utils/wiki-server.js). The policy itself is shared
+     * with [SingleFileWikiServer] so the two cannot drift.
+     *
+     * This is the only point where the proxy looks at a response at all. If the head cannot be
+     * parsed — malformed, or larger than [MAX_HEAD] — the bytes already read are written through
+     * unchanged and the rest is streamed, so the response degrades to the previous
+     * copy-until-EOF behaviour rather than being truncated.
+     */
+    private fun forwardResponse(from: InputStream, to: OutputStream) {
+        val buf = ByteArrayOutputStream()
+        var matched = 0
+        while (buf.size() < MAX_HEAD) {
+            val b = from.read()
+            if (b < 0) break
+            buf.write(b)
+            matched = when {
+                b == '\r'.code && (matched == 0 || matched == 2) -> matched + 1
+                b == '\n'.code && (matched == 1 || matched == 3) -> matched + 1
+                b == '\n'.code && matched == 0 -> 2      // tolerate bare LF
+                // ...and tolerate a bare LF as the TERMINATOR too. readHead does not, because a
+                // request head that fails to parse is refused; here a head that fails to parse
+                // falls through to passthrough, which would silently drop the CSP.
+                b == '\n'.code && matched == 2 -> 4
+                else -> 0
+            }
+            if (matched == 4) break
+        }
+        val raw = buf.toByteArray()
+        if (matched != 4) {
+            to.write(raw)
+            to.flush()
+            copyUntilEof(from, to)
+            return
+        }
+        val lines = String(raw, Charsets.ISO_8859_1)
+            .split("\r\n", "\n")
+            .filter { it.isNotEmpty() }
+        val isHtml = lines.any {
+            it.startsWith("Content-Type:", ignoreCase = true) && it.contains("text/html", ignoreCase = true)
+        }
+        val hasCsp = lines.any { it.startsWith("Content-Security-Policy:", ignoreCase = true) }
+        val rebuilt = StringBuilder()
+        lines.forEach { rebuilt.append(it).append("\r\n") }
+        if (isHtml && !hasCsp) {
+            rebuilt.append("Content-Security-Policy: ").append(SingleFileWikiServer.CSP).append("\r\n")
+        }
+        rebuilt.append("\r\n")
+        to.write(rebuilt.toString().toByteArray(Charsets.ISO_8859_1))
+        to.flush()
+        copyUntilEof(from, to)
     }
 
     private fun copyUntilEof(from: InputStream, to: OutputStream) {
