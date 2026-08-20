@@ -10,6 +10,7 @@ caption: Collab status bar
 <$set name="connStatus" value={{{ [[$:/temp/collab/status]get[status]] }}}>
 <span class={{{ [<connStatus>addprefix[tc-collab-statusbar-dot tc-collab-statusbar-dot-]] }}}></span>
 </$set>
+<$list filter="[[$:/temp/collab/status]get[message]!match[]]" variable="collabMsg"><span class="tc-collab-statusbar-message" title=<<collabMsg>>><$text text=<<collabMsg>>/></span> </$list>
 <$reveal type="nomatch" state="$:/config/codemirror-6-collab/room-code" text="">Room: <code><$text text={{$:/config/codemirror-6-collab/room-code}}/></code></$reveal>
 <$reveal type="match" state="$:/config/codemirror-6-collab/room-code" text=""><span class="tc-collab-statusbar-dim">not connected</span></$reveal>
 <$list filter="[[$:/temp/collab/status]has[lan-peers]!field:lan-peers[0]]" variable="_"> <span class="tc-collab-lan-badge" title="Direct encrypted LAN connection active">⚡ LAN</span></$list>

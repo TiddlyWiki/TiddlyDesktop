@@ -413,9 +413,10 @@ exports.startup = function() {
 
 	// Derive 32-byte session key from our private key and peer's raw X25519 public key (base64).
 	// ECDH shared secret, mixed with the room content key, → HKDF-SHA256.
-	// Folding in the room content key means a relay that swapped the announced
-	// pubkeys (it cannot, while lan-announce is E2E-encrypted, but defence in
-	// depth) still could not compute this key without the room secret.
+	// Folding in the room content key means a relay that swapped the announced pubkeys still
+	// could not compute this key without the room secret. That holds only for a TOKEN-derived
+	// room key: a room-code-derived one is known to the relay, because the relay's room id IS
+	// base64url(roomCode). Hence the strength check below.
 	function _deriveSessionKey(theirPubKeyB64) {
 		if(!myKeyPair || !nodeCrypto) return null;
 		try {
@@ -426,9 +427,15 @@ exports.startup = function() {
 			var privKey   = nodeCrypto.createPrivateKey({key: myKeyPair.privateDer, format: "der", type: "pkcs8"});
 			var pubKey    = nodeCrypto.createPublicKey( {key: theirSpki,            format: "der", type: "spki"});
 			var shared    = nodeCrypto.diffieHellman({privateKey: privKey, publicKey: pubKey});
-			var ikm       = _e2eKeyRaw
-				? Buffer.concat([Buffer.from(shared), Buffer.from(_e2eKeyRaw)])
-				: Buffer.from(shared);
+			// Strong (token-derived) only. A room-code-derived key is known to the relay, so
+			// folding it in would not stop the relay computing this session key — and the bare
+			// ECDH fallback would not either. Refuse rather than derive something weaker than
+			// the comment above claims.
+			if(_e2eStrength !== "strong" || !_e2eKeyRaw) {
+				console.warn("[collab-lan] refusing to derive a LAN session key without a room token");
+				return null;
+			}
+			var ikm       = Buffer.concat([Buffer.from(shared), Buffer.from(_e2eKeyRaw)]);
 			return _hkdf(ikm, "tiddlydesktop-collab-lan-v1", "session-key", 32);
 		} catch(e) {
 			console.error("[collab-lan] Session key derivation failed:", e.message);
@@ -855,11 +862,14 @@ exports.startup = function() {
 		try { window.dispatchEvent(new window.CustomEvent(name, {detail: detail || {}})); } catch(_e) {}
 	}
 
-	function _writeStatus(status) {
+	// [message] explains a status the user cannot otherwise account for — a refusal to connect
+	// reads as a bug unless the reason is on screen. Cleared whenever status changes without one.
+	function _writeStatus(status, message) {
 		if(status !== undefined) currentStatus = status;
 		$tw.wiki.addTiddler(new $tw.Tiddler({
 			title: "$:/temp/collab/status",
 			status: currentStatus,
+			message: message || "",
 			"room-code": roomCode,
 			"lan-peers": String(nodeCrypto ? Object.keys(directPeers).length : _bridgeLanPeers),
 			e2e: _e2eStrength
@@ -1383,6 +1393,25 @@ exports.startup = function() {
 
 	function _connect() {
 		if(destroyed) return;
+		/*
+		A room token is required, not merely preferred.
+
+		Without one the E2E key is derived from the ROOM CODE — and the room code is the relay's
+		room id (base64url(roomCode)), so the relay necessarily knows it and can derive the same
+		key. In that mode "end-to-end" holds against a network observer but not against the relay:
+		it can read every message, and it can compute the LAN session key too, which is exactly the
+		substitution _deriveSessionKey's comment says folding in the room key prevents.
+
+		A token is never sent to the relay — it reaches collaborators in the invite code, out of
+		band — so it is the only thing that makes the relay untrusted. Generating an invite mints
+		one automatically, so the normal onboarding path already satisfies this; what it blocks is
+		a room configured by hand with a code alone.
+		*/
+		if(!roomToken) {
+			console.warn("[collab-transport] refusing to connect: no room token set");
+			_writeStatus("error", "A room token is required. Generate an invite, or paste the invite code you were sent.");
+			return;
+		}
 		var myGen = ++connectionGeneration;
 		// Set by this socket's error handler on a 401 upgrade rejection, read by its
 		// close handler so we route a dead token through re-verification instead of

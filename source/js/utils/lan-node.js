@@ -11,6 +11,7 @@ single-file wiki and a folder wiki interoperate over LAN:
   - handshake: lan-hello (TEXT) → encrypted lan-hello-ack (BINARY, HMAC confirm)
   - frames: ChaCha20-Poly1305, [12-byte nonce][ciphertext][16-byte tag]
   - keys: X25519 ECDH, mixed with the room content key, → HKDF-SHA256
+          (REQUIRED: without a room key there is no session — see deriveSessionKey)
 Keep this wire-compatible with transport.js if either side changes.
 
 One node per wiki window:
@@ -106,7 +107,16 @@ function createLanNode(options) {
 			var privKey   = nodeCrypto.createPrivateKey({key: myKeyPair.privateDer, format: "der", type: "pkcs8"});
 			var pubKey    = nodeCrypto.createPublicKey( {key: theirSpki,            format: "der", type: "spki"});
 			var shared    = nodeCrypto.diffieHellman({privateKey: privKey, publicKey: pubKey});
-			var ikm       = roomKey ? Buffer.concat([Buffer.from(shared), roomKey]) : Buffer.from(shared);
+			// No room key, no LAN session. The bare-ECDH fallback that used to be here derived a
+			// key from an ECDH with a pubkey the RELAY announced, which is precisely the
+			// substitution folding in the room key exists to prevent. transport.js only passes a
+			// key when the room has a token (a room-code-derived one is known to the relay), so
+			// reaching this with no key means the caller has nothing worth binding to.
+			if(!roomKey) {
+				console.warn("[lan-node] refusing to derive a session key without a room key");
+				return null;
+			}
+			var ikm       = Buffer.concat([Buffer.from(shared), roomKey]);
 			return hkdf(ikm, "tiddlydesktop-collab-lan-v1", "session-key", 32);
 		} catch(e) { console.error("[lan-node] session key derivation failed:", e.message); return null; }
 	}
