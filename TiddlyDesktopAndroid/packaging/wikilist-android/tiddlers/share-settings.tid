@@ -8,7 +8,7 @@ tags: $:/tags/ControlPanel/SettingsTab
 
 <<lingo Share/TemplatesHelp>>
 
-`{{$title}}` `{{$url}}` `{{$description}}` `{{$image}}` `{{$embed}}` `{{$author}}` `{{$siteName}}` `{{$text}}`
+`{{$title}}` `{{$url}}` `{{$description}}` `{{$image}}` `{{$embed}}` `{{$author}}` `{{$siteName}}` `{{$selection}}` `{{$text}}`
 
 <<lingo Share/GeneratedHelp>>
 

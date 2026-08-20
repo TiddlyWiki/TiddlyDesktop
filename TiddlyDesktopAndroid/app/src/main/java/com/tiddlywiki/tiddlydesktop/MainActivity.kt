@@ -712,8 +712,13 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
             pendingSharePayload = org.json.JSONArray().put(
                 org.json.JSONObject().put("title", title).put("text", text).put("tags", "shared")
             ).toString()
+            // Enrichment is async, so this stand-in is what a template renders against if the user
+            // picks a wiki straight away. It carries `selection` for the same reason it carries
+            // `text`: a template that quotes the highlight must not come up empty in that window.
             enrichedShareData = org.json.JSONObject().put("kind", "text").put("url", "")
-                .put("title", title).put("text", text).toString()
+                .put("title", title).put("text", text)
+                .put("selection", com.tiddlywiki.tiddlydesktop.node.ShareEnricher.selectionOf(text))
+                .toString()
             // Enrich asynchronously; refresh the picker preview when done.
             Thread {
                 val enriched = com.tiddlywiki.tiddlydesktop.node.ShareEnricher.enrich(text)
