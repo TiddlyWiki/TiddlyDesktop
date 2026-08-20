@@ -166,9 +166,13 @@ class WikiActivity : ComponentActivity() {
                     // text/html tiddlers, etc.) must be left alone so data: URIs load normally.
                     if (!request.isForMainFrame) return false
                     val u = request.url.toString()
-                    // Keep loopback wiki URLs in-app; send everything else to the browser.
+                    // Keep loopback wiki URLs in-app; send everything else to the browser, but
+                    // only if its scheme is one a wiki legitimately links to. Passing the URI
+                    // straight to ACTION_VIEW let wiki script deep-link into any app on the
+                    // device without the user doing anything. See host/ExternalLinks.kt.
                     if (u.startsWith("http://127.0.0.1") || u.startsWith("http://localhost")) return false
-                    startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, request.url))
+                    com.tiddlywiki.tiddlydesktop.host.ExternalLinks.open(this@WikiActivity, request.url)
+                    // Handled either way: a refused scheme must not fall through to the WebView.
                     return true
                 }
 
@@ -692,9 +696,17 @@ class WikiActivity : ComponentActivity() {
     }.getOrNull()
 
 
+    /**
+     * Sanitize a single attachment file name.
+     *
+     * "." and ".." are rejected explicitly rather than left to chance: the character whitelist
+     * permits dots, so ".." survived it, and only the duplicate-name loop in writeAttachment
+     * happened to rewrite it before anything was written. That is a property of an unrelated loop,
+     * not a rule — sanitizeAttachmentRel drops those segments outright, and so should this.
+     */
     private fun sanitizeAttachmentName(name: String): String =
         name.substringAfterLast('/').substringAfterLast('\\').replace(Regex("[^A-Za-z0-9._-]"), "_")
-            .ifBlank { "attachment" }
+            .let { if (it.isBlank() || it == "." || it == "..") "attachment" else it }
 
     /**
      * Sanitize a relative attachments path per segment, KEEPING subfolder structure; drops empty,

@@ -97,14 +97,9 @@ class CollabBridge(
         // (OAuthRedirectActivity) can bring THIS wiki window back to front — its paused WebView
         // then resumes and oauth.js's relay poll finalises the token.
         runCatching { java.io.File(activity.filesDir, "collab-oauth-origin").writeText(wikiDir) }
-        try {
-            activity.startActivity(
-                Intent(Intent.ACTION_VIEW, Uri.parse(url))
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
-        } catch (e: Exception) {
-            Log.w(TAG, "openExternal failed: ${e.message}")
-        }
+        // Scheme-gated: this is reachable from any wiki's JavaScript, and an unrestricted
+        // ACTION_VIEW is a deep link into any app on the device. See host/ExternalLinks.kt.
+        com.tiddlywiki.tiddlydesktop.host.ExternalLinks.open(activity, Uri.parse(url))
     }
 
     private fun deliverHttp(id: Int, err: String?, jsonBody: String?) {

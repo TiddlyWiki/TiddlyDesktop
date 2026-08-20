@@ -19,6 +19,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.tiddlywiki.tiddlydesktop.host.ExternalLinks
 import com.tiddlywiki.tiddlydesktop.host.MetaBridge
 import com.tiddlywiki.tiddlydesktop.host.SystemBarsBridge
 import com.tiddlywiki.tiddlydesktop.host.TDHost
@@ -338,10 +339,12 @@ class MainActivity : ComponentActivity(), TDHost.Callbacks {
         WikiLauncher.open(this, req.path, req.title, req.isFolder, req.backupsEnabled, req.backupCount, req.backupDir, req.sharePayload)
     }
 
+    // Scheme-gated like the wiki-facing ones. The WikiList is our own UI, so this is not the same
+    // exposure — but a plugin installed INTO the wiki list runs here, and there is no reason for
+    // this to be looser than the path a wiki takes. See host/ExternalLinks.kt.
     override fun openExternal(url: String) = runOnUiThread {
-        runCatching {
-            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        }
+        ExternalLinks.open(this, Uri.parse(url))
+        Unit
     }
 
     // ── picker result handling ───────────────────────────────────────────────────
