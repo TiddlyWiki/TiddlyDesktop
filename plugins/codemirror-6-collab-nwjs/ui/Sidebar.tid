@@ -15,13 +15,8 @@ caption: {{$:/plugins/tiddlywiki/codemirror-6-collab-nwjs/ui/SidebarCaption}}
 <$list filter="[[$:/temp/collab/status]has[lan-peers]!field:lan-peers[0]]" variable="_">
 <div class="tc-collab-statuspanel-line"><span class="tc-collab-lan-badge" title="Direct encrypted LAN connection active">LAN ⚡ <$text text={{{ [[$:/temp/collab/status]get[lan-peers]] }}}/></span></div>
 </$list>
-<$list filter="[[$:/temp/collab/status]field:status[connected]]" variable="_">
-<$list filter="[[$:/temp/collab/status]field:e2e[strong]]" variable="_">
+<$list filter="[[$:/temp/collab/status]field:status[connected]field:e2e[strong]]" variable="_">
 <div class="tc-collab-statuspanel-line"><span class="tc-collab-e2e-badge tc-collab-e2e-strong" title="End-to-end encrypted: the key is derived from your room token, which is never sent to the relay. Not even the relay can read your content.">🔒 end-to-end encrypted</span></div>
-</$list>
-<$list filter="[[$:/temp/collab/status]field:e2e[room-code]]" variable="_">
-<div class="tc-collab-statuspanel-line"><span class="tc-collab-e2e-badge tc-collab-e2e-weak" title="Encrypted with a key derived from the room code, which the relay also knows. Set a room token for true end-to-end privacy from the relay.">🔓 encrypted (room code) — set a room token for E2E</span></div>
-</$list>
 </$list>
 </div>
 

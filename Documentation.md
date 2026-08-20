@@ -6,13 +6,16 @@ Node.js runtime) and works with both **single-file** wikis and **TiddlyWiki fold
 wikis, supporting both TiddlyWiki 5 and the classic 2.x line.
 
 This build adds, on top of upstream TiddlyDesktop: **real-time collaborative editing**
-(end-to-end encrypted), per-wiki **plugin management**, single-file ⇄ folder **conversion**,
-new-wiki-folder creation, full **internationalisation** with a live language switcher, dark
-mode, **safe embedded media** (YouTube/Vimeo/maps), native fullscreen, page zoom, find-in-page,
-and cross-browser drag-and-drop import.
+(end-to-end encrypted), per-wiki **plugin, theme and language management**, single-file ⇄ folder
+**conversion**, new-wiki-folder creation, full **internationalisation** with a live language
+switcher, dark mode, **safe embedded media** (YouTube/Vimeo/maps), spellcheck, native fullscreen,
+page zoom, find-in-page, and cross-browser drag-and-drop import. It also **confines** the wikis it
+opens: each one runs in its own sandboxed origin with no Node.js access, and reaches files outside
+its own folder only where you have granted it — see [Security model](#25-security-model).
 
 - App version: **0.0.23**
 - Bundled runtime: **NW.js 0.114.0**
+- Bundled TiddlyWiki: **5.4.0**
 - Bundled collaboration plugin: `$:/plugins/tiddlywiki/codemirror-6-collab-nwjs`
 
 ---
@@ -43,7 +46,8 @@ and cross-browser drag-and-drop import.
 22. [Troubleshooting](#22-troubleshooting)
 23. [Building from source](#23-building-from-source)
 24. [Architecture and internals](#24-architecture-and-internals)
-25. [Licensing and credits](#25-licensing-and-credits)
+25. [Security model](#25-security-model)
+26. [Licensing and credits](#26-licensing-and-credits)
 
 ---
 
@@ -60,16 +64,29 @@ TiddlyWiki's Node.js server and can be served over HTTP.
 Settings, Help) is itself a TiddlyWiki, called the *backstage wiki*. It lives in a user-config
 folder under the app's data directory and is driven by the bundled `tiddlydesktop` plugin.
 
-**Wiki windows** — each opened wiki runs in its own native window. A single-file wiki renders
-inside a sandboxed `<iframe>` (no Node.js); a folder wiki renders directly in a Node-enabled
-window and runs its server.
+**Wiki windows** — each opened wiki runs in its own native window. **Both** kinds render inside a
+sandboxed `<iframe>` with **no Node.js access**, served over a private loopback HTTP origin that
+belongs to that window alone. A folder wiki's TiddlyWiki server runs as a separate, confined child
+process rather than inside the window. See [Security model](#25-security-model).
+
+**Trusted paths** — a wiki can always read files inside its own folder. Anything else on disk (an
+external attachment stored elsewhere, say) is readable only after you have granted that wiki access
+to it. Grants are listed and revocable under **Settings → Trusted paths**; see
+[External attachments](#14-external-attachments).
 
 ---
 
 ## 2. Installation
 
-Download the Windows, Linux, or macOS binary archive from the
-[releases page](https://github.com/TiddlyWiki/TiddlyDesktop/releases).
+Download from the [releases page](https://github.com/TiddlyWiki/TiddlyDesktop/releases). Every
+release carries all six desktop targets plus the Android APK:
+
+| Platform | File |
+|---|---|
+| Windows | `tiddlydesktop-win64-v*.zip`, `tiddlydesktop-win32-v*.zip` |
+| macOS | `tiddlydesktop-macapplesilicon-v*.zip` (Apple Silicon), `tiddlydesktop-mac64-v*.zip` (Intel) |
+| Linux | `tiddlydesktop-linux64-v*.zip` / `-linuxarm64-`, or the matching `.AppImage` |
+| Android | `tiddlydesktop-android-v*.apk` (see [`TiddlyDesktopAndroid/`](TiddlyDesktopAndroid/README.md)) |
 
 Unzip into a folder and run the `TiddlyDesktop` launcher:
 
@@ -77,13 +94,19 @@ Unzip into a folder and run the `TiddlyDesktop` launcher:
 - **Windows** — `TiddlyDesktop.exe`
 - **Linux** — `TiddlyDesktop`
 
+### `-dev` builds
+
+Each package also ships in a **`-dev`** variant. It is the same application built against the NW.js
+**SDK** runtime, which adds the Chromium developer tools (`F12`). Use the plain build unless you are
+debugging — see [§19](#19-developer-tools).
+
 > TiddlyDesktop will **not** work correctly from a Windows UNC network share (e.g.
 > `\\MY-SERVER\SHARE\MyFolder`). Map the share to a drive letter and run it from there.
 
 ### Linux AppImage
 
-Linux releases may also be provided as AppImages. They are compatible with glibc-based desktop
-distributions (Ubuntu, Fedora, Arch); they are **not** compatible with musl-based distributions
+Linux releases are also published as AppImages (for both x64 and arm64, plus their `-dev`
+variants). They are compatible with glibc-based desktop distributions (Ubuntu, Fedora, Arch); they are **not** compatible with musl-based distributions
 (Alpine) or server distributions. Your distribution must provide `fusermount3` (usually in a
 `fuse3` package). Make the AppImage executable first:
 
@@ -357,7 +380,7 @@ These apply to both single-file and folder wiki windows.
 
 - **Fullscreen** — `F11` (or TiddlyWiki's fullscreen page-control button) toggles the **native**
   window fullscreen. (HTML5-document fullscreen doesn't give true window fullscreen in NW.js and
-  is blocked inside the single-file iframe, so it's rerouted to the native window — the button's
+  is blocked inside the sandboxed wiki iframe, so it's rerouted to the native window — the button's
   handler replaces the wiki's own `tm-full-screen` handler.) If the window was **maximized** before
   going fullscreen, leaving fullscreen **re-maximizes** it (NW.js otherwise drops back to normal
   bounds). This is handled inside each wiki window's own process and detected by polling
@@ -373,6 +396,13 @@ These apply to both single-file and folder wiki windows.
   is meaningless in a chromeless desktop window. (A runtime stylesheet does this; your tiddlers
   are untouched.)
 - **Window position, size, and maximized state** are remembered per wiki and restored on open.
+- **Spellcheck** — Chromium's built-in **local** dictionary underlines likely misspellings as you
+  type. On by default; nothing you type is sent anywhere. Toggle it and pick the dictionary
+  language under **Settings → Spellcheck** (`$:/config/TiddlyDesktop/EnableSpellcheck`,
+  `$:/config/TiddlyDesktop/SpellcheckLanguage`). Changes take effect on a wiki's next load — no
+  restart. An opt-in **Google enhanced spellcheck**
+  (`$:/config/TiddlyDesktop/EnableGoogleSpellcheck`) is available separately; unlike the local
+  dictionary it sends text to Google, so it is off unless you turn it on.
 - **Cross-browser drag-and-drop import** — tiddlers dragged in from another browser (e.g.
   Firefox) keep their fields, working around Chromium's cross-application drag-data sanitiser.
 
@@ -385,19 +415,22 @@ OpenStreetMap map, …). TiddlyDesktop makes these play reliably and safely.
 
 ### How it works
 
-- An **allowlist** decides which embeds are routed through the loopback shim below (the `file://`
-  referer fix). Any other external iframe is left **exactly as the wiki wrote it** and loads as a
-  normal iframe — for example a plugin-library iframe pointing at `tiddlywiki.com`. The allowlist
-  governs only the shim routing, not whether an iframe may load.
-- Single-file wikis are `file://` pages, so an embedded player has an empty/`file://` Referer,
-  which YouTube rejects (error 153). To fix this, allowlisted media is routed through a tiny
-  **loopback HTTP shim**: a server bound to `127.0.0.1` on a random port serves a one-iframe
-  page, and the embed's `src` is rewritten to
-  `http://127.0.0.1:<port>/<token>/embed?src=<provider-url>`. Served from a real http origin, the
-  shim embeds the provider, which now plays. The wiki file itself stays `file://`, so saving,
-  collaboration, and external attachments are unaffected.
+- An **allowlist** decides which embeds TiddlyDesktop will touch at all. Any other external
+  iframe is left **exactly as the wiki wrote it** — src and attributes untouched — and loads as a
+  normal browser iframe, for example a plugin-library iframe pointing at `tiddlywiki.com`. The
+  allowlist governs only the handling below, **not** whether an iframe may load.
+- **Wiki windows** (both kinds) are served over a real http origin, so an embedded player already
+  gets a usable `Referer` and simply plays. The iframe is hardened and left pointing straight at
+  the provider. The allowlist still applies, so merely rendering a tiddler cannot beacon to an
+  arbitrary server.
+- **The remaining non-http windows** — the backstage window, and a folder wiki opened through the
+  [unsandboxed escape hatch](#the-unsandboxed-escape-hatch) — render on a `chrome-extension://`
+  origin, which players reject (YouTube error 153). There, an allowlisted embed's `src` is
+  rewritten to `http://127.0.0.1:<port>/<token>/embed?src=<provider-url>` and served by a tiny
+  **loopback shim** that embeds the provider in turn, so it sees an http Referer and plays.
 - The shim is **loopback-only**, requires an unguessable per-process token in the path, embeds
-  **only allowlisted hosts**, serves no filesystem content, and proxies nothing.
+  **only allowlisted hosts**, serves no filesystem content, and proxies nothing. If it is needed
+  and cannot start, the embed is hardened in place instead (no playback, but nothing breaks).
 - The player's own **fullscreen** button works (fullscreen permission is delegated through the
   frame chain). The direct provider load is cancelled the instant an embed appears, so the 153
   error never flickers.
@@ -439,16 +472,42 @@ defaults.
 External attachments let a wiki reference a media file **on disk** (via a tiddler's
 `_canonical_uri` field) instead of embedding the bytes inline — keeping the wiki small.
 
-- Enabled by the **External Attachments** plugin (`$:/plugins/tiddlywiki/external-attachments`)
-  and the config tiddler **`$:/config/ExternalAttachments/Enable`** (`yes`).
+- Enabled by the **External Attachments** plugin (`$:/plugins/tiddlywiki/external-attachments`,
+  bundled) and the config tiddler **`$:/config/ExternalAttachments/Enable`** (`yes`).
 - **Single-file wikis** — when you drop a binary file in, it is referenced relative to the wiki
   for files under the wiki's directory, or by absolute path otherwise. Controlled by
   `$:/config/ExternalAttachments/UseAbsoluteForDescendents` and
   `…/UseAbsoluteForNonDescendents`.
 - **Folder wikis** — TiddlyDesktop adds a hook so dropped binaries are referenced by an absolute
-  `file://` `_canonical_uri` (the stock plugin only handles single-file `file://` wikis).
-- Because the chromium file-access flags are enabled, these `file://` resources load in the wiki
-  window.
+  `_canonical_uri` (the stock plugin only handles single-file wikis).
+
+### Trusted paths
+
+A wiki reads files **inside its own folder** freely. An attachment stored anywhere else is served
+only once you have granted *that wiki* access to *that path* — otherwise the media simply does not
+load. This is deliberate: a wiki is untrusted code, and without the grant a hostile one could read
+any file you can.
+
+You create a grant in one of two ways, and both require a dialog that **TiddlyDesktop** opened
+(script cannot fill in a file picker, which is what makes the consent unforgeable):
+
+- **By adding the file** — dropping a file in, or picking it in a save-as dialog, trusts exactly
+  that file for that wiki.
+- **By answering the panel** — an attachment whose location isn't trusted shows a small panel on
+  the tiddler naming the exact path, with a button that opens a picker. What you select there is
+  what gets granted; the picture appears as soon as you grant it, without reloading the wiki.
+
+Grants are **per wiki** and are of two kinds: **file** (exactly that file) or **dir** (that folder
+and everything readable under it). Prefer *file* — a folder grant hands the wiki the whole subtree.
+
+All grants are listed under **Settings → Trusted paths**, grouped by wiki, each with a **revoke**
+button; revoking takes effect the next time the wiki asks for the file. They are stored in the
+backstage wiki (`$:/TiddlyDesktop/Config/trusted-paths/…`), not in the wiki itself — a wiki can
+write its own tiddlers, so a wiki-held grant would be a wiki granting itself access. Moving a wiki
+loses its grants; copying one does not inherit them.
+
+Attachments outside the wiki folder are served from a **separate origin** to the wiki document —
+see [Security model](#25-security-model) for why.
 
 ---
 
@@ -472,6 +531,23 @@ folder is opened.
 To serve a *single-file* wiki on the LAN, convert it to a folder wiki first, or use
 [collaboration](#17-real-time-collaboration) for multi-device editing.
 
+A folder wiki's TiddlyWiki server runs as a **confined child process**, not inside the window: it
+is started under Node's permission model, and may write only to that wiki's own folder (plus a
+temporary directory). The wiki document itself renders sandboxed, with no Node.js access, exactly
+like a single-file wiki.
+
+### The unsandboxed escape hatch
+
+Some folder wikis genuinely need Node — a wiki that shells out, or loads its own node modules.
+A folder wiki's **Advanced** panel therefore has a **Run this wiki without the sandbox** checkbox.
+
+> ⚠️ With it ticked, **that wiki's own JavaScript runs with full access to your computer** — it can
+> read, change and delete any file you can, and the trusted-path model no longer applies to it.
+> Only enable it for a wiki you wrote or completely trust.
+
+The flag is stored in the backstage config (`$:/TiddlyDesktop/Config/unsandboxed/<entry>`), never
+inside the wiki, so a wiki cannot turn it on for itself.
+
 ---
 
 ## 16. Backups
@@ -494,9 +570,12 @@ encrypted; the relay server only ever sees ciphertext.**
 ### 17.1 Requirements
 
 - **CodeMirror 6 editor** and **CodeMirror 6 edit-text (Simple Engine)** plugins — the
-  collaboration plugin integrates with CM6 for character-level live editing. (Available e.g. at
-  https://xyvir.github.io/CM6_Demosite/.)
-- **External Attachments** plugin — to save received file attachments to disk.
+  collaboration plugin integrates with CM6 for character-level live editing. These are **not
+  bundled** with TiddlyDesktop; get them (e.g. from https://xyvir.github.io/CM6_Demosite/) and put
+  them on `TIDDLYWIKI_PLUGIN_PATH` so the Plugin Chooser can install them into each participating
+  wiki — see [§8](#extending-the-library--your-own-plugins-themes-and-languages).
+- **External Attachments** plugin — to save received file attachments to disk. This one *is*
+  bundled, so the Plugin Chooser lists it out of the box.
 - **A relay server** — peers discover each other through a small WebSocket relay. Self-host it
   (the relay is a separate Rust/axum project), or use the one available **for testing** at
   `wss://relay.tiddlydesktop-rs.com:8443`.
@@ -511,24 +590,30 @@ encrypted; the relay server only ever sees ciphertext.**
    after you authorise, its page returns you to the app via the `tiddlydesktop://` deep link
    (focusing the window you started from). Sign-in is finalised by the relay result-poll either
    way, so it still works if the OS handler isn't registered (the page also offers a manual link).
-4. Set a **Room code** (a shared name) and, for true privacy, a **Room token** (a shared secret
-   that is *never* sent to the relay).
-5. Click **Connect**. The status bar (bottom-right) shows the connection state, a `🔒 end-to-end
-   encrypted` badge when a room token is set, and `LAN ⚡` when a direct LAN link is active.
+4. Set a **Room code** (a shared name) **and a Room token** (a shared secret that is *never* sent
+   to the relay). Both are required — see [§17.3](#173-rooms-tokens-and-encryption). The easy path
+   is to skip straight to **Invite**, which mints a strong token for you.
+5. Click **Connect**. The status bar (bottom-right) shows the connection state, the `🔒`
+   end-to-end badge, and `LAN ⚡` when a direct LAN link is active.
 
 Connection is never automatic — it requires an explicit Connect (or applying an invite).
 
 ### 17.3 Rooms, tokens, and encryption
 
 Every peer-to-peer message routed through the relay is encrypted client-side with **AES-256-GCM
-(WebCrypto)** before it leaves the process. The key is derived with **HKDF-SHA256**:
+(WebCrypto)** before it leaves the process, with the key derived from the **room token** using
+**HKDF-SHA256**. The token is never transmitted to the relay, so the relay cannot derive the key
+and content stays confidential even against a malicious relay operator. This is shown as `🔒`.
 
-- **Room token set → strong E2E.** The token is never transmitted to the relay, so the relay
-  cannot derive the key. Content is confidential even against a malicious relay operator. Shown
-  as `🔒 end-to-end encrypted`.
-- **No token → still always encrypted**, with the key derived from the room code. This protects
-  against eavesdroppers and other peers, but the relay (which knows the room code) could derive
-  this key. Shown honestly as `🔓 encrypted (room code)`.
+**A room token is required.** Connecting without one is refused, and the status bar says why. The
+reason is that the relay's room id is derived from the room code, so the relay necessarily knows
+the code: a key derived from the code alone would be a key the relay can compute — it could read
+every message, and could compute the LAN session key too. "End-to-end" would then hold against a
+network eavesdropper but not against the relay operator, which is not a guarantee worth offering.
+
+In practice this costs nothing: generating an **invite** mints a strong token automatically, so
+the normal onboarding path already satisfies it. What it blocks is a room configured by hand with
+a code alone.
 
 Hardening: anti-downgrade (cleartext peer messages are dropped once connected); the client
 refuses to connect if WebCrypto is unavailable (never falls back to plaintext). Pairwise ECDH
@@ -541,7 +626,8 @@ Click **Invite** to copy a `collab1:`-prefixed code bundling the relay URL + roo
 token. Recipients paste it into **Join** (or paste a bare room code) to configure everything and
 connect. **Secure by default**: if no room token is set when an invite is generated, a 256-bit
 random one is minted automatically and carried *in the invite* (out of band, never via the
-relay) — so invitees get true E2E with no extra steps.
+relay) — so invitees get true E2E with no extra steps, and this is the intended way to set up a
+room.
 
 ### 17.5 Transport and reliability
 
@@ -550,8 +636,10 @@ Two delivery channels run simultaneously with message-id de-duplication:
 - **Relay channel** — `wss://` to the configured relay; auto-reconnects with backoff and on
   config change.
 - **LAN channel** — direct, encrypted `ws://` between peers on the same network
-  (ChaCha20-Poly1305, key via X25519 ECDH → HKDF-SHA256, with the room key folded in so a
-  malicious relay can't MITM). Shown as **LAN ⚡**; the relay is the fallback.
+  (ChaCha20-Poly1305, key via X25519 ECDH → HKDF-SHA256, with the token-derived room key folded
+  in, which is what stops a malicious relay substituting the announced public keys and reading
+  the link). There is no bare-ECDH fallback: without a token-derived key the LAN session key is
+  not derived at all. Shown as **LAN ⚡**; the relay is the fallback.
 
 Reliability features: a liveness watchdog (catches half-open sockets), sleep/resume recovery, an
 `online` handler, a ghost-member reaper, connect/reconnect catch-up, an expired-token-401 that
@@ -619,7 +707,8 @@ from the chat sound, so you can tell the two apart.
 
 ### 17.10 Security model
 
-Folder wikis run with Node.js, so sharing is treated as a remote-code-execution boundary:
+Whatever a peer sends is untrusted input, so sharing is treated as a remote-code-execution
+boundary:
 
 - A safety guard refuses **executable content** (JavaScript, raw-markup tags, plugins),
   protected titles, the collaboration/External-Attachments config, and disabled-plugin payloads
@@ -669,8 +758,10 @@ This is also the way to start against a clean configuration if TiddlyDesktop is 
 
 ## 19. Developer tools
 
-Press **F12** to open the Chromium developer tools for the current window. (The released builds
-use the NW.js SDK runtime, which includes DevTools.)
+Press **F12** to open the Chromium developer tools for the current window.
+
+DevTools ship only in the **`-dev`** packages, which are built against the NW.js SDK runtime (see
+[§2](#-dev-builds)). In a plain build the key does nothing.
 
 ---
 
@@ -679,7 +770,7 @@ use the NW.js SDK runtime, which includes DevTools.)
 | Shortcut | Action | Where |
 |---|---|---|
 | `F11` | Toggle native fullscreen | Any wiki window |
-| `F12` | Open developer tools | Any window |
+| `F12` | Open developer tools | Any window (`-dev` builds only) |
 | `Ctrl`/`Cmd` `F` | Find in page | Any wiki window (defers to focused editor) |
 | `Ctrl`/`Cmd` `+` / `-` / `0` | Zoom in / out / reset | Any wiki window |
 | `Ctrl`/`Cmd` + mouse wheel | Zoom | Any wiki window |
@@ -695,7 +786,10 @@ Tiddlers you can create/edit to configure behaviour. Collaboration settings are 
 
 | Tiddler | Purpose | Lives in |
 |---|---|---|
-| `$:/config/TiddlyDesktop/EmbedHosts` | Extra hosts routed through the media shim (one per line) | each wiki |
+| `$:/config/TiddlyDesktop/EmbedHosts` | Extra allowlisted embed hosts (one per line) | each wiki |
+| `$:/config/TiddlyDesktop/EnableSpellcheck` | Local spellcheck on/off (`yes`/`no`) | backstage |
+| `$:/config/TiddlyDesktop/SpellcheckLanguage` | Spellcheck dictionary (e.g. `en-GB`) | backstage |
+| `$:/config/TiddlyDesktop/EnableGoogleSpellcheck` | Opt in to Google's enhanced spellcheck (sends text to Google) | backstage |
 | `$:/config/ExternalAttachments/Enable` | Enable external attachments (`yes`) | each wiki |
 | `$:/config/ExternalAttachments/UseAbsoluteForDescendents` | Use absolute path for files under the wiki dir | each wiki |
 | `$:/config/ExternalAttachments/UseAbsoluteForNonDescendents` | Use absolute path for files elsewhere | each wiki |
@@ -703,8 +797,14 @@ Tiddlers you can create/edit to configure behaviour. Collaboration settings are 
 | `$:/language` | Active language (wiki-list UI) | backstage |
 | `$:/config/AnimationDuration` | TiddlyWiki animation duration (ms) | each wiki |
 
-Per-wiki TiddlyDesktop state also lives under `$:/TiddlyDesktop/Config/*` (title, favicon,
-wiki-tags, host/port, disable-backups, classic flag) in the backstage wiki.
+Per-wiki TiddlyDesktop state also lives under `$:/TiddlyDesktop/Config/*` in the backstage wiki
+(title, favicon, wiki-tags, host/port, disable-backups, classic flag). Two of those are security
+state and are kept there — out of the wiki's own reach — deliberately:
+
+| Tiddler | Purpose |
+|---|---|
+| `$:/TiddlyDesktop/Config/trusted-paths/<wiki>/<hash>` | One granted path per tiddler; fields `trust-path` and `trust-kind` (`file`/`dir`). See [§14](#trusted-paths) |
+| `$:/TiddlyDesktop/Config/unsandboxed/<entry>` | Run this folder wiki with full Node access. See [§15](#the-unsandboxed-escape-hatch) |
 
 ### Environment variables
 
@@ -781,8 +881,23 @@ Building uses Node.js (CI builds with Node.js 24).
      `.desktop` `Exec` on Linux).
    - **Ad-hoc code-signs** the macOS bundles so they launch on Apple Silicon (free; not
      Gatekeeper/notarization). Skipped where `codesign` is unavailable.
-3. Run the build for your platform from `output/` (e.g. `output/linux64/`, `output/win64/`,
-   `output/macapplesilicon/`, …).
+3. **`package.sh`** — zips each built platform in `output/` and builds the Linux **AppImages**.
+   Run it after `bld.sh`; the CI runs both.
+4. Run the build for your platform from `output/` (e.g. `output/linux64/`, `output/win64/`,
+   `output/macapplesilicon/`, …). `run.sh` is a shortcut that runs `bld.sh` and launches the macOS
+   Apple-Silicon build with `--debug`.
+
+Each platform is built **twice**: once against the plain NW.js runtime (into e.g. `output/linux64/`)
+and once against the SDK runtime (into `output/linux64-dev/`), which is where the `-dev` packages
+come from.
+
+### Releasing
+
+CI (`.github/workflows/ci.yml`) builds the six desktop targets plus the Android APK on Node 24.
+Pushing a `v*.*.*` tag creates a **draft release** with all packages attached; a manual run from the
+Actions tab instead publishes a rolling **`preview`** pre-release for testers, with the commit's
+short SHA in each filename. To cut a release: bump `version` in `package.json`, `npm install --save`,
+commit, push, tag, push the tag, then test the draft's artefacts and publish it.
 
 ### Code signing for distribution
 
@@ -802,20 +917,77 @@ The signing/notarization steps would slot into `bld.sh` / the CI workflow, gated
 - **Backstage wiki** — the wiki list / Settings / Help UI is a TiddlyWiki folder wiki created
   under the app data dir (`user-config-tiddlywiki`), driven by the `tiddlydesktop` plugin. The
   heavy boot is deferred behind a loading splash so a window appears immediately.
-- **Single-file wikis** render inside an `nwdisable` iframe (no Node.js). TiddlyDesktop injects
-  parent-owned **bridges** so plugins inside that sandbox can still do Node-backed work, each
-  draining a command queue from the parent's event loop:
-  - **HTTP** bridge (Node `http`/`https`), **WebSocket** bridge (the `ws` module), **file** read/
-    write bridge (collab asset transfer), **LAN** bridge (UDP discovery + encrypted peer links),
-    and `_nwjsOpenExternal` (open URLs in the system browser, used for OAuth).
-- **Folder wikis** render in a Node-enabled window and use Node directly (no bridge needed).
+- **Wiki windows** — each window opens two loopback servers on OS-assigned ports: a **wiki
+  origin** (the parent shell, plus the wiki document and its own directory) and a separate
+  **attachment origin** for granted files outside the wiki folder. Both require a per-session
+  token. The wiki itself renders in an `nwdisable nwfaketop` iframe with **no Node.js** — this
+  applies to single-file *and* folder wikis. See [§25](#25-security-model).
+- **Bridges** — because the wiki has no Node, TiddlyDesktop injects parent-owned bridges so
+  plugins inside the sandbox can still do Node-backed work, each draining a command queue from
+  the parent's event loop: an **HTTP** bridge (Node `http`/`https`), a **WebSocket** bridge (the
+  `ws` module), a **file** read/write bridge for collab asset transfer (confined to the wiki's
+  own directory), a **LAN** bridge (UDP discovery + encrypted peer links), and
+  `_nwjsOpenExternal` (open URLs in the system browser, used for OAuth). Both wiki kinds use
+  them.
+- **Folder wiki servers** run as a **confined child process** — our own binary re-executed as
+  plain Node (`NWJS_START_AS_NODE=1`) under `--permission`, with writes scoped to the wiki folder.
 - **Embed shim** — a per-process loopback HTTP server (`127.0.0.1`, random port, unguessable
-  token) serves the one-iframe media page (see [§13](#13-embedded-media-videos-maps-)).
+  token) serves the one-iframe media page for the windows that still need it (see
+  [§13](#13-embedded-media-videos-maps-)).
 - **Conversion** runs an isolated, in-process TiddlyWiki boot (not a child process).
 
 ---
 
-## 25. Licensing and credits
+## 25. Security model
+
+A wiki is untrusted code: a `.html` file you were sent can contain arbitrary JavaScript. What
+follows is the user-facing summary; [`docs/security-model.md`](docs/security-model.md) has the full
+version, including which properties were **measured** rather than assumed, and
+[`docs/security-audit-2026-08.md`](docs/security-audit-2026-08.md) is the written audit of the
+wiki-reachable surface.
+
+**Wikis do not get Node.js.** Both kinds render in a sandboxed iframe with Node stripped, so wiki
+script cannot `require("child_process")`. Node access is scoped to TiddlyDesktop's own shell path,
+never to the wiki. The one exception is the [unsandboxed escape hatch](#the-unsandboxed-escape-hatch),
+which exists precisely to be the exception and is off unless you tick it.
+
+**Every wiki window is its own origin.** Wikis are served over loopback HTTP on OS-assigned,
+per-window ports, so one wiki cannot reach another's cookies or storage — something the old
+`file://` architecture never offered. Both servers require a per-session token, because on a shared
+machine any local process can reach a loopback port.
+
+**Files are reached by grant, not by default.** A wiki reads its own folder; anything else needs a
+trusted-path grant you made in a dialog TiddlyDesktop opened. Grants live in the backstage wiki, out
+of the wiki's reach, and are revocable under **Settings → Trusted paths** — see
+[§14](#trusted-paths).
+
+**Attachments get a second origin.** Granted files outside the wiki folder are served from a
+*different* port, so a canvas drawn from one is tainted and `getImageData()` / `toDataURL()` throw.
+That stops script laundering the bytes of a file you granted for display into data it can send.
+
+**A folder wiki's server is a child process** started under Node's permission model, able to write
+only to that wiki's folder.
+
+**Collaboration** treats peer input as remote code: executable tiddlers are always refused, system
+tiddlers need opt-in, `_canonical_uri` is stripped in both directions, and a room token is required
+so the relay cannot read your traffic — see [§17.10](#1710-security-model).
+
+### Known limits
+
+Accepted trade-offs, listed so they are not surprises:
+
+- **A folder grant is broad.** Trusting `~/Documents` for one attachment exposes everything
+  readable underneath it — prefer file grants.
+- **Trust is per wiki, not per tiddler.** Any script in a wiki inherits every grant that wiki
+  holds, including one earned by an attachment added long ago.
+- **A wiki can probe** which paths exist inside a folder it has been granted.
+- **The unsandboxed flag is total** — a wiki running with it ignores all of the above.
+- **Local processes can reach the loopback ports**; session tokens mitigate this rather than
+  eliminate it.
+
+---
+
+## 26. Licensing and credits
 
 TiddlyDesktop is licensed under the **BSD 3-Clause** license (see `LICENSE`), which also
 reproduces the third-party notices for TiddlyWiki5 (BSD), NW.js (MIT, with its bundled

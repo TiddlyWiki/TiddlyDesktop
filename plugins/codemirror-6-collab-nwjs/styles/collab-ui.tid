@@ -61,12 +61,6 @@ tags: $:/tags/Stylesheet
   color: <<colour foreground>>;
 }
 
-.tc-collab-e2e-weak {
-  background: rgba(255, 193, 7, 0.2);
-  border: 1px solid rgba(255, 193, 7, 0.55);
-  color: <<colour foreground>>;
-}
-
 .tc-collab-no-peers {
   color: <<colour muted-foreground>>;
   font-style: italic;
@@ -1207,10 +1201,6 @@ tags: $:/tags/Stylesheet
 
 .tc-collab-statusbar .tc-collab-e2e-strong {
   background: #2e7d32;
-}
-
-.tc-collab-statusbar .tc-collab-e2e-weak {
-  background: #c77700;
 }
 
 /* -- Chat panel (bottom-right, above status bar) ---------------------------- */
