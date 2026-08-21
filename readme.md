@@ -124,7 +124,8 @@ pick a language, or set a tag's colour — all persisted across restarts.
 * **Fullscreen** `F11` · **Zoom** `Ctrl`/`Cmd` `+` `-` `0` or `Ctrl`/`Cmd` + wheel ·
   **Find in page** `Ctrl`/`Cmd` `F` (yields to a focused CodeMirror editor)
 * **Spellcheck** — Chromium's local dictionary, on by default; pick the language under
-  Settings → Spellcheck. Nothing you type leaves the machine.
+  Settings → Spellcheck (a language change applies the next time you start ~TiddlyDesktop).
+  Nothing you type leaves the machine.
 * Window position and size are remembered per wiki.
 
 ### Your own plugin, theme and language library

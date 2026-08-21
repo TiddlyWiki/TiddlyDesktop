@@ -396,13 +396,16 @@ These apply to both single-file and folder wiki windows.
   is meaningless in a chromeless desktop window. (A runtime stylesheet does this; your tiddlers
   are untouched.)
 - **Window position, size, and maximized state** are remembered per wiki and restored on open.
-- **Spellcheck** — Chromium's built-in **local** dictionary underlines likely misspellings as you
-  type. On by default; nothing you type is sent anywhere. Toggle it and pick the dictionary
-  language under **Settings → Spellcheck** (`$:/config/TiddlyDesktop/EnableSpellcheck`,
-  `$:/config/TiddlyDesktop/SpellcheckLanguage`). Changes take effect on a wiki's next load — no
-  restart. An opt-in **Google enhanced spellcheck**
-  (`$:/config/TiddlyDesktop/EnableGoogleSpellcheck`) is available separately; unlike the local
-  dictionary it sends text to Google, so it is off unless you turn it on.
+- **Spellcheck** (desktop only) — Chromium's built-in **local** dictionary underlines likely
+  misspellings as you type. On by default; nothing you type is sent anywhere. Toggle it and pick the
+  dictionary language under **Settings → Spellcheck** (`$:/config/TiddlyDesktop/EnableSpellcheck`,
+  `$:/config/TiddlyDesktop/SpellcheckLanguage`). The toggle takes effect on a wiki's next load; the
+  **language needs a restart**, because Chromium picks the dictionary from its browser profile, which
+  it reads at startup and rewrites underneath the app while it runs. An opt-in **Google enhanced
+  spellcheck** (`$:/config/TiddlyDesktop/EnableGoogleSpellcheck`, restart likewise) is available
+  separately; unlike the local dictionary it sends text to Google, so it is off unless you turn it on.
+  Android has no Chromium profile to configure — spelling there comes from the keyboard, and the
+  settings panel says so instead of offering switches that do nothing.
 - **Cross-browser drag-and-drop import** — tiddlers dragged in from another browser (e.g.
   Firefox) keep their fields, working around Chromium's cross-application drag-data sanitiser.
 
@@ -788,7 +791,7 @@ Tiddlers you can create/edit to configure behaviour. Collaboration settings are 
 |---|---|---|
 | `$:/config/TiddlyDesktop/EmbedHosts` | Extra allowlisted embed hosts (one per line) | each wiki |
 | `$:/config/TiddlyDesktop/EnableSpellcheck` | Local spellcheck on/off (`yes`/`no`) | backstage |
-| `$:/config/TiddlyDesktop/SpellcheckLanguage` | Spellcheck dictionary (e.g. `en-GB`) | backstage |
+| `$:/config/TiddlyDesktop/SpellcheckLanguage` | Spellcheck dictionary (e.g. `en-GB`); applies on restart | backstage |
 | `$:/config/TiddlyDesktop/EnableGoogleSpellcheck` | Opt in to Google's enhanced spellcheck (sends text to Google) | backstage |
 | `$:/config/ExternalAttachments/Enable` | Enable external attachments (`yes`) | each wiki |
 | `$:/config/ExternalAttachments/UseAbsoluteForDescendents` | Use absolute path for files under the wiki dir | each wiki |

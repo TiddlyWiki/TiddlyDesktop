@@ -1,0 +1,14 @@
+title: $:/TiddlyDesktop/Settings/Spellcheck
+caption: Spellcheck
+tags: $:/TiddlyDesktop/Settings
+
+Spellcheck settings aren't available on Android. The desktop (NW.js) build drives Chromium's
+own spellchecker through its browser profile — the local on/off switch, the dictionary language
+and the opt-in for Google's remote spelling service all live there. This app uses the system
+Android ~WebView, which has no such profile and leaves spelling to your keyboard, so none of
+those settings would do anything here. This section is intentionally disabled.
+
+Spelling suggestions, and the language they use, come from your ''keyboard'' (input method)
+instead: change them in Android's own settings, where they apply to every app. There is no
+remote-spellcheck opt-in to make here either — ~TiddlyDesktop sends nothing you type anywhere
+on Android.
