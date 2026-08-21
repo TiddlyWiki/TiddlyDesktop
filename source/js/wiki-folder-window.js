@@ -132,7 +132,6 @@ WikiFolderWindow.prototype.openUnsandboxed = function() {
 			+ "&roottiddler=" + encodeURIComponent(lan.rootTiddler) + "&anonusername=" + encodeURIComponent(lan.anonUsername)
 			+ "&gzip=" + encodeURIComponent(lan.gzip)
 			+ "&spellcheck=" + encodeURIComponent(spellcheck.isEnabled($tw) ? "yes" : "no")
-			+ "&spellcheck-lang=" + encodeURIComponent(spellcheck.getLanguage($tw))
 			+ "&stateFile=" + encodeURIComponent(this.stateFile),this.applyGeometryToOpenOptions({
 		id: hash.simpleHash(this.getIdentifier()),
 		show: true,
@@ -259,6 +258,12 @@ WikiFolderWindow.prototype.onloadiframe = function() {
 	this.applySpellcheck();
 	var doc = this.iframe.contentDocument,
 		win = this.iframe.contentWindow;
+	// TiddlyWiki's text editor puts its <textarea> in an iframe of its own, created when the user opens
+	// an editor — long after this load, and inheriting nothing from the wiki document. Stamp each one
+	// as it appears; the teardown list ends the watch on reload or close.
+	this._iframeTeardowns.push(spellcheck.observeFrames(doc,function() {
+		return spellcheck.isEnabled($tw);
+	}));
 	try { $tw.desktop.utils.links.trapLinks(doc); } catch(e) { console.error("[TiddlyDesktop] trapLinks failed:",e); }
 	try {
 		$tw.desktop.utils.dragdrop.installImportInterceptor(doc,win,{
@@ -347,11 +352,12 @@ WikiFolderWindow.prototype.onloadiframe = function() {
 	}
 };
 
-// Apply the local-spellcheck setting to the wiki's document. Safe to call any time.
+// Apply the local-spellcheck setting to the wiki's document, and to any editor frames already open
+// inside it. Safe to call any time.
 WikiFolderWindow.prototype.applySpellcheck = function() {
 	try {
 		spellcheck.applyToDocument(this.iframe && this.iframe.contentDocument,
-			spellcheck.isEnabled($tw),spellcheck.getLanguage($tw));
+			spellcheck.isEnabled($tw));
 	} catch(e) {}
 };
 

@@ -48,13 +48,13 @@ var queryObject = $tw.desktop.utils.dom.decodeQueryString(
 	containerWindow.window.document.location,
 );
 
-// Apply the local-spellcheck toggle and language passed from the backstage. The Google spelling service
-// is already forced off profile-wide in node-main; this only gates the visible red squiggles and the
-// spellcheck dictionary language for this folder wiki.
+// Apply the local-spellcheck toggle passed from the backstage. The Google spelling service is already
+// forced off profile-wide in node-main; this only gates the visible red squiggles for this container's
+// own document (the wiki itself is stamped from the backstage side, in wiki-folder-window.js). The
+// spellcheck LANGUAGE is not passed at all: only the profile Preferences select a dictionary.
 try {
 	var _sc = require("../js/utils/spellcheck.js");
-	_sc.applyToDocument(document, queryObject.spellcheck !== "no",
-		queryObject["spellcheck-lang"] || "en-GB");
+	_sc.applyToDocument(document, queryObject.spellcheck !== "no");
 } catch (e) {}
 
 // First part of boot process

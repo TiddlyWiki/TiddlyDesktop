@@ -94,12 +94,15 @@ function quitApp() {
 	// AFTER we and Chromium have fully exited — Chromium re-flushes them while running, so an in-process
 	// write loses the race (see utils/spellcheck.js and js/spellcheck-writer.js). Spawn a detached
 	// helper that waits for us to die, then writes. Only when there is something to enforce, so
-	// ordinary quits stay cheap.
+	// ordinary quits stay cheap — and "something to enforce" means the file on disk disagrees with the
+	// settings, NOT "the settings are non-default": going back from de-DE to the default language
+	// leaves "de" in Preferences, and this writer is the only thing that can undo it.
 	try {
 		var googleAllowed = $tw.wiki.getTiddlerText(spellcheck.GOOGLE_CONFIG_TITLE, "no") === "yes";
 		var spellcheckLang = spellcheck.getLanguage($tw);
-		if(googleAllowed || spellcheckLang !== "en-GB") {
-			spellcheck.spawnPrefWriter(gui.App.dataPath || "", googleAllowed, spellcheckLang);
+		var spellcheckProfile = gui.App.dataPath || "";
+		if(!spellcheck.prefsAlreadyMatch(spellcheckProfile, googleAllowed, spellcheckLang)) {
+			spellcheck.spawnPrefWriter(spellcheckProfile, googleAllowed, spellcheckLang);
 		}
 	} catch(e) {}
 	// Backstop: if anything would otherwise keep the process alive, terminate it outright. This runs
@@ -339,22 +342,26 @@ setTimeout(function() {
 				w.tryRender();
 			}
 		});
-		// Local-spellcheck toggle + language: apply to the backstage window now, and re-apply to it
-		// plus every open single-file wiki whenever either setting changes — no app restart. (Folder
-		// wikis run in their own process and pick up the change on their next open/reload.)
+		// Local-spellcheck toggle: apply to the backstage window now, and re-apply to it plus every
+		// open single-file wiki whenever the setting changes — no app restart. (Folder wikis run in
+		// their own process and pick up the change on their next open/reload. The LANGUAGE is not
+		// applied here at all: only the profile Preferences select a dictionary, so it lands on the
+		// next launch via the marker file and the quit-time writer.)
 		function applySpellcheckToAll() {
-			var lang = spellcheck.getLanguage($tw);
-			var enabled = spellcheck.isEnabled($tw);
-			spellcheck.applyToDocument(document, enabled, lang);
+			spellcheck.applyToDocument(document, spellcheck.isEnabled($tw));
 			$tw.desktop.windowList.windows.forEach(function(w) {
 				try { if(typeof w.applySpellcheck === "function") { w.applySpellcheck(); } } catch(e) {}
 			});
 		}
 		applySpellcheckToAll();
+		// The backstage's own editors are framed too — their <textarea> lives in an iframe of its own,
+		// which inherits nothing from this document. Stamp each one as it is created. No teardown: this
+		// document lives as long as the app does.
+		spellcheck.observeFrames(document, function() { return spellcheck.isEnabled($tw); });
 		// Google remote-spellcheck opt-in + language: mirror the config tiddlers into on-disk marker
-		// files that node-main reads before Chromium boots. The Google opt-in takes effect on the NEXT
-		// launch (the preference is read at profile load); the language marker is also written to
-		// Preferences immediately so the current session picks it up too.
+		// files that node-main reads before Chromium boots. Both take effect on the NEXT launch — the
+		// preferences they feed are read at profile load, and the running Chromium re-flushes anything
+		// written underneath it (quitApp's pref-writer is what makes the values stick).
 		function syncGoogleSpellcheckMarker() {
 			try {
 				spellcheck.setGoogleServiceAllowed(gui.App.dataPath,
@@ -369,8 +376,10 @@ setTimeout(function() {
 		syncGoogleSpellcheckMarker();
 		syncLanguageMarker();
 		$tw.wiki.addEventListener("change", function(changes) {
-			if(changes[spellcheck.CONFIG_TITLE] || changes[spellcheck.LANG_CONFIG_TITLE]) {
+			if(changes[spellcheck.CONFIG_TITLE]) {
 				applySpellcheckToAll();
+			}
+			if(changes[spellcheck.LANG_CONFIG_TITLE]) {
 				syncLanguageMarker();
 			}
 			if(changes[spellcheck.GOOGLE_CONFIG_TITLE]) {

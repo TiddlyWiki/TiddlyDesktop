@@ -10,7 +10,7 @@ Takes effect on a wiki's next (re)load — no need to restart ~TiddlyDesktop.
 
 ! Spellcheck language
 
-Choose the language used for spellchecking. This sets the document language so Chromium uses the correct dictionary.
+Choose the dictionary used for spellchecking.
 
 <$select tiddler="$:/config/TiddlyDesktop/SpellcheckLanguage" default="en-GB">
 <option value="en-GB">English (British)</option>
@@ -50,7 +50,9 @@ Choose the language used for spellchecking. This sets the document language so C
 <option value="zh-TW">繁體中文 (台灣)</option>
 </$select>
 
-Takes effect on a wiki's next (re)load. Whether a language can be spellchecked depends on your operating system, so not every choice will work; the Diagnostics panel below shows whether a dictionary is actually active for your choice.
+<div class="tc-message-box">This takes effect only after you ''restart ~TiddlyDesktop''. Chromium picks the dictionary from its own profile settings, which it reads once at startup and rewrites underneath us while it runs — so the choice is stored now and applied on the next launch, and reloading a wiki is not enough.</div>
+
+Whether a language can be spellchecked at all depends on your operating system, so not every choice will work; the Diagnostics panel below shows whether a dictionary is actually active for your choice.
 
 ! Privacy: Google spellcheck service
 

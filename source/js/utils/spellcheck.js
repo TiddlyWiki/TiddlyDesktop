@@ -21,18 +21,23 @@ Three deliberately separate concerns:
    reads them — the only write that survives, since anything written while Chromium runs gets
    re-flushed away.
 
-2. isEnabled($tw) / applyToDocument(doc, enabled, lang) — the user-facing on/off toggle for LOCAL
-   spellcheck ($:/config/TiddlyDesktop/EnableSpellcheck, default "yes"). Chromium keeps
-   --enable-spell-checking on so the engine is always available; we gate the visible red squiggles per
-   document via the inherited `spellcheck` attribute on <html>. Editors that don't set their own
-   attribute inherit it, so the toggle takes effect on the next wiki (re)load with no app restart. (With
-   local spellcheck off no text is checked at all, so the Google service — even if opted in — never
-   runs.)
+2. isEnabled($tw) / applyToDocument(doc, enabled) / observeFrames(doc, isEnabled) — the user-facing
+   on/off toggle for LOCAL spellcheck ($:/config/TiddlyDesktop/EnableSpellcheck, default "yes").
+   Chromium keeps --enable-spell-checking on so the engine is always available; we gate the visible red
+   squiggles per document via the inherited `spellcheck` attribute on <html>. Editors that don't set
+   their own attribute inherit it, so the toggle takes effect on the next wiki (re)load with no app
+   restart. (With local spellcheck off no text is checked at all, so the Google service — even if opted
+   in — never runs.) That attribute does NOT cross a document boundary, and TiddlyWiki's default text
+   editor (core/modules/editor/engines/framed.js, used whenever the editor toolbar is shown) puts its
+   <textarea> inside an <iframe> holding a freshly document.written page — so stamping the wiki's own
+   <html> leaves the one element the user actually types in on Chromium's default (checked). Hence
+   observeFrames(), which stamps every same-origin child frame as it appears.
 
 3. getLanguage($tw) — the spellcheck language setting ($:/config/TiddlyDesktop/SpellcheckLanguage,
-   default "en"). Sets the `lang` attribute on <html> so Chromium's spellchecker (both local Hunspell
-   and the Google service) uses the correct dictionary. Also written into the Chromium Preferences file
-   as `spellcheck.dictionaries` so the profile-level spellcheck engine loads the right dictionary.
+   default "en-GB"). The only thing that picks a dictionary in Chromium is the profile preference
+   `spellcheck.dictionaries`: it detects the language of the text across the ENABLED dictionaries and,
+   unlike Gecko, never consults the `lang` attribute of the document or the element. The language is
+   therefore purely a Preferences-file affair — see (1) — and lands on the next launch.
 */
 
 "use strict";
@@ -62,8 +67,8 @@ exports.readLanguageMarker = function(profileDir) {
 };
 
 // Write the spellcheck language marker file. Called from main.js when the setting changes.
-// Takes effect on the NEXT launch (node-main reads it to pre-seed Preferences) AND immediately
-// for the current session via applyToDocument.
+// Takes effect on the NEXT launch — node-main reads it to pre-seed Preferences, and the quit-time
+// writer is what makes that stick. Nothing can change the dictionary of a running Chromium.
 exports.setLanguageMarker = function(profileDir, lang) {
 	var fs = require("fs");
 	try {
@@ -147,6 +152,29 @@ function ensureLanguageInIntl(prefs, lang) {
 	prefs.intl.selected_languages = sel.join(",");
 }
 
+// True if `prefs` already holds exactly the spellcheck state we want. Both the pre-seed and the
+// quit-time writer skip their write when it does.
+function prefsMatch(prefs, allowed, dict) {
+	var sc = prefs.spellcheck || {};
+	return sc.use_spelling_service === !!allowed
+		&& JSON.stringify(sc.dictionaries) === JSON.stringify([dict])
+		&& intlHasLanguage(prefs, dict);
+}
+
+// True if the profile's Preferences on disk already hold the spellcheck state we want. main.js calls
+// this at quit to decide whether spawning the detached pref-writer is worth it. It has to compare
+// against the FILE rather than against a "is this the default language?" shortcut: switching back from
+// de-DE to the default still leaves "de" in Preferences, and the writer is the only thing that can
+// correct it. An absent or unreadable file answers false, so an unknown state always writes.
+exports.prefsAlreadyMatch = function(profileDir, allowed, lang) {
+	try {
+		if(!profileDir) { return false; }
+		var prefsPath = require("path").join(profileDir, "Preferences"),
+			prefs = JSON.parse(require("fs").readFileSync(prefsPath, "utf8")) || {};
+		return prefsMatch(prefs, allowed, exports.dictionaryForLanguage(lang || "en-GB"));
+	} catch(e) { return false; }
+};
+
 // Set Chromium's remote (Google) spelling-service preference and the spellcheck dictionary language in
 // the profile's Preferences file. Preserves all existing preferences — only merges the spellcheck and
 // intl keys. profileDir is the active profile dir (e.g. .../TiddlyDesktop/Default). Only safe to call
@@ -168,10 +196,7 @@ exports.syncSpellingServicePref = function(profileDir, lang) {
 		var dict = exports.dictionaryForLanguage(lang);
 		// Already correct in an existing file → nothing to do. (A fresh profile has no file yet, so we
 		// still pre-seed it below so the very first launch honours the default/opt-in and language.)
-		if(existed
-			&& prefs.spellcheck.use_spelling_service === allowed
-			&& JSON.stringify(prefs.spellcheck.dictionaries) === JSON.stringify([dict])
-			&& intlHasLanguage(prefs, dict)) {
+		if(existed && prefsMatch(prefs, allowed, dict)) {
 			return;
 		}
 		prefs.spellcheck.use_spelling_service = allowed;
@@ -257,13 +282,70 @@ exports.getLanguage = function($tw) {
 	} catch(e) { return "en-GB"; }
 };
 
-// Apply the toggle and language to a document by setting the inherited `spellcheck` and `lang`
-// attributes on <html>. Descendant editors that don't set their own attributes inherit these, so
-// squiggles switch on/off and the language takes effect on the next wiki (re)load with no app restart.
-exports.applyToDocument = function(doc, enabled, lang) {
+// Stamp the toggle onto one same-origin child frame's document. Cross-origin frames (embedded videos
+// and the like) throw on contentDocument and are simply skipped.
+function stampFrame(frame, enabled) {
+	try {
+		var doc = frame.contentDocument;
+		if(doc && doc.documentElement) {
+			doc.documentElement.setAttribute("spellcheck", enabled ? "true" : "false");
+		}
+	} catch(e) {}
+}
+
+// Stamp every same-origin <iframe> inside `root`, which may be a document or an element.
+function stampFrames(root, enabled) {
+	try {
+		var frames = root.getElementsByTagName("iframe");
+		for(var i = 0; i < frames.length; i++) { stampFrame(frames[i], enabled); }
+	} catch(e) {}
+}
+
+// Apply the toggle to a document by setting the inherited `spellcheck` attribute on <html>, and to the
+// documents of the frames it already holds — TiddlyWiki's framed text editor lives in one of those and
+// would otherwise stay on Chromium's default whatever the setting says. Descendants that don't set
+// their own attribute inherit it, so squiggles switch on/off on the next wiki (re)load with no app
+// restart. The spellcheck LANGUAGE is deliberately not applied here: Chromium ignores a document's
+// `lang` when picking a dictionary (see the notes at the top of this file), so writing it would buy
+// nothing and clobber the wiki's own document language.
+exports.applyToDocument = function(doc, enabled) {
 	try {
 		if(!doc || !doc.documentElement) { return; }
 		doc.documentElement.setAttribute("spellcheck", enabled ? "true" : "false");
-		if(lang) { doc.documentElement.setAttribute("lang", lang); }
+		stampFrames(doc, enabled);
 	} catch(e) {}
+};
+
+// Watch `doc` for frames added after load and stamp each one as it appears — the editor iframe is
+// created when the user opens an editor, long after applyToDocument() ran. The framed engine inserts
+// the iframe and document.writes it in one synchronous go, so by the time this callback runs (a
+// microtask later) the final document is in place and the stamp survives. `isEnabled` is called per
+// batch rather than captured, so a live settings change needs no re-install. Returns a teardown
+// function, which callers own (the window classes push it onto their per-load teardown list).
+//
+// The callback runs on every DOM batch in a busy wiki, so it stays cheap: a leaf element costs one
+// tagName test, and only a subtree that actually has element children is searched.
+exports.observeFrames = function(doc, isEnabled) {
+	var noop = function() {};
+	try {
+		var win = doc && doc.defaultView;
+		if(!win || !win.MutationObserver || !doc.documentElement) { return noop; }
+		var observer = new win.MutationObserver(function(records) {
+			var enabled = !!isEnabled();
+			for(var i = 0; i < records.length; i++) {
+				var added = records[i].addedNodes;
+				for(var j = 0; j < added.length; j++) {
+					var node = added[j];
+					if(!node || node.nodeType !== 1) { continue; }
+					if(node.tagName === "IFRAME") {
+						stampFrame(node, enabled);
+					} else if(node.firstElementChild) {
+						stampFrames(node, enabled);
+					}
+				}
+			}
+		});
+		observer.observe(doc.documentElement, {childList: true, subtree: true});
+		return function() { try { observer.disconnect(); } catch(e) {} };
+	} catch(e) { return noop; }
 };
