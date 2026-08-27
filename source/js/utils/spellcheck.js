@@ -134,31 +134,81 @@ exports.dictionaryForLanguage = function(lang) {
 	return LANGUAGE_TO_DICTIONARY.hasOwnProperty(lang) ? LANGUAGE_TO_DICTIONARY[lang] : lang;
 };
 
-// True if `lang` is already listed in prefs.intl.selected_languages.
-function intlHasLanguage(prefs, lang) {
-	var sel = prefs.intl && prefs.intl.selected_languages;
-	return typeof sel === "string" && sel.split(",").indexOf(lang) !== -1;
+// Path of the intl-ownership marker file. Records the ONE non-primary dictionary code TiddlyDesktop
+// last added to intl.selected_languages, so a later language change can take it back out instead of
+// leaving it behind. Lives in the profile dir alongside the Google and language markers.
+function intlMarkerPath(profileDir) {
+	return require("path").join(profileDir, "td-spellcheck-intl");
 }
 
-// Ensure `lang` is present in prefs.intl.selected_languages, so Chromium keeps its spellcheck
-// dictionary — it drops a dictionary whose language is not in that list and falls back to the OS
-// locale. Appended, never reordered, so the primary UI language is unchanged. Mutates prefs.
-function ensureLanguageInIntl(prefs, lang) {
-	if(intlHasLanguage(prefs, lang)) { return; }
+// The dictionary code we are on the hook for removing. "" when we own nothing, null when the marker
+// file is absent — a profile that predates this bookkeeping, which ownedLanguages() treats specially.
+function readOwnedLanguage(profileDir) {
+	try {
+		return require("fs").readFileSync(intlMarkerPath(profileDir), "utf8").trim();
+	} catch(e) { return null; }
+}
+
+function writeOwnedLanguage(profileDir, code) {
+	var fs = require("fs");
+	try { fs.mkdirSync(profileDir, {recursive: true}); } catch(e) {}
+	try { fs.writeFileSync(intlMarkerPath(profileDir), code || ""); } catch(e) {}
+}
+
+// Split an intl.selected_languages value ("en-GB,de") into codes.
+function splitLanguages(value) {
+	return typeof value === "string" && value ? value.split(",").filter(Boolean) : [];
+}
+
+// The codes in `sel` that are ours to remove. Normally just the one the marker records. An ABSENT
+// marker means the profile predates this bookkeeping — earlier versions appended every language ever
+// selected and removed none — and we cannot tell our leftovers from Chromium's own seed, so we assume
+// everything after the primary entry is ours. That one-time cleanup shortens an accumulated list to the
+// primary language plus the current dictionary; a genuinely multilingual list would lose its extra
+// entries, a fair trade in an app-private profile whose Accept-Language only ever reaches localhost.
+function ownedLanguages(profileDir, sel, dict) {
+	var marker = profileDir ? readOwnedLanguage(profileDir) : "";
+	if(marker !== null) { return marker ? [marker] : []; }
+	return sel.slice(1).filter(function(code) { return code !== dict; });
+}
+
+// What intl.selected_languages should be: the primary entry (never touched — it is the head of the UI
+// language order), every entry we did not put there, and the current dictionary, appended if missing.
+function plannedLanguages(sel, dict, ours) {
+	var kept = sel.filter(function(code, i) {
+		return i === 0 || code === dict || ours.indexOf(code) === -1;
+	});
+	if(kept.indexOf(dict) === -1) { kept.push(dict); }
+	return kept;
+}
+
+// Make prefs.intl.selected_languages hold exactly that, and record what we are now responsible for.
+// Chromium keeps a spellcheck dictionary only for a language present in this list — it drops one whose
+// language is missing and falls back to the OS locale — so `dict` has to be in it. Mutates prefs. Any
+// non-primary entry equal to the current dictionary counts as ours from here on, so the NEXT language
+// change removes it: that, and not the append, is what stops the list growing one code per switch.
+function syncIntlLanguages(prefs, dict, profileDir) {
 	prefs.intl = prefs.intl || {};
-	var sel = typeof prefs.intl.selected_languages === "string" && prefs.intl.selected_languages
-		? prefs.intl.selected_languages.split(",") : [];
-	sel.push(lang);
-	prefs.intl.selected_languages = sel.join(",");
+	var sel = splitLanguages(prefs.intl.selected_languages),
+		kept = plannedLanguages(sel, dict, ownedLanguages(profileDir, sel, dict));
+	prefs.intl.selected_languages = kept.join(",");
+	if(profileDir) { writeOwnedLanguage(profileDir, kept[0] === dict ? "" : dict); }
+}
+
+// True if intl.selected_languages is already what syncIntlLanguages would write — including having no
+// stale entry left to prune, so a pending cleanup still counts as needing a write.
+function intlSettled(prefs, dict, profileDir) {
+	var sel = splitLanguages(prefs.intl && prefs.intl.selected_languages);
+	return sel.join(",") === plannedLanguages(sel, dict, ownedLanguages(profileDir, sel, dict)).join(",");
 }
 
 // True if `prefs` already holds exactly the spellcheck state we want. Both the pre-seed and the
 // quit-time writer skip their write when it does.
-function prefsMatch(prefs, allowed, dict) {
+function prefsMatch(prefs, allowed, dict, profileDir) {
 	var sc = prefs.spellcheck || {};
 	return sc.use_spelling_service === !!allowed
 		&& JSON.stringify(sc.dictionaries) === JSON.stringify([dict])
-		&& intlHasLanguage(prefs, dict);
+		&& intlSettled(prefs, dict, profileDir);
 }
 
 // True if the profile's Preferences on disk already hold the spellcheck state we want. main.js calls
@@ -171,7 +221,7 @@ exports.prefsAlreadyMatch = function(profileDir, allowed, lang) {
 		if(!profileDir) { return false; }
 		var prefsPath = require("path").join(profileDir, "Preferences"),
 			prefs = JSON.parse(require("fs").readFileSync(prefsPath, "utf8")) || {};
-		return prefsMatch(prefs, allowed, exports.dictionaryForLanguage(lang || "en-GB"));
+		return prefsMatch(prefs, allowed, exports.dictionaryForLanguage(lang || "en-GB"), profileDir);
 	} catch(e) { return false; }
 };
 
@@ -196,12 +246,12 @@ exports.syncSpellingServicePref = function(profileDir, lang) {
 		var dict = exports.dictionaryForLanguage(lang);
 		// Already correct in an existing file → nothing to do. (A fresh profile has no file yet, so we
 		// still pre-seed it below so the very first launch honours the default/opt-in and language.)
-		if(existed && prefsMatch(prefs, allowed, dict)) {
+		if(existed && prefsMatch(prefs, allowed, dict, profileDir)) {
 			return;
 		}
 		prefs.spellcheck.use_spelling_service = allowed;
 		prefs.spellcheck.dictionaries = [dict];
-		ensureLanguageInIntl(prefs, dict);
+		syncIntlLanguages(prefs, dict, profileDir);
 		try { fs.mkdirSync(profileDir, {recursive: true}); } catch(e) {}
 		fs.writeFileSync(prefsPath, JSON.stringify(prefs));
 	} catch(e) {
@@ -247,9 +297,10 @@ exports.spawnPrefWriter = function(profileDir, allowed, lang) {
 // write loses that race. Best-effort and fail-safe.
 //   - use_spelling_service: the Google remote-spellcheck opt-in.
 //   - dictionaries: force the chosen language. Chromium keeps a spellcheck dictionary only for a
-//     language present in intl.selected_languages, so we also ensure `lang` is in that list (appended,
-//     to avoid changing the primary UI language) — otherwise Chromium drops it and falls back to the
-//     OS locale, which is why the language selector currently appears to have no effect.
+//     language present in intl.selected_languages, so syncIntlLanguages() also puts `lang` in that
+//     list — otherwise Chromium drops it and falls back to the OS locale, which is why the language
+//     selector appeared to have no effect at all. It is appended after the primary entry, which is
+//     left alone, and the code left over from the previous selection is removed at the same time.
 exports.writeSpellingPrefsAtQuit = function(profileDir, allowed, lang) {
 	var fs = require("fs"), path = require("path");
 	try {
@@ -261,7 +312,7 @@ exports.writeSpellingPrefsAtQuit = function(profileDir, allowed, lang) {
 		prefs.spellcheck = prefs.spellcheck || {};
 		prefs.spellcheck.use_spelling_service = !!allowed;
 		prefs.spellcheck.dictionaries = [dict];
-		ensureLanguageInIntl(prefs, dict);
+		syncIntlLanguages(prefs, dict, profileDir);
 		fs.writeFileSync(prefsPath, JSON.stringify(prefs));
 	} catch(e) {
 		try { console.error("[TiddlyDesktop] writeSpellingPrefsAtQuit failed:", e); } catch(_e) {}

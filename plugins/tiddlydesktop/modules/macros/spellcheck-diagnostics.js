@@ -41,6 +41,11 @@ exports.run = function(token) {
 		row("td-allow-google-spellcheck",exists(path.join(profileDir,"td-allow-google-spellcheck")) ? "present (opted in)" : "absent (off)");
 		var langMarker = path.join(profileDir,"td-spellcheck-language");
 		row("td-spellcheck-language",exists(langMarker) ? read(langMarker) : "absent");
+		// The dictionary code TiddlyDesktop added to intl.selected_languages and will remove again on the
+		// next language change. Empty means the current dictionary was already there (nothing of ours to
+		// take back); absent means the profile has not been through the accumulation cleanup yet.
+		var intlMarker = path.join(profileDir,"td-spellcheck-intl");
+		row("td-spellcheck-intl",exists(intlMarker) ? (read(intlMarker) || "(none owned)") : "absent");
 		lines.push("");
 		lines.push("Chromium Preferences (the value that actually takes effect)");
 		var prefs = null;
