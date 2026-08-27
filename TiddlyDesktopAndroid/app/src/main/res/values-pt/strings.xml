@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">Abrir pasta em…</string>
     <string name="reveal_path_hint">Pasta: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Guardar o anexo em</string>
+    <string name="attach_folder_message">Escolha uma subpasta dentro de attachments/ (deixe em branco para usar a raiz).</string>
+    <string name="attach_folder_hint">Subpasta</string>
+    <string name="attach_folder_save">Guardar</string>
 </resources>

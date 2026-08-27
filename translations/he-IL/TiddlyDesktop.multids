@@ -90,3 +90,39 @@ Share/RulesHeading: כללי דומיין
 Share/RulesHelp: כלל אחד בכל שורה בצורה <code>domain=kind</code> (לדוגמה <code>vimeo.com=youtube</code>, או <code>mastodon.social=mastodon</code> עבור תבנית שהוספת למעלה) כדי לנתב אתר לתבנית מסוימת.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: גיבויים של ויקי בקובץ יחיד נכתבים לצד כל ויקי כברירת מחדל. בחר כאן תיקייה כדי לאסוף את כל הגיבויים במקום אחד במקום זאת.
+Toolbar/Support: תמיכה
+Support/Blurb: TiddlyWiki ו-TiddlyDesktop הם חינמיים ובקוד פתוח. אם הם מועילים לך, שקול לתמוך בפיתוח המתמשך שלהם ב-Open Collective.
+Support/Button: תמכו ב-Open Collective
+PluginChooser/BackstageTarget: רשימת ויקי זו
+PluginChooser/BackstageNote: ייכנס לתוקף לאחר הפעלה מחדש של TiddlyDesktop
+PluginChooser/SavedPendingRestart: נשמר. הפעל מחדש את TiddlyDesktop כדי להפעיל.
+TrustedPaths/Revoke: בטל
+Advanced/Unsandboxed: הרץ ויקי זה ללא ארגז חול
+Advanced/UnsandboxedHelp: ה-JavaScript של ויקי זה ירוץ עם גישה מלאה למחשב שלך — הוא יוכל לקרוא, לשנות ולמחוק כל קובץ שאתה יכול. הפעל זאת רק עבור ויקי שכתבת בעצמך או שאתה סומך עליו לחלוטין, ורק אם הוא צריך להריץ מודולי Node או פקודות מעטפת.
+Settings/Backups: גיבויים
+Settings/Flags: דגלי Chromium
+Settings/Spellcheck: בדיקת איות
+Settings/Plugins: תוספים
+Settings/Templates: תבניות
+Settings/UserConfig: תיקיית תצורת המשתמש
+Settings/WikiListTitle: כותרת חלון רשימת הוויקי
+Settings/TrustedPaths: נתיבים מהימנים
+Settings/Version: גרסה
+Settings/ResetToDefault: אפס לברירת המחדל
+Settings/OpenChromiumFlags: פתח את דגלי Chromium
+Settings/OpenConfigFolder: פתח את תיקיית התצורה
+Settings/InstallPlugins: התקן תוספים…
+Spellcheck/Enable: הפעל בדיקת איות מקומית
+Spellcheck/LanguageHeading: שפת בדיקת האיות
+Spellcheck/GoogleHeading: פרטיות: שירות האיות של Google
+Spellcheck/EnableGoogle: השתמש בשירות האיות המרוחק של Google (שולח את הטקסט שלך ל-Google)
+Spellcheck/DiagnosticsHeading: אבחון
+Spellcheck/Refresh: רענן
+TrustedPaths/RevokeTooltip: מנע מוויקי זה לקרוא נתיב זה
+Convert/NoDestination: לא נבחר יעד להמרה.
+Convert/ToFile: להמיר ויקי זה מתיקייה לקובץ יחיד?
+Convert/ToFolder: להמיר ויקי זה מקובץ יחיד לתיקייה?
+Convert/OriginalKept: הוויקי המקורי אינו נמחק.
+Convert/InProgress: ממיר ויקי…
+Convert/Failed: ההמרה נכשלה:
+Convert/Done: הוויקי הומר:

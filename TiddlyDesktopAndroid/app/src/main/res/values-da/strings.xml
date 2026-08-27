@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">Åbn mappe i…</string>
     <string name="reveal_path_hint">Mappe: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Gem vedhæftning i</string>
+    <string name="attach_folder_message">Vælg en undermappe i attachments/ (lad feltet stå tomt for at bruge roden).</string>
+    <string name="attach_folder_hint">Undermappe</string>
+    <string name="attach_folder_save">Gem</string>
 </resources>

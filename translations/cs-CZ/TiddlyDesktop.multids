@@ -90,3 +90,39 @@ Share/RulesHeading: Pravidla domén
 Share/RulesHelp: Jedno pravidlo na řádek jako <code>domain=kind</code> (např. <code>vimeo.com=youtube</code> nebo <code>mastodon.social=mastodon</code> pro šablonu přidanou výše) pro nasměrování webu na konkrétní šablonu.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Zálohy jednosouborových wiki se ve výchozím nastavení ukládají vedle každé wiki. Zde vyberte složku, abyste místo toho shromáždili všechny zálohy na jednom místě.
+Toolbar/Support: Podpořit
+Support/Blurb: TiddlyWiki a TiddlyDesktop jsou zdarma a s otevřeným kódem. Pokud je považujete za užitečné, zvažte podporu jejich dalšího vývoje na Open Collective.
+Support/Button: Podpořit na Open Collective
+PluginChooser/BackstageTarget: Tento seznam wiki
+PluginChooser/BackstageNote: projeví se po restartu TiddlyDesktopu
+PluginChooser/SavedPendingRestart: Uloženo. Pro aktivaci restartujte TiddlyDesktop.
+TrustedPaths/Revoke: odvolat
+Advanced/Unsandboxed: Spustit tuto wiki bez sandboxu
+Advanced/UnsandboxedHelp: JavaScript této wiki poběží s plným přístupem k vašemu počítači — může číst, měnit a mazat jakýkoli soubor, ke kterému máte přístup. Zapněte to jen pro wiki, kterou jste sami napsali nebo které plně důvěřujete, a jen pokud potřebuje spouštět moduly Node nebo příkazy shellu.
+Settings/Backups: Zálohy
+Settings/Flags: Příznaky Chromia
+Settings/Spellcheck: Kontrola pravopisu
+Settings/Plugins: Zásuvné moduly
+Settings/Templates: Šablony
+Settings/UserConfig: Složka uživatelské konfigurace
+Settings/WikiListTitle: Titulek okna se seznamem wiki
+Settings/TrustedPaths: Důvěryhodné cesty
+Settings/Version: Verze
+Settings/ResetToDefault: Obnovit výchozí
+Settings/OpenChromiumFlags: Otevřít příznaky Chromia
+Settings/OpenConfigFolder: Otevřít složku konfigurace
+Settings/InstallPlugins: Nainstalovat zásuvné moduly…
+Spellcheck/Enable: Zapnout místní kontrolu pravopisu
+Spellcheck/LanguageHeading: Jazyk kontroly pravopisu
+Spellcheck/GoogleHeading: Soukromí: služba pravopisu Google
+Spellcheck/EnableGoogle: Používat vzdálenou službu pravopisu Google (odesílá váš text Googlu)
+Spellcheck/DiagnosticsHeading: Diagnostika
+Spellcheck/Refresh: Obnovit
+TrustedPaths/RevokeTooltip: Zakázat této wiki číst tuto cestu
+Convert/NoDestination: Pro převod nebylo zvoleno žádné umístění.
+Convert/ToFile: Převést tuto wiki ze složky na jediný soubor?
+Convert/ToFolder: Převést tuto wiki z jediného souboru na složku?
+Convert/OriginalKept: Původní wiki se nesmaže.
+Convert/InProgress: Převádím wiki…
+Convert/Failed: Převod se nezdařil:
+Convert/Done: Wiki převedena:

@@ -90,3 +90,39 @@ Share/RulesHeading: Pravila domen
 Share/RulesHelp: Eno pravilo na vrstico kot <code>domain=kind</code> (npr. <code>vimeo.com=youtube</code> ali <code>mastodon.social=mastodon</code> za predlogo, dodano zgoraj), da usmerite spletno mesto na določeno predlogo.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Varnostne kopije enodatotečnih wikijev se privzeto shranjujejo poleg vsakega wikija. Tukaj izberite mapo, da namesto tega zberete vse varnostne kopije na enem mestu.
+Toolbar/Support: Podprite
+Support/Blurb: TiddlyWiki in TiddlyDesktop sta brezplačna in odprtokodna. Če se vam zdita uporabna, razmislite o podpori njunemu nadaljnjemu razvoju na Open Collective.
+Support/Button: Podprite na Open Collective
+PluginChooser/BackstageTarget: Ta seznam wikijev
+PluginChooser/BackstageNote: začne veljati po ponovnem zagonu TiddlyDesktopa
+PluginChooser/SavedPendingRestart: Shranjeno. Za aktivacijo znova zaženite TiddlyDesktop.
+TrustedPaths/Revoke: prekliči
+Advanced/Unsandboxed: Zaženi ta wiki brez peskovnika
+Advanced/UnsandboxedHelp: JavaScript tega wikija se bo izvajal s polnim dostopom do vašega računalnika — lahko bere, spreminja in briše katero koli datoteko, do katere imate dostop. To vklopite le za wiki, ki ste ga napisali sami ali mu popolnoma zaupate, in le če mora izvajati module Node ali ukaze lupine.
+Settings/Backups: Varnostne kopije
+Settings/Flags: Zastavice Chromiuma
+Settings/Spellcheck: Preverjanje črkovanja
+Settings/Plugins: Vtičniki
+Settings/Templates: Predloge
+Settings/UserConfig: Mapa uporabniške konfiguracije
+Settings/WikiListTitle: Naslov okna s seznamom wikijev
+Settings/TrustedPaths: Zaupanja vredne poti
+Settings/Version: Različica
+Settings/ResetToDefault: Ponastavi na privzeto
+Settings/OpenChromiumFlags: Odpri zastavice Chromiuma
+Settings/OpenConfigFolder: Odpri mapo konfiguracije
+Settings/InstallPlugins: Namesti vtičnike…
+Spellcheck/Enable: Vklopi lokalno preverjanje črkovanja
+Spellcheck/LanguageHeading: Jezik preverjanja črkovanja
+Spellcheck/GoogleHeading: Zasebnost: Googlova storitev črkovanja
+Spellcheck/EnableGoogle: Uporabi Googlovo oddaljeno storitev črkovanja (vaše besedilo pošlje Googlu)
+Spellcheck/DiagnosticsHeading: Diagnostika
+Spellcheck/Refresh: Osveži
+TrustedPaths/RevokeTooltip: Prepreči temu wikiju branje te poti
+Convert/NoDestination: Za pretvorbo ni bil izbran cilj.
+Convert/ToFile: Ali naj se ta wiki pretvori iz mape v eno samo datoteko?
+Convert/ToFolder: Ali naj se ta wiki pretvori iz ene same datoteke v mapo?
+Convert/OriginalKept: Izvirni wiki se ne izbriše.
+Convert/InProgress: Pretvarjanje wikija…
+Convert/Failed: Pretvorba ni uspela:
+Convert/Done: Wiki pretvorjen:

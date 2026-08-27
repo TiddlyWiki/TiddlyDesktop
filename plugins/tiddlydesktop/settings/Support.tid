@@ -1,5 +1,5 @@
 title: $:/TiddlyDesktop/Settings/Support
-caption: Support
+caption: {{$:/language/TiddlyDesktop/Toolbar/Support}}
 tags: $:/TiddlyDesktop/Settings
 
 {{$:/language/TiddlyDesktop/Support/Blurb}}

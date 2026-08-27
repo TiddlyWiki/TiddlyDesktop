@@ -90,3 +90,39 @@ Share/RulesHeading: Κανόνες τομέα
 Share/RulesHelp: Ένας κανόνας ανά γραμμή ως <code>domain=kind</code> (π.χ. <code>vimeo.com=youtube</code> ή <code>mastodon.social=mastodon</code> για ένα πρότυπο που προσθέσατε παραπάνω) για να δρομολογήσετε έναν ιστότοπο σε ένα συγκεκριμένο πρότυπο.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Τα αντίγραφα ασφαλείας των wiki ενός αρχείου γράφονται από προεπιλογή δίπλα σε κάθε wiki. Επιλέξτε έναν φάκελο εδώ για να συγκεντρώσετε όλα τα αντίγραφα ασφαλείας σε ένα μέρος.
+Toolbar/Support: Υποστήριξη
+Support/Blurb: Το TiddlyWiki και το TiddlyDesktop είναι δωρεάν και ανοιχτού κώδικα. Αν σας φαίνονται χρήσιμα, σκεφτείτε να υποστηρίξετε τη συνεχιζόμενη ανάπτυξή τους στο Open Collective.
+Support/Button: Υποστήριξη στο Open Collective
+PluginChooser/BackstageTarget: Αυτή η λίστα wiki
+PluginChooser/BackstageNote: τίθεται σε ισχύ μετά την επανεκκίνηση του TiddlyDesktop
+PluginChooser/SavedPendingRestart: Αποθηκεύτηκε. Επανεκκινήστε το TiddlyDesktop για ενεργοποίηση.
+TrustedPaths/Revoke: ανάκληση
+Advanced/Unsandboxed: Εκτέλεση αυτού του wiki χωρίς sandbox
+Advanced/UnsandboxedHelp: Η JavaScript αυτού του wiki θα εκτελείται με πλήρη πρόσβαση στον υπολογιστή σας — μπορεί να διαβάσει, να αλλάξει και να διαγράψει οποιοδήποτε αρχείο μπορείτε κι εσείς. Ενεργοποιήστε το μόνο για ένα wiki που γράψατε εσείς ή εμπιστεύεστε πλήρως, και μόνο αν χρειάζεται να εκτελεί modules Node ή εντολές κελύφους.
+Settings/Backups: Αντίγραφα ασφαλείας
+Settings/Flags: Σημαίες Chromium
+Settings/Spellcheck: Ορθογραφικός έλεγχος
+Settings/Plugins: Πρόσθετα
+Settings/Templates: Πρότυπα
+Settings/UserConfig: Φάκελος ρυθμίσεων χρήστη
+Settings/WikiListTitle: Τίτλος παραθύρου λίστας wiki
+Settings/TrustedPaths: Έμπιστες διαδρομές
+Settings/Version: Έκδοση
+Settings/ResetToDefault: Επαναφορά στις προεπιλογές
+Settings/OpenChromiumFlags: Άνοιγμα σημαιών Chromium
+Settings/OpenConfigFolder: Άνοιγμα φακέλου ρυθμίσεων
+Settings/InstallPlugins: Εγκατάσταση προσθέτων…
+Spellcheck/Enable: Ενεργοποίηση τοπικού ορθογραφικού ελέγχου
+Spellcheck/LanguageHeading: Γλώσσα ορθογραφικού ελέγχου
+Spellcheck/GoogleHeading: Απόρρητο: υπηρεσία ορθογραφίας της Google
+Spellcheck/EnableGoogle: Χρήση της απομακρυσμένης υπηρεσίας ορθογραφίας της Google (στέλνει το κείμενό σας στην Google)
+Spellcheck/DiagnosticsHeading: Διαγνωστικά
+Spellcheck/Refresh: Ανανέωση
+TrustedPaths/RevokeTooltip: Να μην μπορεί αυτό το wiki να διαβάζει αυτή τη διαδρομή
+Convert/NoDestination: Δεν επιλέχθηκε προορισμός για τη μετατροπή.
+Convert/ToFile: Μετατροπή αυτού του wiki από φάκελο σε ένα μόνο αρχείο;
+Convert/ToFolder: Μετατροπή αυτού του wiki από ένα μόνο αρχείο σε φάκελο;
+Convert/OriginalKept: Το αρχικό wiki δεν διαγράφεται.
+Convert/InProgress: Μετατροπή wiki…
+Convert/Failed: Η μετατροπή απέτυχε:
+Convert/Done: Το wiki μετατράπηκε:

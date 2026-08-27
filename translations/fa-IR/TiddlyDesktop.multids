@@ -90,3 +90,39 @@ Share/RulesHeading: قواعد دامنه
 Share/RulesHelp: هر خط یک قاعده به شکل <code>domain=kind</code> (مثلاً <code>vimeo.com=youtube</code> یا <code>mastodon.social=mastodon</code> برای قالبی که در بالا افزوده‌اید) برای هدایت یک سایت به قالبی خاص.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: نسخه‌های پشتیبان ویکی‌های تک‌پرونده‌ای به‌طور پیش‌فرض کنار هر ویکی نوشته می‌شوند. اینجا پوشه‌ای انتخاب کنید تا به‌جای آن همهٔ نسخه‌های پشتیبان در یک مکان جمع شوند.
+Toolbar/Support: پشتیبانی
+Support/Blurb: TiddlyWiki و TiddlyDesktop رایگان و متن‌باز هستند. اگر برایتان مفیدند، از توسعهٔ مستمر آن‌ها در Open Collective پشتیبانی کنید.
+Support/Button: پشتیبانی در Open Collective
+PluginChooser/BackstageTarget: همین فهرست ویکی
+PluginChooser/BackstageNote: پس از راه‌اندازی دوبارهٔ TiddlyDesktop اعمال می‌شود
+PluginChooser/SavedPendingRestart: ذخیره شد. برای فعال‌سازی، TiddlyDesktop را دوباره راه‌اندازی کنید.
+TrustedPaths/Revoke: لغو
+Advanced/Unsandboxed: اجرای این ویکی بدون جعبهٔ ایمنی
+Advanced/UnsandboxedHelp: جاوااسکریپت خودِ این ویکی با دسترسی کامل به رایانهٔ شما اجرا می‌شود — می‌تواند هر پرونده‌ای را که شما می‌توانید بخوانید، تغییر دهد و حذف کند. این را فقط برای ویکی‌ای فعال کنید که خودتان نوشته‌اید یا کاملاً به آن اعتماد دارید، و تنها اگر لازم دارد ماژول‌های Node یا فرمان‌های پوسته را اجرا کند.
+Settings/Backups: نسخه‌های پشتیبان
+Settings/Flags: پرچم‌های Chromium
+Settings/Spellcheck: غلط‌یاب املایی
+Settings/Plugins: افزونه‌ها
+Settings/Templates: قالب‌ها
+Settings/UserConfig: پوشهٔ پیکربندی کاربر
+Settings/WikiListTitle: عنوان پنجرهٔ فهرست ویکی
+Settings/TrustedPaths: مسیرهای مورد اعتماد
+Settings/Version: نسخه
+Settings/ResetToDefault: بازنشانی به پیش‌فرض
+Settings/OpenChromiumFlags: گشودن پرچم‌های Chromium
+Settings/OpenConfigFolder: گشودن پوشهٔ پیکربندی
+Settings/InstallPlugins: نصب افزونه‌ها…
+Spellcheck/Enable: فعال‌سازی غلط‌یاب املایی محلی
+Spellcheck/LanguageHeading: زبان غلط‌یاب املایی
+Spellcheck/GoogleHeading: حریم خصوصی: سرویس املایی Google
+Spellcheck/EnableGoogle: استفاده از سرویس املایی راه‌دور Google (متن شما را به Google می‌فرستد)
+Spellcheck/DiagnosticsHeading: عیب‌یابی
+Spellcheck/Refresh: تازه‌سازی
+TrustedPaths/RevokeTooltip: جلوگیری از خواندن این مسیر توسط این ویکی
+Convert/NoDestination: برای تبدیل، مقصدی انتخاب نشد.
+Convert/ToFile: این ویکی از یک پوشه به یک پروندهٔ واحد تبدیل شود؟
+Convert/ToFolder: این ویکی از یک پروندهٔ واحد به یک پوشه تبدیل شود؟
+Convert/OriginalKept: ویکی اصلی حذف نمی‌شود.
+Convert/InProgress: در حال تبدیل ویکی…
+Convert/Failed: تبدیل ناموفق بود:
+Convert/Done: ویکی تبدیل شد:

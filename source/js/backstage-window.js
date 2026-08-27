@@ -152,9 +152,9 @@ BackstageWindow.prototype.onclose = function(event) {
 	this.windowList.handleClose(this);
 };
 
-// Reopen this window
+// Reopen this window — raise it (show / un-minimise / focus), see window-base.js.
 BackstageWindow.prototype.reopen = function() {
-	this.window_nwjs.focus();
+	this.focusWindow();
 };
 
 exports.BackstageWindow = BackstageWindow;

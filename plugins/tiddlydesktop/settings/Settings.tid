@@ -2,5 +2,5 @@ title: $:/TiddlyDesktop/Settings
 page-title: TiddlyDesktop Settings
 
 <$importvariables filter="[[$:/core/macros/toc]]">
-<$macrocall $name="toc-tabbed-internal-nav" tag="$:/TiddlyDesktop/Settings" selectedTiddler="$:/temp/setings/toc/selectedTiddler" unselectedText="<p>Version {{$:/TiddlyDesktop/version}}</p>" missingText="<p>Missing tiddler.</p>"/>
+<$macrocall $name="toc-tabbed-internal-nav" tag="$:/TiddlyDesktop/Settings" selectedTiddler="$:/temp/TiddlyDesktop/settings/toc/selectedTiddler" unselectedText="<p>{{$:/language/TiddlyDesktop/Settings/Version}} {{$:/TiddlyDesktop/version}}</p>" missingText="<p>Missing tiddler.</p>"/>
 </$importvariables>

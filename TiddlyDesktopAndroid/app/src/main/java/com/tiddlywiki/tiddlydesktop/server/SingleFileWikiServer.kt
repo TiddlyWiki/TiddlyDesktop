@@ -30,13 +30,14 @@ import java.util.zip.GZIPOutputStream
  *
  * How saving works: we serve the wiki over http://127.0.0.1 and advertise `Dav`/`Allow: PUT`
  * on OPTIONS, which makes TiddlyWiki's built-in `put` saver activate and PUT the whole
- * document back to `/`. We stream that body to the wiki file. No custom saver is injected.
+ * document back to `/`. That body is buffered in full and then written over the wiki file — via a
+ * temp file + rename where the destination allows it, see [saveWiki]. No custom saver is injected.
  *
  * The wiki path may be a `content://` SAF URI or a plain filesystem path.
  *
- * Not yet handled (TODO): serving external-attachment relative files (`/_relative/...`),
- * HTTP Range requests for large media, and SAF backups. Single-file wikis with only
- * embedded (data:) content work fully.
+ * External attachments are served from the wiki's sibling `attachments/` folder, with HTTP Range
+ * support so large audio/video can seek, and backups go through [Backups] for both filesystem and
+ * SAF destinations.
  */
 class SingleFileWikiServer(
     private val context: Context,
@@ -258,38 +259,95 @@ class SingleFileWikiServer(
         output.write(bytes)
     }
 
+    /**
+     * Replace the wiki file with the PUT body.
+     *
+     * The body is buffered in full before anything on disk is touched, and — for a plain filesystem
+     * path — written to a sibling temp file that is renamed over the original. Streaming straight
+     * into the wiki file, as this used to, opens a window in which the user's entire wiki is a
+     * truncated prefix of the new one: a dropped connection, a killed process or a full disk part
+     * way through leaves exactly that, and the response still said "Saved". A wiki is a single file
+     * holding everything the user has written, so that window is not an acceptable one to leave
+     * open.
+     *
+     * A short body (fewer bytes than Content-Length announced) is now a failed save rather than a
+     * silent truncation, for the same reason.
+     *
+     * A `content://` destination cannot be renamed into place — SAF has no such operation — so it
+     * keeps the direct write, but still only after the whole body has arrived, which closes the
+     * network half of the window.
+     */
     private fun saveWiki(input: InputStream, output: OutputStream, headers: Map<String, String>) {
         try {
+            val contentLength = headers["content-length"]?.toLongOrNull() ?: -1L
+            val body = ByteArrayOutputStream(if (contentLength in 0..MAX_BODY) contentLength.toInt() else 1 shl 20)
+            val buf = ByteArray(1 shl 16)
+            if (contentLength >= 0) {
+                var remaining = contentLength
+                while (remaining > 0) {
+                    val read = input.read(buf, 0, minOf(buf.size.toLong(), remaining).toInt())
+                    if (read == -1) break
+                    body.write(buf, 0, read); remaining -= read
+                }
+                if (remaining > 0) {
+                    Log.e(TAG, "save aborted: body ended $remaining bytes early; wiki left untouched")
+                    sendError(output, 400, "Incomplete request body")
+                    return
+                }
+            } else {
+                while (true) {
+                    val read = input.read(buf)
+                    if (read == -1) break
+                    body.write(buf, 0, read)
+                }
+            }
+            val newBytes = body.toByteArray()
+
             // Snapshot the version we're about to replace (read into memory before overwrite).
             val oldBytes = if (backupsEnabled) runCatching { readWikiBytes() }.getOrNull() else null
 
-            val contentLength = headers["content-length"]?.toLongOrNull() ?: -1L
-            var written = 0L
-            openWikiOutput().use { os ->
-                val buf = ByteArray(1 shl 16)
-                if (contentLength >= 0) {
-                    var remaining = contentLength
-                    while (remaining > 0) {
-                        val read = input.read(buf, 0, minOf(buf.size.toLong(), remaining).toInt())
-                        if (read == -1) break
-                        os.write(buf, 0, read); written += read; remaining -= read
-                    }
-                } else {
-                    while (true) {
-                        val read = input.read(buf)
-                        if (read == -1) break
-                        os.write(buf, 0, read); written += read
-                    }
-                }
-                os.flush()
-            }
-            Log.i(TAG, "Saved wiki: $written bytes")
+            writeWikiAtomically(newBytes)
+            Log.i(TAG, "Saved wiki: ${newBytes.size} bytes")
             // Respond immediately; back up off the response path.
             sendSimple(output, 200, "OK", body = "Saved")
             if (oldBytes != null) workers.submit { runCatching { writeBackup(oldBytes) } }
         } catch (e: Exception) {
             Log.e(TAG, "save failed: ${e.message}", e)
             sendError(output, 500, "Save failed: ${e.message}")
+        }
+    }
+
+    /** Write [bytes] over the wiki, via a temp file + rename wherever the destination allows it. */
+    private fun writeWikiAtomically(bytes: ByteArray) {
+        if (isContent) {
+            // "wt" = write+truncate; required so a shorter save doesn't leave trailing bytes.
+            openWikiOutput().use { it.write(bytes); it.flush() }
+            return
+        }
+        // canonicalFile, not absoluteFile: a rename replaces whatever is at the destination, so a
+        // wiki that is a symlink would have the LINK overwritten with a regular file and the real
+        // wiki left frozen at its previous contents. Resolving first follows the link the way a
+        // plain write did, and puts the temp file beside the real target — same directory, so the
+        // rename stays within one filesystem, which is what makes it atomic.
+        val target = runCatching { File(wikiPath).canonicalFile }.getOrElse { File(wikiPath).absoluteFile }
+        val temp = File(target.parentFile ?: target, "${target.name}.tdsave")
+        try {
+            FileOutputStream(temp).use { os ->
+                os.write(bytes)
+                os.flush()
+                // Force the bytes out before the rename, so a power loss cannot leave a renamed
+                // file whose contents never reached the disk.
+                os.fd.sync()
+            }
+            if (!temp.renameTo(target)) {
+                // Same-directory renames effectively always succeed; if one does not, fall back to
+                // a direct write rather than leaving the save undone.
+                FileOutputStream(target).use { it.write(bytes); it.flush() }
+                temp.delete()
+            }
+        } catch (e: Exception) {
+            temp.delete()
+            throw e
         }
     }
 
@@ -518,6 +576,9 @@ class SingleFileWikiServer(
 
         /** Query parameter carrying the session token on the very first load. */
         private const val AUTH_PARAM = "__tdauth"
+
+        /** Upper bound on the pre-sized save buffer; a larger body simply grows the stream. */
+        private const val MAX_BODY = 256L * 1024 * 1024
 
         private const val TAG = "SingleFileWikiServer"
 

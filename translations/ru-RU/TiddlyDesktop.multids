@@ -90,3 +90,39 @@ Share/RulesHeading: Правила доменов
 Share/RulesHelp: Одно правило на строку в виде <code>domain=kind</code> (напр. <code>vimeo.com=youtube</code> или <code>mastodon.social=mastodon</code> для добавленного выше шаблона), чтобы направить сайт к определённому шаблону.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Резервные копии одностраничных вики по умолчанию сохраняются рядом с каждой вики. Выберите здесь папку, чтобы вместо этого собрать все копии в одном месте.
+Toolbar/Support: Поддержать
+Support/Blurb: TiddlyWiki и TiddlyDesktop бесплатны и имеют открытый исходный код. Если они вам полезны, поддержите их дальнейшую разработку на Open Collective.
+Support/Button: Поддержать на Open Collective
+PluginChooser/BackstageTarget: Этот список вики
+PluginChooser/BackstageNote: вступит в силу после перезапуска TiddlyDesktop
+PluginChooser/SavedPendingRestart: Сохранено. Перезапустите TiddlyDesktop, чтобы активировать.
+TrustedPaths/Revoke: отозвать
+Advanced/Unsandboxed: Запускать эту вики без песочницы
+Advanced/UnsandboxedHelp: Собственный JavaScript этой вики будет выполняться с полным доступом к вашему компьютеру — он сможет читать, изменять и удалять любой файл, доступный вам. Включайте это только для вики, которую вы написали сами или которой полностью доверяете, и только если ей нужно запускать модули Node или команды оболочки.
+Settings/Backups: Резервные копии
+Settings/Flags: Флаги Chromium
+Settings/Spellcheck: Проверка орфографии
+Settings/Plugins: Плагины
+Settings/Templates: Шаблоны
+Settings/UserConfig: Папка пользовательской конфигурации
+Settings/WikiListTitle: Заголовок окна списка вики
+Settings/TrustedPaths: Доверенные пути
+Settings/Version: Версия
+Settings/ResetToDefault: Сбросить к значению по умолчанию
+Settings/OpenChromiumFlags: Открыть флаги Chromium
+Settings/OpenConfigFolder: Открыть папку конфигурации
+Settings/InstallPlugins: Установить плагины…
+Spellcheck/Enable: Включить локальную проверку орфографии
+Spellcheck/LanguageHeading: Язык проверки орфографии
+Spellcheck/GoogleHeading: Приватность: служба орфографии Google
+Spellcheck/EnableGoogle: Использовать удалённую службу орфографии Google (отправляет ваш текст в Google)
+Spellcheck/DiagnosticsHeading: Диагностика
+Spellcheck/Refresh: Обновить
+TrustedPaths/RevokeTooltip: Запретить этой вики читать этот путь
+Convert/NoDestination: Для преобразования не выбрано место назначения.
+Convert/ToFile: Преобразовать эту вики из папки в один файл?
+Convert/ToFolder: Преобразовать эту вики из одного файла в папку?
+Convert/OriginalKept: Исходная вики не удаляется.
+Convert/InProgress: Преобразование вики…
+Convert/Failed: Не удалось выполнить преобразование:
+Convert/Done: Вики преобразована:

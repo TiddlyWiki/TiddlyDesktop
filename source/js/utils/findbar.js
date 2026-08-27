@@ -69,28 +69,23 @@ var BLOCK_TAGS = {
 	THEAD: 1,
 	TR: 1,
 	UL: 1,
-	VIDEO: 1,
+	VIDEO: 1
 };
 
-exports.installFindBar = function (options) {
+exports.installFindBar = function(options) {
 	var hostWindow = options.hostWindow,
 		hostDocument = options.hostDocument,
 		getContentWindow = options.getContentWindow,
 		getContentDocument = options.getContentDocument;
-	if (
-		!hostWindow ||
-		!hostDocument ||
-		!getContentWindow ||
-		!getContentDocument
-	) {
+	if(!hostWindow || !hostDocument || !getContentWindow || !getContentDocument) {
 		return;
 	}
 
 	// Re-point on a second call (e.g. the iframe reloaded) rather than duplicating.
-	if (hostWindow.__tdFindBar) {
+	if(hostWindow.__tdFindBar) {
 		try {
 			hostWindow.__tdFindBar.refresh();
-		} catch (e) {}
+		} catch(e) {}
 		return;
 	}
 
@@ -106,14 +101,14 @@ exports.installFindBar = function (options) {
 	function cwin() {
 		try {
 			return getContentWindow();
-		} catch (e) {
+		} catch(e) {
 			return null;
 		}
 	}
 	function cdoc() {
 		try {
 			return getContentDocument();
-		} catch (e) {
+		} catch(e) {
 			return null;
 		}
 	}
@@ -127,22 +122,17 @@ exports.installFindBar = function (options) {
 
 	function injectContentStyleOnce() {
 		var d = cdoc();
-		if (!d || styledDoc === d) {
+		if(!d || styledDoc === d) {
 			return;
 		}
 		styledDoc = d;
 		try {
 			var s = d.createElement("style");
 			s.setAttribute("data-td-findbar", "");
-			s.textContent =
-				"::highlight(" +
-				HL_ALL +
-				"){background:#ffe066;color:#000;}" +
-				"::highlight(" +
-				HL_CUR +
-				"){background:#ff9a3c;color:#000;}";
+			s.textContent = "::highlight(" + HL_ALL + "){background:#ffe066;color:#000;}" + "::highlight(" +
+				HL_CUR + "){background:#ff9a3c;color:#000;}";
 			(d.head || d.documentElement).appendChild(s);
-		} catch (e) {}
+		} catch(e) {}
 	}
 
 	// ── panel ──
@@ -151,8 +141,7 @@ exports.installFindBar = function (options) {
 	panel.setAttribute("hidden", "");
 	panel.innerHTML =
 		'<input class="td-findbar-input" type="text" placeholder="Find in page" spellcheck="false" autocomplete="off" />' +
-		'<span class="td-findbar-count"></span>' +
-		'<span class="td-findbar-sep"></span>' +
+		'<span class="td-findbar-count"></span>' + '<span class="td-findbar-sep"></span>' +
 		'<button class="td-findbar-btn td-findbar-prev" tabindex="-1" title="Previous match (Shift+Enter)"><svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M7 14l5-5 5 5z"/></svg></button>' +
 		'<button class="td-findbar-btn td-findbar-next" tabindex="-1" title="Next match (Enter)"><svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M7 10l5 5 5-5z"/></svg></button>' +
 		'<button class="td-findbar-btn td-findbar-close" tabindex="-1" title="Close (Esc)"><svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M18.3 5.7L12 12l6.3 6.3-1.4 1.4L10.6 13.4 4.3 19.7 2.9 18.3 9.2 12 2.9 5.7 4.3 4.3l6.3 6.3 6.3-6.3z"/></svg></button>';
@@ -173,11 +162,11 @@ exports.installFindBar = function (options) {
 		curIndex = -1;
 		var w = cwin();
 		try {
-			if (w && w.CSS && w.CSS.highlights) {
+			if(w && w.CSS && w.CSS.highlights) {
 				w.CSS.highlights.delete(HL_ALL);
 				w.CSS.highlights.delete(HL_CUR);
 			}
-		} catch (e) {}
+		} catch(e) {}
 		clearFieldOverlays();
 	}
 
@@ -193,11 +182,7 @@ exports.installFindBar = function (options) {
 		repositionRaf = null;
 
 	function ensureFieldLayer() {
-		if (
-			fieldLayer &&
-			fieldLayer.ownerDocument === hostDocument &&
-			fieldLayer.isConnected
-		) {
+		if(fieldLayer && fieldLayer.ownerDocument === hostDocument && fieldLayer.isConnected) {
 			return fieldLayer;
 		}
 		fieldLayer = hostDocument.createElement("div");
@@ -219,7 +204,7 @@ exports.installFindBar = function (options) {
 	}
 
 	function clearFieldOverlays() {
-		if (fieldLayer) {
+		if(fieldLayer) {
 			fieldLayer.textContent = "";
 		}
 	}
@@ -227,17 +212,10 @@ exports.installFindBar = function (options) {
 	// True if every node in the list is one of our own helper elements (the find panel, the
 	// overlay layer, or a transient measurement mirror) — used to ignore self-inflicted mutations.
 	function isOnlyFindNodes(nodes) {
-		for (var i = 0; i < nodes.length; i++) {
+		for(var i = 0; i < nodes.length; i++) {
 			var n = nodes[i];
-			if (
-				n &&
-				n.nodeType === 1 &&
-				n.classList &&
-				(n.classList.contains("td-findbar") ||
-					n.classList.contains(
-						"td-find-field-layer",
-					) ||
-					n.classList.contains("td-find-measure"))
+			if(n && n.nodeType === 1 && n.classList && (n.classList.contains("td-findbar") ||
+				n.classList.contains("td-find-field-layer") || n.classList.contains("td-find-measure"))
 			) {
 				continue;
 			}
@@ -253,7 +231,7 @@ exports.installFindBar = function (options) {
 	function measureFieldRects(el, start, end) {
 		var doc = el.ownerDocument,
 			win = doc.defaultView;
-		if (!win || !doc.body) {
+		if(!win || !doc.body) {
 			return [];
 		}
 		var style = win.getComputedStyle(el);
@@ -279,13 +257,7 @@ exports.installFindBar = function (options) {
 		ds.boxSizing = "content-box";
 		ds.width = contentWidth + "px";
 		ds.height = "auto";
-		[
-			"paddingTop",
-			"paddingRight",
-			"paddingBottom",
-			"paddingLeft",
-			"borderTopWidth",
-			"borderRightWidth",
+		["paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "borderTopWidth", "borderRightWidth",
 			"borderBottomWidth",
 			"borderLeftWidth",
 			"fontFamily",
@@ -300,11 +272,11 @@ exports.installFindBar = function (options) {
 			"textTransform",
 			"textIndent",
 			"tabSize",
-			"textRendering",
-		].forEach(function (p) {
+			"textRendering"
+		].forEach(function(p) {
 			try {
 				ds[p] = style[p];
-			} catch (e) {}
+			} catch(e) {}
 		});
 		var value = el.value || "";
 		var span = doc.createElement("span");
@@ -328,30 +300,27 @@ exports.installFindBar = function (options) {
 				clipR = taRect.right - brw,
 				clipB = taRect.bottom - bbw;
 			var list = span.getClientRects();
-			for (var i = 0; i < list.length; i++) {
+			for(var i = 0; i < list.length; i++) {
 				var r = list[i];
-				var x =
-					taRect.left +
-					(r.left - divRect.left) -
-					sx;
+				var x = taRect.left + (r.left - divRect.left) - sx;
 				var y = taRect.top + (r.top - divRect.top) - sy;
 				var L = Math.max(x, clipL),
 					T = Math.max(y, clipT),
 					R = Math.min(x + r.width, clipR),
 					B = Math.min(y + r.height, clipB);
-				if (R > L && B > T) {
+				if(R > L && B > T) {
 					out.push({
 						left: L,
 						top: T,
 						right: R,
-						bottom: B,
+						bottom: B
 					});
 				}
 			}
-		} catch (e) {}
+		} catch(e) {}
 		try {
 			div.parentNode.removeChild(div);
-		} catch (e) {}
+		} catch(e) {}
 		return out;
 	}
 
@@ -360,38 +329,27 @@ exports.installFindBar = function (options) {
 	// the control is two iframes deep (host → wiki iframe → framed-editor iframe).
 	function toHostRect(box, fromDoc) {
 		var b = {
-				left: box.left,
-				top: box.top,
-				right: box.right,
-				bottom: box.bottom,
-			},
-			doc = fromDoc,
-			guard = 0;
-		while (doc && doc !== hostDocument && guard++ < 10) {
+			left: box.left,
+			top: box.top,
+			right: box.right,
+			bottom: box.bottom
+		},
+		doc = fromDoc,
+		guard = 0;
+		while(doc && doc !== hostDocument && guard++ < 10) {
 			var fe = null;
 			try {
-				fe =
-					doc.defaultView &&
-					doc.defaultView.frameElement;
-			} catch (e) {
+				fe = doc.defaultView && doc.defaultView.frameElement;
+			} catch(e) {
 				fe = null;
 			}
-			if (!fe) {
+			if(!fe) {
 				break;
 			}
 			var feRect = fe.getBoundingClientRect(),
-				fs =
-					fe.ownerDocument.defaultView.getComputedStyle(
-						fe,
-					);
-			var ox =
-				feRect.left +
-				(parseFloat(fs.borderLeftWidth) || 0) +
-				(parseFloat(fs.paddingLeft) || 0);
-			var oy =
-				feRect.top +
-				(parseFloat(fs.borderTopWidth) || 0) +
-				(parseFloat(fs.paddingTop) || 0);
+				fs = fe.ownerDocument.defaultView.getComputedStyle(fe);
+			var ox = feRect.left + (parseFloat(fs.borderLeftWidth) || 0) + (parseFloat(fs.paddingLeft) || 0);
+			var oy = feRect.top + (parseFloat(fs.borderTopWidth) || 0) + (parseFloat(fs.paddingTop) || 0);
 			b.left += ox;
 			b.right += ox;
 			b.top += oy;
@@ -403,52 +361,44 @@ exports.installFindBar = function (options) {
 
 	function paintFieldOverlays() {
 		var hasField = false;
-		for (var k = 0; k < allRanges.length; k++) {
-			if (allRanges[k] && allRanges[k].kind === "field") {
+		for(var k = 0; k < allRanges.length; k++) {
+			if(allRanges[k] && allRanges[k].kind === "field") {
 				hasField = true;
 				break;
 			}
 		}
-		if (!hasField) {
+		if(!hasField) {
 			clearFieldOverlays();
 			return;
 		}
-		if (!hostDocument.body) {
+		if(!hostDocument.body) {
 			return;
 		}
 		ensureFieldLayer();
 		clearFieldOverlays();
-		for (var i = 0; i < allRanges.length; i++) {
+		for(var i = 0; i < allRanges.length; i++) {
 			var h = allRanges[i];
-			if (!h || h.kind !== "field") {
+			if(!h || h.kind !== "field") {
 				continue;
 			}
 			var isCur = i === curIndex;
 			var rects = measureFieldRects(h.el, h.start, h.end);
-			for (var j = 0; j < rects.length; j++) {
-				var box = toHostRect(
-					rects[j],
-					h.el.ownerDocument,
-				);
+			for(var j = 0; j < rects.length; j++) {
+				var box = toHostRect(rects[j], h.el.ownerDocument);
 				var d = hostDocument.createElement("div");
 				var s = d.style;
 				s.position = "fixed";
 				s.left = box.left + "px";
 				s.top = box.top + "px";
-				s.width =
-					Math.max(0, box.right - box.left) +
-					"px";
-				s.height =
-					Math.max(0, box.bottom - box.top) +
-					"px";
+				s.width = Math.max(0, box.right - box.left) + "px";
+				s.height = Math.max(0, box.bottom - box.top) + "px";
 				// Genuine alpha (not mix-blend-mode) so the box composites OVER the matched
 				// glyphs and leaves them legible: this overlay lives in the HOST document while
 				// the text it marks sits inside a nested iframe, and mix-blend-mode can't blend
 				// across that compositing boundary — it would render fully opaque and hide the
 				// text. A translucent fill reads like a highlighter over the real glyphs.
 				s.background = isCur
-					? "rgba(255, 145, 0, 0.55)"
-					: "rgba(255, 213, 0, 0.40)";
+				? "rgba(255, 145, 0, 0.55)": "rgba(255, 213, 0, 0.40)";
 				s.borderRadius = "1px";
 				s.pointerEvents = "none";
 				fieldLayer.appendChild(d);
@@ -459,15 +409,15 @@ exports.installFindBar = function (options) {
 	// Reposition overlays after a scroll/resize (the Custom Highlight API follows the DOM on its
 	// own, but our absolutely-placed field boxes don't). Coalesced to one paint per frame.
 	function scheduleReposition() {
-		if (!isOpen() || repositionRaf) {
+		if(!isOpen() || repositionRaf) {
 			return;
 		}
 		var raf = hostWindow.requestAnimationFrame
-			? hostWindow.requestAnimationFrame.bind(hostWindow)
-			: function (f) {
-					return setTimeout(f, 16);
-				};
-		repositionRaf = raf(function () {
+		? hostWindow.requestAnimationFrame.bind(hostWindow)
+		: function(f) {
+			return setTimeout(f, 16);
+		};
+		repositionRaf = raf(function() {
 			repositionRaf = null;
 			paintFieldOverlays();
 		});
@@ -482,45 +432,44 @@ exports.installFindBar = function (options) {
 		// inside form controls), so do this unconditionally — even where ::highlight isn't supported.
 		paintFieldOverlays();
 		var w = cwin();
-		if (!highlightSupported()) {
+		if(!highlightSupported()) {
 			return;
 		}
 		try {
 			var hlAll = new w.Highlight();
-			for (var i = 0; i < allRanges.length; i++) {
+			for(var i = 0; i < allRanges.length; i++) {
 				var hit = allRanges[i];
-				if (hit && hit.kind === "range" && hit.range) {
+				if(hit && hit.kind === "range" && hit.range) {
 					hlAll.add(hit.range);
 				}
 			}
 			w.CSS.highlights.set(HL_ALL, hlAll);
 			var cur = curIndex >= 0 ? allRanges[curIndex] : null;
-			if (cur && cur.kind === "range" && cur.range) {
+			if(cur && cur.kind === "range" && cur.range) {
 				var hlCur = new w.Highlight(cur.range);
 				try {
 					hlCur.priority = 1;
-				} catch (e) {}
+				} catch(e) {}
 				w.CSS.highlights.set(HL_CUR, hlCur);
 			} else {
 				// Current match is a form field (or none) — no range to paint, so drop any
 				// stale "current" highlight rather than leaving it on a previous match.
 				try {
 					w.CSS.highlights.delete(HL_CUR);
-				} catch (e) {}
+				} catch(e) {}
 			}
-		} catch (e) {}
+		} catch(e) {}
 	}
 
 	function renderCount() {
-		if (!lastQuery) {
+		if(!lastQuery) {
 			countEl.textContent = "";
 			panel.classList.remove("td-findbar-nomatch");
-		} else if (!allRanges.length) {
+		} else if(!allRanges.length) {
 			countEl.textContent = "No results";
 			panel.classList.add("td-findbar-nomatch");
 		} else {
-			countEl.textContent =
-				curIndex + 1 + "/" + allRanges.length;
+			countEl.textContent = curIndex + 1 + "/" + allRanges.length;
 			panel.classList.remove("td-findbar-nomatch");
 		}
 		var noMatches = allRanges.length < 1;
@@ -535,36 +484,23 @@ exports.installFindBar = function (options) {
 	// <pre>), where scrolling the window does nothing; we must scroll that pane.
 	function nearestScrollable(el, w) {
 		var d = cdoc();
-		for (
-			var node = el;
-			node && node.nodeType === 1;
-			node = node.parentElement
-		) {
-			if (
-				(d && node === d.body) ||
-				(d && node === d.documentElement)
-			) {
+		for(var node = el; node && node.nodeType === 1; node = node.parentElement) {
+			if((d && node === d.body) || (d && node === d.documentElement)) {
 				return null;
 			}
 			var style;
 			try {
 				style = w.getComputedStyle(node);
-			} catch (e) {
+			} catch(e) {
 				continue;
 			}
 			var oy = style.overflowY,
 				ox = style.overflowX;
-			var scrollableY =
-				(oy === "auto" ||
-					oy === "scroll" ||
-					oy === "overlay") &&
+			var scrollableY = (oy === "auto" || oy === "scroll" || oy === "overlay") &&
 				node.scrollHeight > node.clientHeight + 2;
-			var scrollableX =
-				(ox === "auto" ||
-					ox === "scroll" ||
-					ox === "overlay") &&
+			var scrollableX = (ox === "auto" || ox === "scroll" || ox === "overlay") &&
 				node.scrollWidth > node.clientWidth + 2;
-			if (scrollableY || scrollableX) {
+			if(scrollableY || scrollableX) {
 				return node;
 			}
 		}
@@ -578,25 +514,22 @@ exports.installFindBar = function (options) {
 	function scrollToField(hit) {
 		try {
 			var el = hit.el;
-			if (el && el.scrollIntoView) {
+			if(el && el.scrollIntoView) {
 				el.scrollIntoView({
 					block: "center",
-					inline: "nearest",
+					inline: "nearest"
 				});
 			}
-			if (el && el.setSelectionRange) {
+			if(el && el.setSelectionRange) {
 				try {
 					el.focus({ preventScroll: true });
-					el.setSelectionRange(
-						hit.start,
-						hit.end,
-					);
-				} catch (e) {}
+					el.setSelectionRange(hit.start, hit.end);
+				} catch(e) {}
 			}
-		} catch (e) {}
+		} catch(e) {}
 		try {
 			input.focus();
-		} catch (e) {}
+		} catch(e) {}
 		// The setSelectionRange above scrolled the control's content to the match — repaint the
 		// overlays now that the text has moved to its final position inside the control.
 		paintFieldOverlays();
@@ -604,61 +537,48 @@ exports.installFindBar = function (options) {
 
 	function scrollToCurrent() {
 		var hit = allRanges[curIndex];
-		if (!hit) {
+		if(!hit) {
 			return;
 		}
-		if (hit.kind === "field") {
+		if(hit.kind === "field") {
 			scrollToField(hit);
 			return;
 		}
 		var r = hit.range;
-		if (!r) {
+		if(!r) {
 			return;
 		}
 		var w = cwin();
-		if (!w) {
+		if(!w) {
 			return;
 		}
-		var el =
-			r.startContainer.nodeType === 1
-				? r.startContainer
-				: r.startContainer.parentElement ||
-					r.startContainer.parentNode;
+		var el = r.startContainer.nodeType === 1
+		? r.startContainer
+		: r.startContainer.parentElement || r.startContainer.parentNode;
 		// 1) Centre the match inside its nearest scrolling container, if any. Scrolling
 		//    the container directly (vs scrollIntoView on the match's parent) avoids
 		//    reflowing a huge block like <pre><code>, which is what used to freeze the UI.
 		var sc = null;
 		try {
 			sc = nearestScrollable(el, w);
-		} catch (e) {}
-		if (sc) {
+		} catch(e) {}
+		if(sc) {
 			try {
 				var scRect = sc.getBoundingClientRect(),
 					mRect = r.getBoundingClientRect();
-				sc.scrollTop +=
-					mRect.top +
-					mRect.height / 2 -
-					(scRect.top + sc.clientHeight / 2);
-				sc.scrollLeft +=
-					mRect.left +
-					mRect.width / 2 -
-					(scRect.left + sc.clientWidth / 2);
-			} catch (e) {}
+				sc.scrollTop += mRect.top + mRect.height / 2 - (scRect.top + sc.clientHeight / 2);
+				sc.scrollLeft += mRect.left + mRect.width / 2 - (scRect.left + sc.clientWidth / 2);
+			} catch(e) {}
 			// Having scrolled the pane, only touch the document if the match is STILL
 			// outside the viewport (e.g. the pane itself is partly off-screen). A match in
 			// a scrollable sidebar — which TiddlyWiki positions `fixed` — is now visible, so
 			// we stop here instead of scrolling the page body for nothing.
 			try {
 				var vr = r.getBoundingClientRect();
-				if (
-					vr.top >= 0 &&
-					vr.left >= 0 &&
-					vr.bottom <= w.innerHeight &&
-					vr.right <= w.innerWidth
-				) {
+				if(vr.top >= 0 && vr.left >= 0 && vr.bottom <= w.innerHeight && vr.right <= w.innerWidth) {
 					return;
 				}
-			} catch (e) {
+			} catch(e) {
 				return;
 			}
 		}
@@ -666,48 +586,32 @@ exports.installFindBar = function (options) {
 		//    so a match that scrolls the document still ends up in view.
 		try {
 			var rect = r.getBoundingClientRect();
-			if (
-				rect &&
-				(rect.height ||
-					rect.width ||
-					rect.top ||
-					rect.left)
-			) {
-				var targetY =
-					(w.scrollY || w.pageYOffset || 0) +
-					rect.top -
-					w.innerHeight / 2 +
+			if(rect && (rect.height || rect.width || rect.top || rect.left)) {
+				var targetY = (w.scrollY || w.pageYOffset || 0) + rect.top - w.innerHeight / 2 +
 					rect.height / 2;
-				w.scrollTo(
-					w.scrollX || w.pageXOffset || 0,
-					targetY > 0 ? targetY : 0,
-				);
+				w.scrollTo(w.scrollX || w.pageXOffset || 0, targetY > 0 ? targetY : 0);
 				return;
 			}
-		} catch (e) {}
+		} catch(e) {}
 		// Fallback only when the range has no layout box (e.g. zero-size/hidden).
 		try {
-			var pel =
-				r.startContainer.parentElement ||
-				r.startContainer.parentNode;
-			if (pel && pel.scrollIntoView) {
+			var pel = r.startContainer.parentElement || r.startContainer.parentNode;
+			if(pel && pel.scrollIntoView) {
 				pel.scrollIntoView({
 					block: "center",
-					inline: "nearest",
+					inline: "nearest"
 				});
 			}
-		} catch (e) {}
+		} catch(e) {}
 	}
 
 	function setCurrent(i) {
-		if (!allRanges.length) {
+		if(!allRanges.length) {
 			curIndex = -1;
 			renderCount();
 			return;
 		}
-		curIndex =
-			((i % allRanges.length) + allRanges.length) %
-			allRanges.length;
+		curIndex = ((i % allRanges.length) + allRanges.length) % allRanges.length;
 		applyHighlights();
 		scrollToCurrent();
 		renderCount();
@@ -724,11 +628,11 @@ exports.installFindBar = function (options) {
 	// elements insert a separator so we don't match across unrelated lines/blocks.
 	function collectRanges(query) {
 		var d = cdoc();
-		if (!d || !d.body) {
+		if(!d || !d.body) {
 			return [];
 		}
 		var q = query.toLowerCase();
-		if (!q) {
+		if(!q) {
 			return [];
 		}
 
@@ -743,7 +647,7 @@ exports.installFindBar = function (options) {
 			sepPending = false;
 		var SEP = "\n";
 		function addSep() {
-			if (gLen > 0 && !sepPending) {
+			if(gLen > 0 && !sepPending) {
 				parts.push(SEP);
 				gLen += SEP.length;
 				sepPending = true;
@@ -751,83 +655,63 @@ exports.installFindBar = function (options) {
 		}
 		function skippable(el) {
 			var tag = el.nodeName;
-			if (
-				tag === "SCRIPT" ||
-				tag === "STYLE" ||
-				tag === "NOSCRIPT"
-			) {
+			if(tag === "SCRIPT" || tag === "STYLE" || tag === "NOSCRIPT") {
 				return true;
 			}
-			if (el.classList) {
+			if(el.classList) {
 				// Skip the find bar's own UI (matters for folder wikis, where the panel shares
 				// the document with the wiki being searched).
-				if (el.classList.contains("td-findbar")) {
+				if(el.classList.contains("td-findbar")) {
 					return true;
 				}
 				// Skip the minimap (tiddlywiki-minimap): it's a miniature duplicate of the
 				// document — including an iframe copy we'd otherwise descend into — so matching
 				// inside it just produces phantom, unscrollable duplicates of every real hit.
-				if (
-					el.classList.contains(
-						"tc-minimap-wrapper",
-					) ||
-					el.classList.contains("tc-minimap")
-				) {
+				if(el.classList.contains("tc-minimap-wrapper") || el.classList.contains("tc-minimap")) {
 					return true;
 				}
 			}
 			return false;
 		}
 		function isTextInput(el) {
-			if (el.nodeName === "TEXTAREA") {
+			if(el.nodeName === "TEXTAREA") {
 				return true;
 			}
-			if (el.nodeName !== "INPUT") {
+			if(el.nodeName !== "INPUT") {
 				return false;
 			}
-			var t = (
-				el.getAttribute("type") || "text"
-			).toLowerCase();
-			return (
-				t === "text" ||
-				t === "search" ||
-				t === "url" ||
-				t === "email" ||
-				t === "tel"
-			);
+			var t = (el.getAttribute("type") || "text").toLowerCase();
+			return (t === "text" || t === "search" || t === "url" || t === "email" || t === "tel");
 		}
 		// A form control's live text is in .value, not the DOM, so flatten-and-search can't
 		// see it. Search the value and record "field" hits (one per match), tagged with the
 		// stream offset of the control so they sort into document order with the text hits.
 		function addFieldHits(el, pos) {
 			var value = el.value;
-			if (!value) {
+			if(!value) {
 				return;
 			}
 			var lv = value.toLowerCase(),
 				from = 0,
 				p;
-			while ((p = lv.indexOf(q, from)) !== -1) {
+			while((p = lv.indexOf(q, from)) !== -1) {
 				hits.push({
 					kind: "field",
 					el: el,
 					start: p,
 					end: p + q.length,
-					pos: pos,
+					pos: pos
 				});
 				from = p + q.length;
-				if (hits.length >= MAX_MATCHES) {
+				if(hits.length >= MAX_MATCHES) {
 					break;
 				}
 			}
 		}
 		function iframeBody(el) {
 			try {
-				return (
-					el.contentDocument &&
-					el.contentDocument.body
-				);
-			} catch (e) {
+				return (el.contentDocument && el.contentDocument.body);
+			} catch(e) {
 				return null;
 			}
 		}
@@ -835,21 +719,17 @@ exports.installFindBar = function (options) {
 		// one): collect ONLY its field hits — we don't pull its normal text into this
 		// document's single highlight set, but the editor's textarea must still be findable.
 		function walkFields(node, pos) {
-			for (
-				var child = node.firstChild;
-				child;
-				child = child.nextSibling
-			) {
-				if (child.nodeType !== 1 || skippable(child)) {
+			for(var child = node.firstChild; child; child = child.nextSibling) {
+				if(child.nodeType !== 1 || skippable(child)) {
 					continue;
 				}
-				if (isTextInput(child)) {
+				if(isTextInput(child)) {
 					addFieldHits(child, pos);
 					continue;
 				}
-				if (child.nodeName === "IFRAME") {
+				if(child.nodeName === "IFRAME") {
 					var b = iframeBody(child);
-					if (b) {
+					if(b) {
 						walkFields(b, pos);
 					}
 					continue;
@@ -858,47 +738,41 @@ exports.installFindBar = function (options) {
 			}
 		}
 		function walk(el) {
-			for (
-				var child = el.firstChild;
-				child;
-				child = child.nextSibling
-			) {
+			for(var child = el.firstChild; child; child = child.nextSibling) {
 				var nt = child.nodeType;
-				if (nt === 3) {
+				if(nt === 3) {
 					var v = child.nodeValue;
-					if (v) {
+					if(v) {
 						segments.push({
 							node: child,
 							gStart: gLen,
-							len: v.length,
+							len: v.length
 						});
 						parts.push(v);
 						gLen += v.length;
 						sepPending = false;
 					}
-				} else if (nt === 1) {
-					if (skippable(child)) {
+				} else if(nt === 1) {
+					if(skippable(child)) {
 						continue;
 					}
-					if (isTextInput(child)) {
+					if(isTextInput(child)) {
 						addFieldHits(child, gLen);
 						continue;
 					}
-					if (child.nodeName === "IFRAME") {
+					if(child.nodeName === "IFRAME") {
 						var b = iframeBody(child);
-						if (b) {
+						if(b) {
 							walkFields(b, gLen);
 						}
 						continue;
 					}
-					var block =
-						BLOCK_TAGS[child.nodeName] ===
-						1;
-					if (block) {
+					var block = BLOCK_TAGS[child.nodeName] === 1;
+					if(block) {
 						addSep();
 					}
 					walk(child);
-					if (block) {
+					if(block) {
 						addSep();
 					}
 				}
@@ -912,17 +786,17 @@ exports.installFindBar = function (options) {
 		function locate(p) {
 			var lo = 0,
 				hi = segments.length - 1;
-			while (lo <= hi) {
+			while(lo <= hi) {
 				var mid = (lo + hi) >> 1,
 					seg = segments[mid];
-				if (p < seg.gStart) {
+				if(p < seg.gStart) {
 					hi = mid - 1;
-				} else if (p >= seg.gStart + seg.len) {
+				} else if(p >= seg.gStart + seg.len) {
 					lo = mid + 1;
 				} else {
 					return {
 						node: seg.node,
-						offset: p - seg.gStart,
+						offset: p - seg.gStart
 					};
 				}
 			}
@@ -932,41 +806,35 @@ exports.installFindBar = function (options) {
 		var hay = parts.join("").toLowerCase(),
 			from = 0,
 			pos;
-		while ((pos = hay.indexOf(q, from)) !== -1) {
+		while((pos = hay.indexOf(q, from)) !== -1) {
 			// Start at the first matched char; end after the last one, so a match that
 			// spans two adjacent inline text nodes yields a range across both.
 			var startLoc = locate(pos),
 				endLoc = locate(pos + q.length - 1);
-			if (startLoc && endLoc) {
+			if(startLoc && endLoc) {
 				try {
 					var r = d.createRange();
-					r.setStart(
-						startLoc.node,
-						startLoc.offset,
-					);
-					r.setEnd(
-						endLoc.node,
-						endLoc.offset + 1,
-					);
+					r.setStart(startLoc.node, startLoc.offset);
+					r.setEnd(endLoc.node, endLoc.offset + 1);
 					hits.push({
 						kind: "range",
 						range: r,
-						pos: pos,
+						pos: pos
 					});
-				} catch (e) {}
+				} catch(e) {}
 			}
 			from = pos + q.length;
-			if (hits.length >= MAX_MATCHES) {
+			if(hits.length >= MAX_MATCHES) {
 				break;
 			}
 		}
 
 		// Order all hits by their offset in the flattened stream so next/prev follow document
 		// order across both kinds (a field hit sits at the stream offset of its control).
-		hits.sort(function (a, b) {
+		hits.sort(function(a, b) {
 			return a.pos - b.pos;
 		});
-		if (hits.length > MAX_MATCHES) {
+		if(hits.length > MAX_MATCHES) {
 			hits.length = MAX_MATCHES;
 		}
 		return hits;
@@ -976,13 +844,13 @@ exports.installFindBar = function (options) {
 	function search(query) {
 		clearHighlights();
 		lastQuery = query || "";
-		if (!lastQuery) {
+		if(!lastQuery) {
 			renderCount();
 			return;
 		}
 		injectContentStyleOnce();
 		allRanges = collectRanges(lastQuery);
-		if (allRanges.length) {
+		if(allRanges.length) {
 			setCurrent(0);
 		} else {
 			renderCount();
@@ -1004,64 +872,50 @@ exports.installFindBar = function (options) {
 	// hit is at or after the anchor, or null when the two can't be compared (different kinds, a
 	// detached anchor range, or field hits in different controls).
 	function compareHitToAnchor(h, anchor) {
-		if (h.kind === "range" && anchor.kind === "range") {
+		if(h.kind === "range" && anchor.kind === "range") {
 			// START_TO_START (0): is this new range at or after the old current's start?
 			try {
-				return h.range.compareBoundaryPoints(
-					0,
-					anchor.range,
-				);
-			} catch (e) {
+				return h.range.compareBoundaryPoints(0, anchor.range);
+			} catch(e) {
 				return null;
 			}
 		}
-		if (
-			h.kind === "field" &&
-			anchor.kind === "field" &&
-			h.el === anchor.el
-		) {
+		if(h.kind === "field" && anchor.kind === "field" && h.el === anchor.el) {
 			return h.start - anchor.start;
 		}
 		return null;
 	}
 
 	function reSearch() {
-		if (!isOpen() || !lastQuery) {
+		if(!isOpen() || !lastQuery) {
 			return;
 		}
 		injectContentStyleOnce();
-		var anchor =
-			curIndex >= 0 && allRanges[curIndex]
-				? allRanges[curIndex]
-				: null;
+		var anchor = curIndex >= 0 && allRanges[curIndex]
+		? allRanges[curIndex]
+		: null;
 		var newHits = collectRanges(lastQuery);
-		if (!newHits.length) {
+		if(!newHits.length) {
 			clearHighlights();
 			renderCount();
 			return;
 		}
 		var idx = 0;
-		if (anchor) {
+		if(anchor) {
 			idx = -1;
 			// First new hit at-or-after the old current. Incomparable hits (e.g. a field hit
 			// when the anchor is a range) are skipped, not treated as a stop, so a range anchor
 			// still lands on the right range even with editor matches interspersed.
-			for (var i = 0; i < newHits.length; i++) {
-				var cmp = compareHitToAnchor(
-					newHits[i],
-					anchor,
-				);
-				if (cmp !== null && cmp >= 0) {
+			for(var i = 0; i < newHits.length; i++) {
+				var cmp = compareHitToAnchor(newHits[i], anchor);
+				if(cmp !== null && cmp >= 0) {
 					idx = i;
 					break;
 				}
 			}
 			// Nothing comparable at-or-after (anchor detached / was the last match): clamp.
-			if (idx === -1) {
-				idx = Math.min(
-					curIndex < 0 ? 0 : curIndex,
-					newHits.length - 1,
-				);
+			if(idx === -1) {
+				idx = Math.min(curIndex < 0 ? 0 : curIndex, newHits.length - 1);
 			}
 		}
 		allRanges = newHits;
@@ -1078,45 +932,31 @@ exports.installFindBar = function (options) {
 		stopObserving();
 		var d = cdoc(),
 			w = cwin();
-		if (!d || !d.body) {
+		if(!d || !d.body) {
 			return;
 		}
-		var MO =
-			(w && w.MutationObserver) ||
-			hostWindow.MutationObserver;
-		if (!MO) {
+		var MO = (w && w.MutationObserver) || hostWindow.MutationObserver;
+		if(!MO) {
 			return;
 		}
 		try {
-			observer = new MO(function (mutations) {
+			observer = new MO(function(mutations) {
 				// Ignore mutations inside our own panel — for folder wikis it shares
 				// the document, and updating the match count would otherwise re-trigger
 				// the observer in an endless loop.
 				var relevant = false;
-				for (var i = 0; i < mutations.length; i++) {
+				for(var i = 0; i < mutations.length; i++) {
 					var m = mutations[i],
 						t = m.target,
-						el =
-							t &&
-							(t.nodeType === 1
-								? t
-								: t.parentNode);
+						el = t && (t.nodeType === 1 ? t: t.parentNode);
 					// Ignore our own UI / overlay / measurement nodes — for folder wikis they share
 					// the searched document, and reacting to them would loop endlessly. The hidden
 					// mirror div we add+remove to measure a field match is the common case here.
-					if (
-						el &&
-						el.closest &&
-						(el.closest(".td-findbar") ||
-							el.closest(
-								".td-find-field-layer",
-							))
+					if(el && el.closest && (el.closest(".td-findbar") || el.closest(".td-find-field-layer"))
 					) {
 						continue;
 					}
-					if (
-						m.type === "childList" &&
-						isOnlyFindNodes(m.addedNodes) &&
+					if(m.type === "childList" && isOnlyFindNodes(m.addedNodes) &&
 						isOnlyFindNodes(m.removedNodes)
 					) {
 						continue;
@@ -1124,13 +964,13 @@ exports.installFindBar = function (options) {
 					relevant = true;
 					break;
 				}
-				if (!relevant) {
+				if(!relevant) {
 					return;
 				}
-				if (reSearchTimer) {
+				if(reSearchTimer) {
 					clearTimeout(reSearchTimer);
 				}
-				reSearchTimer = setTimeout(function () {
+				reSearchTimer = setTimeout(function() {
 					reSearchTimer = null;
 					reSearch();
 				}, 200);
@@ -1138,21 +978,21 @@ exports.installFindBar = function (options) {
 			observer.observe(d.body, {
 				subtree: true,
 				childList: true,
-				characterData: true,
+				characterData: true
 			});
 			observedDoc = d;
-		} catch (e) {}
+		} catch(e) {}
 	}
 
 	function stopObserving() {
-		if (reSearchTimer) {
+		if(reSearchTimer) {
 			clearTimeout(reSearchTimer);
 			reSearchTimer = null;
 		}
-		if (observer) {
+		if(observer) {
 			try {
 				observer.disconnect();
-			} catch (e) {}
+			} catch(e) {}
 			observer = null;
 		}
 		observedDoc = null;
@@ -1165,39 +1005,23 @@ exports.installFindBar = function (options) {
 	function startReposition() {
 		stopReposition();
 		var ts = [hostWindow, hostDocument, cwin(), cdoc()];
-		ts.forEach(function (t) {
-			if (!t || repoTargets.indexOf(t) !== -1) {
+		ts.forEach(function(t) {
+			if(!t || repoTargets.indexOf(t) !== -1) {
 				return;
 			}
 			try {
-				t.addEventListener(
-					"scroll",
-					scheduleReposition,
-					true,
-				);
-				t.addEventListener(
-					"resize",
-					scheduleReposition,
-					true,
-				);
+				t.addEventListener("scroll", scheduleReposition, true);
+				t.addEventListener("resize", scheduleReposition, true);
 				repoTargets.push(t);
-			} catch (e) {}
+			} catch(e) {}
 		});
 	}
 	function stopReposition() {
-		repoTargets.forEach(function (t) {
+		repoTargets.forEach(function(t) {
 			try {
-				t.removeEventListener(
-					"scroll",
-					scheduleReposition,
-					true,
-				);
-				t.removeEventListener(
-					"resize",
-					scheduleReposition,
-					true,
-				);
-			} catch (e) {}
+				t.removeEventListener("scroll", scheduleReposition, true);
+				t.removeEventListener("resize", scheduleReposition, true);
+			} catch(e) {}
 		});
 		repoTargets = [];
 	}
@@ -1208,68 +1032,68 @@ exports.installFindBar = function (options) {
 		input.select();
 		startObserving();
 		startReposition();
-		if (input.value) {
+		if(input.value) {
 			search(input.value);
 		}
 	}
 
 	function close() {
 		panel.setAttribute("hidden", "");
-		if (searchDebounce) {
+		if(searchDebounce) {
 			clearTimeout(searchDebounce);
 			searchDebounce = null;
 		}
 		stopObserving();
 		stopReposition();
 		clearHighlights();
-		if (fieldLayer && fieldLayer.parentNode) {
+		if(fieldLayer && fieldLayer.parentNode) {
 			try {
 				fieldLayer.parentNode.removeChild(fieldLayer);
-			} catch (e) {}
+			} catch(e) {}
 			fieldLayer = null;
 		}
 		renderCount();
 		try {
 			var w = cwin();
-			if (w && w.focus) {
+			if(w && w.focus) {
 				w.focus();
 			}
-		} catch (e) {}
+		} catch(e) {}
 	}
 
 	// ── events ──
 	// Debounce the per-keystroke scan: on a long page (e.g. a big <pre><code>) walking
 	// the DOM and lower-casing huge text nodes on every keystroke causes visible stalls.
 	var searchDebounce = null;
-	input.addEventListener("input", function () {
+	input.addEventListener("input", function() {
 		var v = input.value;
-		if (searchDebounce) {
+		if(searchDebounce) {
 			clearTimeout(searchDebounce);
 		}
-		searchDebounce = setTimeout(function () {
+		searchDebounce = setTimeout(function() {
 			searchDebounce = null;
 			search(v);
 		}, 120);
 	});
-	input.addEventListener("keydown", function (e) {
-		if (e.key === "Escape") {
+	input.addEventListener("keydown", function(e) {
+		if(e.key === "Escape") {
 			e.preventDefault();
 			close();
-		} else if (e.key === "Enter") {
+		} else if(e.key === "Enter") {
 			e.preventDefault();
-			if (allRanges.length) {
+			if(allRanges.length) {
 				setCurrent(curIndex + (e.shiftKey ? -1 : 1));
 			}
 		}
 	});
-	prevBtn.addEventListener("click", function () {
-		if (allRanges.length) {
+	prevBtn.addEventListener("click", function() {
+		if(allRanges.length) {
 			setCurrent(curIndex - 1);
 		}
 		input.focus();
 	});
-	nextBtn.addEventListener("click", function () {
-		if (allRanges.length) {
+	nextBtn.addEventListener("click", function() {
+		if(allRanges.length) {
 			setCurrent(curIndex + 1);
 		}
 		input.focus();
@@ -1283,22 +1107,15 @@ exports.installFindBar = function (options) {
 	// CodeMirror 5, Monaco, ACE, or any custom widget that handles Ctrl/Cmd+F is
 	// honoured automatically, while a plain field (no handler) falls through to us.
 	function onFindKey(e) {
-		if (e.defaultPrevented) {
+		if(e.defaultPrevented) {
 			return;
 		} // an editor/input already claimed it
-		var isF =
-			e.code === "KeyF" ||
-			(e.key && e.key.toLowerCase() === "f");
-		if (
-			!isF ||
-			!(e.ctrlKey || e.metaKey) ||
-			e.altKey ||
-			e.shiftKey
-		) {
+		var isF = e.code === "KeyF" || (e.key && e.key.toLowerCase() === "f");
+		if(!isF || !(e.ctrlKey || e.metaKey) || e.altKey || e.shiftKey) {
 			return;
 		}
 		e.preventDefault();
-		if (isOpen()) {
+		if(isOpen()) {
 			input.focus();
 			input.select();
 		} else {
@@ -1309,13 +1126,13 @@ exports.installFindBar = function (options) {
 
 	function attachContentKey() {
 		var d = cdoc();
-		if (!d || d === contentKeyDoc) {
+		if(!d || d === contentKeyDoc) {
 			return;
 		}
 		try {
 			d.addEventListener("keydown", onFindKey, false);
 			contentKeyDoc = d;
-		} catch (e) {}
+		} catch(e) {}
 	}
 	attachContentKey();
 
@@ -1323,18 +1140,18 @@ exports.installFindBar = function (options) {
 		open: open,
 		close: close,
 		// Re-bind to the content after an iframe reload.
-		refresh: function () {
+		refresh: function() {
 			styledDoc = null;
-			if (isOpen()) {
+			if(isOpen()) {
 				close();
 			}
 			attachContentKey();
-		},
+		}
 	};
 };
 
 function injectHostStyle(doc) {
-	if (doc.getElementById("td-findbar-style")) {
+	if(doc.getElementById("td-findbar-style")) {
 		return;
 	}
 	var s = doc.createElement("style");
@@ -1359,7 +1176,7 @@ function injectHostStyle(doc) {
 		".td-findbar-count{color:#9aa0a6;}.td-findbar-sep{background:#5f6368;}.td-findbar-btn{color:#9aa0a6;}",
 		".td-findbar-btn:hover:not(:disabled){background:rgba(255,255,255,0.1);}",
 		".td-findbar.td-findbar-nomatch .td-findbar-input,.td-findbar.td-findbar-nomatch .td-findbar-count{color:#f28b82;}",
-		"}",
+		"}"
 	].join("");
 	(doc.head || doc.documentElement).appendChild(s);
 }

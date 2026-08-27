@@ -90,3 +90,39 @@ Share/RulesHeading: Regles de domini
 Share/RulesHelp: Una regla per línia com <code>domain=kind</code> (p. ex. <code>vimeo.com=youtube</code>, o <code>mastodon.social=mastodon</code> per a una plantilla que hagis afegit a dalt) per dirigir un lloc a una plantilla concreta.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Les còpies de seguretat dels wikis d'un sol fitxer s'escriuen al costat de cada wiki de manera predeterminada. Tria una carpeta aquí per recollir totes les còpies en un sol lloc.
+Toolbar/Support: Donar suport
+Support/Blurb: TiddlyWiki i TiddlyDesktop són gratuïts i de codi obert. Si et resulten útils, considera donar suport al seu desenvolupament continu a Open Collective.
+Support/Button: Dona suport a Open Collective
+PluginChooser/BackstageTarget: Aquesta llista de wikis
+PluginChooser/BackstageNote: té efecte després de reiniciar TiddlyDesktop
+PluginChooser/SavedPendingRestart: Desat. Reinicia TiddlyDesktop per activar-ho.
+TrustedPaths/Revoke: revoca
+Advanced/Unsandboxed: Executa aquest wiki sense l'aïllament (sandbox)
+Advanced/UnsandboxedHelp: El JavaScript d'aquest wiki s'executarà amb accés total al teu ordinador: podrà llegir, modificar i eliminar qualsevol fitxer al qual tu tinguis accés. Activa-ho només per a un wiki que hagis escrit tu o en què confiïs plenament, i només si necessita executar mòduls de Node o ordres de shell.
+Settings/Backups: Còpies de seguretat
+Settings/Flags: Indicadors de Chromium
+Settings/Spellcheck: Corrector ortogràfic
+Settings/Plugins: Connectors
+Settings/Templates: Plantilles
+Settings/UserConfig: Carpeta de configuració de l'usuari
+Settings/WikiListTitle: Títol de la finestra de la llista de wikis
+Settings/TrustedPaths: Camins de confiança
+Settings/Version: Versió
+Settings/ResetToDefault: Restableix
+Settings/OpenChromiumFlags: Obre els indicadors de Chromium
+Settings/OpenConfigFolder: Obre la carpeta de configuració
+Settings/InstallPlugins: Instal·la connectors…
+Spellcheck/Enable: Activa el corrector ortogràfic local
+Spellcheck/LanguageHeading: Idioma del corrector ortogràfic
+Spellcheck/GoogleHeading: Privadesa: servei de correcció de Google
+Spellcheck/EnableGoogle: Fes servir el servei de correcció remot de Google (envia el teu text a Google)
+Spellcheck/DiagnosticsHeading: Diagnòstic
+Spellcheck/Refresh: Actualitza
+TrustedPaths/RevokeTooltip: Impedeix que aquest wiki llegeixi aquest camí
+Convert/NoDestination: No s'ha triat cap destinació per a la conversió.
+Convert/ToFile: Voleu convertir aquest wiki d'una carpeta a un sol fitxer?
+Convert/ToFolder: Voleu convertir aquest wiki d'un sol fitxer a una carpeta?
+Convert/OriginalKept: El wiki original no s'elimina.
+Convert/InProgress: S'està convertint el wiki…
+Convert/Failed: La conversió ha fallat:
+Convert/Done: Wiki convertit:

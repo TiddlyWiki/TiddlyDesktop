@@ -90,3 +90,39 @@ Share/RulesHeading: डोमेन नियम
 Share/RulesHelp: प्रति पंक्ति एक नियम <code>domain=kind</code> के रूप में (जैसे <code>vimeo.com=youtube</code>, या ऊपर जोड़े गए टेम्पलेट के लिए <code>mastodon.social=mastodon</code>) किसी साइट को किसी विशेष टेम्पलेट पर भेजने के लिए।
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: एकल-फ़ाइल विकी के बैकअप डिफ़ॉल्ट रूप से प्रत्येक विकी के साथ लिखे जाते हैं। इसके बजाय सभी बैकअप एक स्थान पर एकत्र करने के लिए यहाँ एक फ़ोल्डर चुनें।
+Toolbar/Support: सहयोग
+Support/Blurb: TiddlyWiki और TiddlyDesktop नि:शुल्क और ओपन सोर्स हैं। यदि वे आपके लिए उपयोगी हैं, तो Open Collective पर उनके निरंतर विकास में सहयोग देने पर विचार करें।
+Support/Button: Open Collective पर सहयोग दें
+PluginChooser/BackstageTarget: यह विकी सूची
+PluginChooser/BackstageNote: TiddlyDesktop को पुनः आरंभ करने के बाद प्रभावी होता है
+PluginChooser/SavedPendingRestart: सहेजा गया। सक्रिय करने के लिए TiddlyDesktop पुनः आरंभ करें।
+TrustedPaths/Revoke: रद्द करें
+Advanced/Unsandboxed: इस विकी को सैंडबॉक्स के बिना चलाएँ
+Advanced/UnsandboxedHelp: इस विकी का अपना JavaScript आपके कंप्यूटर तक पूरी पहुँच के साथ चलेगा — यह हर वह फ़ाइल पढ़, बदल और मिटा सकता है जो आप पढ़ सकते हैं। इसे केवल उसी विकी के लिए सक्षम करें जिसे आपने स्वयं लिखा है या जिस पर आप पूरी तरह भरोसा करते हैं, और तभी जब उसे Node मॉड्यूल या शेल कमांड चलाने की आवश्यकता हो।
+Settings/Backups: बैकअप
+Settings/Flags: Chromium फ़्लैग
+Settings/Spellcheck: वर्तनी जाँच
+Settings/Plugins: प्लगइन
+Settings/Templates: टेम्पलेट
+Settings/UserConfig: उपयोगकर्ता कॉन्फ़िगरेशन फ़ोल्डर
+Settings/WikiListTitle: विकी सूची विंडो का शीर्षक
+Settings/TrustedPaths: विश्वसनीय पथ
+Settings/Version: संस्करण
+Settings/ResetToDefault: डिफ़ॉल्ट पर रीसेट करें
+Settings/OpenChromiumFlags: Chromium फ़्लैग खोलें
+Settings/OpenConfigFolder: कॉन्फ़िगरेशन फ़ोल्डर खोलें
+Settings/InstallPlugins: प्लगइन इंस्टॉल करें…
+Spellcheck/Enable: स्थानीय वर्तनी जाँच सक्षम करें
+Spellcheck/LanguageHeading: वर्तनी जाँच की भाषा
+Spellcheck/GoogleHeading: गोपनीयता: Google की वर्तनी सेवा
+Spellcheck/EnableGoogle: Google की दूरस्थ वर्तनी सेवा का उपयोग करें (आपका पाठ Google को भेजता है)
+Spellcheck/DiagnosticsHeading: निदान
+Spellcheck/Refresh: ताज़ा करें
+TrustedPaths/RevokeTooltip: इस विकी को यह पथ पढ़ने से रोकें
+Convert/NoDestination: रूपांतरण के लिए कोई गंतव्य नहीं चुना गया।
+Convert/ToFile: इस विकी को फ़ोल्डर से एकल फ़ाइल में बदलें?
+Convert/ToFolder: इस विकी को एकल फ़ाइल से फ़ोल्डर में बदलें?
+Convert/OriginalKept: मूल विकी हटाई नहीं जाती।
+Convert/InProgress: विकी बदली जा रही है…
+Convert/Failed: रूपांतरण विफल:
+Convert/Done: विकी बदली गई:

@@ -64,7 +64,7 @@ child alive leaves a wiki writable by whatever finds the port.
 
 "use strict";
 
-(function () {
+(function() {
 	var fs = require("fs"),
 		net = require("net"),
 		os = require("os"),
@@ -78,12 +78,12 @@ child alive leaves a wiki writable by whatever finds the port.
 	// report back) is a great deal more invasive.
 	function findFreePort(cb) {
 		var probe = net.createServer();
-		probe.on("error", function (err) {
+		probe.on("error", function(err) {
 			cb(err, 0);
 		});
-		probe.listen(0, "127.0.0.1", function () {
+		probe.listen(0, "127.0.0.1", function() {
 			var port = probe.address().port;
-			probe.close(function () {
+			probe.close(function() {
 				cb(null, port);
 			});
 		});
@@ -99,13 +99,13 @@ child alive leaves a wiki writable by whatever finds the port.
 		var deadline = Date.now() + timeoutMs;
 		(function attempt() {
 			var sock = net.connect(port, "127.0.0.1");
-			sock.once("connect", function () {
+			sock.once("connect", function() {
 				sock.destroy();
 				cb(null);
 			});
-			sock.once("error", function () {
+			sock.once("error", function() {
 				sock.destroy();
-				if (Date.now() > deadline) {
+				if(Date.now() > deadline) {
 					cb(new Error("timed out waiting for the wiki server to accept connections"));
 				} else {
 					setTimeout(attempt, 100);
@@ -117,26 +117,26 @@ child alive leaves a wiki writable by whatever finds the port.
 	// The child's output, kept to a bounded tail purely for diagnostics. It MUST be drained:
 	// TiddlyWiki logs a line per save, and an unread pipe eventually fills and blocks the server.
 	function drain(stream, sink) {
-		if (!stream) return;
+		if(!stream) return;
 		stream.setEncoding("utf8");
-		stream.on("data", function (chunk) {
+		stream.on("data", function(chunk) {
 			sink.text = (sink.text + chunk).slice(-4000);
 		});
-		stream.on("error", function () {});
+		stream.on("error", function() {});
 	}
 
 	// Kill one server process. Split out because the failure path has to stop a SPECIFIC
 	// process rather than whichever one is current.
 	function stopProcess(proc) {
-		if (!proc) return;
+		if(!proc) return;
 		try {
 			proc.kill();
-		} catch (e) {}
+		} catch(e) {}
 		// Force it if it does not go quietly, so a wedged server cannot outlive its window.
-		setTimeout(function () {
+		setTimeout(function() {
 			try {
-				if (!proc.killed) proc.kill("SIGKILL");
-			} catch (e) {}
+				if(!proc.killed) proc.kill("SIGKILL");
+			} catch(e) {}
 		}, 3000);
 	}
 
@@ -153,13 +153,13 @@ child alive leaves a wiki writable by whatever finds the port.
 
 	cb(err, {origin, authHeader}) — what the parent needs to forward to us.
 	*/
-	window.tdStartWikiServer = function (options, cb) {
+	window.tdStartWikiServer = function(options, cb) {
 		// A shell reload calls this again. Without stopping the previous one first, the old
 		// server keeps its port and its write access to the wiki folder with nothing pointing
 		// at it any more.
 		window.tdStopWikiServer();
-		findFreePort(function (portErr, port) {
-			if (portErr) {
+		findFreePort(function(portErr, port) {
+			if(portErr) {
 				cb(portErr, null);
 				return;
 			}
@@ -169,8 +169,7 @@ child alive leaves a wiki writable by whatever finds the port.
 				var tiddlywikiJs = path.join(options.appDir, "tiddlywiki", "tiddlywiki.js");
 
 				// Node's own flags, which must precede the script path.
-				var argv = [
-					"--permission",
+				var argv = ["--permission",
 					// Node 26 gates networking too; without this the server cannot listen.
 					"--allow-net",
 					// See the header: NOT scoped, deliberately.
@@ -218,13 +217,10 @@ child alive leaves a wiki writable by whatever finds the port.
 				// principals. It must never carry the internal one, and it must never serve the
 				// shell path — which it cannot, being a different server on a different port.
 				var lan = options.lan;
-				if (lan && lan.host && lan.port) {
-					argv.push(
-						"--listen",
-						"host=" + lan.host,
-						"port=" + lan.port,
+				if(lan && lan.host && lan.port) {
+					argv.push("--listen", "host=" + lan.host, "port=" + lan.port,
 						"readers=" + (lan.readers || "(anon)"),
-						"writers=" + (lan.writers || "(authenticated)"),
+						"writers=" + (lan.writers || "(authenticated)")
 					);
 					// Only name a credentials file that actually exists. TiddlyWiki's basic
 					// authenticator reads it with readFileSync and, when that fails, returns an
@@ -233,27 +229,25 @@ child alive leaves a wiki writable by whatever finds the port.
 					// the whole server and takes the wiki with it. The settings default is a
 					// placeholder rather than a promise that the file is there.
 					var credPath = lan.credentials || "";
-					if (credPath) {
+					if(credPath) {
 						var resolved = path.resolve(options.wikiPath, credPath);
-						if (fs.existsSync(resolved)) {
+						if(fs.existsSync(resolved)) {
 							argv.push("credentials=" + credPath);
 						} else {
-							console.warn(
-								"[TiddlyDesktop] ignoring credentials file (not found): " +
-									resolved,
+							console.warn("[TiddlyDesktop] ignoring credentials file (not found): " + resolved
 							);
 						}
 					}
-					if (lan.pathPrefix) {
+					if(lan.pathPrefix) {
 						argv.push("path-prefix=" + lan.pathPrefix);
 					}
-					if (lan.rootTiddler) {
+					if(lan.rootTiddler) {
 						argv.push("root-tiddler=" + lan.rootTiddler);
 					}
-					if (lan.anonUsername) {
+					if(lan.anonUsername) {
 						argv.push("anon-username=" + lan.anonUsername);
 					}
-					if (lan.gzip === "yes") {
+					if(lan.gzip === "yes") {
 						argv.push("gzip=yes");
 					}
 				}
@@ -261,7 +255,7 @@ child alive leaves a wiki writable by whatever finds the port.
 				// NWJS_START_AS_NODE is what turns our own binary into a plain Node interpreter.
 				// process.execPath is that binary; there is no separate node to point at.
 				var env = {};
-				Object.keys(process.env).forEach(function (k) {
+				Object.keys(process.env).forEach(function(k) {
 					env[k] = process.env[k];
 				});
 				env.NWJS_START_AS_NODE = "1";
@@ -270,14 +264,14 @@ child alive leaves a wiki writable by whatever finds the port.
 				child = childProcess.spawn(process.execPath, argv, {
 					cwd: options.appDir,
 					env: env,
-					stdio: ["ignore", "pipe", "pipe"],
+					stdio: ["ignore", "pipe", "pipe"]
 				});
 				// Captured for the handlers below. A shell reload starts a second server while the
 				// first is still exiting, and handlers that touched the shared `child` would then
 				// null out the NEW process's handle — orphaning it. They compare identity instead.
 				var proc = child,
 					log = childLog;
-			} catch (e) {
+			} catch(e) {
 				console.error("[TiddlyDesktop] folder wiki server failed to spawn:", e);
 				cb(e, null);
 				return;
@@ -285,7 +279,7 @@ child alive leaves a wiki writable by whatever finds the port.
 
 			var settled = false;
 			function settle(err, result) {
-				if (settled) return;
+				if(settled) return;
 				settled = true;
 				cb(err, result);
 			}
@@ -293,50 +287,45 @@ child alive leaves a wiki writable by whatever finds the port.
 			drain(proc.stdout, log);
 			drain(proc.stderr, log);
 
-			proc.on("error", function (err) {
+			proc.on("error", function(err) {
 				console.error("[TiddlyDesktop] folder wiki server error:", err);
 				settle(err, null);
 			});
 
-			proc.on("exit", function (code, signal) {
+			proc.on("exit", function(code, signal) {
 				var how = "code=" + code + (signal ? " signal=" + signal : "");
-				if (!settled) {
+				if(!settled) {
 					// Died before it ever listened. The tail is the only clue the user can be
 					// given, and on a permission fault it is the assertion described in the
 					// header rather than a tidy error.
 					console.error(
 						"[TiddlyDesktop] folder wiki server exited before listening (" + how + "):\n" +
-							log.text,
+							log.text
 					);
 					settle(new Error("the wiki server exited before it started listening (" + how + ")"), null);
 				} else {
 					// Died while serving: the iframe is now pointing at a dead origin. Nothing
 					// here can recover it, but say so rather than leaving a silently broken wiki.
-					console.error(
-						"[TiddlyDesktop] folder wiki server stopped (" + how + "):\n" + log.text,
-					);
+					console.error("[TiddlyDesktop] folder wiki server stopped (" + how + "):\n" + log.text);
 				}
 				// Only if this is still the current server — see the capture above.
-				if (child === proc) { child = null; }
+				if(child === proc) { child = null; }
 			});
 
-			waitForPort(port, 30000, function (waitErr) {
-				if (waitErr) {
-					console.error(
-						"[TiddlyDesktop] folder wiki server did not come up:\n" + log.text,
-					);
+			waitForPort(port, 30000, function(waitErr) {
+				if(waitErr) {
+					console.error("[TiddlyDesktop] folder wiki server did not come up:\n" + log.text);
 					// Stop THIS process, not whatever is current: a reload may already have
 					// replaced it, and the global handle would take out the new one.
-					if (child === proc) { child = null; }
+					if(child === proc) { child = null; }
 					stopProcess(proc);
 					settle(waitErr, null);
 					return;
 				}
 				settle(null, {
 					origin: "http://127.0.0.1:" + port,
-					authHeader:
-						"Basic " + Buffer.from(user + ":" + pass).toString("base64"),
-					wikiPath: String(options.wikiPath || ""),
+					authHeader: "Basic " + Buffer.from(user + ":" + pass).toString("base64"),
+					wikiPath: String(options.wikiPath || "")
 				});
 			});
 		});
@@ -349,7 +338,7 @@ child alive leaves a wiki writable by whatever finds the port.
 	the window that started it, and an orphan keeps the wiki folder writable through a port that
 	nothing is watching any more.
 	*/
-	window.tdStopWikiServer = function () {
+	window.tdStopWikiServer = function() {
 		var proc = child;
 		child = null;
 		stopProcess(proc);
@@ -357,7 +346,7 @@ child alive leaves a wiki writable by whatever finds the port.
 
 	// Backstop for paths that tear the window down without going through the close handler
 	// (a reload, or a crash in the parent). Killing twice is harmless; leaking a server is not.
-	window.addEventListener("unload", function () {
-		try { window.tdStopWikiServer(); } catch (e) {}
+	window.addEventListener("unload", function() {
+		try { window.tdStopWikiServer(); } catch(e) {}
 	});
 })();

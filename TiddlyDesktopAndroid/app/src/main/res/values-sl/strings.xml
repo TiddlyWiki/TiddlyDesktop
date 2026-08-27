@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TiddlyDesktop</string>
     <string name="wiki_server_channel_name">Odprti wikiji</string>
     <string name="wiki_server_notification_title">TiddlyDesktop se izvaja</string>
     <string name="wiki_server_notification_text">Wiki strežniki so aktivni</string>
@@ -77,4 +76,9 @@
     </plurals>
     <string name="reveal_chooser">Odpri mapo v…</string>
     <string name="reveal_path_hint">Mapa: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Shrani prilogo v</string>
+    <string name="attach_folder_message">Izberite podmapo znotraj attachments/ (pustite prazno za korensko mapo).</string>
+    <string name="attach_folder_hint">Podmapa</string>
+    <string name="attach_folder_save">Shrani</string>
 </resources>

@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">फ़ोल्डर इसमें खोलें…</string>
     <string name="reveal_path_hint">फ़ोल्डर: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">संलग्नक यहाँ सहेजें</string>
+    <string name="attach_folder_message">attachments/ के भीतर एक सबफ़ोल्डर चुनें (मूल फ़ोल्डर के लिए खाली छोड़ें)।</string>
+    <string name="attach_folder_hint">सबफ़ोल्डर</string>
+    <string name="attach_folder_save">सहेजें</string>
 </resources>

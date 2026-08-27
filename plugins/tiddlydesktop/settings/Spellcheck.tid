@@ -1,14 +1,14 @@
 title: $:/TiddlyDesktop/Settings/Spellcheck
-caption: Spellcheck
+caption: {{$:/language/TiddlyDesktop/Settings/Spellcheck}}
 tags: $:/TiddlyDesktop/Settings
 
 ~TiddlyDesktop can check the spelling of text you type in editors, underlining likely misspellings. This uses Chromium's built-in ''local'' dictionary — nothing you type is sent anywhere.
 
-<$checkbox tiddler="$:/config/TiddlyDesktop/EnableSpellcheck" field="text" checked="yes" unchecked="no" default="yes"> Enable local spellcheck </$checkbox>
+<$checkbox tiddler="$:/config/TiddlyDesktop/EnableSpellcheck" field="text" checked="yes" unchecked="no" default="yes"> {{$:/language/TiddlyDesktop/Spellcheck/Enable}} </$checkbox>
 
 Takes effect on a wiki's next (re)load — no need to restart ~TiddlyDesktop.
 
-! Spellcheck language
+! {{$:/language/TiddlyDesktop/Spellcheck/LanguageHeading}}
 
 Choose the dictionary used for spellchecking.
 
@@ -54,21 +54,21 @@ Choose the dictionary used for spellchecking.
 
 Whether a language can be spellchecked at all depends on your operating system, so not every choice will work; the Diagnostics panel below shows whether a dictionary is actually active for your choice.
 
-! Privacy: Google spellcheck service
+! {{$:/language/TiddlyDesktop/Spellcheck/GoogleHeading}}
 
 Chromium also offers an ''enhanced'' spellcheck that sends everything you type in an editor to Google's servers for suggestions. Because the underlying engine (NW.js) would enable this by default, ~TiddlyDesktop keeps it ''off'' unless you opt in here.
 
-<$checkbox tiddler="$:/config/TiddlyDesktop/EnableGoogleSpellcheck" field="text" checked="yes" unchecked="no" default="no"> Use Google's remote spellcheck service (sends your text to Google) </$checkbox>
+<$checkbox tiddler="$:/config/TiddlyDesktop/EnableGoogleSpellcheck" field="text" checked="yes" unchecked="no" default="no"> {{$:/language/TiddlyDesktop/Spellcheck/EnableGoogle}} </$checkbox>
 
 <div class="tc-message-box">This takes effect only after you ''restart ~TiddlyDesktop'', and only while local spellcheck (above) is enabled.</div>
 
-! Diagnostics
+! {{$:/language/TiddlyDesktop/Spellcheck/DiagnosticsHeading}}
 
 Chromium owns the spellcheck settings and only reads them at startup, so a change here reaches the engine on the next launch. This panel reads the live state from disk: if a ''config tiddler'' disagrees with the matching ''Chromium Preferences'' value, the setting has not taken effect yet.
 
 <$button>
 <$action-setfield $tiddler="$:/state/td-spellcheck-diag-token" text=<<now "[UTC]YYYY0MM0DD0hh0mm0ss0XXX">>/>
-Refresh
+{{$:/language/TiddlyDesktop/Spellcheck/Refresh}}
 </$button>
 
 <pre><$macrocall $name="td-spellcheck-diagnostics" $type="text/plain" $output="text/plain" token={{$:/state/td-spellcheck-diag-token}}/></pre>

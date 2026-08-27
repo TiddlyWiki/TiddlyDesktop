@@ -276,8 +276,7 @@ manage. The collaboration plugin is versioned independently: `major.minor` from 
 patch = commits touching the plugin since that `major.minor.0`. That needs full git history, which
 CI provides with `fetch-depth: 0`.
 
-See [`AGENTS.md`](AGENTS.md) for code style and contribution rules, and
-[Documentation §24](Documentation.md#24-architecture-and-internals) for the architecture.
+See [Documentation §24](Documentation.md#24-architecture-and-internals) for the architecture.
 
 ### Cutting a release
 

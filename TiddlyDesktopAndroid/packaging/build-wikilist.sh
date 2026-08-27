@@ -10,7 +10,7 @@
 set -eu
 
 HERE=$(cd "$(dirname "$0")" && pwd)          # .../TiddlyDesktopAndroid/packaging
-REPO=$(cd "$HERE/../.." && pwd)              # .../TiddlyDesktopOverhaul
+REPO=$(cd "$HERE/../.." && pwd)              # the TiddlyDesktop repository root
 PLUGIN="$REPO/plugins/tiddlydesktop"
 ANDROID="$HERE/wikilist-android"
 OUT="$HERE/wikilist"                         # generated (git-ignored)
@@ -29,6 +29,23 @@ cp "$ANDROID/tiddlywiki.info" "$OUT/tiddlywiki.info"
 
 # Android bridge + override tiddlers (these mask the plugin's node-only shadows)
 cp -R "$ANDROID/tiddlers/." "$OUT/tiddlers/"
+
+# Stamp the app version into $:/TiddlyDesktop/version, which Settings and Help both display.
+# It used to be a checked-in constant, so every Android build reported the version it happened to
+# hold rather than the one being built. The desktop equivalent is propagate-version.js; here the
+# authority is build.gradle.kts (which CI overrides with -PversionName for a tagged release, so
+# TD_VERSION is honoured first for exactly that case).
+VERSION="${TD_VERSION:-}"
+if [ -z "$VERSION" ]; then
+	VERSION=$(sed -n 's/.*versionName[[:space:]]*=.*?:[[:space:]]*"\([^"]*\)".*/\1/p' \
+		"$HERE/../app/build.gradle.kts" | head -n 1)
+fi
+if [ -n "$VERSION" ]; then
+	printf 'title: $:/TiddlyDesktop/version\n\n%s\n' "$VERSION" > "$OUT/tiddlers/version.tid"
+	echo "Stamped WikiList version: $VERSION"
+else
+	echo "warning: could not determine the app version; leaving version.tid as checked in" >&2
+fi
 
 # The classic plugin itself, resolvable by name as tiddlywiki/tiddlydesktop
 cp -R "$PLUGIN" "$OUT/plugins/tiddlywiki/tiddlydesktop"

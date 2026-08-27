@@ -131,10 +131,54 @@ function stringify(s) {
 		.replace(/[\x00-\x1f\x80-\uFFFF]/g, escape); // non-ASCII characters
 };
 
-// Helper function to save a file
+/*
+Write the wiki file.
+
+Via a temp file in the same directory and a rename, not a plain writeFileSync. A single-file wiki
+is one file holding everything the user has ever written, and writeFileSync truncates it before it
+writes: a crash, a power cut or a full disk between those two leaves a truncated wiki and nothing
+else. The rename is atomic on every platform we ship (POSIX rename(2), and Node's rename uses
+MoveFileEx with MOVEFILE_REPLACE_EXISTING on Windows), so the file on disk is only ever the old
+wiki or the new one.
+
+The path is REALPATH'd first, because a rename replaces whatever is at the destination — including
+a symlink. A wiki that is a link into a synced folder would otherwise have the link itself
+overwritten with a regular file, leaving the real wiki frozen at its previous contents and silently
+out of the sync set. writeFileSync followed the link; so must this. Resolving also puts the temp
+file in the same directory as the real target, which is what keeps the rename inside one filesystem
+and therefore atomic.
+
+Falls back to a direct write if the rename cannot be done — a directory the user cannot create
+files in, say. That is the old behaviour, which is the right floor: failing to save at all would
+be worse than saving the way we always used to.
+*/
 function saveFile(filepath,content) {
-	var fs = require("fs");
-	fs.writeFileSync(filepath,content);
+	var fs = require("fs"),
+		path = require("path"),
+		target = filepath;
+	// A wiki that does not exist yet has no realpath; write to the path we were given.
+	try { target = fs.realpathSync(filepath); } catch(e) {}
+	var temp = path.join(path.dirname(target),"." + path.basename(target) + ".tdsave");
+	// The temp file is created fresh, so it gets default permissions rather than the wiki's. A user
+	// who chmod'd their wiki to 0600 must not have it quietly widened to 0644 by saving it.
+	var mode = null;
+	try { mode = fs.statSync(target).mode & 0o777; } catch(e) {}
+	try {
+		var fd = fs.openSync(temp,"w");
+		try {
+			fs.writeFileSync(fd,content);
+			// Flush before the rename, so a power loss cannot leave a renamed file whose bytes
+			// never reached the disk.
+			try { fs.fsyncSync(fd); } catch(e) {}
+		} finally {
+			fs.closeSync(fd);
+		}
+		if(mode !== null) { try { fs.chmodSync(temp,mode); } catch(e) {} }
+		fs.renameSync(temp,target);
+	} catch(e) {
+		try { fs.unlinkSync(temp); } catch(e2) {}
+		fs.writeFileSync(filepath,content);
+	}
 }
 
 // Helper function to backup a file by copying it to the backup folder. `keepText` is the

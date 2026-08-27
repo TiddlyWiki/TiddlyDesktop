@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">باز کردن پوشه در…</string>
     <string name="reveal_path_hint">پوشه: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">ذخیرهٔ پیوست در</string>
+    <string name="attach_folder_message">یک زیرپوشه در attachments/ انتخاب کنید (برای استفاده از ریشه، خالی بگذارید).</string>
+    <string name="attach_folder_hint">زیرپوشه</string>
+    <string name="attach_folder_save">ذخیره</string>
 </resources>

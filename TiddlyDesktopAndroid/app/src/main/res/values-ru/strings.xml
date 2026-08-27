@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">Открыть папку в…</string>
     <string name="reveal_path_hint">Папка: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Сохранить вложение в</string>
+    <string name="attach_folder_message">Выберите подпапку внутри attachments/ (оставьте пустым, чтобы использовать корень).</string>
+    <string name="attach_folder_hint">Подпапка</string>
+    <string name="attach_folder_save">Сохранить</string>
 </resources>

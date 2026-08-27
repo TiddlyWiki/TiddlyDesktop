@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">Otevřít složku v…</string>
     <string name="reveal_path_hint">Složka: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Uložit přílohu do</string>
+    <string name="attach_folder_message">Vyberte podsložku uvnitř attachments/ (ponechte prázdné pro kořen).</string>
+    <string name="attach_folder_hint">Podsložka</string>
+    <string name="attach_folder_save">Uložit</string>
 </resources>

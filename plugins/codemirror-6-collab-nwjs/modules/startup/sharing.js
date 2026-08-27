@@ -51,6 +51,25 @@ Message types (sent via transport's _send → relay + LAN, all carry msg_id):
 
 "use strict";
 
+/*
+Verbose tracing, off unless $:/config/codemirror-6/collab/debug is "yes".
+
+These lines are genuinely useful — the transport and the asset handshake are timing-dependent and
+hard to reproduce, so a user hitting a problem can be asked to switch this on. What they must not
+do is run unconditionally: they are noisy on every session, and some of them name the relay URL and
+the room code, which do not belong in a console the user did not ask to fill.
+
+Warnings and errors stay unconditional. They report something going wrong, which is always worth
+saying.
+*/
+function dbg() {
+	try {
+		if($tw.wiki.getTiddlerText("$:/config/codemirror-6/collab/debug","no").trim() !== "yes") { return; }
+		console.log.apply(console, arguments);
+	} catch(e) {}
+}
+
+
 exports.name        = "codemirror-6-collab-nwjs-sharing";
 exports.after       = ["codemirror-6-collab-nwjs-transport", "startup", "rootwidget"];
 // Run BEFORE the page render: this startup restores the room's owned/subscribed sets and
@@ -1135,16 +1154,16 @@ exports.startup = function() {
 	var SERVE_CONSENT_MS = 120000;
 
 	function _requestAssetConsent(title, requesterId, requestId) {
-		console.log("[collab-asset] consent request title=" + title + " from=" + requesterId + " req=" + requestId);
-		if(!requesterId || requesterId === deviceId || !requestId) { console.log("[collab-asset] consent SKIP: bad ids"); return; }
-		if(!ownedTiddlers[title]) { console.log("[collab-asset] consent SKIP: not owner of " + title); return; }          // only the owner holds the original
+		dbg("[collab-asset] consent request title=" + title + " from=" + requesterId + " req=" + requestId);
+		if(!requesterId || requesterId === deviceId || !requestId) { dbg("[collab-asset] consent SKIP: bad ids"); return; }
+		if(!ownedTiddlers[title]) { dbg("[collab-asset] consent SKIP: not owner of " + title); return; }          // only the owner holds the original
 		var t = $tw.wiki.getTiddler(title);
-		if(!t) { console.log("[collab-asset] consent SKIP: tiddler missing " + title); return; }
+		if(!t) { dbg("[collab-asset] consent SKIP: tiddler missing " + title); return; }
 		var info = _assetInfo(title);
-		if(!info) { console.log("[collab-asset] consent SKIP: not an asset " + title); return; }
-		if(!_isMemberPresent(requesterId)) { console.log("[collab-asset] consent SKIP: requester not a present member " + requesterId); return; } // must be a present (verified) member
-		if(pendingServes[requestId]) { console.log("[collab-asset] consent SKIP: duplicate req " + requestId); return; }       // ignore duplicate request ids
-		console.log("[collab-asset] consent prompt raised for " + title);
+		if(!info) { dbg("[collab-asset] consent SKIP: not an asset " + title); return; }
+		if(!_isMemberPresent(requesterId)) { dbg("[collab-asset] consent SKIP: requester not a present member " + requesterId); return; } // must be a present (verified) member
+		if(pendingServes[requestId]) { dbg("[collab-asset] consent SKIP: duplicate req " + requestId); return; }       // ignore duplicate request ids
+		dbg("[collab-asset] consent prompt raised for " + title);
 		var member = $tw.wiki.getTiddler("$:/temp/collab/members/" + requesterId);
 		var requesterName = (member && (member.fields["user-name"] || member.fields["device-name"])) || requesterId;
 		var uri = t.fields._canonical_uri;
@@ -1224,7 +1243,7 @@ exports.startup = function() {
 		delete fields.text;
 		var chunks = [];
 		for(var i = 0; i < base64.length; i += ASSET_CHUNK_B64) { chunks.push(base64.slice(i, i + ASSET_CHUNK_B64)); }
-		console.log("[collab-asset] serving " + t.fields.title + " to " + requesterId + " bytes=" + Math.floor(base64.length * 3 / 4) + " chunks=" + chunks.length);
+		dbg("[collab-asset] serving " + t.fields.title + " to " + requesterId + " bytes=" + Math.floor(base64.length * 3 / 4) + " chunks=" + chunks.length);
 		_sendPrivate(requesterId, {
 			type:        "collab-asset-meta",
 			requestId:   requestId,
@@ -1309,7 +1328,7 @@ exports.startup = function() {
 		delete pendingAssetGets[requestId];
 		if(!inc || !pending) return;
 		var base64 = inc.chunks.join("");
-		console.log("[collab-asset] finalize req=" + requestId + " title=" + pending.title + " bytes=" + Math.floor(base64.length * 3 / 4) + " external=" + (!!pending.dest && assetUtil.storeExternally()));
+		dbg("[collab-asset] finalize req=" + requestId + " title=" + pending.title + " bytes=" + Math.floor(base64.length * 3 / 4) + " external=" + (!!pending.dest && assetUtil.storeExternally()));
 		var meta   = inc.meta;
 		var title  = pending.title;
 		var fields = meta.fields || {};
@@ -1671,7 +1690,7 @@ exports.startup = function() {
 			break;
 
 		case "collab-asset-meta":
-			console.log("[collab-asset] meta received req=" + msg.requestId + " title=" + msg.title + " size=" + msg.size + " chunks=" + msg.totalChunks + " ours=" + !!pendingAssetGets[msg.requestId]);
+			dbg("[collab-asset] meta received req=" + msg.requestId + " title=" + msg.title + " size=" + msg.size + " chunks=" + msg.totalChunks + " ours=" + !!pendingAssetGets[msg.requestId]);
 			if(!pendingAssetGets[msg.requestId]) break;   // not our request
 			if(msg.size > assetUtil.maxAssetBytes()) {
 				delete pendingAssetGets[msg.requestId];

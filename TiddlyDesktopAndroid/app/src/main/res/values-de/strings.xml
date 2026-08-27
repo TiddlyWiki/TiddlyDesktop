@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">Ordner öffnen mit…</string>
     <string name="reveal_path_hint">Ordner: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Anhang speichern unter</string>
+    <string name="attach_folder_message">Wähle einen Unterordner in attachments/ (leer lassen, um den Stammordner zu verwenden).</string>
+    <string name="attach_folder_hint">Unterordner</string>
+    <string name="attach_folder_save">Speichern</string>
 </resources>

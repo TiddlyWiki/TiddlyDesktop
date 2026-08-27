@@ -498,9 +498,11 @@ exports.start = function(options, cb) {
 	});
 
 	/*
-	The attachment server. Serves files by ABSOLUTE path — the path is base64url in the URL, so
+	The attachment server. Serves files by ABSOLUTE path — the path is base64 in the URL, so
 	nothing is ever joined and there is no traversal surface at all; the decoded path is simply
-	checked against this wiki's trusted paths.
+	checked against this wiki's trusted paths. Standard base64 rather than base64url, because the
+	shim runs in the wiki's own document and only has btoa; "/" and "+" are both legal in a URL
+	path segment, and the route is matched by prefix rather than by splitting on "/".
 
 	CORS is decided per request from Sec-Fetch-Dest, not from the file's type:
 
@@ -568,7 +570,15 @@ exports.start = function(options, cb) {
 	var wikiOrigin = null, attachOrigin = null, reported = false;
 	function report(err) {
 		if(reported) { return; }
-		if(err) { reported = true; try { cb(err, null); } catch(e) {} return; }
+		if(err) {
+			reported = true;
+			// One of the two failed to bind, so this window will not open. Close the OTHER one
+			// rather than leaving it listening on a loopback port for a window that never exists.
+			try { server.close(); } catch(e) {}
+			try { attachServer.close(); } catch(e) {}
+			try { cb(err, null); } catch(e) {}
+			return;
+		}
 		if(!wikiOrigin || !attachOrigin) { return; }   // wait for both
 		reported = true;
 		try {

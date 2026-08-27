@@ -75,6 +75,9 @@ function WikiFolderWindow(options) {
 		if(err || !handle) {
 			console.error("[TiddlyDesktop] could not start the wiki server:",err && err.message);
 			$tw.desktop.utils.wiki.alert("Could not open this wiki: its local server failed to start. " + ((err && err.message) || ""));
+			// No window will ever exist for this entry — drop it from the window list, or the wiki
+			// stays unopenable for the rest of the session. See handleOpenFailure.
+			self.windowList.handleOpenFailure(self);
 			return;
 		}
 		self.server = handle;
@@ -388,9 +391,9 @@ WikiFolderWindow.prototype.extractIframeFavicon = function() {
 	} catch(e) {}
 };
 
-// Reopen this window — just focus it.
+// Reopen this window — raise it (show / un-minimise / focus), see window-base.js.
 WikiFolderWindow.prototype.reopen = function() {
-	try { this.window_nwjs.focus(); } catch(e) {}
+	this.focusWindow();
 };
 
 WikiFolderWindow.prototype.getWikiTitle = function() {

@@ -74,4 +74,9 @@
     </plurals>
     <string name="reveal_chooser">在以下应用中打开文件夹…</string>
     <string name="reveal_path_hint">文件夹：%1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">附件保存到</string>
+    <string name="attach_folder_message">请选择 attachments/ 内的子文件夹（留空则保存到 attachments/ 根目录）。</string>
+    <string name="attach_folder_hint">子文件夹</string>
+    <string name="attach_folder_save">保存</string>
 </resources>

@@ -90,3 +90,39 @@ Share/RulesHeading: Domänregler
 Share/RulesHelp: En regel per rad som <code>domain=kind</code> (t.ex. <code>vimeo.com=youtube</code>, eller <code>mastodon.social=mastodon</code> för en mall du lagt till ovan) för att styra en webbplats till en viss mall.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Säkerhetskopior av enfilswikis skrivs som standard bredvid varje wiki. Välj en mapp här för att i stället samla alla säkerhetskopior på ett ställe.
+Toolbar/Support: Stöd
+Support/Blurb: TiddlyWiki och TiddlyDesktop är gratis och öppen källkod. Om du har nytta av dem, överväg att stödja deras fortsatta utveckling på Open Collective.
+Support/Button: Stöd på Open Collective
+PluginChooser/BackstageTarget: Den här wikilistan
+PluginChooser/BackstageNote: träder i kraft efter omstart av TiddlyDesktop
+PluginChooser/SavedPendingRestart: Sparat. Starta om TiddlyDesktop för att aktivera.
+TrustedPaths/Revoke: återkalla
+Advanced/Unsandboxed: Kör denna wiki utan sandlåda
+Advanced/UnsandboxedHelp: Den här wikins egen JavaScript körs med full åtkomst till din dator — den kan läsa, ändra och radera alla filer du själv kan. Slå bara på detta för en wiki du själv har skrivit eller litar fullständigt på, och bara om den behöver köra node-moduler eller skalkommandon.
+Settings/Backups: Säkerhetskopior
+Settings/Flags: Chromium-flaggor
+Settings/Spellcheck: Stavningskontroll
+Settings/Plugins: Tillägg
+Settings/Templates: Mallar
+Settings/UserConfig: Mapp för användarkonfiguration
+Settings/WikiListTitle: Titel på wikilistfönstret
+Settings/TrustedPaths: Betrodda sökvägar
+Settings/Version: Version
+Settings/ResetToDefault: Återställ till standard
+Settings/OpenChromiumFlags: Öppna Chromium-flaggor
+Settings/OpenConfigFolder: Öppna konfigurationsmappen
+Settings/InstallPlugins: Installera tillägg…
+Spellcheck/Enable: Aktivera lokal stavningskontroll
+Spellcheck/LanguageHeading: Språk för stavningskontroll
+Spellcheck/GoogleHeading: Integritet: Googles stavningstjänst
+Spellcheck/EnableGoogle: Använd Googles fjärrstavningstjänst (skickar din text till Google)
+Spellcheck/DiagnosticsHeading: Diagnostik
+Spellcheck/Refresh: Uppdatera
+TrustedPaths/RevokeTooltip: Hindra den här wikin från att läsa den här sökvägen
+Convert/NoDestination: Ingen destination valdes för konverteringen.
+Convert/ToFile: Konvertera den här wikin från en mapp till en enda fil?
+Convert/ToFolder: Konvertera den här wikin från en enda fil till en mapp?
+Convert/OriginalKept: Den ursprungliga wikin tas inte bort.
+Convert/InProgress: Konverterar wiki…
+Convert/Failed: Konverteringen misslyckades:
+Convert/Done: Wiki konverterad:

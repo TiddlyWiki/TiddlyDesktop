@@ -108,6 +108,25 @@ PEER AUTHENTICATION (relay-signed membership certificates)
 
 "use strict";
 
+/*
+Verbose tracing, off unless $:/config/codemirror-6/collab/debug is "yes".
+
+These lines are genuinely useful — the transport and the asset handshake are timing-dependent and
+hard to reproduce, so a user hitting a problem can be asked to switch this on. What they must not
+do is run unconditionally: they are noisy on every session, and some of them name the relay URL and
+the room code, which do not belong in a console the user did not ask to fill.
+
+Warnings and errors stay unconditional. They report something going wrong, which is always worth
+saying.
+*/
+function dbg() {
+	try {
+		if($tw.wiki.getTiddlerText("$:/config/codemirror-6/collab/debug","no").trim() !== "yes") { return; }
+		console.log.apply(console, arguments);
+	} catch(e) {}
+}
+
+
 exports.name = "codemirror-6-collab-nwjs-transport";
 exports.after = ["startup","rootwidget"];
 exports.synchronous = true;
@@ -143,7 +162,7 @@ exports.startup = function() {
 	// In nwdisable iframes, cross-origin restrictions block window.parent access,
 	// so we cannot detect the NW.js context from inside the iframe. Always continue:
 	// _connect() no-ops until WS is available or the bridge fires _nwjsWsBridgeReady.
-	console.log("[collab-transport] WS=" + !!WS + " hasBridge=" + (typeof window._nwjsWsCreate === "function"));
+	dbg("[collab-transport] WS=" + !!WS + " hasBridge=" + (typeof window._nwjsWsCreate === "function"));
 
 	// ── resolve Node.js built-ins ──────────────────────────────────────────────
 
@@ -1353,7 +1372,7 @@ exports.startup = function() {
 	// wiki-file-window.js injects _nwjsWsCreate/Send/Terminate into this window.
 	function _createBridgeSocket(url, headers) {
 		var bridgeId = window._nwjsWsCreate(url, headers || {});
-		console.log("[collab-transport] _createBridgeSocket id=" + bridgeId + " url=" + url);
+		dbg("[collab-transport] _createBridgeSocket id=" + bridgeId + " url=" + url);
 		var listeners = {};
 		var socket = {
 			readyState: 0, // CONNECTING
@@ -1371,7 +1390,7 @@ exports.startup = function() {
 		};
 		var prev = window._nwjsWsOnEvent;
 		window._nwjsWsOnEvent = function(id, type, data) {
-			console.log("[collab-transport] _nwjsWsOnEvent id=" + id + " type=" + type + " bridgeId=" + bridgeId);
+			dbg("[collab-transport] _nwjsWsOnEvent id=" + id + " type=" + type + " bridgeId=" + bridgeId);
 			if(prev && id !== bridgeId) { prev(id, type, data); return; }
 			if(id !== bridgeId) return;
 			if(type === "open") {
@@ -1417,7 +1436,7 @@ exports.startup = function() {
 		// close handler so we route a dead token through re-verification instead of
 		// blindly reconnecting. Scoped to this _connect() call (one socket).
 		var authFailedThisSocket = false;
-		console.log("[collab-transport] _connect() gen=" + myGen + " hasBridge=" + (typeof window._nwjsWsCreate === "function") + " WS=" + !!WS + " relayUrl=" + relayUrl + " roomCode=" + roomCode + " authToken=" + !!authToken);
+		dbg("[collab-transport] _connect() gen=" + myGen + " hasBridge=" + (typeof window._nwjsWsCreate === "function") + " WS=" + !!WS + " relayUrl=" + relayUrl + " roomCode=" + roomCode + " authToken=" + !!authToken);
 		_writeStatus("connecting");
 
 		var wsUrl   = relayUrl.replace(/^http/, "ws").replace(/\/?$/, "") +
@@ -1467,7 +1486,7 @@ exports.startup = function() {
 		ws.on("open", function() {
 			if(myGen !== connectionGeneration) return;
 			clearTimeout(connectTimeout);
-			console.log("[collab-transport] relay WS opened, sending join");
+			dbg("[collab-transport] relay WS opened, sending join");
 			lastRelayActivity = Date.now();
 			reconnectDelay = 1000;
 			_authFailures = 0;   // a clean open clears any prior auth-failure streak
@@ -1493,7 +1512,7 @@ exports.startup = function() {
 		ws.on("close", function() {
 			if(myGen !== connectionGeneration) return; // stale socket - ignore
 			clearTimeout(connectTimeout);
-			console.log("[collab-transport] relay WS closed, destroyed=" + destroyed);
+			dbg("[collab-transport] relay WS closed, destroyed=" + destroyed);
 			connected = false;
 			if(_terminalStatus) {
 				// Relay sent an error before closing - surface it, don't retry.
@@ -1891,7 +1910,7 @@ exports.startup = function() {
 	// ── explicit connect / disconnect event handlers ───────────────────────────
 
 	$tw.rootWidget.addEventListener("codemirror-6-collab-connect", function() {
-		console.log("[collab-transport] connect event received, relayUrl=" + relayUrl + " hasBridge=" + (typeof window._nwjsWsCreate === "function"));
+		dbg("[collab-transport] connect event received, relayUrl=" + relayUrl + " hasBridge=" + (typeof window._nwjsWsCreate === "function"));
 		_userWantsConnected = true;
 		_teardown();
 		_startSession();

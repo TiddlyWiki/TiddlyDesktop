@@ -74,4 +74,9 @@
     </plurals>
     <string name="reveal_chooser">폴더 열기…</string>
     <string name="reveal_path_hint">폴더: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">첨부 파일 저장 위치</string>
+    <string name="attach_folder_message">attachments/ 안의 하위 폴더를 선택하세요(비워 두면 최상위에 저장합니다).</string>
+    <string name="attach_folder_hint">하위 폴더</string>
+    <string name="attach_folder_save">저장</string>
 </resources>

@@ -25,14 +25,17 @@ import java.util.concurrent.TimeUnit
  * contract (see README.md → "The `window._nwjs*` bridge contract"). Exposed to the wiki WebView
  * as `TDCollab`.
  *
- * Implemented here (Phase 1 + partial 2):
+ * Implemented here:
  *   - httpGet     : CORS-free HTTP GET for the relay REST API (bridge A)
  *   - openExternal: system browser for OAuth (bridge A)
  *   - wsCreate/wsSend/wsClose : WebSocket with custom Authorization header (bridge B)
  *   - wikiDir     : base dir string for asset path resolution (bridge C)
  *   - fileCmd     : asset read/write to the wiki's folder on disk (bridge C)
+ *   - lanInit/lanAddPeer/lanBroadcast/lanClose : the LAN peer transport (bridge D), driven by a
+ *     Node helper process (node/LanNodeHelper.kt) because the WebView has no Node of its own
  *
- * NOT implemented: the LAN peer transport (bridge D) — relay-only works without it.
+ * All four bridges of the contract are implemented; the relay remains the fallback when the LAN
+ * helper cannot start.
  *
  * Every callback into JS goes through webView.post { evaluateJavascript(...) } to stay
  * on the UI thread. All @JavascriptInterface methods run on a background WebView thread.
@@ -80,9 +83,20 @@ class CollabBridge(
                     if (!resp.isSuccessful) {
                         deliverHttp(id, err = "HTTP ${resp.code}", jsonBody = null)
                     } else {
-                        // The plugin reads _nwjsHttpResults[id].data as an *object*, so we
-                        // hand back the raw JSON text as the object literal value.
-                        deliverHttp(id, err = null, jsonBody = resp.body?.string() ?: "null")
+                        // The plugin reads _nwjsHttpResults[id].data as an *object*, so the body is
+                        // spliced into a JS expression. It must therefore be VALIDATED as JSON
+                        // first: the response comes from whatever relay the wiki named, and a body
+                        // that is not JSON would either break the expression or -- with a body
+                        // crafted for it -- close the literal and run as script in the wiki's page.
+                        // Desktop parses with JSON.parse and reports "Invalid JSON"; this does the
+                        // same, re-serialising from the parsed form so only well-formed JSON is
+                        // ever spliced.
+                        val canonical = canonicalJson(resp.body?.string())
+                        if (canonical == null) {
+                            deliverHttp(id, err = "Invalid JSON", jsonBody = null)
+                        } else {
+                            deliverHttp(id, err = null, jsonBody = canonical)
+                        }
                     }
                 }
             } catch (e: Exception) {
@@ -100,6 +114,29 @@ class CollabBridge(
         // Scheme-gated: this is reachable from any wiki's JavaScript, and an unrestricted
         // ACTION_VIEW is a deep link into any app on the device. See host/ExternalLinks.kt.
         com.tiddlywiki.tiddlydesktop.host.ExternalLinks.open(activity, Uri.parse(url))
+    }
+
+    /**
+     * Re-serialise [body] from its parsed form, or null if it is not valid JSON.
+     *
+     * Going through the parser is the point: the output is JSON this process produced, so it cannot
+     * carry anything that would terminate the JavaScript expression it is spliced into. A bare JSON
+     * scalar is accepted too (JSONTokener handles it), because a relay endpoint answering `true` or
+     * a number is well-formed and the plugin copes with it.
+     */
+    private fun canonicalJson(body: String?): String? {
+        val text = body?.trim().orEmpty()
+        if (text.isEmpty()) return "null"
+        return runCatching {
+            when (val parsed = org.json.JSONTokener(text).nextValue()) {
+                is JSONObject -> parsed.toString()
+                is JSONArray -> parsed.toString()
+                is String -> JSONObject.quote(parsed)
+                is Number, is Boolean -> parsed.toString()
+                JSONObject.NULL -> "null"
+                else -> null
+            }
+        }.getOrNull()
     }
 
     private fun deliverHttp(id: Int, err: String?, jsonBody: String?) {
@@ -244,13 +281,20 @@ class CollabBridge(
         }
     }
 
-    /** Tear the helper down. Called from WikiActivity.onDestroy. */
+    /** Tear the bridge down. Called from WikiActivity.onDestroy. */
     fun dispose() {
         lanHelper?.stop()
         lanHelper = null
+        // The heartbeat scheduler owns a thread of its own; without this it outlives the WebView
+        // it was feeding, once per wiki opened.
+        heartbeats.values.forEach { it.cancel(false) }
+        heartbeats.clear()
+        sockets.values.forEach { runCatching { it.cancel() } }
+        sockets.clear()
+        heartbeatExec.shutdownNow()
     }
 
-    // ── bridge C: asset file I/O (SAF) ───────────────────────────────────────────
+    // ── bridge C: wiki directory + asset file I/O ────────────────────────────────
 
     @JavascriptInterface
     fun wikiDir(): String = wikiDir

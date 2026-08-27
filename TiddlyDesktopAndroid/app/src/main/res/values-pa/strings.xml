@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TiddlyDesktop</string>
     <string name="wiki_server_channel_name">ਖੁੱਲ੍ਹੇ ਵਿਕੀ</string>
     <string name="wiki_server_notification_title">TiddlyDesktop ਚੱਲ ਰਿਹਾ ਹੈ</string>
     <string name="wiki_server_notification_text">ਵਿਕੀ ਸਰਵਰ ਸਰਗਰਮ ਹਨ</string>
@@ -77,4 +76,9 @@
     </plurals>
     <string name="reveal_chooser">ਫੋਲਡਰ ਇਸ ਵਿੱਚ ਖੋਲ੍ਹੋ…</string>
     <string name="reveal_path_hint">ਫੋਲਡਰ: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">ਨੱਥੀ ਇੱਥੇ ਸੰਭਾਲੋ</string>
+    <string name="attach_folder_message">attachments/ ਦੇ ਅੰਦਰ ਇੱਕ ਸਬਫੋਲਡਰ ਚੁਣੋ (ਮੂਲ ਫੋਲਡਰ ਲਈ ਖਾਲੀ ਛੱਡੋ)।</string>
+    <string name="attach_folder_hint">ਸਬਫੋਲਡਰ</string>
+    <string name="attach_folder_save">ਸੰਭਾਲੋ</string>
 </resources>

@@ -1,5 +1,5 @@
 title: $:/TiddlyDesktop/Settings/Backups
-caption: Backups
+caption: {{$:/language/TiddlyDesktop/Settings/Backups}}
 tags: $:/TiddlyDesktop/Settings
 
 Backups for TiddlyWiki 5 file-based wikis are automatically made every time saving changes results in a file being overwritten. The previous content of the file is copied to a backup file with a filename such as `\MyData\index.html_backup\index.20150107172517000.html`.
@@ -13,7 +13,7 @@ The path of the backup file can be an absolute path or a relative path to the di
 
 <$button>
 <$action-deletetiddler $tiddler="$:/TiddlyDesktop/BackupPath"/>
-Reset to default
+{{$:/language/TiddlyDesktop/Settings/ResetToDefault}}
 </$button>
 
 The ''number of backups to keep'' is configured ''per wiki'': open a wiki's **advanced** options in the list and set it under Backups (empty keeps all backups).

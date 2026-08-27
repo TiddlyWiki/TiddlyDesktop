@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">Abrir carpeta en…</string>
     <string name="reveal_path_hint">Carpeta: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Guardar el adjunto en</string>
+    <string name="attach_folder_message">Elige una subcarpeta dentro de attachments/ (déjalo en blanco para usar la raíz).</string>
+    <string name="attach_folder_hint">Subcarpeta</string>
+    <string name="attach_folder_save">Guardar</string>
 </resources>

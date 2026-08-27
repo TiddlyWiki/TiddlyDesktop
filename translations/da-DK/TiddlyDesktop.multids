@@ -90,3 +90,39 @@ Share/RulesHeading: Domæneregler
 Share/RulesHelp: Én regel pr. linje som <code>domain=kind</code> (f.eks. <code>vimeo.com=youtube</code>, eller <code>mastodon.social=mastodon</code> for en skabelon, du har tilføjet ovenfor) for at dirigere et websted til en bestemt skabelon.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Sikkerhedskopier af enkeltfil-wikier skrives som standard ved siden af hver wiki. Vælg en mappe her for i stedet at samle alle sikkerhedskopier ét sted.
+Toolbar/Support: Støt
+Support/Blurb: TiddlyWiki og TiddlyDesktop er gratis og open source. Hvis du finder dem nyttige, så overvej at støtte deres fortsatte udvikling på Open Collective.
+Support/Button: Støt på Open Collective
+PluginChooser/BackstageTarget: Denne wikiliste
+PluginChooser/BackstageNote: træder i kraft efter genstart af TiddlyDesktop
+PluginChooser/SavedPendingRestart: Gemt. Genstart TiddlyDesktop for at aktivere.
+TrustedPaths/Revoke: tilbagekald
+Advanced/Unsandboxed: Kør denne wiki uden sandkasse
+Advanced/UnsandboxedHelp: Denne wikis egen JavaScript kører med fuld adgang til din computer — den kan læse, ændre og slette enhver fil, du selv kan. Slå kun dette til for en wiki, du selv har skrevet eller stoler fuldt ud på, og kun hvis den skal køre node-moduler eller shell-kommandoer.
+Settings/Backups: Sikkerhedskopier
+Settings/Flags: Chromium-flag
+Settings/Spellcheck: Stavekontrol
+Settings/Plugins: Plugins
+Settings/Templates: Skabeloner
+Settings/UserConfig: Mappe med brugerkonfiguration
+Settings/WikiListTitle: Titel på wikiliste-vinduet
+Settings/TrustedPaths: Betroede stier
+Settings/Version: Version
+Settings/ResetToDefault: Nulstil til standard
+Settings/OpenChromiumFlags: Åbn Chromium-flag
+Settings/OpenConfigFolder: Åbn konfigurationsmappen
+Settings/InstallPlugins: Installér plugins…
+Spellcheck/Enable: Aktivér lokal stavekontrol
+Spellcheck/LanguageHeading: Sprog for stavekontrol
+Spellcheck/GoogleHeading: Privatliv: Googles stavetjeneste
+Spellcheck/EnableGoogle: Brug Googles fjernstavetjeneste (sender din tekst til Google)
+Spellcheck/DiagnosticsHeading: Diagnostik
+Spellcheck/Refresh: Opdater
+TrustedPaths/RevokeTooltip: Stop denne wiki i at læse denne sti
+Convert/NoDestination: Der blev ikke valgt en destination til konverteringen.
+Convert/ToFile: Konvertér denne wiki fra en mappe til én fil?
+Convert/ToFolder: Konvertér denne wiki fra én fil til en mappe?
+Convert/OriginalKept: Den oprindelige wiki slettes ikke.
+Convert/InProgress: Konverterer wiki…
+Convert/Failed: Konverteringen mislykkedes:
+Convert/Done: Wiki konverteret:

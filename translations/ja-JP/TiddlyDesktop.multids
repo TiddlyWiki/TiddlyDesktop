@@ -90,3 +90,39 @@ Share/RulesHeading: ドメイン規則
 Share/RulesHelp: 1 行に 1 つの規則を <code>domain=kind</code> の形式で（例: <code>vimeo.com=youtube</code>、または上で追加したテンプレート用に <code>mastodon.social=mastodon</code>）記述し、サイトを特定のテンプレートに振り分けます。
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: 単一ファイルウィキのバックアップは、既定では各ウィキの隣に書き込まれます。代わりにすべてのバックアップを 1 か所にまとめるには、ここでフォルダーを選択してください。
+Toolbar/Support: 支援
+Support/Blurb: TiddlyWiki と TiddlyDesktop は無料でオープンソースです。役に立っていると感じたら、Open Collective での継続的な開発支援をご検討ください。
+Support/Button: Open Collective で支援する
+PluginChooser/BackstageTarget: このウィキ一覧
+PluginChooser/BackstageNote: TiddlyDesktop の再起動後に反映されます
+PluginChooser/SavedPendingRestart: 保存しました。有効にするには TiddlyDesktop を再起動してください。
+TrustedPaths/Revoke: 取り消す
+Advanced/Unsandboxed: このウィキをサンドボックスなしで実行する
+Advanced/UnsandboxedHelp: このウィキ自身の JavaScript が、あなたのコンピューターへの完全なアクセス権をもって実行されます — あなたが読めるファイルはすべて読み取り・変更・削除できます。自分で書いたウィキ、または完全に信頼できるウィキで、Node モジュールやシェルコマンドの実行が必要な場合にのみ有効にしてください。
+Settings/Backups: バックアップ
+Settings/Flags: Chromium フラグ
+Settings/Spellcheck: スペルチェック
+Settings/Plugins: プラグイン
+Settings/Templates: テンプレート
+Settings/UserConfig: ユーザー設定フォルダー
+Settings/WikiListTitle: ウィキ一覧ウィンドウのタイトル
+Settings/TrustedPaths: 信頼済みパス
+Settings/Version: バージョン
+Settings/ResetToDefault: 既定値に戻す
+Settings/OpenChromiumFlags: Chromium フラグを開く
+Settings/OpenConfigFolder: 設定フォルダーを開く
+Settings/InstallPlugins: プラグインをインストール…
+Spellcheck/Enable: ローカルのスペルチェックを有効にする
+Spellcheck/LanguageHeading: スペルチェックの言語
+Spellcheck/GoogleHeading: プライバシー: Google のスペルチェックサービス
+Spellcheck/EnableGoogle: Google のリモートスペルチェックサービスを使う（入力内容が Google に送信されます）
+Spellcheck/DiagnosticsHeading: 診断
+Spellcheck/Refresh: 更新
+TrustedPaths/RevokeTooltip: このウィキがこのパスを読めないようにする
+Convert/NoDestination: 変換先が選択されていません。
+Convert/ToFile: このウィキをフォルダーから単一ファイルに変換しますか？
+Convert/ToFolder: このウィキを単一ファイルからフォルダーに変換しますか？
+Convert/OriginalKept: 元のウィキは削除されません。
+Convert/InProgress: ウィキを変換しています…
+Convert/Failed: 変換に失敗しました:
+Convert/Done: ウィキを変換しました:

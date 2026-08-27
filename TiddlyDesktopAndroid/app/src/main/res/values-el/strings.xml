@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">Άνοιγμα φακέλου σε…</string>
     <string name="reveal_path_hint">Φάκελος: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Αποθήκευση συνημμένου σε</string>
+    <string name="attach_folder_message">Επιλέξτε έναν υποφάκελο μέσα στο attachments/ (αφήστε το κενό για τη ρίζα).</string>
+    <string name="attach_folder_hint">Υποφάκελος</string>
+    <string name="attach_folder_save">Αποθήκευση</string>
 </resources>

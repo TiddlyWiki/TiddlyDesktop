@@ -37,6 +37,11 @@ exports.startup = function() {
 		}
 		return null;
 	}
+	// User-facing text goes through the language plugin like the rest of the wiki-list UI. The
+	// second argument is the English fallback, so a language without these keys still reads.
+	function lingo(key,fallback) {
+		return $tw.wiki.getTiddlerText("$:/language/TiddlyDesktop/" + key,fallback);
+	}
 	$tw.rootWidget.addEventListener("tiddlydesktop-open-backstage-wiki",function(event) {
 		$tw.desktop.backstageWindow.show();
 		return false;
@@ -98,22 +103,25 @@ exports.startup = function() {
 		console.log("[TiddlyDesktop] convert-wiki source=" + sourceUrl + " dest=" + destPath +
 			" files=" + (event.files ? event.files.length : "none"));
 		if(!destPath) {
-			$tw.desktop.utils.wiki.alert("No destination was chosen for the conversion.");
+			$tw.desktop.utils.wiki.alert(lingo("Convert/NoDestination","No destination was chosen for the conversion."));
 			return false;
 		}
 		var decodedUrl = $tw.desktop.windowList.decodeUrl(sourceUrl);
 		var sourcePath = decodedUrl.info.pathname;
 		var isFolder   = decodedUrl.type === "folder";
-		var actionLabel = isFolder ? "folder to file" : "file to folder";
-		var msg = "Convert wiki " + actionLabel + "?\n\nFrom: " + sourcePath + "\nTo: " + destPath + "\n\nThe original wiki will not be deleted.";
+		var question = isFolder
+			? lingo("Convert/ToFile","Convert this wiki from a folder into a single file?")
+			: lingo("Convert/ToFolder","Convert this wiki from a single file into a folder?");
+		var msg = question + "\n\nFrom: " + sourcePath + "\nTo: " + destPath + "\n\n" +
+			lingo("Convert/OriginalKept","The original wiki is not deleted.");
 		var dialogWindow = getDialogWindow(event);
 		if(dialogWindow && !dialogWindow.confirm(msg)) { return false; }
-		$tw.desktop.utils.wiki.alert("Converting wiki (" + actionLabel + ")…");
+		$tw.desktop.utils.wiki.alert(lingo("Convert/InProgress","Converting wiki…"));
 		$tw.desktop.windowList.convertWiki(sourceUrl, destPath, function(err) {
 			if(err) {
-				$tw.desktop.utils.wiki.alert("Conversion failed: " + err.message);
+				$tw.desktop.utils.wiki.alert(lingo("Convert/Failed","Conversion failed:") + " " + err.message);
 			} else {
-				$tw.desktop.utils.wiki.alert("Wiki converted: " + destPath);
+				$tw.desktop.utils.wiki.alert(lingo("Convert/Done","Wiki converted:") + " " + destPath);
 			}
 		});
 		return false;

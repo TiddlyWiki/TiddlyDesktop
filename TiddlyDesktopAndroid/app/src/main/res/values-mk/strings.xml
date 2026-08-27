@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TiddlyDesktop</string>
     <string name="wiki_server_channel_name">Отворени викија</string>
     <string name="wiki_server_notification_title">TiddlyDesktop работи</string>
     <string name="wiki_server_notification_text">Вики-серверите се активни</string>
@@ -77,4 +76,9 @@
     </plurals>
     <string name="reveal_chooser">Отвори папка во…</string>
     <string name="reveal_path_hint">Папка: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Зачувај го прилогот во</string>
+    <string name="attach_folder_message">Изберете потпапка во attachments/ (оставете празно за да се користи коренот).</string>
+    <string name="attach_folder_hint">Потпапка</string>
+    <string name="attach_folder_save">Зачувај</string>
 </resources>

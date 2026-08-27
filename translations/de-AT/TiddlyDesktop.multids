@@ -90,3 +90,39 @@ Share/RulesHeading: Domänenregeln
 Share/RulesHelp: Eine Regel pro Zeile als <code>domain=kind</code> (z. B. <code>vimeo.com=youtube</code> oder <code>mastodon.social=mastodon</code> für eine oben hinzugefügte Vorlage), um eine Website einer bestimmten Vorlage zuzuordnen.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Sicherungen von Einzeldatei-Wikis werden standardmäßig neben jedem Wiki gespeichert. Wähle hier einen Ordner, um stattdessen alle Sicherungen an einem Ort zu sammeln.
+Toolbar/Support: Unterstützen
+Support/Blurb: TiddlyWiki und TiddlyDesktop sind kostenlos und quelloffen. Wenn du sie nützlich findest, unterstütze bitte ihre Weiterentwicklung auf Open Collective.
+Support/Button: Auf Open Collective unterstützen
+PluginChooser/BackstageTarget: Diese Wiki-Liste
+PluginChooser/BackstageNote: wird nach einem Neustart von TiddlyDesktop wirksam
+PluginChooser/SavedPendingRestart: Gespeichert. Starte TiddlyDesktop neu, um es zu aktivieren.
+TrustedPaths/Revoke: widerrufen
+Advanced/Unsandboxed: Dieses Wiki ohne Sandbox ausführen
+Advanced/UnsandboxedHelp: Das JavaScript dieses Wikis läuft dann mit vollem Zugriff auf deinen Computer — es kann jede Datei lesen, ändern und löschen, die du lesen kannst. Aktiviere das nur für ein Wiki, das du selbst geschrieben hast oder dem du vollständig vertraust, und nur wenn es Node-Module oder Shell-Befehle ausführen muss.
+Settings/Backups: Sicherungen
+Settings/Flags: Chromium-Flags
+Settings/Spellcheck: Rechtschreibprüfung
+Settings/Plugins: Plugins
+Settings/Templates: Vorlagen
+Settings/UserConfig: Benutzerkonfigurationsordner
+Settings/WikiListTitle: Titel des Wiki-Listen-Fensters
+Settings/TrustedPaths: Vertraute Pfade
+Settings/Version: Version
+Settings/ResetToDefault: Auf Standard zurücksetzen
+Settings/OpenChromiumFlags: Chromium-Flags öffnen
+Settings/OpenConfigFolder: Konfigurationsordner öffnen
+Settings/InstallPlugins: Plugins installieren…
+Spellcheck/Enable: Lokale Rechtschreibprüfung aktivieren
+Spellcheck/LanguageHeading: Sprache der Rechtschreibprüfung
+Spellcheck/GoogleHeading: Datenschutz: Googles Rechtschreibdienst
+Spellcheck/EnableGoogle: Googles Rechtschreibdienst verwenden (sendet deinen Text an Google)
+Spellcheck/DiagnosticsHeading: Diagnose
+Spellcheck/Refresh: Aktualisieren
+TrustedPaths/RevokeTooltip: Diesem Wiki den Zugriff auf diesen Pfad entziehen
+Convert/NoDestination: Für die Umwandlung wurde kein Ziel gewählt.
+Convert/ToFile: Dieses Wiki von einem Ordner in eine einzelne Datei umwandeln?
+Convert/ToFolder: Dieses Wiki von einer einzelnen Datei in einen Ordner umwandeln?
+Convert/OriginalKept: Das ursprüngliche Wiki wird nicht gelöscht.
+Convert/InProgress: Wiki wird umgewandelt…
+Convert/Failed: Umwandlung fehlgeschlagen:
+Convert/Done: Wiki umgewandelt:

@@ -90,3 +90,39 @@ Share/RulesHeading: Regole di dominio
 Share/RulesHelp: Una regola per riga come <code>domain=kind</code> (es. <code>vimeo.com=youtube</code>, oppure <code>mastodon.social=mastodon</code> per un modello aggiunto sopra) per indirizzare un sito a un modello specifico.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: I backup dei wiki a file singolo vengono salvati accanto a ciascun wiki per impostazione predefinita. Scegli qui una cartella per raccogliere tutti i backup in un unico posto.
+Toolbar/Support: Sostieni
+Support/Blurb: TiddlyWiki e TiddlyDesktop sono gratuiti e open source. Se li trovi utili, valuta di sostenere il loro sviluppo continuo su Open Collective.
+Support/Button: Sostieni su Open Collective
+PluginChooser/BackstageTarget: Questo elenco di wiki
+PluginChooser/BackstageNote: ha effetto dopo il riavvio di TiddlyDesktop
+PluginChooser/SavedPendingRestart: Salvato. Riavvia TiddlyDesktop per attivarlo.
+TrustedPaths/Revoke: revoca
+Advanced/Unsandboxed: Esegui questo wiki senza sandbox
+Advanced/UnsandboxedHelp: Il JavaScript di questo wiki verrà eseguito con accesso completo al tuo computer: potrà leggere, modificare ed eliminare qualsiasi file a cui tu abbia accesso. Attivalo solo per un wiki che hai scritto tu o di cui ti fidi completamente, e solo se deve eseguire moduli Node o comandi shell.
+Settings/Backups: Backup
+Settings/Flags: Flag di Chromium
+Settings/Spellcheck: Controllo ortografico
+Settings/Plugins: Plugin
+Settings/Templates: Modelli
+Settings/UserConfig: Cartella di configurazione utente
+Settings/WikiListTitle: Titolo della finestra dell'elenco wiki
+Settings/TrustedPaths: Percorsi attendibili
+Settings/Version: Versione
+Settings/ResetToDefault: Ripristina i valori predefiniti
+Settings/OpenChromiumFlags: Apri i flag di Chromium
+Settings/OpenConfigFolder: Apri la cartella di configurazione
+Settings/InstallPlugins: Installa plugin…
+Spellcheck/Enable: Attiva il controllo ortografico locale
+Spellcheck/LanguageHeading: Lingua del controllo ortografico
+Spellcheck/GoogleHeading: Privacy: servizio di correzione Google
+Spellcheck/EnableGoogle: Usa il servizio di correzione remoto di Google (invia il tuo testo a Google)
+Spellcheck/DiagnosticsHeading: Diagnostica
+Spellcheck/Refresh: Aggiorna
+TrustedPaths/RevokeTooltip: Impedisci a questo wiki di leggere questo percorso
+Convert/NoDestination: Non è stata scelta alcuna destinazione per la conversione.
+Convert/ToFile: Convertire questo wiki da cartella a file singolo?
+Convert/ToFolder: Convertire questo wiki da file singolo a cartella?
+Convert/OriginalKept: Il wiki originale non viene eliminato.
+Convert/InProgress: Conversione del wiki…
+Convert/Failed: Conversione non riuscita:
+Convert/Done: Wiki convertito:

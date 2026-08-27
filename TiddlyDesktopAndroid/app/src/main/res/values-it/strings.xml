@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">Apri cartella in…</string>
     <string name="reveal_path_hint">Cartella: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Salva l\'allegato in</string>
+    <string name="attach_folder_message">Scegli una sottocartella dentro attachments/ (lascia vuoto per usare la radice).</string>
+    <string name="attach_folder_hint">Sottocartella</string>
+    <string name="attach_folder_save">Salva</string>
 </resources>

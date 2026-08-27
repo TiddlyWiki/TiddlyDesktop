@@ -90,3 +90,39 @@ Share/RulesHeading: Règles de domaine
 Share/RulesHelp: Une règle par ligne sous la forme <code>domain=kind</code> (p. ex. <code>vimeo.com=youtube</code>, ou <code>mastodon.social=mastodon</code> pour un modèle ajouté ci-dessus) pour associer un site à un modèle particulier.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Les sauvegardes des wikis mono-fichier sont écrites à côté de chaque wiki par défaut. Choisissez un dossier ici pour regrouper toutes les sauvegardes au même endroit.
+Toolbar/Support: Soutenir
+Support/Blurb: TiddlyWiki et TiddlyDesktop sont gratuits et open source. Si vous les trouvez utiles, envisagez de soutenir leur développement continu sur Open Collective.
+Support/Button: Soutenir sur Open Collective
+PluginChooser/BackstageTarget: Cette liste de wikis
+PluginChooser/BackstageNote: prend effet après le redémarrage de TiddlyDesktop
+PluginChooser/SavedPendingRestart: Enregistré. Redémarrez TiddlyDesktop pour l'activer.
+TrustedPaths/Revoke: révoquer
+Advanced/Unsandboxed: Exécuter ce wiki sans bac à sable
+Advanced/UnsandboxedHelp: Le JavaScript de ce wiki s'exécutera avec un accès complet à votre ordinateur — il pourra lire, modifier et supprimer tout fichier auquel vous avez accès. N'activez cette option que pour un wiki que vous avez écrit ou en lequel vous avez entièrement confiance, et seulement s'il doit exécuter des modules Node ou des commandes shell.
+Settings/Backups: Sauvegardes
+Settings/Flags: Indicateurs Chromium
+Settings/Spellcheck: Correcteur orthographique
+Settings/Plugins: Plugins
+Settings/Templates: Modèles
+Settings/UserConfig: Dossier de configuration utilisateur
+Settings/WikiListTitle: Titre de la fenêtre de la liste des wikis
+Settings/TrustedPaths: Chemins de confiance
+Settings/Version: Version
+Settings/ResetToDefault: Réinitialiser
+Settings/OpenChromiumFlags: Ouvrir les indicateurs Chromium
+Settings/OpenConfigFolder: Ouvrir le dossier de configuration
+Settings/InstallPlugins: Installer des plugins…
+Spellcheck/Enable: Activer le correcteur orthographique local
+Spellcheck/LanguageHeading: Langue du correcteur orthographique
+Spellcheck/GoogleHeading: Confidentialité : service de correction Google
+Spellcheck/EnableGoogle: Utiliser le service de correction distant de Google (envoie votre texte à Google)
+Spellcheck/DiagnosticsHeading: Diagnostics
+Spellcheck/Refresh: Actualiser
+TrustedPaths/RevokeTooltip: Empêcher ce wiki de lire ce chemin
+Convert/NoDestination: Aucune destination n'a été choisie pour la conversion.
+Convert/ToFile: Convertir ce wiki d'un dossier en un fichier unique ?
+Convert/ToFolder: Convertir ce wiki d'un fichier unique en un dossier ?
+Convert/OriginalKept: Le wiki d'origine n'est pas supprimé.
+Convert/InProgress: Conversion du wiki…
+Convert/Failed: Échec de la conversion :
+Convert/Done: Wiki converti :

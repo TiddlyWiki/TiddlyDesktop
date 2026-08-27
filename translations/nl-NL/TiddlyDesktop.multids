@@ -90,3 +90,39 @@ Share/RulesHeading: Domeinregels
 Share/RulesHelp: Eén regel per regel als <code>domain=kind</code> (bijv. <code>vimeo.com=youtube</code>, of <code>mastodon.social=mastodon</code> voor een sjabloon dat je hierboven hebt toegevoegd) om een site naar een bepaald sjabloon te leiden.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Back-ups van enkelbestandswiki's worden standaard naast elke wiki opgeslagen. Kies hier een map om in plaats daarvan alle back-ups op één plek te verzamelen.
+Toolbar/Support: Steunen
+Support/Blurb: TiddlyWiki en TiddlyDesktop zijn gratis en opensource. Als je ze nuttig vindt, overweeg dan hun voortdurende ontwikkeling te steunen op Open Collective.
+Support/Button: Steunen op Open Collective
+PluginChooser/BackstageTarget: Deze wikilijst
+PluginChooser/BackstageNote: wordt van kracht na het herstarten van TiddlyDesktop
+PluginChooser/SavedPendingRestart: Opgeslagen. Herstart TiddlyDesktop om het te activeren.
+TrustedPaths/Revoke: intrekken
+Advanced/Unsandboxed: Deze wiki zonder sandbox uitvoeren
+Advanced/UnsandboxedHelp: De eigen JavaScript van deze wiki draait dan met volledige toegang tot je computer — die kan elk bestand lezen, wijzigen en verwijderen dat jij kunt lezen. Schakel dit alleen in voor een wiki die je zelf hebt geschreven of volledig vertrouwt, en alleen als die Node-modules of shell-opdrachten moet uitvoeren.
+Settings/Backups: Back-ups
+Settings/Flags: Chromium-vlaggen
+Settings/Spellcheck: Spellingcontrole
+Settings/Plugins: Plug-ins
+Settings/Templates: Sjablonen
+Settings/UserConfig: Map met gebruikersconfiguratie
+Settings/WikiListTitle: Titel van het wikilijstvenster
+Settings/TrustedPaths: Vertrouwde paden
+Settings/Version: Versie
+Settings/ResetToDefault: Terugzetten naar standaard
+Settings/OpenChromiumFlags: Chromium-vlaggen openen
+Settings/OpenConfigFolder: Configuratiemap openen
+Settings/InstallPlugins: Plug-ins installeren…
+Spellcheck/Enable: Lokale spellingcontrole inschakelen
+Spellcheck/LanguageHeading: Taal van de spellingcontrole
+Spellcheck/GoogleHeading: Privacy: spellingdienst van Google
+Spellcheck/EnableGoogle: De spellingdienst van Google gebruiken (stuurt je tekst naar Google)
+Spellcheck/DiagnosticsHeading: Diagnostiek
+Spellcheck/Refresh: Vernieuwen
+TrustedPaths/RevokeTooltip: Deze wiki dit pad niet meer laten lezen
+Convert/NoDestination: Er is geen bestemming gekozen voor de conversie.
+Convert/ToFile: Deze wiki omzetten van een map naar één bestand?
+Convert/ToFolder: Deze wiki omzetten van één bestand naar een map?
+Convert/OriginalKept: De oorspronkelijke wiki wordt niet verwijderd.
+Convert/InProgress: Wiki wordt omgezet…
+Convert/Failed: Conversie mislukt:
+Convert/Done: Wiki omgezet:

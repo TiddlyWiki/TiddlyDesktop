@@ -9,7 +9,7 @@ Supports GitHub, GitLab, and OIDC via the relay server's server-side
 callback + polling flow (desktop doesn't receive the tiddlydesktop:// deep link):
   1. Fetch available providers from relay GET /api/auth/providers
   2. Build provider authorize URL with redirect_uri = relay callback endpoint
-  3. Open system browser (nw.Shell.openExternal)
+  3. Open system browser (via the host's _nwjsOpenExternal bridge)
   4. Poll relay GET /api/auth/result?state={state} every 2 s until token arrives
   5. Store access_token + provider in config tiddlers (triggers transport reconnect)
 
@@ -196,18 +196,25 @@ function _fetchJson(url, reqHeaders) {
 	});
 }
 
+/*
+Open the provider's sign-in page outside the wiki.
+
+_nwjsOpenExternal is the bridge the host injects (utils/bridges.js on desktop, the TDCollab shim
+on Android), and it is the only route that should exist: it checks the scheme before handing
+anything to the operating system.
+
+There used to be a fallback reaching through window.parent to Shell.openExternal directly, from
+the days when a folder wiki ran with Node in its own page. Both wiki kinds render in a sandboxed
+iframe now, so that path cannot work — and if it ever did it would be an unchecked openExternal
+reachable from wiki script, which is exactly what the bridge's check exists to prevent. What is
+left is an ordinary window.open, which the browser governs.
+*/
 function _openBrowser(url) {
-	// _nwjsOpenExternal is injected by wiki-file-window.js (single-file wikis).
-	// For wiki-folder windows, window.parent.$tw.desktop.gui is accessible directly.
 	if(typeof window._nwjsOpenExternal === "function") {
 		window._nwjsOpenExternal(url);
 		return;
 	}
-	try {
-		window.parent.$tw.desktop.gui.Shell.openExternal(url);
-	} catch(_e) {
-		window.open(url, "_blank");
-	}
+	window.open(url, "_blank");
 }
 
 // ── provider discovery ────────────────────────────────────────────────────────

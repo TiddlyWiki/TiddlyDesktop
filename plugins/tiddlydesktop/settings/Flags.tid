@@ -1,5 +1,5 @@
 title: $:/TiddlyDesktop/Settings/Flags
-caption: Chromium Flags
+caption: {{$:/language/TiddlyDesktop/Settings/Flags}}
 tags: $:/TiddlyDesktop/Settings
 
 These flags are used to control Chromium, the browser component within ~TiddlyDesktop.
@@ -8,5 +8,5 @@ These flags are used to control Chromium, the browser component within ~TiddlyDe
 
 <$button>
 <$action-sendmessage $message="tiddlydesktop-flags"/>
-Open Chromium flags
+{{$:/language/TiddlyDesktop/Settings/OpenChromiumFlags}}
 </$button>

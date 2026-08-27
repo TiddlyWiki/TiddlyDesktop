@@ -90,3 +90,39 @@ Share/RulesHeading: Правила за домени
 Share/RulesHelp: Едно правило по ред како <code>domain=kind</code> (на пр. <code>vimeo.com=youtube</code>, или <code>mastodon.social=mastodon</code> за шаблон што го додадовте погоре) за да насочите сајт кон одреден шаблон.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Резервните копии на вики со една датотека стандардно се запишуваат до секое вики. Изберете папка овде за наместо тоа да ги соберете сите резервни копии на едно место.
+Toolbar/Support: Поддршка
+Support/Blurb: TiddlyWiki и TiddlyDesktop се бесплатни и со отворен код. Ако ви се корисни, размислете да го поддржите нивниот натамошен развој на Open Collective.
+Support/Button: Поддржи на Open Collective
+PluginChooser/BackstageTarget: Оваа листа на викија
+PluginChooser/BackstageNote: стапува на сила по рестартирање на TiddlyDesktop
+PluginChooser/SavedPendingRestart: Зачувано. Рестартирајте го TiddlyDesktop за да се активира.
+TrustedPaths/Revoke: отповикај
+Advanced/Unsandboxed: Изврши го ова вики без песочник
+Advanced/UnsandboxedHelp: JavaScript-от на ова вики ќе се извршува со целосен пристап до вашиот компјутер — може да чита, менува и брише која било датотека до која вие имате пристап. Вклучете го ова само за вики што сте го напишале сами или на кое целосно му верувате, и само ако мора да извршува Node-модули или shell-команди.
+Settings/Backups: Резервни копии
+Settings/Flags: Знаменца на Chromium
+Settings/Spellcheck: Проверка на правопис
+Settings/Plugins: Приклучоци
+Settings/Templates: Шаблони
+Settings/UserConfig: Папка со корисничка конфигурација
+Settings/WikiListTitle: Наслов на прозорецот со листа на викија
+Settings/TrustedPaths: Доверливи патеки
+Settings/Version: Верзија
+Settings/ResetToDefault: Врати на стандардно
+Settings/OpenChromiumFlags: Отвори ги знаменцата на Chromium
+Settings/OpenConfigFolder: Отвори ја папката со конфигурација
+Settings/InstallPlugins: Инсталирај приклучоци…
+Spellcheck/Enable: Вклучи локална проверка на правопис
+Spellcheck/LanguageHeading: Јазик на проверката на правопис
+Spellcheck/GoogleHeading: Приватност: услугата за правопис на Google
+Spellcheck/EnableGoogle: Користи ја оддалечената услуга за правопис на Google (го испраќа твојот текст до Google)
+Spellcheck/DiagnosticsHeading: Дијагностика
+Spellcheck/Refresh: Освежи
+TrustedPaths/RevokeTooltip: Забрани му на ова вики да ја чита оваа патека
+Convert/NoDestination: Не е избрана дестинација за претворањето.
+Convert/ToFile: Да се претвори ова вики од папка во една датотека?
+Convert/ToFolder: Да се претвори ова вики од една датотека во папка?
+Convert/OriginalKept: Изворното вики не се брише.
+Convert/InProgress: Викито се претвора…
+Convert/Failed: Претворањето не успеа:
+Convert/Done: Викито е претворено:

@@ -99,3 +99,30 @@ Advanced/BackupsHelp: Backups of single-file wikis are written next to each wiki
 TrustedPaths/Revoke: revoke
 Advanced/Unsandboxed: Run this wiki without the sandbox
 Advanced/UnsandboxedHelp: This wiki's own JavaScript will run with full access to your computer — it can read, change and delete any file you can. Only enable this for a wiki you wrote or fully trust, and only if it needs to run node modules or shell commands.
+Settings/Backups: Backups
+Settings/Flags: Chromium flags
+Settings/Spellcheck: Spellcheck
+Settings/Plugins: Plugins
+Settings/Templates: Templates
+Settings/UserConfig: User configuration folder
+Settings/WikiListTitle: Wiki list window title
+Settings/TrustedPaths: Trusted paths
+Settings/Version: Version
+Settings/ResetToDefault: Reset to default
+Settings/OpenChromiumFlags: Open Chromium flags
+Settings/OpenConfigFolder: Open user config folder
+Settings/InstallPlugins: Install plugins…
+Spellcheck/Enable: Enable local spellcheck
+Spellcheck/LanguageHeading: Spellcheck language
+Spellcheck/GoogleHeading: Privacy: Google spellcheck service
+Spellcheck/EnableGoogle: Use Google's remote spellcheck service (sends your text to Google)
+Spellcheck/DiagnosticsHeading: Diagnostics
+Spellcheck/Refresh: Refresh
+TrustedPaths/RevokeTooltip: Stop this wiki reading this path
+Convert/NoDestination: No destination was chosen for the conversion.
+Convert/ToFile: Convert this wiki from a folder into a single file?
+Convert/ToFolder: Convert this wiki from a single file into a folder?
+Convert/OriginalKept: The original wiki is not deleted.
+Convert/InProgress: Converting wiki…
+Convert/Failed: Conversion failed:
+Convert/Done: Wiki converted:

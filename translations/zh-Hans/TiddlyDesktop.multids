@@ -90,3 +90,39 @@ Share/RulesHeading: 域名规则
 Share/RulesHelp: 每行一条规则，格式为 <code>domain=kind</code>（例如 <code>vimeo.com=youtube</code>，或对于上面添加的模板使用 <code>mastodon.social=mastodon</code>），将某个站点路由到特定模板。
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: 单文件 wiki 的备份默认写入在每个 wiki 旁边。在此选择一个文件夹，以便将所有备份集中到一个位置。
+Toolbar/Support: 支持
+Support/Blurb: TiddlyWiki 和 TiddlyDesktop 是免费且开源的。如果你觉得它们有用，欢迎在 Open Collective 上支持它们的持续开发。
+Support/Button: 在 Open Collective 上支持
+PluginChooser/BackstageTarget: 此 wiki 列表
+PluginChooser/BackstageNote: 重启 TiddlyDesktop 后生效
+PluginChooser/SavedPendingRestart: 已保存。重启 TiddlyDesktop 以启用。
+TrustedPaths/Revoke: 撤销
+Advanced/Unsandboxed: 在不使用沙箱的情况下运行此 wiki
+Advanced/UnsandboxedHelp: 此 wiki 自身的 JavaScript 将以对你计算机的完全访问权限运行——它可以读取、修改和删除任何你能读取的文件。仅对你自己编写或完全信任的 wiki 启用，并且仅在它需要运行 Node 模块或 shell 命令时启用。
+Settings/Backups: 备份
+Settings/Flags: Chromium 标志
+Settings/Spellcheck: 拼写检查
+Settings/Plugins: 插件
+Settings/Templates: 模板
+Settings/UserConfig: 用户配置文件夹
+Settings/WikiListTitle: wiki 列表窗口标题
+Settings/TrustedPaths: 受信任路径
+Settings/Version: 版本
+Settings/ResetToDefault: 重置为默认值
+Settings/OpenChromiumFlags: 打开 Chromium 标志
+Settings/OpenConfigFolder: 打开配置文件夹
+Settings/InstallPlugins: 安装插件…
+Spellcheck/Enable: 启用本地拼写检查
+Spellcheck/LanguageHeading: 拼写检查语言
+Spellcheck/GoogleHeading: 隐私：Google 拼写检查服务
+Spellcheck/EnableGoogle: 使用 Google 的远程拼写检查服务（会把你输入的文本发送给 Google）
+Spellcheck/DiagnosticsHeading: 诊断
+Spellcheck/Refresh: 刷新
+TrustedPaths/RevokeTooltip: 禁止此 wiki 读取该路径
+Convert/NoDestination: 未为转换选择目标位置。
+Convert/ToFile: 要把这个 wiki 从文件夹转换为单个文件吗？
+Convert/ToFolder: 要把这个 wiki 从单个文件转换为文件夹吗？
+Convert/OriginalKept: 原始 wiki 不会被删除。
+Convert/InProgress: 正在转换 wiki…
+Convert/Failed: 转换失败：
+Convert/Done: 已转换 wiki：

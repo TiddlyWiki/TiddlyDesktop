@@ -1,5 +1,5 @@
 title: $:/TiddlyDesktop/Settings/Plugins
-caption: Plugins
+caption: {{$:/language/TiddlyDesktop/Settings/Plugins}}
 tags: $:/TiddlyDesktop/Settings
 
 Install plugins, themes and languages into the wiki list itself (the backstage wiki). Sources are the
@@ -9,7 +9,7 @@ next time you start TiddlyDesktop.
 
 <$button class="td-button">
 <$action-sendmessage $message="tiddlydesktop-open-plugin-chooser" $param="backstage://self"/>
-{{$:/core/images/download-button}} Install plugins…
+{{$:/core/images/download-button}} {{$:/language/TiddlyDesktop/Settings/InstallPlugins}}
 </$button>
 
 <!-- The chooser overlay is position:fixed, so transcluding it here makes it available whenever this

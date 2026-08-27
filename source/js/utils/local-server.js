@@ -3,27 +3,27 @@ Local loopback HTTP shim for media embeds.
 
 The problem
 -----------
-Wiki content renders on an origin providers will not accept a Referer from. An embedded
-`<iframe src="https://youtube.com/embed/…">` then loads with an empty/opaque Referer and YouTube
-rejects it with player error 153 (other providers behave similarly). NW.js gives us no way to fix
-the request header — `chrome.webRequest` is unavailable in the app's event-page context.
+An embedded `<iframe src="https://youtube.com/embed/…">` needs a Referer the provider will accept,
+and a document that cannot supply one gets player error 153 (other providers behave similarly).
+NW.js gives us no way to fix the request header — `chrome.webRequest` is unavailable in the app's
+event-page context.
 
-This affects BOTH wiki kinds, which is easy to miss:
-  • single-file wikis were `file://` documents (they are served over loopback http since the
-    origin move, so they no longer need this); and
-  • folder wikis render on the app's own `chrome-extension://` origin — measured — which is
-    rejected for the same reason. utils/embeds.js is installed for them too
-    (wiki-folder-main.js), so this shim is still load-bearing for folder wikis and must not be
-    removed until they are served over http as well. See docs/security-model.md.
+Both wiki kinds are now served over loopback http (utils/wiki-server.js), which fixed the worst of
+it — a `file://` document, which is what single-file wikis used to be, has no usable origin at all.
+What is left is that a wiki's per-window origin is a fresh `http://127.0.0.1:<port>` every launch,
+and the shim is where the two things a provider still wants are set in one place: the `origin`
+parameter YouTube requires, and `referrerpolicy` on the frame. BACKSTAGE windows (the wiki list,
+Settings, Help) also render TiddlyWiki content directly on the app's own `chrome-extension://`
+origin, which is rejected outright — embeds.js is installed for them too, so the shim is still
+load-bearing there.
 
 The fix
 -------
 Host a tiny static "embed shim" page on `http://127.0.0.1:<random-port>/<token>/embed?src=<url>`.
-embeds.js points the wiki's media iframe at that shim instead of straight at the provider. The
-shim — served from a real `http` origin — embeds the provider in turn, so the provider now sees
-an `http` Referer/origin and plays. The wiki document itself stays `file://`, so saving, the
-collab bridges and external attachments (which all rely on the parent sharing the iframe's
-`file://` origin, and on `file://` resource loads) are completely untouched.
+embeds.js points the wiki's media iframe at that shim instead of straight at the provider. The shim
+— served from a real `http` origin — embeds the provider in turn, so the provider sees an `http`
+Referer/origin and plays. Nothing about the wiki document changes, so saving, the collab bridges and
+external attachments are untouched.
 
 Security
 --------

@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">Ouvrir le dossier dans…</string>
     <string name="reveal_path_hint">Dossier : %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Enregistrer la pièce jointe dans</string>
+    <string name="attach_folder_message">Choisissez un sous-dossier dans attachments/ (laissez vide pour utiliser la racine).</string>
+    <string name="attach_folder_hint">Sous-dossier</string>
+    <string name="attach_folder_save">Enregistrer</string>
 </resources>

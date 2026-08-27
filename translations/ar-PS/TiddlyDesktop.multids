@@ -90,3 +90,39 @@ Share/RulesHeading: قواعد النطاق
 Share/RulesHelp: قاعدة واحدة في كل سطر بالشكل <code>domain=kind</code> (مثل <code>vimeo.com=youtube</code>، أو <code>mastodon.social=mastodon</code> لقالب أضفته أعلاه) لتوجيه موقع إلى قالب معيّن.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: تُكتب النسخ الاحتياطية لويكيات الملف الواحد بجانب كل ويكي افتراضيًا. اختر مجلدًا هنا لتجميع كل النسخ الاحتياطية في مكان واحد بدلاً من ذلك.
+Toolbar/Support: الدعم
+Support/Blurb: ‏TiddlyWiki و TiddlyDesktop مجانيان ومفتوحا المصدر. إذا وجدتهما مفيدين، ففكّر في دعم تطويرهما المستمر على Open Collective.
+Support/Button: ادعم على Open Collective
+PluginChooser/BackstageTarget: قائمة الويكي هذه
+PluginChooser/BackstageNote: يسري بعد إعادة تشغيل TiddlyDesktop
+PluginChooser/SavedPendingRestart: تم الحفظ. أعد تشغيل TiddlyDesktop للتفعيل.
+TrustedPaths/Revoke: إلغاء
+Advanced/Unsandboxed: تشغيل هذا الويكي بدون صندوق العزل
+Advanced/UnsandboxedHelp: ستعمل شيفرة JavaScript الخاصة بهذا الويكي بوصول كامل إلى حاسوبك — يمكنها قراءة أي ملف تستطيع الوصول إليه وتعديله وحذفه. لا تفعّل هذا إلا لويكي كتبته بنفسك أو تثق به تمامًا، وفقط إذا كان بحاجة إلى تشغيل وحدات Node أو أوامر الصدفة.
+Settings/Backups: النسخ الاحتياطية
+Settings/Flags: رايات Chromium
+Settings/Spellcheck: التدقيق الإملائي
+Settings/Plugins: الإضافات
+Settings/Templates: القوالب
+Settings/UserConfig: مجلد إعدادات المستخدم
+Settings/WikiListTitle: عنوان نافذة قائمة الويكي
+Settings/TrustedPaths: المسارات الموثوقة
+Settings/Version: الإصدار
+Settings/ResetToDefault: إعادة التعيين إلى الافتراضي
+Settings/OpenChromiumFlags: فتح رايات Chromium
+Settings/OpenConfigFolder: فتح مجلد الإعدادات
+Settings/InstallPlugins: تثبيت الإضافات…
+Spellcheck/Enable: تفعيل التدقيق الإملائي المحلي
+Spellcheck/LanguageHeading: لغة التدقيق الإملائي
+Spellcheck/GoogleHeading: الخصوصية: خدمة التدقيق الإملائي من Google
+Spellcheck/EnableGoogle: استخدام خدمة التدقيق الإملائي البعيدة من Google (ترسل نصك إلى Google)
+Spellcheck/DiagnosticsHeading: التشخيص
+Spellcheck/Refresh: تحديث
+TrustedPaths/RevokeTooltip: منع هذا الويكي من قراءة هذا المسار
+Convert/NoDestination: لم يتم اختيار وجهة للتحويل.
+Convert/ToFile: هل تريد تحويل هذا الويكي من مجلد إلى ملف واحد؟
+Convert/ToFolder: هل تريد تحويل هذا الويكي من ملف واحد إلى مجلد؟
+Convert/OriginalKept: لا يُحذف الويكي الأصلي.
+Convert/InProgress: جارٍ تحويل الويكي…
+Convert/Failed: فشل التحويل:
+Convert/Done: تم تحويل الويكي:

@@ -244,7 +244,6 @@ $tw.boot = $tw.boot || {};
 $tw.boot.argv = [backstageWikiFolder];
 
 // Override process.nextTick() because it is broken under nw.js in mixed mode
-var old_process_nextTick = process.nextTick;
 process.nextTick = function() {
 	var fn = arguments[0],
 		args = Array.prototype.slice.call(arguments,1);
@@ -276,6 +275,19 @@ var defaultCommand = "open",
 // immediately. The heavy TiddlyWiki boot below paints the real content into
 // the already-open window via BackstageWindow.tryRender().
 var initialArgv = gui.App.argv.slice(0);
+// A COLD start by a tiddlydesktop:// deep link (the OAuth relay's post-login redirect) carries the
+// URL in argv. It is not a wiki path, so it has to come out of the command line before the "open"
+// command sees it — otherwise the app tries to open a wiki called "tiddlydesktop://auth?state=…".
+// It is acted on in the boot callback below, once there is a window to focus.
+var _coldStartDeepLink = null;
+try {
+	_coldStartDeepLink = deeplink.findColdStartUrl(initialArgv);
+	if(_coldStartDeepLink) {
+		initialArgv = initialArgv.filter(function(a) { return !deeplink.extractUrl(a); });
+	}
+} catch(e) {
+	console.error("[TiddlyDesktop] deep-link argv scan failed:",e);
+}
 var hasNonFlagArg = initialArgv.some(function(a) { return !a.startsWith("--"); });
 if(!hasNonFlagArg) {
 	$tw.desktop.windowList.openByUrl("backstage://WikiListWindow",{mustQuitOnClose: true});

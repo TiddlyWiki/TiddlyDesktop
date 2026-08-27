@@ -2,10 +2,11 @@
 Utilities concerned with nwjs features
 */
 
+"use strict";
 
 exports.captureWindowToTiddler = function(window_nwjs,tiddlerTitle,callback) {
 	if(tiddlerTitle) {
-		window_nwjswindow_nwjs.capturePage(function(imgDataUri) {
+		window_nwjs.capturePage(function(imgDataUri) {
 			var imgPrefix = "data:image/png;base64,",
 				imgData = "";
 			if(imgDataUri.substr(0,imgPrefix.length) == imgPrefix) {

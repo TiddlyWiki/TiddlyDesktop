@@ -74,4 +74,9 @@
     </plurals>
     <string name="reveal_chooser">フォルダーを開く…</string>
     <string name="reveal_path_hint">フォルダー: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">添付ファイルの保存先</string>
+    <string name="attach_folder_message">attachments/ 内のサブフォルダーを選んでください（空欄なら attachments/ 直下に保存します）。</string>
+    <string name="attach_folder_hint">サブフォルダー</string>
+    <string name="attach_folder_save">保存</string>
 </resources>

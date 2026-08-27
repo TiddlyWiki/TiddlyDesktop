@@ -20,9 +20,9 @@ var $tw = {
 			menu: require("../js/utils/menu.js"),
 			ws: require("ws"),
 			https: require("https"),
-			http: require("http"),
-		},
-	},
+			http: require("http")
+		}
+	}
 };
 
 global.$tw = $tw;
@@ -33,7 +33,7 @@ var containerWindow = gui.Window.get();
 // containerWindow.showDevTools();
 
 // Hide the container window when we start, and when it is closed
-containerWindow.on("close", function (isQuitting) {
+containerWindow.on("close", function(isQuitting) {
 	containerWindow.close(true);
 });
 
@@ -44,9 +44,7 @@ $tw.desktop.utils.devtools.trapDevTools(containerWindow, document);
 
 // Get the query parameters that were used to open this container window
 
-var queryObject = $tw.desktop.utils.dom.decodeQueryString(
-	containerWindow.window.document.location,
-);
+var queryObject = $tw.desktop.utils.dom.decodeQueryString(containerWindow.window.document.location);
 
 // Apply the local-spellcheck toggle passed from the backstage. The Google spelling service is already
 // forced off profile-wide in node-main; this only gates the visible red squiggles for this container's
@@ -55,7 +53,7 @@ var queryObject = $tw.desktop.utils.dom.decodeQueryString(
 try {
 	var _sc = require("../js/utils/spellcheck.js");
 	_sc.applyToDocument(document, queryObject.spellcheck !== "no");
-} catch (e) {}
+} catch(e) {}
 
 // First part of boot process
 require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
@@ -64,33 +62,30 @@ require("../tiddlywiki/boot/bootprefix.js").bootprefix($tw);
 $tw.boot = $tw.boot || {};
 $tw.boot.argv = [queryObject.pathname];
 
-if (queryObject.host && queryObject.port) {
-	$tw.boot.argv.push(
-		"--listen",
-		"host=" + queryObject.host,
-		"port=" + queryObject.port,
+if(queryObject.host && queryObject.port) {
+	$tw.boot.argv.push("--listen", "host=" + queryObject.host, "port=" + queryObject.port,
 		"credentials=" + queryObject.credentials,
 		"readers=" + queryObject.readers,
-		"writers=" + queryObject.writers,
+		"writers=" + queryObject.writers
 	);
 	// Optional --listen server options (only passed when set, so empty values don't
 	// override TiddlyWiki's own defaults).
-	if (queryObject.pathprefix) {
+	if(queryObject.pathprefix) {
 		// TiddlyWiki matches path-prefix as a literal prefix of the (leading-slash)
 		// request path, so it must start with "/" — normalise it for the user.
 		var _pp = queryObject.pathprefix.replace(/\/+$/, "");
-		if (_pp.charAt(0) !== "/") {
+		if(_pp.charAt(0) !== "/") {
 			_pp = "/" + _pp;
 		}
 		$tw.boot.argv.push("path-prefix=" + _pp);
 	}
-	if (queryObject.roottiddler) {
+	if(queryObject.roottiddler) {
 		$tw.boot.argv.push("root-tiddler=" + queryObject.roottiddler);
 	}
-	if (queryObject.anonusername) {
+	if(queryObject.anonusername) {
 		$tw.boot.argv.push("anon-username=" + queryObject.anonusername);
 	}
-	if (queryObject.gzip === "yes") {
+	if(queryObject.gzip === "yes") {
 		$tw.boot.argv.push("gzip=yes");
 	}
 }
@@ -112,23 +107,23 @@ var wikiFolderPath = $tw.boot.wikiPath || queryObject.pathname;
 
 // The wiki folder as a trailing-slashed file:// base (for resolving wiki-relative URIs).
 function wikiFolderFileBase() {
-	if (!wikiFolderPath) {
+	if(!wikiFolderPath) {
 		return null;
 	}
 	var p = String(wikiFolderPath).replace(/\\/g, "/");
-	if (p.charAt(0) !== "/") {
+	if(p.charAt(0) !== "/") {
 		p = "/" + p;
 	} // C:/… -> /C:/… so it becomes file:///C:/…
-	if (p.slice(-1) !== "/") {
+	if(p.slice(-1) !== "/") {
 		p += "/";
 	}
 	return "file://" + encodeURI(p);
 }
 
-(function () {
+(function() {
 	var base = wikiFolderFileBase();
 	var win = containerWindow.window;
-	if (!base || !win || !win.Element || !win.Element.prototype || win.__tdAttachmentRebaseInstalled) {
+	if(!base || !win || !win.Element || !win.Element.prototype || win.__tdAttachmentRebaseInstalled) {
 		return;
 	}
 	win.__tdAttachmentRebaseInstalled = true;
@@ -142,16 +137,15 @@ function wikiFolderFileBase() {
 	}
 	var proto = win.Element.prototype;
 	var nativeSetAttribute = proto.setAttribute;
-	proto.setAttribute = function (name, value) {
+	proto.setAttribute = function(name, value) {
 		// Fast path: only src/href are candidates, so most setAttribute calls skip straight through.
-		if (name === "src" || name === "href") {
-			if (
-				this && this.tagName && isRelative(value) &&
+		if(name === "src" || name === "href") {
+			if(this && this.tagName && isRelative(value) &&
 				(name === "src" ? SRC_TAGS[this.tagName] : this.tagName === "A")
 			) {
 				try {
 					value = new win.URL(value, base).href;
-				} catch (e) {}
+				} catch(e) {}
 			}
 		}
 		return nativeSetAttribute.call(this, name, value);
@@ -165,17 +159,9 @@ console.log("Running tiddlywiki " + $tw.boot.argv.join(" "));
 // (wiki size, plugin startups), a big gap to "first tick" points at the async render.
 var _tdBootStart = Date.now();
 require("../tiddlywiki/boot/boot.js").TiddlyWiki($tw);
-console.log(
-	"[TiddlyDesktop] folder wiki: TiddlyWiki() sync took " +
-		(Date.now() - _tdBootStart) +
-		"ms",
-);
-setTimeout(function () {
-	console.log(
-		"[TiddlyDesktop] folder wiki: first tick at " +
-			(Date.now() - _tdBootStart) +
-			"ms",
-	);
+console.log("[TiddlyDesktop] folder wiki: TiddlyWiki() sync took " + (Date.now() - _tdBootStart) + "ms");
+setTimeout(function() {
+	console.log("[TiddlyDesktop] folder wiki: first tick at " + (Date.now() - _tdBootStart) + "ms");
 }, 0);
 
 $tw.wiki.addTiddler({ title: "$:/status/IsReadOnly", text: "no" });
@@ -183,10 +169,8 @@ $tw.wiki.addTiddler({ title: "$:/status/IsReadOnly", text: "no" });
 // Intercept cross-browser drag-drop imports (same fix as wiki-file windows).
 // In the folder window the wiki document IS this window, so contentWindow
 // and the document are the window itself.
-$tw.desktop.utils.dragdrop.installImportInterceptor(
-	containerWindow.window.document,
-	containerWindow.window,
-	{ parentWindow: containerWindow.window },
+$tw.desktop.utils.dragdrop.installImportInterceptor(containerWindow.window.document, containerWindow.window,
+	{ parentWindow: containerWindow.window }
 );
 
 // Browser-style find-in-page (Ctrl/Cmd+F). The folder wiki document IS this
@@ -196,14 +180,14 @@ try {
 	$tw.desktop.utils.findbar.installFindBar({
 		hostWindow: containerWindow.window,
 		hostDocument: containerWindow.window.document,
-		getContentWindow: function () {
+		getContentWindow: function() {
 			return containerWindow.window;
 		},
-		getContentDocument: function () {
+		getContentDocument: function() {
 			return containerWindow.window.document;
-		},
+		}
 	});
-} catch (e) {
+} catch(e) {
 	console.error("[TiddlyDesktop] find bar install failed:", e);
 }
 
@@ -213,11 +197,11 @@ try {
 // both and write a small JSON payload (in place, so the backstage's fs.watch keeps its
 // inode), debounced and de-duplicated so the burst of changes during boot doesn't thrash
 // the file.
-(function () {
+(function() {
 	var stateFile = queryObject.stateFile,
 		win = containerWindow.window,
 		doc = win.document;
-	if (!stateFile) {
+	if(!stateFile) {
 		return;
 	}
 	var lastWritten = null,
@@ -229,78 +213,66 @@ try {
 			faviconLink = doc.getElementById("faviconLink"),
 			href = faviconLink && faviconLink.getAttribute("href");
 		// faviconLink href is a data URI: "data:<type>;base64,<text>"
-		if (href && href.indexOf("data:") === 0) {
+		if(href && href.indexOf("data:") === 0) {
 			var posColon = href.indexOf(":"),
 				posSemiColon = href.indexOf(";"),
 				posComma = href.indexOf(",");
-			if (posSemiColon !== -1 && posComma !== -1) {
-				faviconType = href.substring(
-					posColon + 1,
-					posSemiColon,
-				);
+			if(posSemiColon !== -1 && posComma !== -1) {
+				faviconType = href.substring(posColon + 1, posSemiColon);
 				faviconText = href.substring(posComma + 1);
 			}
 		}
 		return {
 			title: title,
 			faviconType: faviconType,
-			faviconText: faviconText,
+			faviconText: faviconText
 		};
 	}
 	function writeState() {
 		var payload = JSON.stringify(currentState());
-		if (payload === lastWritten) {
+		if(payload === lastWritten) {
 			return;
 		}
 		lastWritten = payload;
 		try {
 			fs.writeFileSync(stateFile, payload, "utf8");
-		} catch (e) {}
+		} catch(e) {}
 	}
 	function schedule() {
-		if (writeTimer) {
+		if(writeTimer) {
 			clearTimeout(writeTimer);
 		}
 		writeTimer = setTimeout(writeState, 50);
 	}
-	if (win.MutationObserver) {
+	if(win.MutationObserver) {
 		var titleNode = doc.getElementsByTagName("title")[0];
-		if (titleNode) {
+		if(titleNode) {
 			new win.MutationObserver(schedule).observe(titleNode, {
 				childList: true,
 				characterData: true,
-				subtree: true,
+				subtree: true
 			});
 		}
 		// The favicon <link> is created/updated by the core favicon startup; observe its
 		// href so a changed $:/favicon.ico is reflected. It may not exist yet at this point,
 		// so also watch <head> for it being added.
 		var faviconLink = doc.getElementById("faviconLink");
-		if (faviconLink) {
-			new win.MutationObserver(schedule).observe(
-				faviconLink,
-				{ attributes: true, attributeFilter: ["href"] },
+		if(faviconLink) {
+			new win.MutationObserver(schedule).observe(faviconLink,
+				{ attributes: true, attributeFilter: ["href"] }
 			);
-		} else if (doc.head) {
-			var headObserver = new win.MutationObserver(
-				function () {
-					var link =
-						doc.getElementById(
-							"faviconLink",
-						);
-					if (link) {
-						headObserver.disconnect();
-						new win.MutationObserver(
-							schedule,
-						).observe(link, {
-							attributes: true,
-							attributeFilter: [
-								"href",
-							],
-						});
-						schedule();
-					}
-				},
+		} else if(doc.head) {
+			var headObserver = new win.MutationObserver(function() {
+				var link = doc.getElementById("faviconLink");
+				if(link) {
+					headObserver.disconnect();
+					new win.MutationObserver(schedule).observe(link, {
+						attributes: true,
+						attributeFilter: ["href"]
+					});
+					schedule();
+				}
+			}
 			);
 			headObserver.observe(doc.head, { childList: true });
 		}
@@ -329,8 +301,8 @@ try {
 // does the work; `settle` runs LAST and forces the final return value to true whenever we claimed,
 // so no inline import follows. When we don't claim, `settle` passes the piped value through
 // untouched, leaving other importers unaffected.
-(function () {
-	if (!$tw.hooks || !$tw.hooks.addHook) {
+(function() {
+	if(!$tw.hooks || !$tw.hooks.addHook) {
 		return;
 	}
 	// Forward-slash relative path FROM the wiki folder TO an absolute file path (both forward-slash).
@@ -338,11 +310,11 @@ try {
 		var a = baseDir.split("/"),
 			b = absPath.split("/"),
 			i = 0;
-		while (i < a.length && i < b.length && a[i] === b[i]) {
+		while(i < a.length && i < b.length && a[i] === b[i]) {
 			i++;
 		}
 		var up = [];
-		for (var j = i; j < a.length; j++) {
+		for(var j = i; j < a.length; j++) {
 			up.push("..");
 		}
 		return up.concat(b.slice(i)).join("/") || ".";
@@ -352,68 +324,52 @@ try {
 	// app page) and reading the plugin's own UseAbsolute settings.
 	function canonicalUriForDroppedFile(filePath) {
 		var abs = String(filePath).replace(/\\/g, "/");
-		if (abs.charAt(0) !== "/") {
+		if(abs.charAt(0) !== "/") {
 			abs = "/" + abs;
 		} // C:/… -> /C:/…
 		var baseDir = String(wikiFolderPath).replace(/\\/g, "/").replace(/\/+$/, "");
-		if (baseDir.charAt(0) !== "/") {
+		if(baseDir.charAt(0) !== "/") {
 			baseDir = "/" + baseDir;
 		}
 		var isDescendent = abs === baseDir || abs.indexOf(baseDir + "/") === 0;
-		var useAbsolute =
-			$tw.wiki.getTiddlerText(
-				isDescendent
-					? "$:/config/ExternalAttachments/UseAbsoluteForDescendents"
-					: "$:/config/ExternalAttachments/UseAbsoluteForNonDescendents",
-				isDescendent ? "no" : "yes",
-			) === "yes";
+		var useAbsolute = $tw.wiki.getTiddlerText(isDescendent
+			? "$:/config/ExternalAttachments/UseAbsoluteForDescendents"
+				: "$:/config/ExternalAttachments/UseAbsoluteForNonDescendents",
+			isDescendent ? "no" : "yes") === "yes";
 		// encodeURI matches how TiddlyWiki's external-attachments records URIs (spaces -> %20 etc.).
 		return useAbsolute
-			? "file://" + encodeURI(abs)
-			: encodeURI(relativeToWikiFolder(baseDir, abs));
+		? "file://" + encodeURI(abs)
+		: encodeURI(relativeToWikiFolder(baseDir, abs));
 	}
 	var claimed = false;
 	function claim(info) {
 		claimed = false;
 		try {
-			if (
-				info &&
-				info.isBinary &&
-				info.file &&
-				info.file.path &&
-				wikiFolderPath &&
-				$tw.wiki.getTiddlerText(
-					"$:/config/ExternalAttachments/Enable",
-					"",
-				) === "yes"
-			) {
-				info.callback([
-					{
+			if(info && info.isBinary && info.file && info.file.path && wikiFolderPath &&
+				$tw.wiki.getTiddlerText("$:/config/ExternalAttachments/Enable", "") === "yes") {
+					info.callback([{
 						title: info.file.name,
 						type: info.type,
-						_canonical_uri: canonicalUriForDroppedFile(info.file.path),
-					},
-				]);
-				claimed = true;
-				return true;
-			}
-		} catch (e) {
-			console.error(
-				"[TiddlyDesktop] folder-wiki external attachment failed:",
-				e,
-			);
+						_canonical_uri: canonicalUriForDroppedFile(info.file.path)
+					}
+					]);
+					claimed = true;
+					return true;
+				}
+		} catch(e) {
+			console.error("[TiddlyDesktop] folder-wiki external attachment failed:", e);
 		}
 		return false;
 	}
 	function settle(value) {
-		if (claimed) {
+		if(claimed) {
 			claimed = false;
 			return true;
 		}
 		return value;
 	}
 	var arr = $tw.hooks.names && $tw.hooks.names["th-importing-file"];
-	if (arr && typeof arr.unshift === "function") {
+	if(arr && typeof arr.unshift === "function") {
 		arr.unshift(claim); // runs first: receives the real info object
 	} else {
 		$tw.hooks.addHook("th-importing-file", claim);
@@ -423,44 +379,34 @@ try {
 
 // Fullscreen: F11 and the fullscreen page-control button toggle the native window.
 try {
-	require("../js/utils/fullscreen.js").install(
-		containerWindow,
-		containerWindow.window.document,
-		function () {
+	require("../js/utils/fullscreen.js").install(containerWindow, containerWindow.window.document,
+		function() {
 			return $tw.rootWidget;
-		},
+		}
 	);
-} catch (e) {
+} catch(e) {
 	console.error("[TiddlyDesktop] fullscreen install failed:", e);
 }
 
 // Page zoom: Ctrl/Cmd +/-/0 and Ctrl/Cmd+wheel, with a reset control while not at 100%.
 try {
-	require("../js/utils/zoom.js").install(
-		containerWindow,
-		containerWindow.window.document,
-	);
-} catch (e) {
+	require("../js/utils/zoom.js").install(containerWindow, containerWindow.window.document);
+} catch(e) {
 	console.error("[TiddlyDesktop] zoom install failed:", e);
 }
 
 // Grey out permalink/permaview — no shareable URL in a desktop wiki window.
 try {
-	require("../js/utils/disable-permalinks.js").install(
-		containerWindow.window.document,
-	);
-} catch (e) {
+	require("../js/utils/disable-permalinks.js").install(containerWindow.window.document);
+} catch(e) {
 	console.error("[TiddlyDesktop] disable-permalinks install failed:", e);
 }
 
 // Safe external embeds (YouTube etc.): allowlisted media is routed through a loopback http
 // shim (real origin -> the provider plays instead of rejecting a file:// referer).
 try {
-	require("../js/utils/embeds.js").install(
-		containerWindow.window.document,
-		containerWindow.window,
-	);
-} catch (e) {
+	require("../js/utils/embeds.js").install(containerWindow.window.document, containerWindow.window);
+} catch(e) {
 	console.error("[TiddlyDesktop] embeds install failed:", e);
 }
 
@@ -482,44 +428,36 @@ function installEmbedsOnTiddlerWindows() {
 		var pending = false;
 		try {
 			var wins = $tw && $tw.windows;
-			if (wins) {
-				Object.keys(wins).forEach(function (id) {
+			if(wins) {
+				Object.keys(wins).forEach(function(id) {
 					var w = wins[id];
-					if (!w || w.__tdPopupFeatures) {
+					if(!w || w.__tdPopupFeatures) {
 						return;
 					}
 					// Wait until TW has written the popup's <body> before installing.
-					if (!w.document || !w.document.body) {
+					if(!w.document || !w.document.body) {
 						pending = true;
 						return;
 					}
 					w.__tdPopupFeatures = true;
 					// Honour the same per-wiki $:/config/TiddlyDesktop/EmbedHosts as the wiki.
 					try {
-						if (!w.$tw) {
+						if(!w.$tw) {
 							w.$tw = $tw;
 						}
-					} catch (e) {}
-					require("../js/utils/embeds.js").install(
-						w.document,
-						w,
-					);
-					require("../js/utils/links.js").trapLinks(
-						w.document,
-					);
+					} catch(e) {}
+					require("../js/utils/embeds.js").install(w.document, w);
+					require("../js/utils/links.js").trapLinks(w.document);
 				});
 			} else {
 				pending = true;
 			}
-		} catch (e) {
-			console.error(
-				"[TiddlyDesktop] tiddler-window embeds install failed:",
-				e,
-			);
+		} catch(e) {
+			console.error("[TiddlyDesktop] tiddler-window embeds install failed:", e);
 		}
 		// TW writes/renders the popup synchronously right after window.open() returns, so the
 		// first deferred tick normally finds it ready; retry a few times only as a safety net.
-		if (pending && attempts < 10) {
+		if(pending && attempts < 10) {
 			setTimeout(tick, 50);
 		}
 	}
@@ -527,37 +465,24 @@ function installEmbedsOnTiddlerWindows() {
 }
 
 try {
-	containerWindow.on("new-win-policy", function (frame, url, policy) {
-		if (url && /^file:\/\//i.test(url)) {
+	containerWindow.on("new-win-policy", function(frame, url, policy) {
+		if(url && /^file:\/\//i.test(url)) {
 			policy.ignore(); // we open it ourselves below
-			require("nw.gui").Window.open(
-				url,
-				{ show: true },
-				function (newWin) {
-					newWin.once("loaded", function () {
-						try {
-							require("../js/utils/embeds.js").install(
-								newWin.window
-									.document,
-								newWin.window,
-							);
-							require("../js/utils/links.js").trapLinks(
-								newWin.window
-									.document,
-							);
-						} catch (e) {
-							console.error(
-								"[TiddlyDesktop] popup feature install failed:",
-								e,
-							);
-						}
-					});
+			require("nw.gui").Window.open(url, { show: true }, function(newWin) {
+				newWin.once("loaded", function() {
 					try {
-						newWin.focus();
-					} catch (e) {}
-				},
+						require("../js/utils/embeds.js").install(newWin.window.document, newWin.window);
+						require("../js/utils/links.js").trapLinks(newWin.window.document);
+					} catch(e) {
+						console.error("[TiddlyDesktop] popup feature install failed:", e);
+					}
+				});
+				try {
+					newWin.focus();
+				} catch(e) {}
+			}
 			);
-		} else if (!url || /^about:blank/i.test(url)) {
+		} else if(!url || /^about:blank/i.test(url)) {
 			// tm-open-window ("single tiddler window"): TiddlyWiki calls
 			// window.open("","external-<id>") and renders the tiddler LIVE into the resulting
 			// about:blank window. There is no URL to load and we must NOT cancel it (TW needs
@@ -567,6 +492,6 @@ try {
 			installEmbedsOnTiddlerWindows();
 		}
 	});
-} catch (e) {
+} catch(e) {
 	console.error("[TiddlyDesktop] new-win-policy install failed:", e);
 }

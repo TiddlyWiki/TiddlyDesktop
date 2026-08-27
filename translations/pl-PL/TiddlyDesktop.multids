@@ -90,3 +90,39 @@ Share/RulesHeading: Reguły domen
 Share/RulesHelp: Jedna reguła w wierszu jako <code>domain=kind</code> (np. <code>vimeo.com=youtube</code> lub <code>mastodon.social=mastodon</code> dla szablonu dodanego powyżej), aby kierować witrynę do konkretnego szablonu.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Kopie zapasowe wiki jednoplikowych są domyślnie zapisywane obok każdej wiki. Wybierz tutaj folder, aby zamiast tego zebrać wszystkie kopie w jednym miejscu.
+Toolbar/Support: Wesprzyj
+Support/Blurb: TiddlyWiki i TiddlyDesktop są darmowe i mają otwarty kod. Jeśli uważasz je za przydatne, rozważ wsparcie ich dalszego rozwoju na Open Collective.
+Support/Button: Wesprzyj na Open Collective
+PluginChooser/BackstageTarget: Ta lista wiki
+PluginChooser/BackstageNote: zacznie działać po ponownym uruchomieniu TiddlyDesktop
+PluginChooser/SavedPendingRestart: Zapisano. Uruchom ponownie TiddlyDesktop, aby aktywować.
+TrustedPaths/Revoke: cofnij
+Advanced/Unsandboxed: Uruchom to wiki bez piaskownicy
+Advanced/UnsandboxedHelp: JavaScript tego wiki będzie działać z pełnym dostępem do Twojego komputera — może odczytać, zmienić i usunąć każdy plik, do którego Ty masz dostęp. Włącz to tylko dla wiki, które sam napisałeś lub któremu w pełni ufasz, i tylko jeśli musi uruchamiać moduły Node lub polecenia powłoki.
+Settings/Backups: Kopie zapasowe
+Settings/Flags: Flagi Chromium
+Settings/Spellcheck: Sprawdzanie pisowni
+Settings/Plugins: Wtyczki
+Settings/Templates: Szablony
+Settings/UserConfig: Folder konfiguracji użytkownika
+Settings/WikiListTitle: Tytuł okna listy wiki
+Settings/TrustedPaths: Zaufane ścieżki
+Settings/Version: Wersja
+Settings/ResetToDefault: Przywróć domyślne
+Settings/OpenChromiumFlags: Otwórz flagi Chromium
+Settings/OpenConfigFolder: Otwórz folder konfiguracji
+Settings/InstallPlugins: Zainstaluj wtyczki…
+Spellcheck/Enable: Włącz lokalne sprawdzanie pisowni
+Spellcheck/LanguageHeading: Język sprawdzania pisowni
+Spellcheck/GoogleHeading: Prywatność: usługa pisowni Google
+Spellcheck/EnableGoogle: Używaj zdalnej usługi pisowni Google (wysyła Twój tekst do Google)
+Spellcheck/DiagnosticsHeading: Diagnostyka
+Spellcheck/Refresh: Odśwież
+TrustedPaths/RevokeTooltip: Odbierz temu wiki dostęp do tej ścieżki
+Convert/NoDestination: Nie wybrano miejsca docelowego konwersji.
+Convert/ToFile: Przekształcić to wiki z folderu w pojedynczy plik?
+Convert/ToFolder: Przekształcić to wiki z pojedynczego pliku w folder?
+Convert/OriginalKept: Oryginalne wiki nie zostanie usunięte.
+Convert/InProgress: Trwa przekształcanie wiki…
+Convert/Failed: Konwersja nie powiodła się:
+Convert/Done: Wiki przekształcone:

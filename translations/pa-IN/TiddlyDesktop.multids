@@ -90,3 +90,39 @@ Share/RulesHeading: ਡੋਮੇਨ ਨਿਯਮ
 Share/RulesHelp: ਪ੍ਰਤੀ ਲਾਈਨ ਇੱਕ ਨਿਯਮ <code>domain=kind</code> ਵਜੋਂ (ਜਿਵੇਂ <code>vimeo.com=youtube</code>, ਜਾਂ ਉੱਪਰ ਸ਼ਾਮਲ ਕੀਤੇ ਟੈਂਪਲੇਟ ਲਈ <code>mastodon.social=mastodon</code>) ਕਿਸੇ ਸਾਈਟ ਨੂੰ ਕਿਸੇ ਖਾਸ ਟੈਂਪਲੇਟ ਵੱਲ ਭੇਜਣ ਲਈ।
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: ਇਕਹਿਰੀ-ਫਾਈਲ ਵਿਕੀ ਦੇ ਬੈਕਅੱਪ ਮੂਲ ਰੂਪ ਵਿੱਚ ਹਰ ਵਿਕੀ ਦੇ ਨਾਲ ਲਿਖੇ ਜਾਂਦੇ ਹਨ। ਇਸਦੀ ਬਜਾਏ ਸਾਰੇ ਬੈਕਅੱਪ ਇੱਕ ਥਾਂ ਇਕੱਠੇ ਕਰਨ ਲਈ ਇੱਥੇ ਇੱਕ ਫੋਲਡਰ ਚੁਣੋ।
+Toolbar/Support: ਸਹਿਯੋਗ
+Support/Blurb: TiddlyWiki ਅਤੇ TiddlyDesktop ਮੁਫ਼ਤ ਅਤੇ ਓਪਨ ਸੋਰਸ ਹਨ। ਜੇ ਇਹ ਤੁਹਾਡੇ ਲਈ ਲਾਭਦਾਇਕ ਹਨ, ਤਾਂ Open Collective ਉੱਤੇ ਇਹਨਾਂ ਦੇ ਨਿਰੰਤਰ ਵਿਕਾਸ ਵਿੱਚ ਸਹਿਯੋਗ ਦੇਣ ਬਾਰੇ ਵਿਚਾਰ ਕਰੋ।
+Support/Button: Open Collective ਉੱਤੇ ਸਹਿਯੋਗ ਦਿਓ
+PluginChooser/BackstageTarget: ਇਹ ਵਿਕੀ ਸੂਚੀ
+PluginChooser/BackstageNote: TiddlyDesktop ਨੂੰ ਮੁੜ ਚਾਲੂ ਕਰਨ ਤੋਂ ਬਾਅਦ ਲਾਗੂ ਹੁੰਦਾ ਹੈ
+PluginChooser/SavedPendingRestart: ਸੰਭਾਲਿਆ ਗਿਆ। ਸਰਗਰਮ ਕਰਨ ਲਈ TiddlyDesktop ਮੁੜ ਚਾਲੂ ਕਰੋ।
+TrustedPaths/Revoke: ਰੱਦ ਕਰੋ
+Advanced/Unsandboxed: ਇਸ ਵਿਕੀ ਨੂੰ ਸੈਂਡਬਾਕਸ ਤੋਂ ਬਿਨਾਂ ਚਲਾਓ
+Advanced/UnsandboxedHelp: ਇਸ ਵਿਕੀ ਦਾ ਆਪਣਾ JavaScript ਤੁਹਾਡੇ ਕੰਪਿਊਟਰ ਤੱਕ ਪੂਰੀ ਪਹੁੰਚ ਨਾਲ ਚੱਲੇਗਾ — ਇਹ ਹਰ ਉਹ ਫਾਈਲ ਪੜ੍ਹ, ਬਦਲ ਅਤੇ ਮਿਟਾ ਸਕਦਾ ਹੈ ਜੋ ਤੁਸੀਂ ਪੜ੍ਹ ਸਕਦੇ ਹੋ। ਇਸਨੂੰ ਸਿਰਫ਼ ਉਸ ਵਿਕੀ ਲਈ ਚਾਲੂ ਕਰੋ ਜੋ ਤੁਸੀਂ ਖੁਦ ਲਿਖੀ ਹੈ ਜਾਂ ਜਿਸ ਉੱਤੇ ਤੁਹਾਨੂੰ ਪੂਰਾ ਭਰੋਸਾ ਹੈ, ਅਤੇ ਤਾਂ ਹੀ ਜੇ ਇਸਨੂੰ Node ਮੌਡਿਊਲ ਜਾਂ ਸ਼ੈੱਲ ਕਮਾਂਡਾਂ ਚਲਾਉਣ ਦੀ ਲੋੜ ਹੋਵੇ।
+Settings/Backups: ਬੈਕਅੱਪ
+Settings/Flags: Chromium ਫਲੈਗ
+Settings/Spellcheck: ਸ਼ਬਦ-ਜੋੜ ਜਾਂਚ
+Settings/Plugins: ਪਲੱਗਇਨ
+Settings/Templates: ਟੈਂਪਲੇਟ
+Settings/UserConfig: ਵਰਤੋਂਕਾਰ ਸੰਰਚਨਾ ਫੋਲਡਰ
+Settings/WikiListTitle: ਵਿਕੀ ਸੂਚੀ ਵਿੰਡੋ ਦਾ ਸਿਰਲੇਖ
+Settings/TrustedPaths: ਭਰੋਸੇਯੋਗ ਮਾਰਗ
+Settings/Version: ਵਰਜਨ
+Settings/ResetToDefault: ਮੂਲ ਉੱਤੇ ਮੁੜ-ਸੈੱਟ ਕਰੋ
+Settings/OpenChromiumFlags: Chromium ਫਲੈਗ ਖੋਲ੍ਹੋ
+Settings/OpenConfigFolder: ਸੰਰਚਨਾ ਫੋਲਡਰ ਖੋਲ੍ਹੋ
+Settings/InstallPlugins: ਪਲੱਗਇਨ ਇੰਸਟਾਲ ਕਰੋ…
+Spellcheck/Enable: ਸਥਾਨਕ ਸ਼ਬਦ-ਜੋੜ ਜਾਂਚ ਚਾਲੂ ਕਰੋ
+Spellcheck/LanguageHeading: ਸ਼ਬਦ-ਜੋੜ ਜਾਂਚ ਦੀ ਭਾਸ਼ਾ
+Spellcheck/GoogleHeading: ਨਿੱਜਤਾ: Google ਦੀ ਸ਼ਬਦ-ਜੋੜ ਸੇਵਾ
+Spellcheck/EnableGoogle: Google ਦੀ ਦੂਰ-ਦੁਰਾਡੇ ਸ਼ਬਦ-ਜੋੜ ਸੇਵਾ ਵਰਤੋ (ਤੁਹਾਡਾ ਪਾਠ Google ਨੂੰ ਭੇਜਦੀ ਹੈ)
+Spellcheck/DiagnosticsHeading: ਨਿਦਾਨ
+Spellcheck/Refresh: ਤਾਜ਼ਾ ਕਰੋ
+TrustedPaths/RevokeTooltip: ਇਸ ਵਿਕੀ ਨੂੰ ਇਹ ਮਾਰਗ ਪੜ੍ਹਨ ਤੋਂ ਰੋਕੋ
+Convert/NoDestination: ਤਬਦੀਲੀ ਲਈ ਕੋਈ ਟਿਕਾਣਾ ਨਹੀਂ ਚੁਣਿਆ ਗਿਆ।
+Convert/ToFile: ਕੀ ਇਸ ਵਿਕੀ ਨੂੰ ਫੋਲਡਰ ਤੋਂ ਇੱਕ ਫਾਈਲ ਵਿੱਚ ਬਦਲਣਾ ਹੈ?
+Convert/ToFolder: ਕੀ ਇਸ ਵਿਕੀ ਨੂੰ ਇੱਕ ਫਾਈਲ ਤੋਂ ਫੋਲਡਰ ਵਿੱਚ ਬਦਲਣਾ ਹੈ?
+Convert/OriginalKept: ਅਸਲ ਵਿਕੀ ਮਿਟਾਈ ਨਹੀਂ ਜਾਂਦੀ।
+Convert/InProgress: ਵਿਕੀ ਬਦਲੀ ਜਾ ਰਹੀ ਹੈ…
+Convert/Failed: ਤਬਦੀਲੀ ਅਸਫਲ:
+Convert/Done: ਵਿਕੀ ਬਦਲੀ ਗਈ:

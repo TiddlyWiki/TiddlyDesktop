@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TiddlyDesktop</string>
     <string name="wiki_server_channel_name">Wikis aperte</string>
     <string name="wiki_server_notification_title">TiddlyDesktop es in execution</string>
     <string name="wiki_server_notification_text">Le servitores wiki es active</string>
@@ -77,4 +76,9 @@
     </plurals>
     <string name="reveal_chooser">Aperir le dossier in…</string>
     <string name="reveal_path_hint">Dossier: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Salveguardar le annexo in</string>
+    <string name="attach_folder_message">Selige un subdossier intra attachments/ (lassa vacue pro usar le radice).</string>
+    <string name="attach_folder_hint">Subdossier</string>
+    <string name="attach_folder_save">Salveguardar</string>
 </resources>

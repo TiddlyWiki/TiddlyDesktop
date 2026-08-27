@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">Otwórz folder w…</string>
     <string name="reveal_path_hint">Folder: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Zapisz załącznik w</string>
+    <string name="attach_folder_message">Wybierz podfolder w attachments/ (pozostaw puste, aby użyć katalogu głównego).</string>
+    <string name="attach_folder_hint">Podfolder</string>
+    <string name="attach_folder_save">Zapisz</string>
 </resources>

@@ -364,6 +364,11 @@ WindowList.prototype.cleanupRemovedWiki = function(identifier) {
 	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/favicon/" + identifier);
 	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/geometry/" + identifier);
 	$tw.wiki.deleteTiddler("$:/TiddlyDesktop/Config/classic/" + identifier);
+	// Drop the wiki's trusted paths too. Grants are keyed by pathname, so a DIFFERENT wiki later
+	// placed at the same path would otherwise inherit every folder the removed one had been given
+	// — silently, with nothing in the Settings list to explain where the access came from. This is
+	// what trust.revokeAll exists for; it was written for this call and was never wired up.
+	try { require("./utils/trust.js").revokeAll(identifier); } catch(e) {}
 	try {
 		var stateFile = folderLiveStateFileFor(identifier);
 		if(fs.existsSync(stateFile)) { fs.unlinkSync(stateFile); }
@@ -374,6 +379,27 @@ WindowList.prototype.removeByInfo = function(WindowConstructor,info) {
 	var wikiListTiddlerTitle = WindowConstructor.getIdentifierFromInfo(info);
 	$tw.wiki.deleteTiddler(wikiListTiddlerTitle);
 	this.cleanupRemovedWiki(wikiListTiddlerTitle);
+};
+
+/*
+A window that never opened.
+
+The window object is pushed onto this.windows the moment it is constructed, but both wiki window
+classes open their NW.js window asynchronously — inside their loopback server's start callback. If
+that server cannot start there is no window and never will be, yet the entry stays in the list: the
+next "open" on that wiki then finds it, calls reopen() on a window that does not exist, and the wiki
+becomes unopenable for the rest of the session. It also keeps this.windows non-empty, so closing
+every real window no longer quits the app.
+
+So a failed open drops the entry. Deliberately does NOT quit when the list empties — the user asked
+to open a wiki, not to close the app, and the window that failed was never on screen.
+*/
+WindowList.prototype.handleOpenFailure = function(w) {
+	for(var t=this.windows.length-1; t>=0; t--) {
+		if(this.windows[t] === w) {
+			this.windows.splice(t,1);
+		}
+	}
 };
 
 WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
@@ -423,8 +449,11 @@ WindowList.prototype.handleClose = function(w,removeFromWikiListOnClose) {
 };
 
 WindowList.prototype.revealByUrl = function(url) {
+	// A wiki-list entry can be an http/https URL, or malformed — neither maps to a window
+	// constructor, so decodeUrl leaves it null. Nothing on disk to reveal in that case; the
+	// guard is what stops "reveal" throwing on such a row (the same lesson as removeByUrl).
 	var decodedUrl = this.decodeUrl(url),
-		getPathnameFromInfo = decodedUrl.WindowConstructor.getPathnameFromInfo;
+		getPathnameFromInfo = decodedUrl.WindowConstructor && decodedUrl.WindowConstructor.getPathnameFromInfo;
 	if(getPathnameFromInfo) {
 		$tw.desktop.gui.Shell.showItemInFolder(getPathnameFromInfo(decodedUrl.info));
 	}
@@ -432,8 +461,9 @@ WindowList.prototype.revealByUrl = function(url) {
 
 WindowList.prototype.revealBackupsByUrl = function(url) {
 	var decodedUrl = this.decodeUrl(url),
-		hasBackups = decodedUrl.WindowConstructor.hasBackups,
-		getPathnameFromInfo = decodedUrl.WindowConstructor.getPathnameFromInfo;
+		Ctor = decodedUrl.WindowConstructor,
+		hasBackups = Ctor && Ctor.hasBackups,
+		getPathnameFromInfo = Ctor && Ctor.getPathnameFromInfo;
 	if(hasBackups && hasBackups() && getPathnameFromInfo) {
 		var pathname = $tw.desktop.utils.saving.backupPathByPath(getPathnameFromInfo(decodedUrl.info));
 		if(!fs.existsSync(pathname)) {
@@ -502,14 +532,33 @@ dest: path of destination file
 WindowList.prototype.cloneWebToPath = function(source,dest) {
 	var protocol = source.substr(0,5) === "https" ? https : http,
 		file = fs.createWriteStream(dest);
-	protocol.get(source,function(response) {
+	// Anything that goes wrong has to be reported AND has to clean up the half-written file —
+	// otherwise a failed download leaves a truncated .html sitting there that looks like a wiki.
+	// The request's own "error" event (DNS failure, connection refused) was previously unhandled,
+	// which in Node is an uncaught exception rather than a message to the user.
+	function fail(message) {
+		try { file.destroy(); } catch(e) {}
+		try { fs.unlinkSync(dest); } catch(e) {}
+		$tw.desktop.utils.wiki.alert("Could not download the wiki: " + message);
+	}
+	var request = protocol.get(source,function(response) {
+		// A 404 or a redirect page is not a wiki; saving its body would produce a file that opens
+		// to an error message.
+		if(response.statusCode !== 200) {
+			response.resume();
+			fail("the server answered HTTP " + response.statusCode);
+			return;
+		}
 		var stream = response.pipe(file);
 		stream.on("finish",function() {
 			$tw.desktop.windowList.openByUrl("wikifile://" + dest);
 		});
 		stream.on("error",function(err) {
-			$tw.desktop.utils.wiki.alert("Error: " + err);
+			fail(err.message || String(err));
 		});
+	});
+	request.on("error",function(err) {
+		fail(err.message || String(err));
 	});
 };
 

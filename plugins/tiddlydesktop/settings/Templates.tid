@@ -1,5 +1,5 @@
 title: $:/TiddlyDesktop/Settings/Templates
-caption: Templates
+caption: {{$:/language/TiddlyDesktop/Settings/Templates}}
 tags: $:/TiddlyDesktop/Settings
 
 <$list filter="[all[tiddlers+shadows]tag[template]]">

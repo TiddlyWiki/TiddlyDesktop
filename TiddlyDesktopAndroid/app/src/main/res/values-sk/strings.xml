@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">Otvoriť priečinok v…</string>
     <string name="reveal_path_hint">Priečinok: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">Uložiť prílohu do</string>
+    <string name="attach_folder_message">Vyberte podpriečinok vnútri attachments/ (ponechajte prázdne pre koreň).</string>
+    <string name="attach_folder_hint">Podpriečinok</string>
+    <string name="attach_folder_save">Uložiť</string>
 </resources>

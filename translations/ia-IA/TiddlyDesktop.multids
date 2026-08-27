@@ -90,3 +90,39 @@ Share/RulesHeading: Regulas de dominio
 Share/RulesHelp: Un regula per linea como <code>domain=kind</code> (p.ex. <code>vimeo.com=youtube</code>, o <code>mastodon.social=mastodon</code> pro un modello que tu addeva supra) pro diriger un sito a un modello specific.
 Share/RulePlaceholder: vimeo.com=youtube
 Advanced/BackupsHelp: Le copias de reserva de wikis de file unic es scribite juxta cata wiki per predefecto. Selige un dossier hic pro colliger in loco tote le copias de reserva in un sol loco.
+Toolbar/Support: Supportar
+Support/Blurb: TiddlyWiki e TiddlyDesktop es gratuite e de fonte aperte. Si tu los trova utile, considera supportar lor disveloppamento continue in Open Collective.
+Support/Button: Supportar in Open Collective
+PluginChooser/BackstageTarget: Iste lista de wikis
+PluginChooser/BackstageNote: prende effecto post le reinitiation de TiddlyDesktop
+PluginChooser/SavedPendingRestart: Salveguardate. Reinitia TiddlyDesktop pro activar lo.
+TrustedPaths/Revoke: revocar
+Advanced/Unsandboxed: Exequer iste wiki sin le sandbox
+Advanced/UnsandboxedHelp: Le proprie JavaScript de iste wiki se exequera con accesso complete a tu computator — illo pote leger, modificar e deler omne file que tu pote leger. Activa isto solmente pro un wiki que tu ha scribite o in le qual tu confide completemente, e solmente si illo debe exequer modulos Node o commandos de shell.
+Settings/Backups: Copias de reserva
+Settings/Flags: Marcatores de Chromium
+Settings/Spellcheck: Correction orthographic
+Settings/Plugins: Plugins
+Settings/Templates: Modellos
+Settings/UserConfig: Dossier de configuration del usator
+Settings/WikiListTitle: Titulo del fenestra del lista de wikis
+Settings/TrustedPaths: Camminos fidate
+Settings/Version: Version
+Settings/ResetToDefault: Reinitialisar al predefinition
+Settings/OpenChromiumFlags: Aperir le marcatores de Chromium
+Settings/OpenConfigFolder: Aperir le dossier de configuration
+Settings/InstallPlugins: Installar plugins…
+Spellcheck/Enable: Activar le correction orthographic local
+Spellcheck/LanguageHeading: Lingua del correction orthographic
+Spellcheck/GoogleHeading: Confidentialitate: le servicio orthographic de Google
+Spellcheck/EnableGoogle: Usar le servicio orthographic remote de Google (invia tu texto a Google)
+Spellcheck/DiagnosticsHeading: Diagnostica
+Spellcheck/Refresh: Actualisar
+TrustedPaths/RevokeTooltip: Impedir que iste wiki lege iste cammino
+Convert/NoDestination: Nulle destination esseva seligite pro le conversion.
+Convert/ToFile: Converter iste wiki de un dossier a un sol file?
+Convert/ToFolder: Converter iste wiki de un sol file a un dossier?
+Convert/OriginalKept: Le wiki original non es delite.
+Convert/InProgress: Convertente le wiki…
+Convert/Failed: Le conversion falleva:
+Convert/Done: Wiki convertite:

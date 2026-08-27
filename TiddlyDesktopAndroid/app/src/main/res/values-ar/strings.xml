@@ -75,4 +75,9 @@
     </plurals>
     <string name="reveal_chooser">فتح المجلد في…</string>
     <string name="reveal_path_hint">المجلد: %1$s</string>
+    <!-- Subfolder chooser shown on each attachment import -->
+    <string name="attach_folder_title">حفظ المرفق في</string>
+    <string name="attach_folder_message">اختر مجلدًا فرعيًا داخل attachments/ ‏(اتركه فارغًا لاستخدام الجذر).</string>
+    <string name="attach_folder_hint">مجلد فرعي</string>
+    <string name="attach_folder_save">حفظ</string>
 </resources>

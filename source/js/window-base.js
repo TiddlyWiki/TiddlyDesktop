@@ -58,12 +58,29 @@ exports.addBaseMethods = function(proto) {
 		this.mustRemoveFromWikiListOnClose = true;
 	};
 
+	// Bring this window to the user. Shared by every window class's reopen(), because "open" on a
+	// wiki that is already open has to do more than focus(): a HIDDEN window stays hidden and a
+	// MINIMISED one stays minimised, so clicking open in the wiki list appeared to do nothing.
+	//
+	// restore() is used only on a genuinely minimised window — it also un-maximises, so calling it
+	// unconditionally would drop a maximized window out of that state (the same rule deeplink.js
+	// follows). Returns false when there is no window yet, which is how a window whose open is
+	// still in flight (or failed) is told apart from one that was raised.
+	proto.focusWindow = function() {
+		var win = this.window_nwjs;
+		if(!win) { return false; }
+		try { win.show(); } catch(e) {}
+		if(win.__tdMinimized) { try { win.restore(); } catch(e) {} }
+		try { win.focus(); } catch(e) {}
+		return true;
+	};
+
 	proto.onTitleChange = function() {
 		var fields = {
 			title: this.getConfigTitle("title"),
 			text: this.getWikiTitle()
 		}
-		$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),fields,$tw.wiki.getModificationFields))
+		$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),fields,$tw.wiki.getModificationFields()))
 	};
 
 	proto.onFavIconChange = function() {
@@ -72,7 +89,7 @@ exports.addBaseMethods = function(proto) {
 			text: this.getWikiFavIconText(),
 			type: this.getWikiFavIconType(),
 		}
-		$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),fields,$tw.wiki.getModificationFields))
+		$tw.wiki.addTiddler(new $tw.Tiddler($tw.wiki.getCreationFields(),fields,$tw.wiki.getModificationFields()))
 	};
 
 	// Remove the favicon config so the wiki list falls back to its missing-favicon
