@@ -5,6 +5,13 @@
 <title>TiddlyDesktop - Wiki File Window</title>
 <style>
 
+/* Until the wiki has painted, js/utils/shell-backdrop.js has nothing to copy from it — and this
+   document is what shows through everything the wiki leaves transparent (the page scrollbar's
+   track above all). Following the OS beats flashing Chromium's default white at a dark desktop. */
+html {
+	color-scheme: light dark;
+}
+
 .td-wiki-file-viewer-wrapper {
 	position: fixed;
 	top: 0;

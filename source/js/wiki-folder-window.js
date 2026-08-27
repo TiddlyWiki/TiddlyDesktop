@@ -267,6 +267,15 @@ WikiFolderWindow.prototype.onloadiframe = function() {
 	this._iframeTeardowns.push(spellcheck.observeFrames(doc,function() {
 		return spellcheck.isEnabled($tw);
 	}));
+	// Paint this shell with the wiki's own canvas: it is what shows through anything the wiki
+	// leaves transparent, the page scrollbar's track included. See utils/shell-backdrop.js.
+	try {
+		var backdrop = require("./utils/shell-backdrop.js").install({
+			iframe: this.iframe,
+			hostDocument: this.window_nwjs.window.document
+		});
+		if(backdrop) { this._iframeTeardowns.push(backdrop.teardown); }
+	} catch(e) { console.error("[TiddlyDesktop] shell backdrop install failed:",e); }
 	try { $tw.desktop.utils.links.trapLinks(doc); } catch(e) { console.error("[TiddlyDesktop] trapLinks failed:",e); }
 	try {
 		$tw.desktop.utils.dragdrop.installImportInterceptor(doc,win,{

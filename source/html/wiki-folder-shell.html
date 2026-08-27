@@ -7,6 +7,10 @@
 it to show the wiki-list favicon. -->
 <link id="faviconLink" rel="shortcut icon" href="favicon.ico">
 <style>
+/* Until the wiki has painted, js/utils/shell-backdrop.js has nothing to copy from it — and this
+   document is what shows through everything the wiki leaves transparent (the page scrollbar's
+   track above all). Following the OS beats flashing Chromium's default white at a dark desktop. */
+html { color-scheme: light dark; }
 html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; }
 .td-wiki-folder-viewer-wrapper { position: absolute; inset: 0; }
 .td-wiki-folder-viewer { width: 100%; height: 100%; border: none; }
