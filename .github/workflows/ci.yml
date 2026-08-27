@@ -235,6 +235,8 @@ jobs:
     needs: [build-and-package, build-android]
     # This job does *not* have a matrix so it runs only a single copy
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: "📥 Downloading packages..."
         uses: actions/download-artifact@v4
@@ -243,16 +245,47 @@ jobs:
           # If it was false, they would all be given their own separate directories, which is not convenient for the release step
           merge-multiple: true
       - name: "🚀 Creating release..."
-        uses: softprops/action-gh-release@v1
-        with:
-          draft: true
-          files: |
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.zip
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-dev.zip
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}.AppImage
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-dev.AppImage
+        # Sequential + retried uploads, for the same reason as the preview job below.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TD_VERSION: ${{ needs.build-and-package.outputs.td-version }}
+        run: |
+          shopt -s nullglob
+          files=(
+            tiddlydesktop-*-v"$TD_VERSION".zip
+            tiddlydesktop-*-v"$TD_VERSION"-dev.zip
+            tiddlydesktop-*-v"$TD_VERSION".AppImage
+            tiddlydesktop-*-v"$TD_VERSION"-dev.AppImage
             tiddlydesktop-android-v*.apk
             debug-symbols-v*.zip
+          )
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No release artifacts matched — nothing to publish."
+            exit 1
+          fi
+
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "$GITHUB_REF_NAME" \
+            --notes "" \
+            --draft
+
+          TAG="$GITHUB_REF_NAME"
+          # One asset at a time, each retried: a single transient HTML 5xx from
+          # uploads.github.com must not throw away a 20-minute build.
+          for f in "${files[@]}"; do
+            for attempt in 1 2 3; do
+              echo "⬆️  $f (attempt $attempt)"
+              if gh release upload "$TAG" "$f" --repo "$GITHUB_REPOSITORY" --clobber; then
+                continue 2
+              fi
+              echo "   upload failed; retrying in $((attempt * 20))s"
+              sleep $((attempt * 20))
+            done
+            echo "::error::Failed to upload $f after 3 attempts."
+            exit 1
+          done
 
   preview-release:
     # Manual runs only (workflow_dispatch). Publishes/updates a single rolling `preview`
@@ -289,21 +322,50 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: gh release delete preview --repo "$GITHUB_REPOSITORY" --cleanup-tag --yes || true
       - name: "🚀 Publishing preview pre-release..."
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: preview
-          target_commitish: ${{ github.sha }}
-          name: "Preview build (v${{ needs.build-and-package.outputs.td-version }})"
-          body: "Rolling preview build from `${{ github.ref_name }}` @ `${{ github.sha }}` (run #${{ github.run_number }}). **Not a stable release.**"
-          prerelease: true
-          make_latest: false
-          files: |
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-preview-*.zip
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-dev-preview-*.zip
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-preview-*.AppImage
-            tiddlydesktop-*-v${{ needs.build-and-package.outputs.td-version }}-dev-preview-*.AppImage
+        # Uploaded with `gh` rather than softprops/action-gh-release: that action fires every
+        # asset upload at once with no retry, and ~17 x ~200 MB in parallel from one runner makes
+        # uploads.github.com answer one of them with an HTML 5xx page ("invalid json response
+        # body ... Unexpected token '<'"), failing the whole step. One at a time, with retries.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TD_VERSION: ${{ needs.build-and-package.outputs.td-version }}
+        run: |
+          shopt -s nullglob
+          files=(
+            tiddlydesktop-*-v"$TD_VERSION"-preview-*.zip
+            tiddlydesktop-*-v"$TD_VERSION"-dev-preview-*.zip
+            tiddlydesktop-*-v"$TD_VERSION"-preview-*.AppImage
+            tiddlydesktop-*-v"$TD_VERSION"-dev-preview-*.AppImage
             tiddlydesktop-android-v*-preview-*.apk
             debug-symbols-v*-preview-*.zip
+          )
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::No preview artifacts matched — nothing to publish."
+            exit 1
+          fi
+
+          gh release create preview \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "Preview build (v$TD_VERSION)" \
+            --notes "Rolling preview build from \`$GITHUB_REF_NAME\` @ \`$GITHUB_SHA\` (run #$GITHUB_RUN_NUMBER). **Not a stable release.**" \
+            --prerelease
+
+          TAG=preview
+          # One asset at a time, each retried: a single transient HTML 5xx from
+          # uploads.github.com must not throw away a 20-minute build.
+          for f in "${files[@]}"; do
+            for attempt in 1 2 3; do
+              echo "⬆️  $f (attempt $attempt)"
+              if gh release upload "$TAG" "$f" --repo "$GITHUB_REPOSITORY" --clobber; then
+                continue 2
+              fi
+              echo "   upload failed; retrying in $((attempt * 20))s"
+              sleep $((attempt * 20))
+            done
+            echo "::error::Failed to upload $f after 3 attempts."
+            exit 1
+          done
 
   play-upload:
     # Tag pushes only; skipped on manual runs.
