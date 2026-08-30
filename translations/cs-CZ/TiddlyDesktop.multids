@@ -29,6 +29,7 @@ Advanced/Backups: Zálohy
 Advanced/SaveBackup: Uložit zálohu při každém uložení
 Advanced/KeepBackups: Počet záloh k zachování (prázdné = vše)
 Advanced/RevealBackups: zobrazit zálohy
+Advanced/ClassicBackupsNote: TiddlyWiki Classic si spravuje vlastní zálohy, takže TiddlyDesktop pro tuto wiki žádné nevytváří. Nastavte "chkSaveBackups" a "txtBackupFolder" přímo v AdvancedOptions dané wiki.
 Advanced/ServerNote: Tyto možnosti řídí, jak je složka wiki poskytována přes HTTP. Projeví se při příštím otevření složky wiki.
 Advanced/Server: Server
 Advanced/Host: Hostitel

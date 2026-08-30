@@ -29,6 +29,7 @@ Advanced/Backups: Sikkerhedskopier
 Advanced/SaveBackup: Gem en sikkerhedskopi ved hver lagring
 Advanced/KeepBackups: Sikkerhedskopier at beholde (tom = alle)
 Advanced/RevealBackups: vis sikkerhedskopier
+Advanced/ClassicBackupsNote: TiddlyWiki Classic laver sine egne sikkerhedskopier, så TiddlyDesktop laver ingen for denne wiki. Angiv "chkSaveBackups" og "txtBackupFolder" i wikiens egne AdvancedOptions.
 Advanced/ServerNote: Disse indstillinger styrer, hvordan wiki-mappen serveres over HTTP. De træder i kraft, næste gang wiki-mappen åbnes.
 Advanced/Server: Server
 Advanced/Host: Vært

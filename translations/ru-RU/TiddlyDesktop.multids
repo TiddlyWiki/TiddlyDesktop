@@ -29,6 +29,7 @@ Advanced/Backups: Резервные копии
 Advanced/SaveBackup: Сохранять резервную копию при каждом сохранении
 Advanced/KeepBackups: Резервных копий (пусто = все)
 Advanced/RevealBackups: показать резервные копии
+Advanced/ClassicBackupsNote: TiddlyWiki Classic создаёт резервные копии самостоятельно, поэтому TiddlyDesktop не делает их для этой вики. Задайте "chkSaveBackups" и "txtBackupFolder" в AdvancedOptions самой вики.
 Advanced/ServerNote: Эти параметры определяют, как папка вики раздаётся по HTTP. Они вступают в силу при следующем открытии папки вики.
 Advanced/Server: Сервер
 Advanced/Host: Хост

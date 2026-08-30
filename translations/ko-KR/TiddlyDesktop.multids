@@ -29,6 +29,7 @@ Advanced/Backups: 백업
 Advanced/SaveBackup: 저장할 때마다 백업 저장
 Advanced/KeepBackups: 보관할 백업 수 (비우면 전체)
 Advanced/RevealBackups: 백업 표시
+Advanced/ClassicBackupsNote: TiddlyWiki Classic은 자체적으로 백업을 만들므로 TiddlyDesktop은 이 위키의 백업을 만들지 않습니다. 위키 자체의 AdvancedOptions에서 "chkSaveBackups"와 "txtBackupFolder"를 설정하세요.
 Advanced/ServerNote: 이 옵션은 위키 폴더가 HTTP를 통해 제공되는 방식을 제어합니다. 다음에 위키 폴더를 열 때 적용됩니다.
 Advanced/Server: 서버
 Advanced/Host: 호스트

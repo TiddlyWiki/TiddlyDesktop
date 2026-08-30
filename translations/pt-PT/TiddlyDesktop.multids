@@ -29,6 +29,7 @@ Advanced/Backups: Cópias de segurança
 Advanced/SaveBackup: Guardar uma cópia de segurança em cada gravação
 Advanced/KeepBackups: Backups a manter (vazio = todos)
 Advanced/RevealBackups: revelar cópias de segurança
+Advanced/ClassicBackupsNote: O TiddlyWiki Classic mantém as suas próprias cópias de segurança, pelo que o TiddlyDesktop não cria nenhuma para este wiki. Defina "chkSaveBackups" e "txtBackupFolder" nas AdvancedOptions do próprio wiki.
 Advanced/ServerNote: Estas opções controlam como a pasta wiki é servida por HTTP. Entram em vigor da próxima vez que a pasta wiki for aberta.
 Advanced/Server: Servidor
 Advanced/Host: Anfitrião

@@ -29,6 +29,7 @@ Advanced/Backups: پشتیبان‌گیری‌ها
 Advanced/SaveBackup: ذخیرهٔ یک نسخهٔ پشتیبان در هر بار ذخیره
 Advanced/KeepBackups: تعداد پشتیبان‌ها (خالی = همه)
 Advanced/RevealBackups: نمایش پشتیبان‌ها
+Advanced/ClassicBackupsNote: TiddlyWiki Classic نسخه‌های پشتیبان خود را خودش نگه می‌دارد، بنابراین TiddlyDesktop برای این ویکی هیچ نسخهٔ پشتیبانی نمی‌سازد. "chkSaveBackups" و "txtBackupFolder" را در AdvancedOptions خودِ ویکی تنظیم کنید.
 Advanced/ServerNote: این گزینه‌ها نحوهٔ ارائهٔ پوشهٔ ویکی از طریق HTTP را کنترل می‌کنند. در دفعهٔ بعدی که پوشهٔ ویکی باز شود اعمال می‌شوند.
 Advanced/Server: سرور
 Advanced/Host: میزبان

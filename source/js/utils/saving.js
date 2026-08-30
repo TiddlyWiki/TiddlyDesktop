@@ -5,46 +5,48 @@ Saving support for TiddlyWiki5 and TiddlyWiki Classic
 "use strict";
 
 // Helper to enable TiddlyFox-style saving for a window.
-// `getPathnameFn` returns the pathname of the file this window owns, and is the ONLY destination
-// this saver will ever write to — see the security note in the save handler below. It is required:
-// without it the saver refuses to save rather than falling back on a page-supplied path.
+// `getPathnameFn` returns the pathname of the file this window owns, and is what every save is
+// resolved against — see resolveSaveTarget() below. It is required: without it the saver refuses
+// to save rather than falling back on a page-supplied path.
 exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn,backupCountFn,getPathnameFn) {
 	// Create the message box
 	var messageBox = doc.createElement("div");
 	messageBox.id = "tiddlyfox-message-box";
 	doc.body.appendChild(messageBox);
+	// The one file this window owns — see the security note in the save handler below.
+	var ownPathFn = function() {
+		return typeof getPathnameFn === "function" ? getPathnameFn() : null;
+	};
 	// Inject saving code into TiddlyWiki classic
 	var isClassic = isTiddlyWikiClassic(doc);
 	if(isClassic) {
-		injectClassicOverrides(doc,loadFileTextFn);
+		injectClassicOverrides(doc,loadFileTextFn,ownPathFn());
 	}
 	// Listen for save events
 	messageBox.addEventListener("tiddlyfox-save-file",function(event) {
 		// Get the details from the message
-		var path = require("path"),
-			message = event.target,
+		var message = event.target,
 			claimedPath = message.getAttribute("data-tiddlyfox-path"),
 			content = message.getAttribute("data-tiddlyfox-content");
-		// Convert the claimed path from UTF8 binary to a real string
-		if(claimedPath && (process.platform !== "win32" || isClassic)) {
+		// TW5's TiddlyFox saver hands the path over as UTF8 bytes in a binary string, so decode
+		// it. Classic's comes back out of the file:// URL we injected ourselves, through an
+		// unescape() that leaves it exactly as we wrote it, so it is already a real string —
+		// decoding it again would mangle every non-ASCII name.
+		if(claimedPath && !isClassic && process.platform !== "win32") {
 			claimedPath = Buffer.from(claimedPath,"binary").toString("utf8");
 		}
-		// SECURITY: never save to the path the page asked for. This listener runs in the parent's
-		// Node context but is attached to the WIKI's document, so any script in the wiki controls
-		// data-tiddlyfox-path — honouring it is an arbitrary file write as the user (~/.bashrc, an
-		// autostart entry, the app's own JS). A wiki-file window owns exactly one file, so the
-		// window's own pathname is the authoritative destination and the attribute is redundant.
-		// TW5's "save as" / download goes through Chromium's download path rather than TiddlyFox,
-		// so there is no legitimate case where the two differ.
-		var filepath = typeof getPathnameFn === "function" ? getPathnameFn() : null;
-		if(!filepath) {
+		var ownPath = ownPathFn();
+		if(!ownPath) {
 			console.error("[TiddlyDesktop] save refused: this window has no authoritative pathname");
 			return false;
 		}
-		if(claimedPath && path.resolve(claimedPath) !== path.resolve(filepath)) {
-			console.warn("[TiddlyDesktop] ignoring save path supplied by the page:",claimedPath,"- saving to",filepath);
+		var filepath = resolveSaveTarget(ownPath,claimedPath,isClassic);
+		if(!filepath) {
+			return false;
 		}
-		// Backup the existing file (if any)
+		// Backup the existing file (if any). Classic keeps its own backups, of its own file, so
+		// leave that to it rather than shadowing it — and never back up a file Classic is itself
+		// writing as a backup.
 		if(areBackupsEnabledFn() && !isClassic) {
 			backupFile(filepath,backupCountFn ? backupCountFn() : "");
 		}
@@ -61,21 +63,107 @@ exports.enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn,backupCou
 	},false);
 }
 
+/*
+Decide which file a TiddlyFox save message is allowed to write to, or null to refuse it.
+`ownPath` is the one file this window owns; `claimedPath` is what the page put on the message.
+
+SECURITY: the page's path is never taken at face value. This listener runs in the parent's Node
+context but is attached to the WIKI's document, so any script in the wiki controls
+data-tiddlyfox-path — honouring it as given is an arbitrary file write as the user (~/.bashrc, an
+autostart entry, the app's own JS).
+
+For TW5 the destination is simply the window's own file: such a window owns exactly one, and "save
+as" / download goes through Chromium's download path rather than TiddlyFox, so there is no
+legitimate case where the two differ.
+
+Classic is the exception, and forcing it onto the window's own path is not safe. A single
+saveChanges() writes up to four files — the wiki, a timestamped backup, an empty template and an
+RSS feed — all through this one message, so redirecting them all onto the wiki would have Classic
+overwrite the wiki with its own backup, its empty template or its feed.
+
+Those are the wiki's own files, so they are allowed, on either of two grounds. The empty template
+and the RSS feed always go beside the wiki, and so do backups under the default settings, so
+anything in the wiki's own folder passes. Backups follow txtBackupFolder, though, which is a path
+relative to that folder and may legitimately climb out of it ("../backups"), so a file named after
+the wiki — which is how getBackupPath names every backup — passes wherever it is. That second rule
+deliberately excludes a file with the wiki's own name, so it cannot be used to overwrite some other
+index.html elsewhere on the disk, and both are bounded to the extensions Classic writes.
+
+Anything else is refused rather than redirected: a redirect would turn a stray write into a
+wiki-destroying one.
+*/
+function resolveSaveTarget(ownPath,claimedPath,isClassic) {
+	var path = require("path"),
+		own = path.resolve(ownPath);
+	if(!claimedPath || path.resolve(claimedPath) === own) {
+		return own;
+	}
+	if(!isClassic) {
+		console.warn("[TiddlyDesktop] ignoring save path supplied by the page:",claimedPath,"- saving to",own);
+		return own;
+	}
+	var claimed = path.resolve(claimedPath),
+		name = path.basename(claimed),
+		ownName = path.basename(own),
+		insideWikiFolder = claimed.indexOf(path.dirname(own) + path.sep) === 0,
+		namedAfterWiki = name !== ownName &&
+			name.indexOf(path.basename(own,path.extname(own)) + ".") === 0;
+	if((insideWikiFolder || namedAfterWiki) && /\.(?:html?|xml)$/i.test(claimed)) {
+		return claimed;
+	}
+	console.error("[TiddlyDesktop] save refused: the page asked to write outside the wiki's own folder:",claimedPath);
+	return null;
+}
+
+/*
+The file:// URL of a wiki file, in the dialect TiddlyWiki Classic's getLocalPath() understands.
+
+Deliberately not url.pathToFileURL(): that percent-encodes non-ASCII as UTF8, and Classic decodes
+with unescape(), which reads each %XX back as one Latin-1 character — so "ä" would return as two
+characters naming a file that does not exist. Classic cuts the URL at the first literal "?" or "#"
+and only then unescapes, which makes "%", "#" and "?" exactly the set that has to be escaped;
+everything else survives the round trip literally.
+*/
+function fileUrlFromPath(filepath) {
+	if(!filepath) {
+		// No authoritative path: leave the URL empty so the injected code declines to patch
+		// saveChanges rather than pointing it somewhere arbitrary. Saves are refused anyway.
+		return "";
+	}
+	var path = require("path"),
+		absolute = path.resolve(filepath).replace(/\\/g,"/"),
+		escaped = absolute.replace(/%/g,"%25").replace(/#/g,"%23").replace(/\?/g,"%3F");
+	// "file:///C:/wiki.html" on Windows and "file:///home/me/wiki.html" elsewhere: three slashes
+	// either way, which is what Classic's parser keys on.
+	return "file://" + (escaped.charAt(0) === "/" ? "" : "/") + escaped;
+}
+
 // Helper to detect whether a document is a TiddlyWiki Classic
 function isTiddlyWikiClassic(doc) {
+	if(!doc.getElementById("storeArea")) {
+		return false;
+	}
 	var versionArea = doc.getElementById("versionArea");
-	return doc.getElementById("storeArea") &&
-		(versionArea && /TiddlyWiki/.test(versionArea.text));
+	if(versionArea && /TiddlyWiki/.test(versionArea.text)) {
+		return true;
+	}
+	// 2.4 was the first release to put an id on the script that holds the version object;
+	// before that the script is anonymous, so ask for the object itself. TW5 keeps its version
+	// on $tw and defines no such global, so it is still the Classic-only marker.
+	var view = doc.defaultView;
+	return !!(view && view.version && view.version.title === "TiddlyWiki");
 }
 
 // Helper to inject overrides into TiddlyWiki Classic
-function injectClassicOverrides(doc,loadFileTextFn) {
-	// Read classic-inject.js
+function injectClassicOverrides(doc,loadFileTextFn,filepath) {
 	var fs = require("fs"),
-		path = require("path"),
-		text = fs.readFileSync(path.resolve(path.dirname(module.filename),"classic-inject.js"));
-	// Add the source text of the file so that the injected loadFile function can access it
-	text += "\n\nwindow.tiddlywikiSourceText=\"" + stringify(loadFileTextFn()) + "\";"
+		path = require("path");
+	// Define the data the injected code needs BEFORE it, so that it is there while that code runs:
+	// the source text of the file, for the injected loadFile function, and the file:// URL of the
+	// file, for the saveChanges patch (see classic-inject.js).
+	var text = "window.tiddlywikiSourceText=\"" + stringify(loadFileTextFn()) + "\";\n" +
+		"window.tiddlywikiFileUrl=\"" + stringify(fileUrlFromPath(filepath)) + "\";\n\n" +
+		fs.readFileSync(path.resolve(path.dirname(module.filename),"classic-inject.js"),"utf8");
 	// Inject it in a script tag
 	var script = doc.createElement("script");
 	script.appendChild(doc.createTextNode(text));
@@ -158,6 +246,11 @@ function saveFile(filepath,content) {
 		target = filepath;
 	// A wiki that does not exist yet has no realpath; write to the path we were given.
 	try { target = fs.realpathSync(filepath); } catch(e) {}
+	// Classic's txtBackupFolder can name a folder that does not exist yet — "backup" beside the
+	// wiki, say — and nothing else creates it, so the backup would just fail. Make the
+	// destination's folder first, as backupFile() does for TiddlyWiki 5. A no-op for the wiki
+	// itself, whose folder is the one it was opened from.
+	try { fs.mkdirSync(path.dirname(target),{recursive: true}); } catch(e) {}
 	var temp = path.join(path.dirname(target),"." + path.basename(target) + ".tdsave");
 	// The temp file is created fresh, so it gets default permissions rather than the wiki's. A user
 	// who chmod'd their wiki to 0600 must not have it quietly widened to 0644 by saving it.

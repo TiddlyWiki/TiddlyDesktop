@@ -29,6 +29,7 @@ Advanced/Backups: גיבויים
 Advanced/SaveBackup: שמור גיבוי בכל שמירה
 Advanced/KeepBackups: גיבויים לשמירה (ריק = הכול)
 Advanced/RevealBackups: הצג גיבויים
+Advanced/ClassicBackupsNote: TiddlyWiki Classic שומר גיבויים משלו, ולכן TiddlyDesktop אינו יוצר גיבויים עבור ויקי זה. הגדר את "chkSaveBackups" ואת "txtBackupFolder" ב-AdvancedOptions של הוויקי עצמו.
 Advanced/ServerNote: אפשרויות אלה קובעות כיצד תיקיית הויקי מוגשת באמצעות HTTP. הן ייכנסו לתוקף בפעם הבאה שתיקיית הויקי תיפתח.
 Advanced/Server: שרת
 Advanced/Host: מארח

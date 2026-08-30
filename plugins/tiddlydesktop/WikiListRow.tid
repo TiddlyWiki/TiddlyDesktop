@@ -102,8 +102,15 @@ title: WikiListRow
 </div>
 <$reveal type="match" state="""$:/temp/TiddlyDesktop/state/advanced/$(currentTiddler)$""" text="open">
 <div class="td-wiki-advanced">
+<!-- Backups. Hidden for classic wikis: those keep their own backups, so the saver skips
+     TiddlyDesktop's (utils/saving.js) and none of these three controls would do anything —
+     including "reveal backups", which would open a folder that is never created. As with the
+     convert/plugins buttons, the .td-wiki-advanced-section class is on the conditional element
+     itself, so the hidden case leaves no separate wrapper behind holding its margin open.
+     Backups is the only section a single-file wiki has, so a note takes its place rather than
+     leaving the panel to open as an empty box. -->
 <$list filter="[all[current]prefix[wikifile://]]" variable="ignore">
-<div class="td-wiki-advanced-section">
+<$reveal type="nomatch" state="""$:/TiddlyDesktop/Config/classic/$(currentTiddler)$""" text="yes" tag="div" class="td-wiki-advanced-section">
 <div class="td-wiki-advanced-heading">{{$:/language/TiddlyDesktop/Advanced/Backups}}</div>
 <label class="td-wiki-advanced-toggle">
 <$checkbox tiddler="""$:/TiddlyDesktop/Config/disable-backups/$(currentTiddler)$""" field="text" checked="no" unchecked="yes" default="no"/>
@@ -116,7 +123,10 @@ title: WikiListRow
 <div class="td-wiki-advanced-actions">
 <$button message="tiddlydesktop-reveal-backups-wiki-url" param=<<currentTiddler>> class="tc-btn-invisible td-button td-wikilist-button-reveal-backups">{{$:/language/TiddlyDesktop/Advanced/RevealBackups}}</$button>
 </div>
-</div>
+</$reveal>
+<$reveal type="match" state="""$:/TiddlyDesktop/Config/classic/$(currentTiddler)$""" text="yes" tag="div" class="td-wiki-advanced-note">
+{{$:/language/TiddlyDesktop/Advanced/ClassicBackupsNote}}
+</$reveal>
 </$list>
 <$list filter="[all[current]prefix[wikifolder://]]" variable="ignore">
 <div class="td-wiki-advanced-note">{{$:/language/TiddlyDesktop/Advanced/ServerNote}}</div>

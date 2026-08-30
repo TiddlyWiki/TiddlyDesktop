@@ -218,6 +218,10 @@ tags: $:/tags/Stylesheet
 	line-height: 1.45;
 }
 
+.td-wiki-advanced-note:last-child {
+	margin-bottom: 0;
+}
+
 .td-wiki-advanced-section {
 	margin-bottom: 1em;
 }

@@ -29,6 +29,7 @@ Advanced/Backups: Αντίγραφα ασφαλείας
 Advanced/SaveBackup: Αποθήκευση αντιγράφου ασφαλείας σε κάθε αποθήκευση
 Advanced/KeepBackups: Αντίγραφα προς διατήρηση (κενό = όλα)
 Advanced/RevealBackups: εμφάνιση αντιγράφων ασφαλείας
+Advanced/ClassicBackupsNote: Το TiddlyWiki Classic κρατά τα δικά του αντίγραφα ασφαλείας, οπότε το TiddlyDesktop δεν δημιουργεί κανένα για αυτό το wiki. Ρυθμίστε τα "chkSaveBackups" και "txtBackupFolder" στις AdvancedOptions του ίδιου του wiki.
 Advanced/ServerNote: Αυτές οι επιλογές ελέγχουν πώς ο φάκελος wiki διανέμεται μέσω HTTP. Τίθενται σε ισχύ την επόμενη φορά που θα ανοίξει ο φάκελος wiki.
 Advanced/Server: Διακομιστής
 Advanced/Host: Κεντρικός υπολογιστής

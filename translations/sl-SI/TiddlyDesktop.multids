@@ -29,6 +29,7 @@ Advanced/Backups: Varnostne kopije
 Advanced/SaveBackup: Shrani varnostno kopijo ob vsakem shranjevanju
 Advanced/KeepBackups: Število varnostnih kopij (prazno = vse)
 Advanced/RevealBackups: prikaži varnostne kopije
+Advanced/ClassicBackupsNote: TiddlyWiki Classic ustvarja lastne varnostne kopije, zato jih TiddlyDesktop za ta wiki ne izdeluje. Nastavite "chkSaveBackups" in "txtBackupFolder" v AdvancedOptions samega wikija.
 Advanced/ServerNote: Te možnosti določajo, kako se mapa wiki streže prek HTTP. Začnejo veljati ob naslednjem odpiranju mape wiki.
 Advanced/Server: Strežnik
 Advanced/Host: Gostitelj

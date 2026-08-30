@@ -29,6 +29,7 @@ Advanced/Backups: Backup
 Advanced/SaveBackup: Salva un backup a ogni salvataggio
 Advanced/KeepBackups: Backup da conservare (vuoto = tutti)
 Advanced/RevealBackups: mostra i backup
+Advanced/ClassicBackupsNote: TiddlyWiki Classic gestisce i propri backup, quindi TiddlyDesktop non ne crea per questo wiki. Imposta "chkSaveBackups" e "txtBackupFolder" nelle AdvancedOptions del wiki stesso.
 Advanced/ServerNote: Queste opzioni controllano come la cartella wiki viene servita via HTTP. Hanno effetto alla prossima apertura della cartella wiki.
 Advanced/Server: Server
 Advanced/Host: Host

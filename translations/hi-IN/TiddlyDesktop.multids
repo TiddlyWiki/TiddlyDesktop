@@ -29,6 +29,7 @@ Advanced/Backups: बैकअप
 Advanced/SaveBackup: हर बार सहेजने पर एक बैकअप सहेजें
 Advanced/KeepBackups: रखने योग्य बैकअप (खाली = सभी)
 Advanced/RevealBackups: बैकअप दिखाएँ
+Advanced/ClassicBackupsNote: TiddlyWiki Classic अपने बैकअप स्वयं रखता है, इसलिए TiddlyDesktop इस विकी के लिए कोई बैकअप नहीं बनाता। "chkSaveBackups" और "txtBackupFolder" को विकी के अपने AdvancedOptions में सेट करें।
 Advanced/ServerNote: ये विकल्प नियंत्रित करते हैं कि विकि फ़ोल्डर HTTP पर कैसे परोसा जाए। ये अगली बार विकि फ़ोल्डर खोलने पर प्रभावी होते हैं।
 Advanced/Server: सर्वर
 Advanced/Host: होस्ट

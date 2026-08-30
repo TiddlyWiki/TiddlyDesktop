@@ -47,7 +47,8 @@ var http = require("http"),
 	crypto = require("crypto"),
 	trust = require("./trust.js"),
 	attachments = require("./attachments.js"),
-	shim = require("./attachment-shim.js");
+	shim = require("./attachment-shim.js"),
+	classiclocal = require("./classic-local.js");
 
 var SHELL_PREFIX = "/__tiddlydesktop_shell__/";
 
@@ -403,7 +404,8 @@ exports.start = function(options, cb) {
 	}
 
 	/*
-	Serve an HTML document with the attachment shim inserted, in a single write.
+	Serve an HTML document with the attachment shim — and, for a TiddlyWiki Classic wiki, the
+	local-file shim — inserted, in a single write.
 
 	Read whole rather than streamed because the document has to be edited before any of it goes out.
 	That is affordable — it is one file per window, the same one Chromium is about to parse in full —
@@ -421,6 +423,21 @@ exports.start = function(options, cb) {
 			} catch(e) {
 				console.error("[TiddlyDesktop] could not inject the attachment shim:", e && e.message);
 				out = buf;
+			}
+			/*
+			TiddlyWiki Classic reads its own URL to decide whether it may save at all, and where
+			to; served from this http origin it gets both answers wrong and offers no save command.
+			The script that puts that right has to run before the document's own `<body onload>`,
+			which is why it goes in here rather than with the rest of the Classic support, which
+			the host injects once the document has loaded. shim.inject places it after `<head>`,
+			the same seam the attachment shim uses.
+			*/
+			try {
+				if(classiclocal.isClassic(out)) {
+					out = shim.inject(out, classiclocal.source({pathname: path.resolve(file)}));
+				}
+			} catch(e) {
+				console.error("[TiddlyDesktop] could not inject the TiddlyWiki Classic shim:", e && e.message);
 			}
 			var headers = {
 				"Content-Type": contentType(file),

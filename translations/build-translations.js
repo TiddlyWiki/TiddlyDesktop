@@ -29,7 +29,8 @@ var KEY_ORDER = [
 	"List/SearchPlaceholder","List/ClearSearch",
 	"Row/Untitled","Row/Open","Row/Reveal","Row/Remove","Row/ToFolder","Row/ToFile",
 	"Row/ToFolderTooltip","Row/ToFileTooltip","Row/Advanced","Row/Plugins",
-	"Advanced/Backups","Advanced/SaveBackup","Advanced/KeepBackups","Advanced/RevealBackups","Advanced/ServerNote",
+	"Advanced/Backups","Advanced/SaveBackup","Advanced/KeepBackups","Advanced/RevealBackups",
+	"Advanced/ClassicBackupsNote","Advanced/ServerNote",
 	"Advanced/Server","Advanced/Host","Advanced/Port","Advanced/PathPrefix","Advanced/RootTiddler",
 	"Advanced/Gzip","Advanced/Access","Advanced/Credentials","Advanced/AnonUsername",
 	"Advanced/Readers","Advanced/Writers",
@@ -770,6 +771,42 @@ var KEEP_BACKUPS = {
 };
 Object.keys(KEEP_BACKUPS).forEach(function(lang) {
 	if(T[lang]) { T[lang]["Advanced/KeepBackups"] = KEEP_BACKUPS[lang]; }
+});
+
+// The note that replaces the Backups panel for TiddlyWiki Classic wikis, which keep their own
+// backups. "chkSaveBackups", "txtBackupFolder" and AdvancedOptions are Classic's own identifiers
+// and stay in English everywhere.
+var CLASSIC_BACKUPS_NOTE = {
+	"de-DE": "TiddlyWiki Classic legt seine eigenen Sicherungen an, daher erstellt TiddlyDesktop für dieses Wiki keine. Stelle \"chkSaveBackups\" und \"txtBackupFolder\" in den AdvancedOptions des Wikis selbst ein.",
+	"fr-FR": "TiddlyWiki Classic gère ses propres sauvegardes, donc TiddlyDesktop n'en crée aucune pour ce wiki. Réglez \"chkSaveBackups\" et \"txtBackupFolder\" dans les AdvancedOptions du wiki lui-même.",
+	"es-ES": "TiddlyWiki Classic mantiene sus propias copias de seguridad, así que TiddlyDesktop no crea ninguna para este wiki. Configura \"chkSaveBackups\" y \"txtBackupFolder\" en las AdvancedOptions del propio wiki.",
+	"ca-ES": "TiddlyWiki Classic manté les seves pròpies còpies de seguretat, de manera que TiddlyDesktop no en fa cap per a aquest wiki. Configura \"chkSaveBackups\" i \"txtBackupFolder\" a les AdvancedOptions del wiki mateix.",
+	"it-IT": "TiddlyWiki Classic gestisce i propri backup, quindi TiddlyDesktop non ne crea per questo wiki. Imposta \"chkSaveBackups\" e \"txtBackupFolder\" nelle AdvancedOptions del wiki stesso.",
+	"pt-BR": "O TiddlyWiki Classic mantém os próprios backups, portanto o TiddlyDesktop não cria nenhum para este wiki. Defina \"chkSaveBackups\" e \"txtBackupFolder\" nas AdvancedOptions do próprio wiki.",
+	"pt-PT": "O TiddlyWiki Classic mantém as suas próprias cópias de segurança, pelo que o TiddlyDesktop não cria nenhuma para este wiki. Defina \"chkSaveBackups\" e \"txtBackupFolder\" nas AdvancedOptions do próprio wiki.",
+	"nl-NL": "TiddlyWiki Classic maakt zijn eigen back-ups, dus TiddlyDesktop maakt er geen voor deze wiki. Stel \"chkSaveBackups\" en \"txtBackupFolder\" in de AdvancedOptions van de wiki zelf in.",
+	"da-DK": "TiddlyWiki Classic laver sine egne sikkerhedskopier, så TiddlyDesktop laver ingen for denne wiki. Angiv \"chkSaveBackups\" og \"txtBackupFolder\" i wikiens egne AdvancedOptions.",
+	"sv-SE": "TiddlyWiki Classic sköter sina egna säkerhetskopior, så TiddlyDesktop gör inga för den här wikin. Ställ in \"chkSaveBackups\" och \"txtBackupFolder\" i wikins egna AdvancedOptions.",
+	"pl-PL": "TiddlyWiki Classic tworzy własne kopie zapasowe, więc TiddlyDesktop nie tworzy żadnych dla tej wiki. Ustaw \"chkSaveBackups\" i \"txtBackupFolder\" w AdvancedOptions samej wiki.",
+	"cs-CZ": "TiddlyWiki Classic si spravuje vlastní zálohy, takže TiddlyDesktop pro tuto wiki žádné nevytváří. Nastavte \"chkSaveBackups\" a \"txtBackupFolder\" přímo v AdvancedOptions dané wiki.",
+	"sk-SK": "TiddlyWiki Classic si vytvára vlastné zálohy, takže TiddlyDesktop pre túto wiki žiadne nevytvára. Nastavte \"chkSaveBackups\" a \"txtBackupFolder\" priamo v AdvancedOptions danej wiki.",
+	"sl-SI": "TiddlyWiki Classic ustvarja lastne varnostne kopije, zato jih TiddlyDesktop za ta wiki ne izdeluje. Nastavite \"chkSaveBackups\" in \"txtBackupFolder\" v AdvancedOptions samega wikija.",
+	"mk-MK": "TiddlyWiki Classic сам ги прави своите резервни копии, па TiddlyDesktop не прави ниту едно за ова вики. Поставете \"chkSaveBackups\" и \"txtBackupFolder\" во AdvancedOptions на самото вики.",
+	"ru-RU": "TiddlyWiki Classic создаёт резервные копии самостоятельно, поэтому TiddlyDesktop не делает их для этой вики. Задайте \"chkSaveBackups\" и \"txtBackupFolder\" в AdvancedOptions самой вики.",
+	"el-GR": "Το TiddlyWiki Classic κρατά τα δικά του αντίγραφα ασφαλείας, οπότε το TiddlyDesktop δεν δημιουργεί κανένα για αυτό το wiki. Ρυθμίστε τα \"chkSaveBackups\" και \"txtBackupFolder\" στις AdvancedOptions του ίδιου του wiki.",
+	"he-IL": "TiddlyWiki Classic שומר גיבויים משלו, ולכן TiddlyDesktop אינו יוצר גיבויים עבור ויקי זה. הגדר את \"chkSaveBackups\" ואת \"txtBackupFolder\" ב-AdvancedOptions של הוויקי עצמו.",
+	"ar-PS": "يحتفظ TiddlyWiki Classic بنسخه الاحتياطية بنفسه، لذلك لا ينشئ TiddlyDesktop أي نسخ احتياطية لهذا الويكي. اضبط \"chkSaveBackups\" و\"txtBackupFolder\" في AdvancedOptions الخاصة بالويكي نفسه.",
+	"fa-IR": "TiddlyWiki Classic نسخه‌های پشتیبان خود را خودش نگه می‌دارد، بنابراین TiddlyDesktop برای این ویکی هیچ نسخهٔ پشتیبانی نمی‌سازد. \"chkSaveBackups\" و \"txtBackupFolder\" را در AdvancedOptions خودِ ویکی تنظیم کنید.",
+	"hi-IN": "TiddlyWiki Classic अपने बैकअप स्वयं रखता है, इसलिए TiddlyDesktop इस विकी के लिए कोई बैकअप नहीं बनाता। \"chkSaveBackups\" और \"txtBackupFolder\" को विकी के अपने AdvancedOptions में सेट करें।",
+	"pa-IN": "TiddlyWiki Classic ਆਪਣੇ ਬੈਕਅੱਪ ਆਪ ਬਣਾਉਂਦਾ ਹੈ, ਇਸ ਲਈ TiddlyDesktop ਇਸ ਵਿਕੀ ਲਈ ਕੋਈ ਬੈਕਅੱਪ ਨਹੀਂ ਬਣਾਉਂਦਾ। ਵਿਕੀ ਦੇ ਆਪਣੇ AdvancedOptions ਵਿੱਚ \"chkSaveBackups\" ਅਤੇ \"txtBackupFolder\" ਸੈੱਟ ਕਰੋ।",
+	"ia-IA": "TiddlyWiki Classic mantene su proprie copias de reserva, dunque TiddlyDesktop non face alcun pro iste wiki. Configura \"chkSaveBackups\" e \"txtBackupFolder\" in le AdvancedOptions del wiki mesme.",
+	"ja-JP": "TiddlyWiki Classic は自身でバックアップを作成するため、TiddlyDesktop はこのウィキのバックアップを作成しません。ウィキ自身の AdvancedOptions で \"chkSaveBackups\" と \"txtBackupFolder\" を設定してください。",
+	"ko-KR": "TiddlyWiki Classic은 자체적으로 백업을 만들므로 TiddlyDesktop은 이 위키의 백업을 만들지 않습니다. 위키 자체의 AdvancedOptions에서 \"chkSaveBackups\"와 \"txtBackupFolder\"를 설정하세요.",
+	"zh-Hans": "TiddlyWiki Classic 会自行保存备份，因此 TiddlyDesktop 不会为此 wiki 创建备份。请在该 wiki 自身的 AdvancedOptions 中设置 \"chkSaveBackups\" 和 \"txtBackupFolder\"。",
+	"zh-Hant": "TiddlyWiki Classic 會自行保存備份，因此 TiddlyDesktop 不會為此 wiki 建立備份。請在該 wiki 自身的 AdvancedOptions 中設定 \"chkSaveBackups\" 和 \"txtBackupFolder\"。"
+};
+Object.keys(CLASSIC_BACKUPS_NOTE).forEach(function(lang) {
+	if(T[lang]) { T[lang]["Advanced/ClassicBackupsNote"] = CLASSIC_BACKUPS_NOTE[lang]; }
 });
 
 // Android WikiList additions: theme/palette pickers, config/backup/plugin folders, share picker.
