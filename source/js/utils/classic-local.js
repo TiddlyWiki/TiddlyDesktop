@@ -12,14 +12,17 @@ var cached = null;
 Whether a document about to be served is a TiddlyWiki Classic.
 
 Every Classic carries its shadow tiddlers in a `<div id="shadowArea">`; TW5 keeps its shadows in
-plugins and has no such element. Deliberately not the `versionArea` id that the rest of the Classic
-support keys on — that one was only introduced in 2.4, and this has to recognise the older files
-too. Testing the raw bytes is only a filter, and a coarse one: the injected code identifies the
-document properly before it changes anything, so a TW5 wiki with the word in a tiddler costs an
-inert script and nothing else.
+plugins and writes no such element. Deliberately neither of the two markers that look more obvious
+and are not: `#storeArea` is written by TW5 as well, for the benefit of 5.1.x tooling, and the
+`versionArea` id only arrived in 2.4, so keying on it would miss the older files this has to
+recognise.
+
+Matching the id attribute rather than the bare word, so that a TiddlyWiki 5 wiki that merely writes
+about `shadowArea` in a tiddler is not taken for a Classic. Testing the raw bytes is only a filter
+in any case: the injected code identifies the document properly before it changes anything.
 */
 exports.isClassic = function(html) {
-	return html.indexOf("shadowArea") !== -1;
+	return (/\bid=["']?shadowArea\b/).test(html.toString("utf8"));
 };
 
 /*

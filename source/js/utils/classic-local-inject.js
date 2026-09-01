@@ -48,10 +48,14 @@ on believing it is the local file it actually is.
 	}
 
 	function makeLocal() {
-		// TiddlyWiki Classic only. Its version object is the one marker every release has —
-		// the `versionArea` id on the script holding it only arrived in 2.4 — and TW5, which
-		// keeps its version on $tw, defines no such global.
-		if(!window.version || version.title !== "TiddlyWiki" || !document.getElementById("storeArea")) {
+		// TiddlyWiki Classic only, and neither `#storeArea` nor the version object can establish
+		// that: TW5 writes a `#storeArea` for 5.1.x tooling, and its twedit.js saver deliberately
+		// sets `window.version = {title: "TiddlyWiki"}` so that TWEdit takes it for a Classic.
+		// `#shadowArea` — where every release from 2.0 to 2.10 keeps its shadow tiddlers, and
+		// which TW5 never writes — is the marker that separates them, and $tw is the one thing TW5
+		// does not pretend about. (`#versionArea` would do from 2.4 on, but 2.2 leaves the script
+		// holding the version object anonymous.)
+		if(window.$tw || !document.getElementById("storeArea") || !document.getElementById("shadowArea")) {
 			return;
 		}
 		// ── this file is local ──────────────────────────────────────────────────────

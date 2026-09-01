@@ -138,20 +138,24 @@ function fileUrlFromPath(filepath) {
 	return "file://" + (escaped.charAt(0) === "/" ? "" : "/") + escaped;
 }
 
-// Helper to detect whether a document is a TiddlyWiki Classic
+/*
+Helper to detect whether a document is a TiddlyWiki Classic.
+
+`#storeArea` is NOT enough on its own: TiddlyWiki 5 writes one too, for the benefit of 5.1.x
+tooling. Nor is the version object — TW5's twedit.js saver sets `window.version = {title:
+"TiddlyWiki"}` in every browser, on purpose, so that TWEdit takes the document for a Classic. Every
+release from 2.0 to 2.10 carries its shadow tiddlers in a `<div id="shadowArea">`, TW5 keeps its
+shadows in plugins and writes no such element, and this is the same marker the wiki server sniffs
+for (utils/classic-local.js), so both ends agree on what a Classic is. `#versionArea` would serve
+from 2.4 on, but 2.2 leaves the script holding the version object anonymous.
+*/
 function isTiddlyWikiClassic(doc) {
-	if(!doc.getElementById("storeArea")) {
+	var view = doc.defaultView;
+	// $tw is the one thing TW5 does not pretend about.
+	if(view && view.$tw) {
 		return false;
 	}
-	var versionArea = doc.getElementById("versionArea");
-	if(versionArea && /TiddlyWiki/.test(versionArea.text)) {
-		return true;
-	}
-	// 2.4 was the first release to put an id on the script that holds the version object;
-	// before that the script is anonymous, so ask for the object itself. TW5 keeps its version
-	// on $tw and defines no such global, so it is still the Classic-only marker.
-	var view = doc.defaultView;
-	return !!(view && view.version && view.version.title === "TiddlyWiki");
+	return !!(doc.getElementById("storeArea") && doc.getElementById("shadowArea"));
 }
 
 // Helper to inject overrides into TiddlyWiki Classic
